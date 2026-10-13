@@ -42,11 +42,24 @@ jobs:
 
           old_field = '<div class="field"><label>Sicherheitsreserve <span class="hint">monatlich</span></label><div class="input-wrap"><input id="budgetSafetyReserve" inputmode="decimal" value="300"><span class="unit">€</span></div></div>'
           new_field = '<div class="field"><label>Sicherheitsreserve</label><div class="input-wrap"><input id="budgetSafetyReserve" inputmode="decimal" value="300"><span class="unit">€</span></div><div class="mini">monatlich</div></div>'
-          if old_field not in s:
-              raise SystemExit("Sicherheitsreserve target not found")
-          s = s.replace(old_field, new_field, 1)
+          if old_field in s:
+              s = s.replace(old_field, new_field, 1)
 
-          s = s.replace("V8.152", "V8.154")
+          replacements = {
+              'id="budgetNetIncome" inputmode="decimal" value="4500"': 'id="budgetNetIncome" inputmode="decimal" value="0"',
+              '<option value="single">Single</option>\n              <option value="couple" selected>Paar</option>': '<option value="single" selected>Single</option>\n              <option value="couple">Paar</option>',
+              'id="budgetIncomeEmployment" inputmode="decimal" value="4500"': 'id="budgetIncomeEmployment" inputmode="decimal" value="0"',
+              '<option value="1">1</option>\n              <option value="2" selected>2</option>': '<option value="1" selected>1</option>\n              <option value="2">2</option>',
+              '<option value="0">0</option><option value="1">1</option><option value="2" selected>2</option>': '<option value="0" selected>0</option><option value="1">1</option><option value="2">2</option>',
+              'id="budgetChildBenefit" inputmode="decimal" value="518"': 'id="budgetChildBenefit" inputmode="decimal" value="0"',
+              'id="budgetEquity" inputmode="decimal" value="100000"': 'id="budgetEquity" inputmode="decimal" value="0"',
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f"Default target not found: {old}")
+              s = s.replace(old, new, 1)
+
+          s = s.replace("V8.152", "V8.155")
           p.write_text(s, encoding="utf-8")
           PY
           touch _site/.nojekyll
