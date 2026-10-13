@@ -34,11 +34,19 @@ jobs:
           from pathlib import Path
           p = Path("_site/index.html")
           s = p.read_text(encoding="utf-8")
-          old = "input,select{width:100%;min-height:50px;border:1.5px solid #d9dee7;border-radius:14px;background:#fbfcfe;color:var(--ink);padding:0 44px 0 14px;font-size:17px;font-weight:650;outline:none}"
-          new = "input,select{width:100%;height:50px;min-height:50px;border:1.5px solid #d9dee7;border-radius:14px;background:#fbfcfe;color:var(--ink);padding:0 44px 0 14px;font-size:17px;font-weight:650;outline:none}"
-          if old not in s:
-              raise SystemExit("Safari select CSS target not found")
-          s = s.replace(old, new, 1).replace("V8.152", "V8.153")
+
+          old_css = "input,select{width:100%;min-height:50px;border:1.5px solid #d9dee7;border-radius:14px;background:#fbfcfe;color:var(--ink);padding:0 44px 0 14px;font-size:17px;font-weight:650;outline:none}"
+          new_css = "input,select{width:100%;height:50px;min-height:50px;border:1.5px solid #d9dee7;border-radius:14px;background:#fbfcfe;color:var(--ink);padding:0 44px 0 14px;font-size:17px;font-weight:650;outline:none}"
+          if old_css in s:
+              s = s.replace(old_css, new_css, 1)
+
+          old_field = '<div class="field"><label>Sicherheitsreserve <span class="hint">monatlich</span></label><div class="input-wrap"><input id="budgetSafetyReserve" inputmode="decimal" value="300"><span class="unit">€</span></div></div>'
+          new_field = '<div class="field"><label>Sicherheitsreserve</label><div class="input-wrap"><input id="budgetSafetyReserve" inputmode="decimal" value="300"><span class="unit">€</span></div><div class="mini">monatlich</div></div>'
+          if old_field not in s:
+              raise SystemExit("Sicherheitsreserve target not found")
+          s = s.replace(old_field, new_field, 1)
+
+          s = s.replace("V8.152", "V8.154")
           p.write_text(s, encoding="utf-8")
           PY
           touch _site/.nojekyll
