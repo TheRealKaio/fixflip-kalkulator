@@ -111,15 +111,20 @@ jobs:
             return BRAND_LOGO_PNG;
           }
 
-          function drawPdfBrandHeader(doc, reportTitle, subtitle, dateText){
-            const left=16, right=194;
-            doc.setFillColor(15,23,42);
-            doc.rect(0,0,210,34,"F");
+          function drawPdfBrandLogo(doc){
+            const left=16;
             doc.setFillColor(255,255,255);
             doc.roundedRect(left,5,58,24,3,3,"F");
             try{
               if(BRAND_LOGO_PNG) doc.addImage(BRAND_LOGO_PNG,"PNG",left+2,7,54,20,undefined,"FAST");
             }catch(e){}
+          }
+
+          function drawPdfBrandHeader(doc, reportTitle, subtitle, dateText){
+            const left=16, right=194;
+            doc.setFillColor(15,23,42);
+            doc.rect(0,0,210,34,"F");
+            drawPdfBrandLogo(doc);
             doc.setTextColor(255,255,255);
             doc.setFont("helvetica","bold");
             doc.setFontSize(14);
@@ -181,7 +186,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.161");',1)
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);\\n  drawPdfFooter(doc,1,1,"V8.162");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -223,7 +228,7 @@ jobs:
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer in s:
-              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.161");',1)
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.162");',1)
 
           old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
             addPage();
@@ -245,9 +250,21 @@ jobs:
           if old_checklist_header in s:
               s = s.replace(old_checklist_header,new_checklist_header,1)
 
-          s = s.replace("V8.152","V8.161")
+          s = s.replace("V8.152","V8.162")
+          final_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
+            doc.setPage(pageNo);
+            drawPdfFooter(doc,pageNo,totalPages,"V8.162");
+          }'''
+          final_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
+            doc.setPage(pageNo);
+            // Abschluss-Pass: Logo auf jeder Seite nochmals zeichnen, insbesondere Seite 1.
+            drawPdfBrandLogo(doc);
+            drawPdfFooter(doc,pageNo,totalPages,"V8.162");
+          }'''
+          if final_loop_old in s:
+              s = s.replace(final_loop_old,final_loop_new,1)
           s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.161", {updateViaCache:"none"})')
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.162", {updateViaCache:"none"})')
           p.write_text(s,encoding="utf-8")
           PY
 
