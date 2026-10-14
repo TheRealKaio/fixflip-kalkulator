@@ -146,7 +146,6 @@ jobs:
           }
           '''
           insert = insert.replace("__BRAND_LOGO_SVG__", logo_svg_js)
-          '''
           if needle not in s:
               raise SystemExit("PDF helper target not found")
           s = s.replace(needle,insert,1)
