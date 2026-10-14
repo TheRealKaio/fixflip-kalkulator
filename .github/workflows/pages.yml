@@ -181,15 +181,20 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.160");',1)
+          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.161");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
               y = 18;
             };'''
-          new_add_page = '''  const addPage = () => {
+          new_add_page = '''  const addPage = (reportTitle=null, subtitle=null) => {
               doc.addPage();
-              drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", new Date().toLocaleDateString("de-DE"));
+              drawPdfBrandHeader(
+                doc,
+                reportTitle || (isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report"),
+                subtitle || (isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation"),
+                new Date().toLocaleDateString("de-DE")
+              );
               y = 43;
             };'''
           if old_add_page not in s:
@@ -218,11 +223,31 @@ jobs:
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer in s:
-              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.160");',1)
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.161");',1)
 
-          s = s.replace("V8.152","V8.160")
+          old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
+            addPage();
+
+            doc.setFillColor(15,23,42);
+            doc.rect(0,0,210,34,"F");
+            doc.setTextColor(255,255,255);
+            doc.setFont("helvetica","bold");
+            doc.setFontSize(18);
+            doc.text("Checkliste vor dem Immobilienkauf", left, 16);
+            doc.setFont("helvetica","normal");
+            doc.setFontSize(9);
+            doc.text("Wichtige Kostentreiber vor Kauf und Sanierung pruefen", left, 23);
+            doc.setTextColor(23,32,51);
+            y = 43;'''
+          new_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
+            // Eigene Ueberschrift, aber dieselbe Marken-Kopfzeile mit Logo wie auf allen anderen Seiten.
+            addPage("Checkliste vor dem Immobilienkauf", "Wichtige Kostentreiber vor Kauf und Sanierung pruefen");'''
+          if old_checklist_header in s:
+              s = s.replace(old_checklist_header,new_checklist_header,1)
+
+          s = s.replace("V8.152","V8.161")
           s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.160", {updateViaCache:"none"})')
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.161", {updateViaCache:"none"})')
           p.write_text(s,encoding="utf-8")
           PY
 
