@@ -221,7 +221,7 @@ jobs:
               s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.160");',1)
 
           s = s.replace("V8.152","V8.160")
-          s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();\\n    const doc = buildPdf();',2)
+          s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
           s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.160", {updateViaCache:"none"})')
           p.write_text(s,encoding="utf-8")
           PY
