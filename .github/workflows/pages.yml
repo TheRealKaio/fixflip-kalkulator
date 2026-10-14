@@ -30,7 +30,6 @@ jobs:
           cat source/index.html.gz.b64.part* > /tmp/index.b64
           base64 -d /tmp/index.b64 > /tmp/index.html.gz
           gunzip -c /tmp/index.html.gz > _site/index.html
-          cp neustart-immocheck-logo.jpg _site/neustart-immocheck-logo.jpg
           cp service-worker.js _site/service-worker.js
 
           python - <<'PY'
@@ -74,7 +73,7 @@ jobs:
           old_hero = '<div class="hero-top"><div class="brand">Fix & Flip</div><div class="tag">Deal Check</div></div>'
           logo_svg = Path("neustart-immocheck-logo.svg").read_text(encoding="utf-8")
           logo_svg = logo_svg.replace('<svg xmlns="http://www.w3.org/2000/svg"', '<svg class="brand-logo" xmlns="http://www.w3.org/2000/svg"', 1)
-          new_hero = '<div class="hero-top"><div class="brand-logo-wrap">' + logo_svg + '</div><div class="tag">Deal Check</div></div>'
+          new_hero = '<div class="hero-top"><div class="brand-logo-wrap">' + logo_svg + '</div></div>'
           if old_hero not in s:
               raise SystemExit("Hero branding target not found")
           s = s.replace(old_hero,new_hero,1)
@@ -83,9 +82,34 @@ jobs:
             return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";
           }
           '''
+          logo_svg_js = logo_svg.replace('\\`','\\\\`').replace('${','\\${')
           insert = needle + '''
           const BRAND_DOMAIN = "neustart-immocheck.de";
-          const BRAND_LOGO_SRC = "neustart-immocheck-logo.jpg";
+          const BRAND_LOGO_SVG = String.raw`__BRAND_LOGO_SVG__`;
+          let BRAND_LOGO_PNG = "";
+
+          async function preparePdfBrandLogo(){
+            if(BRAND_LOGO_PNG) return BRAND_LOGO_PNG;
+            const svgData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(BRAND_LOGO_SVG);
+            BRAND_LOGO_PNG = await new Promise((resolve,reject)=>{
+              const img = new Image();
+              img.onload = ()=>{
+                try{
+                  const canvas=document.createElement("canvas");
+                  canvas.width=1800;
+                  canvas.height=680;
+                  const ctx=canvas.getContext("2d");
+                  ctx.fillStyle="#ffffff";
+                  ctx.fillRect(0,0,canvas.width,canvas.height);
+                  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+                  resolve(canvas.toDataURL("image/png"));
+                }catch(err){ reject(err); }
+              };
+              img.onerror=()=>reject(new Error("SVG-Logo konnte nicht fuer den PDF-Bericht vorbereitet werden."));
+              img.src=svgData;
+            });
+            return BRAND_LOGO_PNG;
+          }
 
           function drawPdfBrandHeader(doc, reportTitle, subtitle, dateText){
             const left=16, right=194;
@@ -94,7 +118,7 @@ jobs:
             doc.setFillColor(255,255,255);
             doc.roundedRect(left,5,58,24,3,3,"F");
             try{
-              doc.addImage(BRAND_LOGO_SRC,"JPEG",left+2,7,54,20,undefined,"FAST");
+              if(BRAND_LOGO_PNG) doc.addImage(BRAND_LOGO_PNG,"PNG",left+2,7,54,20,undefined,"FAST");
             }catch(e){}
             doc.setTextColor(255,255,255);
             doc.setFont("helvetica","bold");
@@ -120,6 +144,8 @@ jobs:
             if(pageNo && totalPages) doc.text("Seite " + pageNo + " von " + totalPages,194,289,{align:"right"});
             doc.setTextColor(23,32,51);
           }
+          '''
+          insert = insert.replace("__BRAND_LOGO_SVG__", logo_svg_js)
           '''
           if needle not in s:
               raise SystemExit("PDF helper target not found")
@@ -156,7 +182,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.159");',1)
+          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.160");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -164,7 +190,7 @@ jobs:
             };'''
           new_add_page = '''  const addPage = () => {
               doc.addPage();
-              drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", new Date().toLocaleDateString("de-DE"));
+              drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", new Date().toLocaleDateString("de-DE"));
               y = 43;
             };'''
           if old_add_page not in s:
@@ -179,11 +205,11 @@ jobs:
             doc.text(isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", left, 16);
             doc.setFont("helvetica","normal");
             doc.setFontSize(9);
-            doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", left, 23);
+            doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", left, 23);
             doc.text(new Date().toLocaleDateString("de-DE"), right, 23, {align:"right"});
             doc.setTextColor(23,32,51);
             y = 43;'''
-          new_deal_header = '''  drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", new Date().toLocaleDateString("de-DE"));
+          new_deal_header = '''  drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", new Date().toLocaleDateString("de-DE"));
             y = 43;'''
           if old_deal_header not in s:
               raise SystemExit("Deal header target not found")
@@ -195,16 +221,11 @@ jobs:
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer not in s:
               raise SystemExit("Deal footer target not found")
-          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.159");',1)
+          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.160");',1)
 
-          import base64
-          logo_bytes = Path("neustart-immocheck-logo.jpg").read_bytes()
-          logo_data = "data:image/jpeg;base64," + base64.b64encode(logo_bytes).decode("ascii")
-          s = s.replace('src="neustart-immocheck-logo.jpg"', f'src="{logo_data}"', 1)
-          s = s.replace('const BRAND_LOGO_SRC = "neustart-immocheck-logo.jpg";', f'const BRAND_LOGO_SRC = "{logo_data}";', 1)
-
-          s = s.replace("V8.152","V8.159")
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.159", {updateViaCache:"none"})')
+          s = s.replace("V8.152","V8.160")
+          s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();\\n    const doc = buildPdf();',2)
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.160", {updateViaCache:"none"})')
           p.write_text(s,encoding="utf-8")
           PY
 
