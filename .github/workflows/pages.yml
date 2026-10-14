@@ -72,7 +72,9 @@ jobs:
               s = s.replace(brand_css,brand_css_new,1)
 
           old_hero = '<div class="hero-top"><div class="brand">Fix & Flip</div><div class="tag">Deal Check</div></div>'
-          new_hero = '<div class="hero-top"><div class="brand-logo-wrap"><img class="brand-logo" id="brandLogo" src="neustart-immocheck-logo.jpg" alt="Neustart ImmoCheck"></div><div class="tag">Deal Check</div></div>'
+          logo_svg = Path("neustart-immocheck-logo.svg").read_text(encoding="utf-8")
+          logo_svg = logo_svg.replace('<svg xmlns="http://www.w3.org/2000/svg"', '<svg class="brand-logo" xmlns="http://www.w3.org/2000/svg"', 1)
+          new_hero = '<div class="hero-top"><div class="brand-logo-wrap">' + logo_svg + '</div><div class="tag">Deal Check</div></div>'
           if old_hero not in s:
               raise SystemExit("Hero branding target not found")
           s = s.replace(old_hero,new_hero,1)
@@ -83,6 +85,7 @@ jobs:
           '''
           insert = needle + '''
           const BRAND_DOMAIN = "neustart-immocheck.de";
+          const BRAND_LOGO_SRC = "neustart-immocheck-logo.jpg";
 
           function drawPdfBrandHeader(doc, reportTitle, subtitle, dateText){
             const left=16, right=194;
@@ -91,8 +94,7 @@ jobs:
             doc.setFillColor(255,255,255);
             doc.roundedRect(left,5,58,24,3,3,"F");
             try{
-              const logoEl=document.getElementById("brandLogo");
-              if(logoEl && logoEl.complete) doc.addImage(logoEl,"JPEG",left+2,7,54,20,undefined,"FAST");
+              doc.addImage(BRAND_LOGO_SRC,"JPEG",left+2,7,54,20,undefined,"FAST");
             }catch(e){}
             doc.setTextColor(255,255,255);
             doc.setFont("helvetica","bold");
@@ -154,7 +156,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.158");',1)
+          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.159");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -193,7 +195,7 @@ jobs:
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer not in s:
               raise SystemExit("Deal footer target not found")
-          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.158");',1)
+          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.159");',1)
 
           import base64
           logo_bytes = Path("neustart-immocheck-logo.jpg").read_bytes()
@@ -201,7 +203,8 @@ jobs:
           s = s.replace('src="neustart-immocheck-logo.jpg"', f'src="{logo_data}"', 1)
           s = s.replace('const BRAND_LOGO_SRC = "neustart-immocheck-logo.jpg";', f'const BRAND_LOGO_SRC = "{logo_data}";', 1)
 
-          s = s.replace("V8.152","V8.158")
+          s = s.replace("V8.152","V8.159")
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.159", {updateViaCache:"none"})')
           p.write_text(s,encoding="utf-8")
           PY
 
