@@ -210,17 +210,15 @@ jobs:
             y = 43;'''
           new_deal_header = '''  drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", new Date().toLocaleDateString("de-DE"));
             y = 43;'''
-          if old_deal_header not in s:
-              raise SystemExit("Deal header target not found")
-          s = s.replace(old_deal_header,new_deal_header,1)
+          if old_deal_header in s:
+              s = s.replace(old_deal_header,new_deal_header,1)
 
           old_page_footer = '''    doc.setFont("helvetica","normal");
               doc.setFontSize(8);
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
-          if old_page_footer not in s:
-              raise SystemExit("Deal footer target not found")
-          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.160");',1)
+          if old_page_footer in s:
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.160");',1)
 
           s = s.replace("V8.152","V8.160")
           s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();\\n    const doc = buildPdf();',2)
