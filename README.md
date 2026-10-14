@@ -1,6 +1,6 @@
-# FixFlip Kalkulator
+# Neustart ImmoCheck
 
-Web-App **Version V8.155**.
+Web-App **Version V8.156**.
 
 ## Rechner
 
@@ -8,11 +8,14 @@ Web-App **Version V8.155**.
 - Eigennutzung
 - Fix & Flip
 
-## Änderungen
+## Branding in V8.156
 
-- V8.155: Neue Standardwerte im Budgetrechner: Haushaltsnettoeinkommen 0 €, Familienstatus Single, 0 Kinder, Eigenkapital 0 €. Passend dazu startet die Zahl der Erwachsenen bei 1 und das Kindergeld bei 0 €.
-- V8.154: Bei Sicherheitsreserve steht „monatlich“ als dezente Infozeile unter dem Eingabefeld.
-- V8.153: Safari-Dropdowns verwenden dieselbe feste Höhe wie normale Eingabefelder.
+- Neues **Neustart ImmoCheck**-Logo oben links im Kalkulator
+- Einheitliche dunkelblaue Kopfzeile in allen drei PDF-Berichten
+- Jeweiliger Berichtstitel bleibt in der PDF-Kopfzeile erhalten
+- Domain **neustart-immocheck.de** dezent in der PDF-Fußzeile
+- Versionsnummer auf **V8.156** aktualisiert
+- Die bisherigen Budget-Standardwerte und Safari-Anpassungen bleiben erhalten
 
 ## Veröffentlichung
 
