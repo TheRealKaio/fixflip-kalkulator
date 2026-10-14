@@ -251,41 +251,46 @@ jobs:
               s = s.replace(old_checklist_header,new_checklist_header,1)
 
           # Robust patch for the first page of Fix & Flip / Eigennutzung.
-          # The source HTML still contains the original header wording with "Deal Check";
-          # replace that exact block before finalizing the generated page.
-          first_page_header_old = '''  doc.setFillColor(15,23,42);
-  doc.rect(0,0,210,34,"F");
-  doc.setTextColor(255,255,255);
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(20);
-  doc.text(isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", left, 16);
-  doc.setFont("helvetica","normal");
-  doc.setFontSize(9);
-  doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", left, 23);
-  doc.text(new Date().toLocaleDateString("de-DE"), right, 23, {align:"right"});
-  doc.setTextColor(23,32,51);
-  y = 43;'''
-          first_page_header_new = '''  drawPdfBrandHeader(
-    doc,
-    isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report",
-    isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation",
-    new Date().toLocaleDateString("de-DE")
-  );
-  y = 43;'''
+          first_page_header_old = "\n".join([
+              '  doc.setFillColor(15,23,42);',
+              '  doc.rect(0,0,210,34,"F");',
+              '  doc.setTextColor(255,255,255);',
+              '  doc.setFont("helvetica","bold");',
+              '  doc.setFontSize(20);',
+              '  doc.text(isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", left, 16);',
+              '  doc.setFont("helvetica","normal");',
+              '  doc.setFontSize(9);',
+              '  doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", left, 23);',
+              '  doc.text(new Date().toLocaleDateString("de-DE"), right, 23, {align:"right"});',
+              '  doc.setTextColor(23,32,51);',
+              '  y = 43;'
+          ])
+          first_page_header_new = "\n".join([
+              '  drawPdfBrandHeader(',
+              '    doc,',
+              '    isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report",',
+              '    isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation",',
+              '    new Date().toLocaleDateString("de-DE")',
+              '  );',
+              '  y = 43;'
+          ])
           if first_page_header_old in s:
               s = s.replace(first_page_header_old, first_page_header_new, 1)
 
-          # Final safeguard: on the completed Fix & Flip / Eigennutzung document,
-          # stamp the logo on every page, including page 1, immediately before the footer.
-          footer_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
-    doc.setPage(pageNo);
-    drawPdfFooter(doc,pageNo,totalPages,"V8.164");
-  }'''
-          footer_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
-    doc.setPage(pageNo);
-    drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,totalPages,"V8.164");
-  }'''
+          # Final safeguard: stamp the logo on every finished deal-report page.
+          footer_loop_old = "\n".join([
+              '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
+              '    doc.setPage(pageNo);',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.164");',
+              '  }'
+          ])
+          footer_loop_new = "\n".join([
+              '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
+              '    doc.setPage(pageNo);',
+              '    drawPdfBrandLogo(doc);',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.164");',
+              '  }'
+          ])
           if footer_loop_old in s:
               s = s.replace(footer_loop_old, footer_loop_new, 1)
 
