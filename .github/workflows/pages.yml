@@ -31,6 +31,7 @@ jobs:
           base64 -d /tmp/index.b64 > /tmp/index.html.gz
           gunzip -c /tmp/index.html.gz > _site/index.html
           cp neustart-immocheck-logo.jpg _site/neustart-immocheck-logo.jpg
+          cp service-worker.js _site/service-worker.js
 
           python - <<'PY'
           from pathlib import Path
@@ -153,7 +154,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.157");',1)
+          s = s.replace(old_budget_footer,'  drawPdfFooter(doc,1,1,"V8.158");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -192,7 +193,7 @@ jobs:
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer not in s:
               raise SystemExit("Deal footer target not found")
-          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.157");',1)
+          s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.158");',1)
 
           import base64
           logo_bytes = Path("neustart-immocheck-logo.jpg").read_bytes()
@@ -200,7 +201,7 @@ jobs:
           s = s.replace('src="neustart-immocheck-logo.jpg"', f'src="{logo_data}"', 1)
           s = s.replace('const BRAND_LOGO_SRC = "neustart-immocheck-logo.jpg";', f'const BRAND_LOGO_SRC = "{logo_data}";', 1)
 
-          s = s.replace("V8.152","V8.157")
+          s = s.replace("V8.152","V8.158")
           p.write_text(s,encoding="utf-8")
           PY
 
