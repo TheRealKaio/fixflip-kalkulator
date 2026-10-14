@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-labelledby="title desc">
+<title id="title">Neustart ImmoCheck</title><desc id="desc">Neustart ImmoCheck Logo mit Haus, gruenem Pfeil und Wortmarke</desc>
+<rect width="900" height="340" rx="26" fill="#ffffff"/>
+<g transform="translate(22,26)">
+  <path d="M24 164 L142 62 L236 143 L236 256 L198 256 L198 154 L142 106 L62 176 L62 256 L24 256 Z" fill="#07345f"/>
+  <rect x="118" y="156" width="28" height="28" rx="2" fill="#07345f"/><rect x="152" y="156" width="28" height="28" rx="2" fill="#07345f"/>
+  <rect x="118" y="190" width="28" height="28" rx="2" fill="#07345f"/><rect x="152" y="190" width="28" height="28" rx="2" fill="#07345f"/>
+  <path d="M42 270 C122 320 254 294 273 173 C282 112 260 67 230 42 L250 15 L184 18 L166 80 L199 58 C222 79 236 116 229 156 C214 246 119 277 62 245 Z" fill="#2fb61f"/>
+  <path d="M198 22 L250 15 L236 64 Z" fill="#55c92f"/>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" fill="#071f3e">
+  <text x="318" y="155" font-size="92" font-weight="800" letter-spacing="1">NEUSTART</text>
+  <text x="318" y="252" font-size="78" font-weight="400">Immo<tspan fill="#2fb61f">Check</tspan></text>
+</g>
+</svg>
