@@ -186,7 +186,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.164");',1)
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.165");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -228,7 +228,7 @@ jobs:
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer in s:
-              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.164");',1)
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.165");',1)
 
           old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
             addPage();
@@ -281,34 +281,118 @@ jobs:
           footer_loop_old = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.164");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.165");',
               '  }'
           ])
           footer_loop_new = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
               '    drawPdfBrandLogo(doc);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.164");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.165");',
               '  }'
           ])
           if footer_loop_old in s:
               s = s.replace(footer_loop_old, footer_loop_new, 1)
 
-          s = s.replace("V8.152","V8.164")
+          s = s.replace("V8.152","V8.165")
           final_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.164");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.165");
           }'''
           final_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
             // Abschluss-Pass: Logo auf jeder Seite nochmals zeichnen, insbesondere Seite 1.
             drawPdfBrandLogo(doc);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.164");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.165");
           }'''
           if final_loop_old in s:
               s = s.replace(final_loop_old,final_loop_new,1)
           s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.164", {updateViaCache:"none"})')
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.165", {updateViaCache:"none"})')
+
+          # V8.165: Budget UX - Belastungsquote anzeigen und "Weitere Annahmen" standardmaessig einklappen.
+          assumptions_css_old = '.market-check-card.collapsed .market-check-body{display:none}'
+          assumptions_css_new = assumptions_css_old + '''
+.budget-assumptions-body{display:block}
+.budget-assumptions-card.collapsed .budget-assumptions-body{display:none}
+.budget-assumptions-card .market-check-head h2{margin:0}
+.budget-rate-ratio{font-size:11px;font-weight:700;color:#365b96;margin-left:4px}
+.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}
+'''
+          if assumptions_css_old not in s:
+              raise SystemExit("Budget assumptions CSS target not found")
+          s = s.replace(assumptions_css_old, assumptions_css_new, 1)
+
+          assumptions_head_old = '''      <section class="card">
+        <h2>3. Weitere Annahmen</h2>
+        <div class="budget-grid three">'''
+          assumptions_head_new = '''      <section class="card budget-assumptions-card collapsed" id="budgetAssumptionsSection">
+        <div class="market-check-head">
+          <h2>3. Weitere Annahmen</h2>
+          <button type="button" class="plus-btn" id="budgetAssumptionsToggle" aria-expanded="false" aria-controls="budgetAssumptionsBody" aria-label="Weitere Annahmen öffnen">+</button>
+        </div>
+        <div class="budget-assumptions-body" id="budgetAssumptionsBody">
+        <div class="budget-grid three">'''
+          if assumptions_head_old not in s:
+              raise SystemExit("Budget assumptions header target not found")
+          s = s.replace(assumptions_head_old, assumptions_head_new, 1)
+
+          assumptions_note_old = '''        <div class="budget-note">
+          <strong>Hinweis:</strong> Der Budgetanteil bestimmt, welcher Anteil deines frei verfügbaren Monatsbudgets maximal für die Kreditrate eingesetzt wird. Der verbleibende Anteil bleibt als zusätzlicher monatlicher Puffer. Die Berechnung ist eine Orientierung und keine Finanzierungszusage einer Bank.
+        </div>
+      </section>'''
+          assumptions_note_new = '''        <div class="budget-note">
+          <strong>Hinweis:</strong> Der Budgetanteil bestimmt, welcher Anteil deines frei verfügbaren Monatsbudgets maximal für die Kreditrate eingesetzt wird. Der verbleibende Anteil bleibt als zusätzlicher monatlicher Puffer. Die Berechnung ist eine Orientierung und keine Finanzierungszusage einer Bank.
+        </div>
+        </div>
+      </section>'''
+          if assumptions_note_old not in s:
+              raise SystemExit("Budget assumptions body target not found")
+          s = s.replace(assumptions_note_old, assumptions_note_new, 1)
+
+          rate_row_old = '''          <div class="budget-summary-row highlight"><span>Maximal tragbare Kreditrate</span><strong id="budgetRate">–</strong></div>'''
+          rate_row_new = '''          <div class="budget-summary-row highlight"><span>Maximal tragbare Kreditrate <span class="budget-rate-ratio" id="budgetRateRatio"></span></span><strong id="budgetRate">–</strong></div>
+          <div class="budget-rate-guidance" id="budgetRateGuidance">Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung.</div>'''
+          if rate_row_old not in s:
+              raise SystemExit("Budget rate display target not found")
+          s = s.replace(rate_row_old, rate_row_new, 1)
+
+          render_rate_old = '''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);'''
+          render_rate_new = '''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);
+  const budgetRatePct = m.net > 0 ? (m.monthlyRate / m.net) * 100 : 0;
+  if($("budgetRateRatio")){
+    $("budgetRateRatio").textContent = m.net > 0
+      ? "(ca. " + new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(budgetRatePct) + " % vom Haushaltsnetto)"
+      : "";
+  }
+  if($("budgetRateGuidance")){
+    let budgetRateStatus = "";
+    if(m.net > 0){
+      budgetRateStatus = budgetRatePct <= 30 ? "komfortabel" : (budgetRatePct <= 35 ? "solide" : "erhöhte Belastung");
+    }
+    $("budgetRateGuidance").textContent = "Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung." + (budgetRateStatus ? " Aktuelle Einordnung: " + budgetRateStatus + "." : "");
+  }'''
+          if render_rate_old not in s:
+              raise SystemExit("Budget rate render target not found")
+          s = s.replace(render_rate_old, render_rate_new, 1)
+
+          assumptions_js_marker = '''if($("budgetApplySuggestions")){'''
+          assumptions_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){
+  $("budgetAssumptionsToggle").addEventListener("click",()=>{
+    const section=$("budgetAssumptionsSection");
+    const collapsed=!section.classList.contains("collapsed");
+    section.classList.toggle("collapsed",collapsed);
+    $("budgetAssumptionsToggle").textContent=collapsed ? "+" : "−";
+    $("budgetAssumptionsToggle").setAttribute("aria-expanded",collapsed ? "false" : "true");
+    $("budgetAssumptionsToggle").setAttribute("aria-label",collapsed ? "Weitere Annahmen öffnen" : "Weitere Annahmen schließen");
+  });
+}
+
+'''
+          if assumptions_js_marker not in s:
+              raise SystemExit("Budget assumptions JS marker not found")
+          s = s.replace(assumptions_js_marker, assumptions_js + assumptions_js_marker, 1)
+
           p.write_text(s,encoding="utf-8")
           PY
 
