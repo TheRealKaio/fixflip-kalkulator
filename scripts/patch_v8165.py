@@ -17,7 +17,7 @@ replace_once(
     '.budget-assumptions-card.collapsed .budget-assumptions-body{display:none}\n'
     '.budget-assumptions-card .market-check-head h2{margin:0}\n'
     '.budget-rate-ratio{font-size:11px;font-weight:700;color:#365b96;margin-left:4px}\n'
-    '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}',
+    '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}\n.budget-result-card.budget-loan-highlight{background:#fff7cc;border-color:#f1cf55;box-shadow:0 0 0 1px rgba(241,207,85,.18) inset}\n.budget-summary-row.rate-status-green{background:#eaf8ef;border-color:#8fd3a5}\n.budget-summary-row.rate-status-yellow{background:#fff7cc;border-color:#f1cf55}\n.budget-summary-row.rate-status-red{background:#fdecec;border-color:#e8a0a0}\n.budget-summary-row.rate-status-green .budget-rate-ratio{color:#287a43}\n.budget-summary-row.rate-status-yellow .budget-rate-ratio{color:#8a6810}\n.budget-summary-row.rate-status-red .budget-rate-ratio{color:#a33a3a}',
     "assumptions CSS"
 )
 
@@ -46,7 +46,7 @@ replace_once(old_note, new_note, "assumptions body")
 
 replace_once(
     '          <div class="budget-summary-row highlight"><span>Maximal tragbare Kreditrate</span><strong id="budgetRate">–</strong></div>',
-    '          <div class="budget-summary-row highlight"><span>Maximal tragbare Kreditrate <span class="budget-rate-ratio" id="budgetRateRatio"></span></span><strong id="budgetRate">–</strong></div>\n'
+    '          <div class="budget-summary-row highlight" id="budgetRateRow"><span>Maximal tragbare Kreditrate <span class="budget-rate-ratio" id="budgetRateRatio"></span></span><strong id="budgetRate">–</strong></div>\n'
     '          <div class="budget-rate-guidance" id="budgetRateGuidance">Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung.</div>',
     "rate display"
 )
@@ -84,10 +84,10 @@ toggle_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection"))
 replace_once(marker, toggle_js + marker, "assumptions toggle JS")
 
 path.write_text(s, encoding="utf-8")
-print("V8.167 budget UI patch applied")
+print("V8.168 budget UI patch applied")
 
 
-# V8.167: Budget UI refinements.
+# V8.168: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
     '<h2>3. Annahme zur möglichen Immobilie</h2>',
@@ -96,7 +96,7 @@ replace_once(
 
 replace_once(
     '<div class="budget-result-card"><div class="name">Max. Darlehen</div><div class="value" id="budgetLoan">–</div><div class="note">aus maximal tragbarer Rate, Zins und Tilgung</div></div>',
-    '<div class="budget-result-card max-property-highlight"><div class="name">Max. Darlehen</div><div class="value" id="budgetLoan">–</div><div class="note">aus maximal tragbarer Rate, Zins und Tilgung</div></div>',
+    '<div class="budget-result-card budget-loan-highlight"><div class="name">Max. Darlehen</div><div class="value" id="budgetLoan">–</div><div class="note">aus maximal tragbarer Rate, Zins und Tilgung</div></div>',
     "max loan highlight"
 )
 
@@ -108,7 +108,7 @@ replace_once(
     "mobile plus-row width"
 )
 
-# V8.167: Default location for Fix & Flip and Eigennutzung.
+# V8.168: Default location for Fix & Flip and Eigennutzung.
 replace_once(
     'stateEl.value="Schleswig-Holstein";',
     'stateEl.value="Hamburg";',
