@@ -270,12 +270,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'''  const budgetTotalPages = doc.getNumberOfPages();
-            for(let budgetPageNo=1; budgetPageNo<=budgetTotalPages; budgetPageNo++){
-              doc.setPage(budgetPageNo);
-              drawPdfBrandLogo(doc);
-              drawPdfFooter(doc,budgetPageNo,budgetTotalPages,"V8.179");
-            }''',1)
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.179");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
