@@ -314,6 +314,29 @@ jobs:
           PY
           python scripts/patch_v8165.py _site/index.html
 
+          # Deployment gate: fail the build unless the generated site actually contains
+          # the version and UI changes expected for this release.
+          python - <<'PY'
+          from pathlib import Path
+
+          index = Path("_site/index.html").read_text(encoding="utf-8")
+          sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
+
+          checks = {
+              "visible/PDF version V8.178": "V8.178" in index,
+              "service-worker registration 8.178": 'service-worker.js?v=8.178' in index,
+              "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
+              "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
+              "service-worker cache version 8.178": "neustart-immocheck-v8.178" in sw,
+          }
+
+          failed = [name for name, ok in checks.items() if not ok]
+          if failed:
+              raise SystemExit("Deployment verification failed: " + ", ".join(failed))
+
+          print("Deployment verification passed:", ", ".join(checks))
+          PY
+
           touch _site/.nojekyll
 
       - name: Setup Pages
