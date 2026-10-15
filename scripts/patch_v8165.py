@@ -235,10 +235,11 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.173: Kaufpreis-Check im Budget standardmaessig geschlossen.
-# Only the first matching market-check card is changed; toggle behavior stays unchanged.
-if 'class="card market-check-card"' in s:
-    s = s.replace('class="card market-check-card"', 'class="card market-check-card collapsed"', 1)
+# V8.189: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
+for _ in range(2):
+    if 'class="card market-check-card"' in s:
+        s = s.replace('class="card market-check-card"', 'class="card market-check-card collapsed"', 1)
 
 replace_once(
     '.reno-input-row{display:grid;grid-template-columns:1fr 56px;gap:9px}',
@@ -589,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.188: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.189: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -784,7 +785,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.188");
+  drawPdfFooter(doc,1,1,"V8.189");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -870,10 +871,10 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.188");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.189");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 path.write_text(s, encoding="utf-8")
-print("V8.188 interest and repayment patch applied")
+print("V8.189 interest and repayment patch applied")
