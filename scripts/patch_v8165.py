@@ -29,15 +29,21 @@ replace_once(
     "neutral note CSS"
 )
 
-replace_once(
+# Apply neutral styling to the residual-debt note if the old markup is still present.
+# The source HTML may already contain the neutral-note class after earlier patches, so
+# this step must be idempotent and must not abort the entire Pages build.
+old_residual_note = (
     '        <div class="budget-note">\\n'
     '          Restschulden werden hier als Annuitätendarlehen mit konstanter Monatsrate und konstantem Zinssatz modelliert. Tatsächliche Konditionen, Zinsbindungen und Anschlussfinanzierungen können abweichen.\\n'
-    '        </div>',
+    '        </div>'
+)
+new_residual_note = (
     '        <div class="budget-note neutral-note">\\n'
     '          Restschulden werden hier als Annuitätendarlehen mit konstanter Monatsrate und konstantem Zinssatz modelliert. Tatsächliche Konditionen, Zinsbindungen und Anschlussfinanzierungen können abweichen.\\n'
-    '        </div>',
-    "neutral residual debt note"
+    '        </div>'
 )
+if old_residual_note in s:
+    s = s.replace(old_residual_note, new_residual_note, 1)
 
 
 old_head = '''      <section class="card">
