@@ -17,3 +17,4 @@ self.addEventListener("fetch", event => {
     fetch(event.request).catch(() => caches.match(event.request))
   );
 });
+// V8.190 fresh deploy trigger
