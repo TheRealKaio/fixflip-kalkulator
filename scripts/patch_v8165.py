@@ -235,11 +235,16 @@ replace_once(
     "max loan highlight"
 )
 
+# V8.173: Kaufpreis-Check im Budget standardmaessig geschlossen.
+# Only the first matching market-check card is changed; toggle behavior stays unchanged.
+if 'class="card market-check-card"' in s:
+    s = s.replace('class="card market-check-card"', 'class="card market-check-card collapsed"', 1)
+
 replace_once(
     '.reno-input-row{display:grid;grid-template-columns:1fr 56px;gap:9px}',
     '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:9px;width:100%}\\n'
     '.reno-input-row .input-wrap{min-width:0;width:100%}\\n'
-    '@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 50px;gap:8px;width:100%}}',
+    '@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}',
     "mobile plus-row width"
 )
 
@@ -256,4 +261,4 @@ replace_once(
 )
 
 path.write_text(s, encoding="utf-8")
-print("V8.172 budget UI patch applied")
+print("V8.173 mobile UI patch applied")
