@@ -261,7 +261,7 @@ replace_once(
 )
 
 
-# V8.179: Consistent interest / repayment logic.
+# V8.180: Consistent interest / repayment logic.
 # Standard initial repayment is 1.5% in both financing calculators.
 s = s.replace(
     '<input id="repayment" inputmode="decimal" value="2">',
@@ -307,7 +307,7 @@ annuity_helper = '''function annuityProjection(debt, annualInterestRate, initial
 annuity_anchor='function calculateFlipTargetSale(){'
 if annuity_helper not in s:
     if annuity_anchor not in s:
-        raise SystemExit("V8.179 annuity helper anchor not found")
+        raise SystemExit("V8.180 annuity helper anchor not found")
     s=s.replace(annuity_anchor,annuity_helper+annuity_anchor,1)
 
 old_target_interest = '''  const monthlyInterest = debt * Math.max(0, pct("interest")) / 12;
@@ -320,7 +320,7 @@ new_target_interest = '''  const financingProjection = annuityProjection(
   );
   const interest = financingProjection.totalInterest;'''
 if old_target_interest not in s:
-    raise SystemExit("V8.179 target interest block not found")
+    raise SystemExit("V8.180 target interest block not found")
 s=s.replace(old_target_interest,new_target_interest,1)
 
 old_model_finance = '''  const monthlyInterestRate = Math.max(0, pct("interest") / 12);
@@ -339,13 +339,13 @@ new_model_finance = '''  const financingProjection = annuityProjection(
   const interest = financingProjection.totalInterest;
   const repayment = financingProjection.totalRepayment;'''
 if old_model_finance not in s:
-    raise SystemExit("V8.179 model finance block not found")
+    raise SystemExit("V8.180 model finance block not found")
 s=s.replace(old_model_finance,new_model_finance,1)
 
 old_int_factor = '  const intFactor = pct("interest")*(months/12);'
 new_int_factor = '  const intFactor = annuityProjection(1,Math.max(0,pct("interest")),Math.max(0,pct("repayment")),months).totalInterest;'
 if old_int_factor not in s:
-    raise SystemExit("V8.179 max-buy interest factor not found")
+    raise SystemExit("V8.180 max-buy interest factor not found")
 s=s.replace(old_int_factor,new_int_factor,1)
 
 # Update explanatory texts to match the annuity calculation.
@@ -371,7 +371,7 @@ s=s.replace(
 )
 
 # Fresh-session interest reference from Deutsche Bundesbank, with an offline fallback.
-# V8.179 migration: old saved values are not treated as intentional manual overrides.
+# V8.180 migration: old saved values are not treated as intentional manual overrides.
 # Only values changed by the user from this version onward are protected.
 reference_interest_js = '''const REFERENCE_INTEREST_FALLBACK = 4.0;
 const REFERENCE_INTEREST_URL = "https://api.statistiken.bundesbank.de/rest/data/BBIM1/M.DE.B.A2C.A.R.A.2250.EUR.N?format=csv&lang=de";
@@ -454,23 +454,23 @@ async function initializeReferenceInterest(){
 reference_anchor='function saveBudget(){'
 if reference_interest_js not in s:
     if reference_anchor not in s:
-        raise SystemExit("V8.179 reference interest anchor not found")
+        raise SystemExit("V8.180 reference interest anchor not found")
     s=s.replace(reference_anchor,reference_interest_js+reference_anchor,1)
 
 init_anchor='setDealType(savedDealType, false);'
 if init_anchor not in s:
-    raise SystemExit("V8.179 init anchor not found")
+    raise SystemExit("V8.180 init anchor not found")
 s=s.replace(init_anchor,init_anchor+chr(10)+'initializeReferenceInterest();',1)
 
-# V8.179: Sanierungsfeld 5 px breiter; Plus-Button rechts bündig.
+# V8.180: Sanierungsfeld 5 px breiter; Plus-Button rechts bündig.
 reno_css_old = '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:8px;width:100%}\\n.reno-input-row .input-wrap{min-width:0;width:100%}\\n@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}'
 reno_css_new = '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}\\n.reno-input-row .input-wrap{min-width:0;width:100%}\\n.reno-input-row .plus-btn{justify-self:end}\\n@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}'
 if reno_css_old not in s:
-    raise SystemExit("V8.179 renovation layout anchor not found")
+    raise SystemExit("V8.180 renovation layout anchor not found")
 s=s.replace(reno_css_old, reno_css_new, 1)
 
 
-# V8.179: Budget household labels and expanded two-page Budget PDF.
+# V8.180: Budget household labels and expanded two-page Budget PDF.
 replace_once(
     '<p class="sub">Grundlage ist dein tatsächlich verfügbares Haushaltsnettoeinkommen. Steuerklasse ist deshalb nicht erforderlich.</p>',
     '<p class="sub">Grundlage ist dein tatsächlich verfügbares monatliches Haushaltsnettoeinkommen. Steuerklasse ist deshalb nicht erforderlich.</p>',
@@ -532,7 +532,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
   line("Sonstige Ausgaben",pdfMoney(Math.max(0,budgetVal("budgetOther"))));
   line("Gesamte feste Ausgaben",pdfMoney(m.expenses),true);
 
-  // V8.179 Budget-PDF Seite 2 ab Finanzierung
+  // V8.180 Budget-PDF Seite 2 ab Finanzierung
   doc.addPage();
   drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Wie viel Immobilie kann ich mir leisten?",new Date().toLocaleDateString("de-DE"));
   y=43;
@@ -542,16 +542,16 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.179");
+  drawPdfFooter(doc,1,1,"V8.180");
   return doc;'''
 new_budget_pdf_footer = '''  const budgetPdfPages=doc.getNumberOfPages();
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.179");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.180");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 path.write_text(s, encoding="utf-8")
-print("V8.179 interest and repayment patch applied")
+print("V8.180 interest and repayment patch applied")
