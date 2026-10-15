@@ -85,3 +85,16 @@ replace_once(marker, toggle_js + marker, "assumptions toggle JS")
 
 path.write_text(s, encoding="utf-8")
 print("V8.165 budget UI patch applied")
+
+
+# V8.166: Default location for Fix & Flip and Eigennutzung.
+replace_once(
+    'stateEl.value="Schleswig-Holstein";',
+    'stateEl.value="Hamburg";',
+    "default state Hamburg"
+)
+replace_once(
+    '<input id="marketLocation" inputmode="text" placeholder="z. B. 22850 Norderstedt">',
+    '<input id="marketLocation" inputmode="text" value="20095 Hamburg" placeholder="z. B. 20095 Hamburg">',
+    "default market location Hamburg"
+)
