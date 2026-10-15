@@ -261,7 +261,7 @@ replace_once(
 )
 
 
-# V8.174: Consistent interest / repayment logic.
+# V8.175: Consistent interest / repayment logic.
 # Standard initial repayment is 1.5% in both financing calculators.
 s = s.replace(
     '<input id="repayment" inputmode="decimal" value="2">',
@@ -307,7 +307,7 @@ annuity_helper = '''function annuityProjection(debt, annualInterestRate, initial
 annuity_anchor='function calculateFlipTargetSale(){'
 if annuity_helper not in s:
     if annuity_anchor not in s:
-        raise SystemExit("V8.174 annuity helper anchor not found")
+        raise SystemExit("V8.175 annuity helper anchor not found")
     s=s.replace(annuity_anchor,annuity_helper+annuity_anchor,1)
 
 old_target_interest = '''  const monthlyInterest = debt * Math.max(0, pct("interest")) / 12;
@@ -320,7 +320,7 @@ new_target_interest = '''  const financingProjection = annuityProjection(
   );
   const interest = financingProjection.totalInterest;'''
 if old_target_interest not in s:
-    raise SystemExit("V8.174 target interest block not found")
+    raise SystemExit("V8.175 target interest block not found")
 s=s.replace(old_target_interest,new_target_interest,1)
 
 old_model_finance = '''  const monthlyInterestRate = Math.max(0, pct("interest") / 12);
@@ -339,13 +339,13 @@ new_model_finance = '''  const financingProjection = annuityProjection(
   const interest = financingProjection.totalInterest;
   const repayment = financingProjection.totalRepayment;'''
 if old_model_finance not in s:
-    raise SystemExit("V8.174 model finance block not found")
+    raise SystemExit("V8.175 model finance block not found")
 s=s.replace(old_model_finance,new_model_finance,1)
 
 old_int_factor = '  const intFactor = pct("interest")*(months/12);'
 new_int_factor = '  const intFactor = annuityProjection(1,Math.max(0,pct("interest")),Math.max(0,pct("repayment")),months).totalInterest;'
 if old_int_factor not in s:
-    raise SystemExit("V8.174 max-buy interest factor not found")
+    raise SystemExit("V8.175 max-buy interest factor not found")
 s=s.replace(old_int_factor,new_int_factor,1)
 
 # Update explanatory texts to match the annuity calculation.
@@ -424,13 +424,13 @@ async function initializeReferenceInterest(){
 reference_anchor='function saveBudget(){'
 if reference_interest_js not in s:
     if reference_anchor not in s:
-        raise SystemExit("V8.174 reference interest anchor not found")
+        raise SystemExit("V8.175 reference interest anchor not found")
     s=s.replace(reference_anchor,reference_interest_js+reference_anchor,1)
 
 init_anchor='setDealType(savedDealType, false);'
 if init_anchor not in s:
-    raise SystemExit("V8.174 init anchor not found")
-s=s.replace(init_anchor,init_anchor+'\\ninitializeReferenceInterest();',1)
+    raise SystemExit("V8.175 init anchor not found")
+s=s.replace(init_anchor,init_anchor+chr(10)+'initializeReferenceInterest();',1)
 
 path.write_text(s, encoding="utf-8")
-print("V8.174 interest and repayment patch applied")
+print("V8.175 interest and repayment patch applied")
