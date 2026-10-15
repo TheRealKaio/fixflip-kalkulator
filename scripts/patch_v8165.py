@@ -21,13 +21,11 @@ replace_once(
     "assumptions CSS"
 )
 
-# V8.171: Neutral style for the residual-debt explanatory note.
-replace_once(
-    '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}',
-    '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}\\n'
-    '.budget-note.neutral-note{background:#f8fafc;border-color:#e2e8f0;color:#52627a}',
-    "neutral note CSS"
-)
+# V8.172: All budget note boxes use the same neutral style as the orientation box.
+old_budget_note_css = '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}'
+new_budget_note_css = '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}'
+if old_budget_note_css in s:
+    s = s.replace(old_budget_note_css, new_budget_note_css, 1)
 
 # Apply neutral styling to the residual-debt note if the old markup is still present.
 # The source HTML may already contain the neutral-note class after earlier patches, so
@@ -67,7 +65,8 @@ new_note = '''        <div class="budget-note">
         </div>
         </div>
       </section>'''
-replace_once(old_note, new_note, "assumptions body")
+if old_note in s:
+    s = s.replace(old_note, new_note, 1)
 
 replace_once(
     '          <div class="budget-summary-row highlight"><span>Maximal tragbare Kreditrate</span><strong id="budgetRate">–</strong></div>',
@@ -116,6 +115,106 @@ toggle_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection"))
 replace_once(marker, toggle_js + marker, "assumptions toggle JS")
 
 
+
+# V8.172: Single-buffer logic.
+old_burden_field = '''          <div class="field">
+            <label>Budgetanteil für Kreditrate</label>
+            <div class="input-wrap"><input id="budgetMaxBurdenPct" inputmode="decimal" value="75"><span class="unit">%</span></div>
+            <div class="mini">Anteil des frei verfügbaren Monatsbudgets</div>
+          </div>
+'''
+if old_burden_field in s:
+    s = s.replace(old_burden_field, '', 1)
+
+old_assumption_note = '''        <div class="budget-note">
+          <strong>Hinweis:</strong> Der Budgetanteil bestimmt, welcher Anteil deines frei verfügbaren Monatsbudgets maximal für die Kreditrate eingesetzt wird. Der verbleibende Anteil bleibt als zusätzlicher monatlicher Puffer. Die Berechnung ist eine Orientierung und keine Finanzierungszusage einer Bank.
+        </div>'''
+new_assumption_note = '''        <div class="budget-note">
+          <strong>Hinweis:</strong> Der Sicherheitspuffer wird mit 10 % des Haushaltsnettoeinkommens vorgeschlagen, mindestens jedoch mit 300 € monatlich. Du kannst den Betrag individuell anpassen. Nach Lebenshaltungskosten, festen Verpflichtungen und diesem Sicherheitspuffer bildet der verbleibende Betrag die maximal tragbare Kreditrate. Die 30–35-%-Regel dient nur als zusätzliche Orientierung und begrenzt die Rate nicht erneut.
+        </div>'''
+if old_assumption_note in s:
+    s = s.replace(old_assumption_note, new_assumption_note, 1)
+
+s = s.replace(
+    '<div class="field"><label>Sicherheitsreserve</label><div class="input-wrap"><input id="budgetSafetyReserve" inputmode="decimal" value="300"><span class="unit">€</span></div><div class="mini">monatlich</div></div>',
+    '<div class="field"><label>Sicherheitspuffer</label><div class="input-wrap"><input id="budgetSafetyReserve" inputmode="decimal" value="300"><span class="unit">€</span></div><div class="mini">Vorschlag: 10 % vom Haushaltsnetto, mindestens 300 € · editierbar</div></div>',
+    1
+)
+
+s = s.replace(
+    '  "budgetSafetyReserve","budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct","budgetMaxBurdenPct"',
+    '  "budgetSafetyReserve","budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"',
+    1
+)
+
+old_model = '''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
+  const available=Math.max(0,income-expenses-reserve);
+  const burdenPct=Math.min(1,Math.max(0,budgetVal("budgetMaxBurdenPct")/100));
+  const rateCap=Math.max(0,available*burdenPct);
+  const monthlyRate=rateCap;'''
+new_model = '''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
+  const available=Math.max(0,income-expenses-reserve);
+  const rateCap=available;
+  const monthlyRate=available;'''
+if old_model in s:
+    s = s.replace(old_model, new_model, 1)
+
+# There is no second hidden buffer anymore.
+s = s.replace(
+    '          <div class="budget-summary-row"><span>Verbleibender zusätzlicher Puffer</span><strong id="budgetAdditionalBuffer">–</strong></div>\n',
+    '',
+    1
+)
+
+# Remove legacy PDF line for the 75% budget-share input.
+s = s.replace('  line("Budgetanteil fuer Kreditrate",pdfPercent(budgetVal("budgetMaxBurdenPct")));\n','',1)
+
+# Automatic reserve suggestion: 10% of net income, minimum 300 EUR, until manually edited.
+s = s.replace(
+    'let budgetChildBenefitManual = false;\nlet budgetIncomeAutoUpdating = false;',
+    'let budgetChildBenefitManual = false;\nlet budgetSafetyReserveManual = false;\nlet budgetIncomeAutoUpdating = false;',
+    1
+)
+
+reserve_helper = '''function syncBudgetSafetyReserve(){
+  if(!$("budgetSafetyReserve") || budgetSafetyReserveManual) return;
+  const net=Math.max(0,budgetVal("budgetNetIncome"));
+  const suggested=Math.max(300,Math.round(net*0.10));
+  budgetAutoUpdating=true;
+  $("budgetSafetyReserve").value=String(suggested);
+  budgetAutoUpdating=false;
+}
+
+'''
+helper_anchor='function budgetVal(id){'
+if reserve_helper not in s and helper_anchor in s:
+    s=s.replace(helper_anchor,reserve_helper+helper_anchor,1)
+
+s = s.replace(
+    '  localStorage.setItem("ff_budget_childBenefitManual",budgetChildBenefitManual ? "1":"0");',
+    '  localStorage.setItem("ff_budget_childBenefitManual",budgetChildBenefitManual ? "1":"0");\n  localStorage.setItem("ff_budget_safetyReserveManual",budgetSafetyReserveManual ? "1":"0");',
+    1
+)
+
+s = s.replace(
+    '  budgetChildBenefitManual=localStorage.getItem("ff_budget_childBenefitManual")==="1";',
+    '  budgetChildBenefitManual=localStorage.getItem("ff_budget_childBenefitManual")==="1";\n  budgetSafetyReserveManual=localStorage.getItem("ff_budget_safetyReserveManual")==="1";',
+    1
+)
+
+s = s.replace(
+    '  syncBudgetSuggestions();\n}',
+    '  syncBudgetSuggestions();\n  syncBudgetSafetyReserve();\n}',
+    1
+)
+
+s = s.replace(
+    '  if(el.id==="budgetNetIncome" && !budgetIncomeAutoUpdating){\n    syncBudgetEmploymentFromNetIncome();\n  }',
+    '  if(el.id==="budgetNetIncome" && !budgetIncomeAutoUpdating){\n    syncBudgetEmploymentFromNetIncome();\n    syncBudgetSafetyReserve();\n  }\n\n  if(el.id==="budgetSafetyReserve" && !budgetAutoUpdating){\n    budgetSafetyReserveManual=true;\n    localStorage.setItem("ff_budget_safetyReserveManual","1");\n  }',
+    1
+)
+
+
 # Ensure the residual-debt explanatory note is neutral in the final HTML.
 residual_text = "Restschulden werden hier als Annuitätendarlehen mit konstanter Monatsrate und konstantem Zinssatz modelliert. Tatsächliche Konditionen, Zinsbindungen und Anschlussfinanzierungen können abweichen."
 residual_plain = '<div class="budget-note">\n          ' + residual_text
@@ -123,7 +222,7 @@ residual_neutral = '<div class="budget-note neutral-note">\n          ' + residu
 if residual_plain in s:
     s = s.replace(residual_plain, residual_neutral, 1)
 
-# V8.171: Budget UI refinements.
+# V8.172: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
     '<h2>3. Annahme zur möglichen Finanzierung</h2>',
@@ -144,7 +243,7 @@ replace_once(
     "mobile plus-row width"
 )
 
-# V8.171: Default location for Fix & Flip and Eigennutzung.
+# V8.172: Default location for Fix & Flip and Eigennutzung.
 replace_once(
     'stateEl.value="Schleswig-Holstein";',
     'stateEl.value="Hamburg";',
@@ -157,4 +256,4 @@ replace_once(
 )
 
 path.write_text(s, encoding="utf-8")
-print("V8.171 budget UI patch applied")
+print("V8.172 budget UI patch applied")
