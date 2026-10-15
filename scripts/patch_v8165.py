@@ -261,7 +261,7 @@ replace_once(
 )
 
 
-# V8.177: Consistent interest / repayment logic.
+# V8.178: Consistent interest / repayment logic.
 # Standard initial repayment is 1.5% in both financing calculators.
 s = s.replace(
     '<input id="repayment" inputmode="decimal" value="2">',
@@ -307,7 +307,7 @@ annuity_helper = '''function annuityProjection(debt, annualInterestRate, initial
 annuity_anchor='function calculateFlipTargetSale(){'
 if annuity_helper not in s:
     if annuity_anchor not in s:
-        raise SystemExit("V8.177 annuity helper anchor not found")
+        raise SystemExit("V8.178 annuity helper anchor not found")
     s=s.replace(annuity_anchor,annuity_helper+annuity_anchor,1)
 
 old_target_interest = '''  const monthlyInterest = debt * Math.max(0, pct("interest")) / 12;
@@ -320,7 +320,7 @@ new_target_interest = '''  const financingProjection = annuityProjection(
   );
   const interest = financingProjection.totalInterest;'''
 if old_target_interest not in s:
-    raise SystemExit("V8.177 target interest block not found")
+    raise SystemExit("V8.178 target interest block not found")
 s=s.replace(old_target_interest,new_target_interest,1)
 
 old_model_finance = '''  const monthlyInterestRate = Math.max(0, pct("interest") / 12);
@@ -339,13 +339,13 @@ new_model_finance = '''  const financingProjection = annuityProjection(
   const interest = financingProjection.totalInterest;
   const repayment = financingProjection.totalRepayment;'''
 if old_model_finance not in s:
-    raise SystemExit("V8.177 model finance block not found")
+    raise SystemExit("V8.178 model finance block not found")
 s=s.replace(old_model_finance,new_model_finance,1)
 
 old_int_factor = '  const intFactor = pct("interest")*(months/12);'
 new_int_factor = '  const intFactor = annuityProjection(1,Math.max(0,pct("interest")),Math.max(0,pct("repayment")),months).totalInterest;'
 if old_int_factor not in s:
-    raise SystemExit("V8.177 max-buy interest factor not found")
+    raise SystemExit("V8.178 max-buy interest factor not found")
 s=s.replace(old_int_factor,new_int_factor,1)
 
 # Update explanatory texts to match the annuity calculation.
@@ -371,7 +371,7 @@ s=s.replace(
 )
 
 # Fresh-session interest reference from Deutsche Bundesbank, with an offline fallback.
-# V8.177 migration: old saved values are not treated as intentional manual overrides.
+# V8.178 migration: old saved values are not treated as intentional manual overrides.
 # Only values changed by the user from this version onward are protected.
 reference_interest_js = '''const REFERENCE_INTEREST_FALLBACK = 4.0;
 const REFERENCE_INTEREST_URL = "https://api.statistiken.bundesbank.de/rest/data/BBIM1/M.DE.B.A2C.A.R.A.2250.EUR.N?format=csv&lang=de";
@@ -454,13 +454,20 @@ async function initializeReferenceInterest(){
 reference_anchor='function saveBudget(){'
 if reference_interest_js not in s:
     if reference_anchor not in s:
-        raise SystemExit("V8.177 reference interest anchor not found")
+        raise SystemExit("V8.178 reference interest anchor not found")
     s=s.replace(reference_anchor,reference_interest_js+reference_anchor,1)
 
 init_anchor='setDealType(savedDealType, false);'
 if init_anchor not in s:
-    raise SystemExit("V8.177 init anchor not found")
+    raise SystemExit("V8.178 init anchor not found")
 s=s.replace(init_anchor,init_anchor+chr(10)+'initializeReferenceInterest();',1)
 
-# V8.177: Sanierungsfeld 5 px breiter; Plus-Button rechts bündig.\nreno_css_old = '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:8px;width:100%}\\\\n.reno-input-row .input-wrap{min-width:0;width:100%}\\\\n@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}'\nreno_css_new = '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}\\\\n.reno-input-row .input-wrap{min-width:0;width:100%}\\\\n.reno-input-row .plus-btn{justify-self:end}\\\\n@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}'\nif reno_css_old not in s:\n    raise SystemExit("V8.177 renovation layout anchor not found")\ns=s.replace(reno_css_old, reno_css_new, 1)\n\npath.write_text(s, encoding="utf-8")
-print("V8.177 interest and repayment patch applied")
+# V8.178: Sanierungsfeld 5 px breiter; Plus-Button rechts bündig.
+reno_css_old = '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:8px;width:100%}\\n.reno-input-row .input-wrap{min-width:0;width:100%}\\n@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}'
+reno_css_new = '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}\\n.reno-input-row .input-wrap{min-width:0;width:100%}\\n.reno-input-row .plus-btn{justify-self:end}\\n@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}'
+if reno_css_old not in s:
+    raise SystemExit("V8.178 renovation layout anchor not found")
+s=s.replace(reno_css_old, reno_css_new, 1)
+
+path.write_text(s, encoding="utf-8")
+print("V8.178 interest and repayment patch applied")
