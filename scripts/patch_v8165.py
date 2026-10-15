@@ -126,7 +126,7 @@ if residual_plain in s:
 # V8.169: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
-    '<h2>3. Annahme zu deiner möglichen Immobilie</h2>',
+    '<h2>3. Annahme zur möglichen Finanzierung</h2>',
     "assumptions title"
 )
 
