@@ -21,6 +21,25 @@ replace_once(
     "assumptions CSS"
 )
 
+# V8.169: Neutral style for the residual-debt explanatory note.
+replace_once(
+    '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}',
+    '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}\\n'
+    '.budget-note.neutral-note{background:#f8fafc;border-color:#d8dee8;color:#5f6b7a}',
+    "neutral note CSS"
+)
+
+replace_once(
+    '        <div class="budget-note">\\n'
+    '          Restschulden werden hier als Annuitätendarlehen mit konstanter Monatsrate und konstantem Zinssatz modelliert. Tatsächliche Konditionen, Zinsbindungen und Anschlussfinanzierungen können abweichen.\\n'
+    '        </div>',
+    '        <div class="budget-note neutral-note">\\n'
+    '          Restschulden werden hier als Annuitätendarlehen mit konstanter Monatsrate und konstantem Zinssatz modelliert. Tatsächliche Konditionen, Zinsbindungen und Anschlussfinanzierungen können abweichen.\\n'
+    '        </div>',
+    "neutral residual debt note"
+)
+
+
 old_head = '''      <section class="card">
         <h2>3. Weitere Annahmen</h2>
         <div class="budget-grid three">'''
@@ -84,10 +103,10 @@ toggle_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection"))
 replace_once(marker, toggle_js + marker, "assumptions toggle JS")
 
 path.write_text(s, encoding="utf-8")
-print("V8.168 budget UI patch applied")
+print("V8.169 budget UI patch applied")
 
 
-# V8.168: Budget UI refinements.
+# V8.169: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
     '<h2>3. Annahme zur möglichen Immobilie</h2>',
@@ -108,7 +127,7 @@ replace_once(
     "mobile plus-row width"
 )
 
-# V8.168: Default location for Fix & Flip and Eigennutzung.
+# V8.169: Default location for Fix & Flip and Eigennutzung.
 replace_once(
     'stateEl.value="Schleswig-Holstein";',
     'stateEl.value="Hamburg";',
