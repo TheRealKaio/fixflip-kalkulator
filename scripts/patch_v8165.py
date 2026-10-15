@@ -421,7 +421,7 @@ async function initializeReferenceInterest(){
 }
 
 '''
-reference_anchor='function save(){'
+reference_anchor='function saveBudget(){'
 if reference_interest_js not in s:
     if reference_anchor not in s:
         raise SystemExit("V8.174 reference interest anchor not found")
