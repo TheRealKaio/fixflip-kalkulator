@@ -235,7 +235,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.193: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.194: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -590,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.193: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.194: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -713,7 +713,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.193: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.194: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -827,7 +827,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.193");
+  drawPdfFooter(doc,1,1,"V8.194");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -913,13 +913,13 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.193");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.194");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 
-# V8.193: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+# V8.194: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
 s=s.replace(
     '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
     '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
@@ -1073,7 +1073,70 @@ $("recalc").addEventListener("click",()=>{
   }
 });'''
 
-replace_once(old_recalc_handler, new_recalc_handler, "V8.193 recalc reset handler")
+replace_once(old_recalc_handler, new_recalc_handler, "V8.194 recalc reset handler")
+
+
+# V8.194: Eigennutzung - feste Initial-/Reset-Standardwerte.
+own_defaults_helper = '''function applyOwnUseStandardValues(){
+  const ownDefaults={
+    purchase:"0",
+    area:"0",
+    months:"60",
+    ltv:"100.00",
+    ownEquityInput:"0",
+    buyBroker:"0",
+    buffer:"5",
+    holding:"0",
+    sellBroker:"0",
+    otherSaleCosts:"0"
+  };
+
+  Object.entries(ownDefaults).forEach(([id,value])=>{
+    const el=$(id);
+    if(el) el.value=value;
+  });
+  if($("financeAcquisition")) $("financeAcquisition").checked=true;
+
+  ["purchase","area","ltv","buyBroker","buffer","holding","sellBroker","otherSaleCosts"].forEach(id=>{
+    localStorage.setItem("ff_"+id,ownDefaults[id]);
+  });
+  localStorage.setItem("ff_own_months","60");
+  localStorage.setItem("ff_own_equity_input","0");
+  localStorage.setItem("ff_financeAcquisition","1");
+}'''
+
+if own_defaults_helper not in s:
+    target = 'function resetDealCalculatorToDefaults(){'
+    if target not in s:
+        raise SystemExit("V8.194 own defaults reset anchor not found")
+    s = s.replace(target, own_defaults_helper + '\n\n' + target, 1)
+
+own_switch_old = '''      zeroOwnUseGoals();
+      restoreModeMonths(true);
+      restoreModeEquity(true);'''
+own_switch_new = '''      zeroOwnUseGoals();
+      restoreModeMonths(true);
+      restoreModeEquity(true);
+      if(localStorage.getItem("ff_own_defaults_v8194")!=="1"){
+        applyOwnUseStandardValues();
+        localStorage.setItem("ff_own_defaults_v8194","1");
+      }'''
+if own_switch_old not in s:
+    raise SystemExit("V8.194 own setDealType anchor not found")
+s = s.replace(own_switch_old, own_switch_new, 1)
+
+own_reset_old = '''  stateEl.value="Hamburg";
+  comp1ManualOverride=false;'''
+own_reset_new = '''  if(mode==="own"){
+    applyOwnUseStandardValues();
+    localStorage.setItem("ff_own_defaults_v8194","1");
+  }
+
+  stateEl.value="Hamburg";
+  comp1ManualOverride=false;'''
+if own_reset_old not in s:
+    raise SystemExit("V8.194 own reset injection anchor not found")
+s = s.replace(own_reset_old, own_reset_new, 1)
 
 path.write_text(s, encoding="utf-8")
-print("V8.193 interest and repayment patch applied")
+print("V8.194 interest and repayment patch applied")
