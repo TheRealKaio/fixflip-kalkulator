@@ -265,12 +265,12 @@ replace_once(
 # Standard initial repayment is 1.5% in both financing calculators.
 s = s.replace(
     '<input id="repayment" inputmode="decimal" value="2">',
-    '<input id="repayment" inputmode="decimal" value="1.5">',
+    '<input id="repayment" inputmode="decimal" value="1.50">',
     1
 )
 s = s.replace(
     '<input id="budgetRepayment" inputmode="decimal" value="2">',
-    '<input id="budgetRepayment" inputmode="decimal" value="1.5">',
+    '<input id="budgetRepayment" inputmode="decimal" value="1.50">',
     1
 )
 
@@ -424,10 +424,10 @@ function installFinancingManualOverrideTracking(){
 
 function initializeRepaymentDefaults(){
   if(localStorage.getItem("ff_repayment_manual")!=="1" && $("repayment")){
-    $("repayment").value=String(DEFAULT_REPAYMENT_RATE);
+    $("repayment").value=Number(DEFAULT_REPAYMENT_RATE).toFixed(2);
   }
   if(localStorage.getItem("ff_budget_repayment_manual")!=="1" && $("budgetRepayment")){
-    $("budgetRepayment").value=String(DEFAULT_REPAYMENT_RATE);
+    $("budgetRepayment").value=Number(DEFAULT_REPAYMENT_RATE).toFixed(2);
   }
 }
 
@@ -554,7 +554,7 @@ new_budget_values = '''  const maxLoan = pdfMoney(m.loan);
   const freeBudget = pdfMoney(m.available);
   const equity = pdfMoney(m.equity);
   const interest = new Intl.NumberFormat("de-DE",{minimumFractionDigits:1,maximumFractionDigits:2}).format(m.interestPct*100) + " %";
-  const repayment = new Intl.NumberFormat("de-DE",{minimumFractionDigits:1,maximumFractionDigits:2}).format(m.repaymentPct*100) + " %";'''
+  const repayment = new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(m.repaymentPct*100) + " %";'''
 if old_budget_values in s:
     s=s.replace(old_budget_values,new_budget_values,1)
 
@@ -589,7 +589,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.186: Two-decimal interest display and consistent 7-line recommendation boxes.
+# V8.187: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -602,21 +602,24 @@ s=s.replace(
     1
 )
 
-# Keep the two interest input fields visually normalized to two decimals after load and editing.
-interest_format_js = '''function formatInterestField(id){
+# Keep all interest and repayment input fields visually normalized to two decimals after load and editing.
+interest_format_js = '''function formatFinancingRateField(id){
   const el=document.getElementById(id);
   if(!el) return;
   const n=parseLocalizedNumber(el.value,true);
   if(Number.isFinite(n)) el.value=n.toFixed(2);
 }
-["interest","budgetInterest"].forEach(id=>{
+["interest","budgetInterest","repayment","budgetRepayment"].forEach(id=>{
   const el=document.getElementById(id);
-  if(!el || el.dataset.twoDecimalInterest==="1") return;
-  el.dataset.twoDecimalInterest="1";
-  el.addEventListener("blur",()=>formatInterestField(id));
+  if(!el || el.dataset.twoDecimalRate==="1") return;
+  el.dataset.twoDecimalRate="1";
+  el.addEventListener("blur",()=>formatFinancingRateField(id));
+  el.addEventListener("change",()=>formatFinancingRateField(id));
 });
-formatInterestField("interest");
-formatInterestField("budgetInterest");
+formatFinancingRateField("interest");
+formatFinancingRateField("budgetInterest");
+formatFinancingRateField("repayment");
+formatFinancingRateField("budgetRepayment");
 
 '''
 interest_anchor='function saveBudget(){'
@@ -703,9 +706,9 @@ s=s.replace(
     1
 )
 
-# Budget recommendation box: same ~7-line height and top alignment; add a little more breathing room before the next heading.
-s=s.replace('  const recommendationH=29;','  const recommendationH=34;',1)
-s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 8;',1)
+# Budget recommendation box: compact ~5-line height; freed space is available to the following content.
+s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
+s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 5;',1)
 
 # V8.186: Budget household labels and expanded two-page Budget PDF.
 replace_once(
