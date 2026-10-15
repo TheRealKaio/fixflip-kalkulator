@@ -260,5 +260,177 @@ replace_once(
     "default market location Hamburg"
 )
 
+
+# V8.174: Consistent interest / repayment logic.
+# Standard initial repayment is 1.5% in both financing calculators.
+s = s.replace(
+    '<input id="repayment" inputmode="decimal" value="2">',
+    '<input id="repayment" inputmode="decimal" value="1.5">',
+    1
+)
+s = s.replace(
+    '<input id="budgetRepayment" inputmode="decimal" value="2">',
+    '<input id="budgetRepayment" inputmode="decimal" value="1.5">',
+    1
+)
+
+# Shared annuity projection: the monthly payment is fixed at the initial
+# interest + repayment rate, while interest is charged on the remaining debt.
+annuity_helper = '''function annuityProjection(debt, annualInterestRate, initialRepaymentRate, months){
+  const principal=Math.max(0,Number(debt)||0);
+  const annualInterest=Math.max(0,Number(annualInterestRate)||0);
+  const annualRepayment=Math.max(0,Number(initialRepaymentRate)||0);
+  const monthCount=Math.max(0,Math.round(Number(months)||0));
+  const monthlyRate=annualInterest/12;
+  const monthlyAnnuity=principal*(annualInterest+annualRepayment)/12;
+  let balance=principal;
+  let totalInterest=0;
+  let totalRepayment=0;
+  for(let i=0;i<monthCount && balance>0.005;i++){
+    const interestMonth=balance*monthlyRate;
+    const repaymentMonth=Math.min(balance,Math.max(0,monthlyAnnuity-interestMonth));
+    totalInterest+=interestMonth;
+    totalRepayment+=repaymentMonth;
+    balance=Math.max(0,balance-repaymentMonth);
+  }
+  return {
+    monthlyAnnuity,
+    initialInterest:principal*monthlyRate,
+    initialRepayment:principal*annualRepayment/12,
+    totalInterest,
+    totalRepayment,
+    remainingDebt:balance
+  };
+}
+
+'''
+annuity_anchor='function calculateFlipTargetSale(){'
+if annuity_helper not in s:
+    if annuity_anchor not in s:
+        raise SystemExit("V8.174 annuity helper anchor not found")
+    s=s.replace(annuity_anchor,annuity_helper+annuity_anchor,1)
+
+old_target_interest = '''  const monthlyInterest = debt * Math.max(0, pct("interest")) / 12;
+  const interest = monthlyInterest * months;'''
+new_target_interest = '''  const financingProjection = annuityProjection(
+    debt,
+    Math.max(0,pct("interest")),
+    Math.max(0,pct("repayment")),
+    months
+  );
+  const interest = financingProjection.totalInterest;'''
+if old_target_interest not in s:
+    raise SystemExit("V8.174 target interest block not found")
+s=s.replace(old_target_interest,new_target_interest,1)
+
+old_model_finance = '''  const monthlyInterestRate = Math.max(0, pct("interest") / 12);
+  const monthlyPayment = debt * monthlyInterestRate;
+  const interest = monthlyPayment * Math.max(0, months);
+  const monthlyRepayment = debt * Math.max(0, pct("repayment")) / 12;
+  const repayment = Math.min(debt, monthlyRepayment * Math.max(0, months));'''
+new_model_finance = '''  const financingProjection = annuityProjection(
+    debt,
+    Math.max(0,pct("interest")),
+    Math.max(0,pct("repayment")),
+    months
+  );
+  const monthlyPayment = financingProjection.initialInterest;
+  const monthlyRepayment = financingProjection.initialRepayment;
+  const interest = financingProjection.totalInterest;
+  const repayment = financingProjection.totalRepayment;'''
+if old_model_finance not in s:
+    raise SystemExit("V8.174 model finance block not found")
+s=s.replace(old_model_finance,new_model_finance,1)
+
+old_int_factor = '  const intFactor = pct("interest")*(months/12);'
+new_int_factor = '  const intFactor = annuityProjection(1,Math.max(0,pct("interest")),Math.max(0,pct("repayment")),months).totalInterest;'
+if old_int_factor not in s:
+    raise SystemExit("V8.174 max-buy interest factor not found")
+s=s.replace(old_int_factor,new_int_factor,1)
+
+# Update explanatory texts to match the annuity calculation.
+s=s.replace(
+    'Im Rechner gilt vereinfacht: Monatliche Zinsbelastung = Kreditsumme × Zins p.a. ÷ 12. Beispiel: 200.000 EUR Kredit bei 6 % Zins ergeben 1.000 EUR Zinsen pro Monat.',
+    'Die anfängliche Monatsrate ergibt sich aus Zins plus anfänglicher Tilgung. Der Zinsanteil wird danach monatlich auf die verbleibende Restschuld berechnet und sinkt mit fortschreitender Tilgung.',
+    1
+)
+s=s.replace(
+    'Der Rechner arbeitet mit einer vereinfachten konstanten Zinsbelastung auf Basis der angesetzten Kreditsumme. Ein echter Darlehensverlauf kann durch sinkende Restschuld, Zinsbindung, Sondertilgungen oder bankindividuelle Bedingungen abweichen.',
+    'Der Rechner modelliert eine Annuität mit konstantem Zinssatz und konstanter Monatsrate. Sondertilgungen, Zinswechsel und bankindividuelle Bedingungen sind nicht enthalten.',
+    1
+)
+s=s.replace(
+    'Im Rechner gilt vereinfacht: Monatliche Tilgung = Kreditsumme × Tilgung p.a. ÷ 12. Beispiel: 200.000 EUR Kredit bei 2 % Tilgung ergeben rund 333 EUR Tilgung pro Monat.',
+    'Die eingestellte Tilgung ist die anfängliche Tilgung. Mit sinkender Restschuld fällt der Zinsanteil der konstanten Rate, sodass der Tilgungsanteil im Zeitverlauf steigt.',
+    1
+)
+s=s.replace(
+    'Die Tilgung wird im Rechner linear auf Basis der angesetzten Kreditsumme berechnet. Bei einer echten Annuitätenfinanzierung verändert sich das Verhältnis von Zins und Tilgung im Zeitverlauf, weil die Restschuld sinkt.',
+    'Die Berechnung folgt einer Annuitätenlogik: konstante Monatsrate bei konstantem Zinssatz, mit sinkendem Zinsanteil und steigendem Tilgungsanteil.',
+    1
+)
+
+# Fresh-session interest reference from Deutsche Bundesbank, with an offline fallback.
+reference_interest_js = '''const REFERENCE_INTEREST_FALLBACK = 4.0;
+const REFERENCE_INTEREST_URL = "https://api.statistiken.bundesbank.de/rest/data/BBIM1/M.DE.B.A2C.A.R.A.2250.EUR.N?format=csv&lang=de";
+
+function parseBundesbankInterestCsv(csvText){
+  const lines=String(csvText||"").split(/\\\\r?\\\\n/).filter(Boolean);
+  for(let i=lines.length-1;i>=0;i--){
+    const cells=lines[i].split(";").map(v=>v.replace(/^"|"$/g,"").trim());
+    for(let j=cells.length-1;j>=0;j--){
+      const value=Number(cells[j].replace(",","."));
+      if(Number.isFinite(value) && value>0 && value<20) return value;
+    }
+  }
+  throw new Error("Kein gueltiger Zinswert in der Bundesbank-Antwort");
+}
+
+async function fetchReferenceInterest(){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),4500);
+  try{
+    const response=await fetch(REFERENCE_INTEREST_URL,{
+      signal:controller.signal,
+      cache:"no-store",
+      headers:{"Accept":"text/csv"}
+    });
+    if(!response.ok) throw new Error("Bundesbank HTTP "+response.status);
+    return parseBundesbankInterestCsv(await response.text());
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+async function initializeReferenceInterest(){
+  const mainSaved=localStorage.getItem("ff_interest")!==null;
+  const budgetSaved=localStorage.getItem("ff_budget_budgetInterest")!==null;
+  if(mainSaved && budgetSaved) return;
+  let rate=REFERENCE_INTEREST_FALLBACK;
+  try{
+    rate=await fetchReferenceInterest();
+    localStorage.setItem("ff_reference_interest_source","Bundesbank");
+    localStorage.setItem("ff_reference_interest_updated",new Date().toISOString());
+  }catch(err){
+    localStorage.setItem("ff_reference_interest_source","Fallback");
+  }
+  const value=(Math.round(rate*100)/100).toFixed(2);
+  if(!mainSaved && $("interest")) $("interest").value=value;
+  if(!budgetSaved && $("budgetInterest")) $("budgetInterest").value=value;
+  render();
+}
+
+'''
+reference_anchor='function save(){'
+if reference_interest_js not in s:
+    if reference_anchor not in s:
+        raise SystemExit("V8.174 reference interest anchor not found")
+    s=s.replace(reference_anchor,reference_interest_js+reference_anchor,1)
+
+init_anchor='setDealType(savedDealType, false);'
+if init_anchor not in s:
+    raise SystemExit("V8.174 init anchor not found")
+s=s.replace(init_anchor,init_anchor+'\\ninitializeReferenceInterest();',1)
+
 path.write_text(s, encoding="utf-8")
-print("V8.173 mobile UI patch applied")
+print("V8.174 interest and repayment patch applied")
