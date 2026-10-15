@@ -65,6 +65,26 @@ jobs:
                   raise SystemExit(f"Default target not found: {old}")
               s = s.replace(old,new,1)
 
+          old_sale_layout = '''        <div class="sale-cost-grid">
+          <div class="field"><label>Makler beim Verkauf</label><div class="input-wrap"><input id="sellBroker" inputmode="decimal" value="3.57"><span class="unit">%</span></div></div>
+          <div class="field"><label>Weitere Kosten bei Verkauf</label><div class="input-wrap"><input id="otherSaleCosts" inputmode="decimal" value="0"><span class="unit">€</span></div></div>
+          <div class="field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="buffer" inputmode="decimal" value="15"><span class="unit">%</span></div></div>
+        </div>
+
+        <div class="field"><label>Laufende Kosten pro Monat <span class="hint">WEG, Energie, Versicherung etc.</span></label><div class="input-wrap"><input id="holding" inputmode="decimal" value="740"><span class="unit">€</span></div></div>'''
+          new_sale_layout = '''        <div class="field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="buffer" inputmode="decimal" value="15"><span class="unit">%</span></div></div>
+
+        <div class="field"><label>Laufende Kosten pro Monat</label><div class="input-wrap"><input id="holding" inputmode="decimal" value="740"><span class="unit">€</span></div><div class="mini">WEG, Energie, Versicherung etc.</div></div>
+
+        <div class="sale-cost-grid">
+          <div class="field"><label>Makler beim Verkauf</label><div class="input-wrap"><input id="sellBroker" inputmode="decimal" value="3.57"><span class="unit">%</span></div></div>
+          <div class="field"><label>Weitere Kosten bei Verkauf</label><div class="input-wrap"><input id="otherSaleCosts" inputmode="decimal" value="0"><span class="unit">€</span></div></div>
+        </div>'''
+          if old_sale_layout not in s:
+              raise SystemExit("Sale cost layout target not found")
+          s = s.replace(old_sale_layout,new_sale_layout,1)
+          s = s.replace('.sale-cost-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}', '.sale-cost-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}', 1)
+
           brand_css = '.brand{font-weight:800;letter-spacing:-.02em;font-size:20px}'
           brand_css_new = brand_css + '\n.brand-logo-wrap{display:flex;align-items:center;background:#fff;border-radius:13px;padding:6px 9px;box-shadow:0 5px 16px rgba(0,0,0,.12)}\n.brand-logo{display:block;width:190px;max-width:46vw;height:auto}\n@media(max-width:430px){.brand-logo{width:172px;max-width:50vw}.brand-logo-wrap{padding:5px 8px}.hero-top{gap:10px}.tag{font-size:11px;padding:6px 9px}}'
           if brand_css in s:
@@ -175,6 +195,7 @@ jobs:
             doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(100,110,125);
             doc.text("Orientierungsrechnung - keine Finanzierungszusage",left,y); y+=8;'''
           new_budget_title = '''  drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Wie viel Immobilie kann ich mir leisten?",new Date().toLocaleDateString("de-DE"));
+            const contentW=right-left;
 
             const budgetPdfNorm = (value) => String(value ?? "").replace(/\\s+/g," ").trim();
             const budgetPdfFieldValue = (labelPart) => {
@@ -270,7 +291,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.180");',1)
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.181");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -312,7 +333,7 @@ jobs:
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer in s:
-              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.180");',1)
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.181");',1)
 
           old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
             addPage();
@@ -365,34 +386,34 @@ jobs:
           footer_loop_old = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.180");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.181");',
               '  }'
           ])
           footer_loop_new = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
               '    drawPdfBrandLogo(doc);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.180");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.181");',
               '  }'
           ])
           if footer_loop_old in s:
               s = s.replace(footer_loop_old, footer_loop_new, 1)
 
-          s = s.replace("V8.152","V8.180")
+          s = s.replace("V8.152","V8.181")
           final_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.180");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.181");
           }'''
           final_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
             // Abschluss-Pass: Logo auf jeder Seite nochmals zeichnen, insbesondere Seite 1.
             drawPdfBrandLogo(doc);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.180");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.181");
           }'''
           if final_loop_old in s:
               s = s.replace(final_loop_old,final_loop_new,1)
           s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.180", {updateViaCache:"none"})')
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.181", {updateViaCache:"none"})')
 
           p.write_text(s,encoding="utf-8")
           PY
@@ -407,11 +428,11 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.180": "V8.180" in index,
-              "service-worker registration 8.180": 'service-worker.js?v=8.180' in index,
+              "visible/PDF version V8.181": "V8.181" in index,
+              "service-worker registration 8.181": 'service-worker.js?v=8.181' in index,
               "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
               "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
-              "service-worker cache version 8.180": "neustart-immocheck-v8.180" in sw,
+              "service-worker cache version 8.181": "neustart-immocheck-v8.181" in sw,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
