@@ -470,6 +470,47 @@ if reno_css_old not in s:
 s=s.replace(reno_css_old, reno_css_new, 1)
 
 
+# V8.181: Budget PDF runtime fix and financing/sale-cost layout.
+if 'const recommendationLines = doc.splitTextToSize(pdfSafeText(recommendation),contentW-10);' in s and 'const contentW=right-left;' not in s:
+    s=s.replace(
+        '  drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Wie viel Immobilie kann ich mir leisten?",new Date().toLocaleDateString("de-DE"));\n\n  const budgetPdfNorm',
+        '  drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Wie viel Immobilie kann ich mir leisten?",new Date().toLocaleDateString("de-DE"));\n  const contentW=right-left;\n\n  const budgetPdfNorm',
+        1
+    )
+
+old_sale_layout = '''        <div class="sale-cost-grid">
+          <div class="field"><label>Makler beim Verkauf</label><div class="input-wrap"><input id="sellBroker" inputmode="decimal" value="3.57"><span class="unit">%</span></div></div>
+          <div class="field"><label>Weitere Kosten bei Verkauf</label><div class="input-wrap"><input id="otherSaleCosts" inputmode="decimal" value="0"><span class="unit">€</span></div></div>
+          <div class="field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="buffer" inputmode="decimal" value="15"><span class="unit">%</span></div></div>
+        </div>
+
+        <div class="field"><label>Laufende Kosten pro Monat <span class="hint">WEG, Energie, Versicherung etc.</span></label><div class="input-wrap"><input id="holding" inputmode="decimal" value="740"><span class="unit">€</span></div></div>'''
+new_sale_layout = '''        <div class="field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="buffer" inputmode="decimal" value="15"><span class="unit">%</span></div></div>
+
+        <div class="field"><label>Laufende Kosten pro Monat</label><div class="input-wrap"><input id="holding" inputmode="decimal" value="740"><span class="unit">€</span></div><div class="mini">WEG, Energie, Versicherung etc.</div></div>
+
+        <div class="sale-cost-grid">
+          <div class="field"><label>Makler beim Verkauf</label><div class="input-wrap"><input id="sellBroker" inputmode="decimal" value="3.57"><span class="unit">%</span></div></div>
+          <div class="field"><label>Weitere Kosten bei Verkauf</label><div class="input-wrap"><input id="otherSaleCosts" inputmode="decimal" value="0"><span class="unit">€</span></div></div>
+        </div>'''
+if old_sale_layout in s:
+    s=s.replace(old_sale_layout,new_sale_layout,1)
+
+s=s.replace(
+    '.sale-cost-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+    '.sale-cost-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}',
+    1
+)
+
+s=s.replace(
+    'Das PDF konnte nicht direkt geteilt werden. Bitte pruefe deine Internetverbindung oder versuche es erneut.',
+    'Das PDF konnte nicht erstellt oder geteilt werden. Bitte versuche es erneut.'
+)
+s=s.replace(
+    'Das PDF konnte nicht gespeichert werden. Bitte pruefe deine Internetverbindung oder versuche es erneut.',
+    'Das PDF konnte nicht erstellt oder gespeichert werden. Bitte versuche es erneut.'
+)
+
 # V8.181: Budget household labels and expanded two-page Budget PDF.
 replace_once(
     '<p class="sub">Grundlage ist dein tatsächlich verfügbares Haushaltsnettoeinkommen. Steuerklasse ist deshalb nicht erforderlich.</p>',
