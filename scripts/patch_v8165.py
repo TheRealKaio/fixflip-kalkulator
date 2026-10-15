@@ -84,10 +84,31 @@ toggle_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection"))
 replace_once(marker, toggle_js + marker, "assumptions toggle JS")
 
 path.write_text(s, encoding="utf-8")
-print("V8.165 budget UI patch applied")
+print("V8.167 budget UI patch applied")
 
 
-# V8.166: Default location for Fix & Flip and Eigennutzung.
+# V8.167: Budget UI refinements.
+replace_once(
+    '<h2>3. Weitere Annahmen</h2>',
+    '<h2>3. Annahme zur möglichen Immobilie</h2>',
+    "assumptions title"
+)
+
+replace_once(
+    '<div class="budget-result-card"><div class="name">Max. Darlehen</div><div class="value" id="budgetLoan">–</div><div class="note">aus maximal tragbarer Rate, Zins und Tilgung</div></div>',
+    '<div class="budget-result-card max-property-highlight"><div class="name">Max. Darlehen</div><div class="value" id="budgetLoan">–</div><div class="note">aus maximal tragbarer Rate, Zins und Tilgung</div></div>',
+    "max loan highlight"
+)
+
+replace_once(
+    '.reno-input-row{display:grid;grid-template-columns:1fr 56px;gap:9px}',
+    '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:9px;width:100%}\\n'
+    '.reno-input-row .input-wrap{min-width:0;width:100%}\\n'
+    '@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 50px;gap:8px;width:100%}}',
+    "mobile plus-row width"
+)
+
+# V8.167: Default location for Fix & Flip and Eigennutzung.
 replace_once(
     'stateEl.value="Schleswig-Holstein";',
     'stateEl.value="Hamburg";',
