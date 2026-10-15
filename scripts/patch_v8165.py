@@ -90,6 +90,13 @@ new_render = '''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyR
       budgetRateStatus = budgetRatePct <= 30 ? "komfortabel" : (budgetRatePct <= 35 ? "solide" : "erhöhte Belastung");
     }
     $("budgetRateGuidance").textContent = "Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung." + (budgetRateStatus ? " Aktuelle Einordnung: " + budgetRateStatus + "." : "");
+  }
+  if($("budgetRateRow")){
+    const row = $("budgetRateRow");
+    row.classList.remove("rate-status-green","rate-status-yellow","rate-status-red");
+    if(m.net > 0){
+      row.classList.add(budgetRatePct <= 30 ? "rate-status-green" : (budgetRatePct <= 35 ? "rate-status-yellow" : "rate-status-red"));
+    }
   }'''
 replace_once(old_render, new_render, "rate render")
 
@@ -108,14 +115,18 @@ toggle_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection"))
 '''
 replace_once(marker, toggle_js + marker, "assumptions toggle JS")
 
-path.write_text(s, encoding="utf-8")
-print("V8.169 budget UI patch applied")
 
+# Ensure the residual-debt explanatory note is neutral in the final HTML.
+residual_text = "Restschulden werden hier als Annuitätendarlehen mit konstanter Monatsrate und konstantem Zinssatz modelliert. Tatsächliche Konditionen, Zinsbindungen und Anschlussfinanzierungen können abweichen."
+residual_plain = '<div class="budget-note">\n          ' + residual_text
+residual_neutral = '<div class="budget-note neutral-note">\n          ' + residual_text
+if residual_plain in s:
+    s = s.replace(residual_plain, residual_neutral, 1)
 
 # V8.169: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
-    '<h2>3. Annahme zur möglichen Immobilie</h2>',
+    '<h2>3. Annahme zu deiner möglichen Immobilie</h2>',
     "assumptions title"
 )
 
@@ -144,3 +155,6 @@ replace_once(
     '<input id="marketLocation" inputmode="text" value="20095 Hamburg" placeholder="z. B. 20095 Hamburg">',
     "default market location Hamburg"
 )
+
+path.write_text(s, encoding="utf-8")
+print("V8.169 budget UI patch applied")
