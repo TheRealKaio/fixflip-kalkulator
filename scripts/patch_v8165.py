@@ -782,7 +782,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.186");
+  drawPdfFooter(doc,1,1,"V8.187");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -868,10 +868,10 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.186");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.187");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 path.write_text(s, encoding="utf-8")
-print("V8.186 interest and repayment patch applied")
+print("V8.187 interest and repayment patch applied")
