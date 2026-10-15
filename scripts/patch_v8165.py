@@ -235,7 +235,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.190: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.191: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -590,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.190: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.191: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -713,7 +713,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.190: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.191: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -827,7 +827,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.190");
+  drawPdfFooter(doc,1,1,"V8.191");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -913,10 +913,155 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.190");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.191");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
+
+# V8.191: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+s=s.replace(
+    '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
+    '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
+    1
+)
+s=s.replace(
+    '<button class="market-check-toggle" id="marketCheckToggle" type="button" aria-expanded="true" aria-label="Kaufpreis-Check ein- oder ausklappen">−</button>',
+    '<button class="market-check-toggle" id="marketCheckToggle" type="button" aria-expanded="false" aria-label="Kaufpreis-Check ein- oder ausklappen">+</button>',
+    1
+)
+
+s=s.replace(
+    '.bottom-primary{background:#93C572;color:#ffffff;box-shadow:0 8px 20px rgba(147,197,114,.28)}',
+    '.bottom-primary{background:#dc2626;color:#ffffff;box-shadow:0 8px 20px rgba(220,38,38,.28)}',
+    1
+)
+
+old_recalc_handler = '''$("recalc").addEventListener("click",()=>{
+  if(currentDealType()==="budget"){
+    renderBudget();
+    return;
+  }
+  if(currentDealType()==="flip" && $("flipSaleTarget")){
+    const targetSale = calculateFlipTargetSale();
+    $("flipSaleTarget").value = targetSale > 0 ? String(Math.round(targetSale)) : "";
+    flipSaleManualOverride = false;
+    localStorage.setItem(FLIP_SALE_OVERRIDE_KEY, "0");
+    setSaleRecalculatedState(true);
+  }
+  render();
+});'''
+
+new_recalc_handler = '''function resetControlToMarkupDefault(el){
+  if(!el) return;
+  if(el.tagName==="SELECT"){
+    const options=Array.from(el.options || []);
+    const idx=options.findIndex(o=>o.defaultSelected);
+    el.selectedIndex=idx>=0 ? idx : 0;
+    return;
+  }
+  if(el.type==="checkbox" || el.type==="radio"){
+    el.checked=el.defaultChecked;
+    return;
+  }
+  el.value=el.defaultValue;
+}
+
+function collapseOwnMarketCheck(){
+  if($("ownMarketCheckSection")) $("ownMarketCheckSection").classList.add("collapsed");
+  if($("marketCheckToggle")){
+    $("marketCheckToggle").textContent="+";
+    $("marketCheckToggle").setAttribute("aria-expanded","false");
+  }
+}
+
+function resetBudgetCalculatorToDefaults(){
+  Array.from(localStorage.keys()).forEach(key=>{
+    if(key.startsWith("ff_budget_")) localStorage.removeItem(key);
+  });
+
+  if($("budgetSection")){
+    $("budgetSection").querySelectorAll("input,select,textarea").forEach(resetControlToMarkupDefault);
+  }
+
+  budgetChildBenefitManual=false;
+  budgetSafetyReserveManual=false;
+  budgetIncomeAutoUpdating=false;
+  budgetAutoUpdating=false;
+  Object.keys(budgetExpenseManual).forEach(key=>delete budgetExpenseManual[key]);
+
+  loadBudget();
+  initTwoDecimalPercentFields();
+  initializeRepaymentDefaults();
+  renderBudget();
+  initializeReferenceInterest();
+}
+
+function resetDealCalculatorToDefaults(){
+  const mode=currentDealType();
+  const dealStorageIds=[
+    "purchase","sale","area","buildYear","plotArea","energyClass","energyDemand","months",
+    "interest","repayment","ltv","notary","buyBroker","sellBroker","otherSaleCosts","buffer",
+    "holding","targetProfit","targetMargin","maxEquity","targetRoi","personalTax",
+    "stressSalePct","stressRenoPct","marketLocation","marketPropertyType","marketCondition",
+    "comp1Price","comp1Area","comp2Price","comp2Area","comp3Price","comp3Area","flipSaleTarget"
+  ];
+  dealStorageIds.forEach(id=>localStorage.removeItem("ff_"+id));
+  [
+    "ff_state","ff_financeAcquisition","ff_interest_manual","ff_repayment_manual",
+    COMP1_OVERRIDE_KEY,PROPERTY_TYPE_SET_KEY,FLIP_SALE_OVERRIDE_KEY
+  ].forEach(key=>localStorage.removeItem(key));
+
+  if(mode==="own"){
+    localStorage.removeItem("ff_own_months");
+    localStorage.removeItem("ff_own_equity_input");
+  }else{
+    localStorage.removeItem("ff_flip_months");
+    localStorage.removeItem("ff_flip_equity_input");
+    dealGoalIds.forEach(id=>localStorage.removeItem("ff_flip_"+id));
+  }
+
+  trades.forEach(t=>{
+    localStorage.removeItem("ff_trade_"+t.key);
+    localStorage.removeItem("ff_trade_manual_"+t.key);
+  });
+  Object.keys(fixedTradeHints).forEach(name=>{
+    const hint=fixedTradeHints[name];
+    if(hint && hint.areaKey) localStorage.removeItem("ff_trade_area_"+hint.areaKey);
+  });
+
+  if($("dealCalculatorContent")){
+    $("dealCalculatorContent").querySelectorAll('input:not([name="dealType"]),select,textarea').forEach(resetControlToMarkupDefault);
+  }
+  stateEl.value="Hamburg";
+  comp1ManualOverride=false;
+  flipSaleManualOverride=false;
+  initializeTrades(true);
+  setSaleRecalculatedState(false);
+  collapseOwnMarketCheck();
+  setDealType(mode,false);
+  initTwoDecimalPercentFields();
+  initializeRepaymentDefaults();
+  render();
+  initializeReferenceInterest();
+}
+
+$("recalc").addEventListener("click",()=>{
+  const mode=currentDealType();
+  const label = mode==="budget"
+    ? "Budget-Rechner"
+    : (mode==="own" ? "Eigennutzungs-Rechner" : "Fix-&-Flip-Rechner");
+  const ok=confirm("Möchtest du wirklich alle Eingaben im " + label + " auf die initialen Standardwerte zurücksetzen?");
+  if(!ok) return;
+
+  if(mode==="budget"){
+    resetBudgetCalculatorToDefaults();
+  }else{
+    resetDealCalculatorToDefaults();
+  }
+});'''
+
+replace_once(old_recalc_handler, new_recalc_handler, "V8.191 recalc reset handler")
+
 path.write_text(s, encoding="utf-8")
-print("V8.190 interest and repayment patch applied")
+print("V8.191 interest and repayment patch applied")
