@@ -235,7 +235,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.191: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.192: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -590,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.191: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.192: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -713,7 +713,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.191: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.192: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -827,7 +827,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.191");
+  drawPdfFooter(doc,1,1,"V8.192");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -913,13 +913,13 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.191");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.192");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 
-# V8.191: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+# V8.192: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
 s=s.replace(
     '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
     '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
@@ -991,6 +991,18 @@ function resetBudgetCalculatorToDefaults(){
   Object.keys(budgetExpenseManual).forEach(key=>delete budgetExpenseManual[key]);
 
   loadBudget();
+
+  // Verbindliche Budget-Standardwerte.
+  if($("budgetNetIncome")) $("budgetNetIncome").value="0";
+  if($("budgetFamilyStatus")) $("budgetFamilyStatus").value="single";
+  if($("budgetAdults")) $("budgetAdults").value="1";
+  if($("budgetChildren")) $("budgetChildren").value="0";
+  if($("budgetEquity")) $("budgetEquity").value="0";
+  if($("budgetAncillaryPct")) $("budgetAncillaryPct").value="12.00";
+  if($("budgetExtraCostsPct")) $("budgetExtraCostsPct").value="5.00";
+  if($("budgetIncomeEmployment")) $("budgetIncomeEmployment").value="0";
+  if($("budgetChildBenefit")) $("budgetChildBenefit").value="0";
+
   initTwoDecimalPercentFields();
   initializeRepaymentDefaults();
   renderBudget();
@@ -1061,7 +1073,7 @@ $("recalc").addEventListener("click",()=>{
   }
 });'''
 
-replace_once(old_recalc_handler, new_recalc_handler, "V8.191 recalc reset handler")
+replace_once(old_recalc_handler, new_recalc_handler, "V8.192 recalc reset handler")
 
 path.write_text(s, encoding="utf-8")
-print("V8.191 interest and repayment patch applied")
+print("V8.192 interest and repayment patch applied")
