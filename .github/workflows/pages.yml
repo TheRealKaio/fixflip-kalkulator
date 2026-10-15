@@ -313,39 +313,39 @@ jobs:
           # V8.165: Budget UX - Belastungsquote anzeigen und "Weitere Annahmen" standardmaessig einklappen.
           assumptions_css_old = '.market-check-card.collapsed .market-check-body{display:none}'
           assumptions_css_new = assumptions_css_old + '''
-.budget-assumptions-body{display:block}
-.budget-assumptions-card.collapsed .budget-assumptions-body{display:none}
-.budget-assumptions-card .market-check-head h2{margin:0}
-.budget-rate-ratio{font-size:11px;font-weight:700;color:#365b96;margin-left:4px}
-.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}
-'''
+          .budget-assumptions-body{display:block}
+          .budget-assumptions-card.collapsed .budget-assumptions-body{display:none}
+          .budget-assumptions-card .market-check-head h2{margin:0}
+          .budget-rate-ratio{font-size:11px;font-weight:700;color:#365b96;margin-left:4px}
+          .budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}
+          '''
           if assumptions_css_old not in s:
               raise SystemExit("Budget assumptions CSS target not found")
           s = s.replace(assumptions_css_old, assumptions_css_new, 1)
 
           assumptions_head_old = '''      <section class="card">
-        <h2>3. Weitere Annahmen</h2>
-        <div class="budget-grid three">'''
+                  <h2>3. Weitere Annahmen</h2>
+                  <div class="budget-grid three">'''
           assumptions_head_new = '''      <section class="card budget-assumptions-card collapsed" id="budgetAssumptionsSection">
-        <div class="market-check-head">
+                  <div class="market-check-head">
           <h2>3. Weitere Annahmen</h2>
           <button type="button" class="plus-btn" id="budgetAssumptionsToggle" aria-expanded="false" aria-controls="budgetAssumptionsBody" aria-label="Weitere Annahmen öffnen">+</button>
-        </div>
-        <div class="budget-assumptions-body" id="budgetAssumptionsBody">
-        <div class="budget-grid three">'''
+                  </div>
+                  <div class="budget-assumptions-body" id="budgetAssumptionsBody">
+                  <div class="budget-grid three">'''
           if assumptions_head_old not in s:
               raise SystemExit("Budget assumptions header target not found")
           s = s.replace(assumptions_head_old, assumptions_head_new, 1)
 
           assumptions_note_old = '''        <div class="budget-note">
           <strong>Hinweis:</strong> Der Budgetanteil bestimmt, welcher Anteil deines frei verfügbaren Monatsbudgets maximal für die Kreditrate eingesetzt wird. Der verbleibende Anteil bleibt als zusätzlicher monatlicher Puffer. Die Berechnung ist eine Orientierung und keine Finanzierungszusage einer Bank.
-        </div>
-      </section>'''
+                  </div>
+                </section>'''
           assumptions_note_new = '''        <div class="budget-note">
           <strong>Hinweis:</strong> Der Budgetanteil bestimmt, welcher Anteil deines frei verfügbaren Monatsbudgets maximal für die Kreditrate eingesetzt wird. Der verbleibende Anteil bleibt als zusätzlicher monatlicher Puffer. Die Berechnung ist eine Orientierung und keine Finanzierungszusage einer Bank.
-        </div>
-        </div>
-      </section>'''
+                  </div>
+                  </div>
+                </section>'''
           if assumptions_note_old not in s:
               raise SystemExit("Budget assumptions body target not found")
           s = s.replace(assumptions_note_old, assumptions_note_new, 1)
@@ -359,36 +359,36 @@ jobs:
 
           render_rate_old = '''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);'''
           render_rate_new = '''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);
-  const budgetRatePct = m.net > 0 ? (m.monthlyRate / m.net) * 100 : 0;
-  if($("budgetRateRatio")){
-    $("budgetRateRatio").textContent = m.net > 0
-      ? "(ca. " + new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(budgetRatePct) + " % vom Haushaltsnetto)"
-      : "";
-  }
-  if($("budgetRateGuidance")){
-    let budgetRateStatus = "";
-    if(m.net > 0){
-      budgetRateStatus = budgetRatePct <= 30 ? "komfortabel" : (budgetRatePct <= 35 ? "solide" : "erhöhte Belastung");
-    }
-    $("budgetRateGuidance").textContent = "Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung." + (budgetRateStatus ? " Aktuelle Einordnung: " + budgetRateStatus + "." : "");
-  }'''
+            const budgetRatePct = m.net > 0 ? (m.monthlyRate / m.net) * 100 : 0;
+            if($("budgetRateRatio")){
+              $("budgetRateRatio").textContent = m.net > 0
+                ? "(ca. " + new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(budgetRatePct) + " % vom Haushaltsnetto)"
+                : "";
+            }
+            if($("budgetRateGuidance")){
+              let budgetRateStatus = "";
+              if(m.net > 0){
+                budgetRateStatus = budgetRatePct <= 30 ? "komfortabel" : (budgetRatePct <= 35 ? "solide" : "erhöhte Belastung");
+              }
+              $("budgetRateGuidance").textContent = "Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung." + (budgetRateStatus ? " Aktuelle Einordnung: " + budgetRateStatus + "." : "");
+            }'''
           if render_rate_old not in s:
               raise SystemExit("Budget rate render target not found")
           s = s.replace(render_rate_old, render_rate_new, 1)
 
           assumptions_js_marker = '''if($("budgetApplySuggestions")){'''
           assumptions_js = '''if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){
-  $("budgetAssumptionsToggle").addEventListener("click",()=>{
-    const section=$("budgetAssumptionsSection");
-    const collapsed=!section.classList.contains("collapsed");
-    section.classList.toggle("collapsed",collapsed);
-    $("budgetAssumptionsToggle").textContent=collapsed ? "+" : "−";
-    $("budgetAssumptionsToggle").setAttribute("aria-expanded",collapsed ? "false" : "true");
-    $("budgetAssumptionsToggle").setAttribute("aria-label",collapsed ? "Weitere Annahmen öffnen" : "Weitere Annahmen schließen");
-  });
-}
+            $("budgetAssumptionsToggle").addEventListener("click",()=>{
+              const section=$("budgetAssumptionsSection");
+              const collapsed=!section.classList.contains("collapsed");
+              section.classList.toggle("collapsed",collapsed);
+              $("budgetAssumptionsToggle").textContent=collapsed ? "+" : "−";
+              $("budgetAssumptionsToggle").setAttribute("aria-expanded",collapsed ? "false" : "true");
+              $("budgetAssumptionsToggle").setAttribute("aria-label",collapsed ? "Weitere Annahmen öffnen" : "Weitere Annahmen schließen");
+            });
+          }
 
-'''
+          '''
           if assumptions_js_marker not in s:
               raise SystemExit("Budget assumptions JS marker not found")
           s = s.replace(assumptions_js_marker, assumptions_js + assumptions_js_marker, 1)
