@@ -235,7 +235,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.189: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.190: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -590,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.189: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.190: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -713,6 +713,48 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
+# V8.190: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
+section_start = s.find("  function section(")
+if section_start < 0:
+    section_start = s.find("function section(")
+if section_start < 0:
+    raise SystemExit("Budget section function not found")
+
+brace_start = s.find("{", section_start)
+if brace_start < 0:
+    raise SystemExit("Budget section function brace not found")
+
+depth = 0
+section_end = -1
+for i in range(brace_start, len(s)):
+    ch = s[i]
+    if ch == "{":
+        depth += 1
+    elif ch == "}":
+        depth -= 1
+        if depth == 0:
+            section_end = i + 1
+            break
+if section_end < 0:
+    raise SystemExit("Budget section function end not found")
+
+new_budget_section = '''  function section(t){
+    // 5 px entsprechen bei jsPDF (mm) rund 1,3 mm.
+    if(t==="Haushalt") y+=1.3;
+    const sectionH=8;
+    doc.setFillColor(15,23,42);
+    doc.setDrawColor(15,23,42);
+    doc.roundedRect(left,y,contentW,sectionH,2,2,"FD");
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(9.2);
+    doc.setTextColor(255,255,255);
+    doc.text(pdfSafeText(t),left+4,y+5.4);
+    y+=sectionH+4;
+    doc.setTextColor(23,32,51);
+  }'''
+s = s[:section_start] + new_budget_section + s[section_end:]
+
 # V8.186: Budget household labels and expanded two-page Budget PDF.
 replace_once(
     '<p class="sub">Grundlage ist dein tatsächlich verfügbares Haushaltsnettoeinkommen. Steuerklasse ist deshalb nicht erforderlich.</p>',
@@ -785,7 +827,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.189");
+  drawPdfFooter(doc,1,1,"V8.190");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -871,10 +913,10 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.189");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.190");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 path.write_text(s, encoding="utf-8")
-print("V8.189 interest and repayment patch applied")
+print("V8.190 interest and repayment patch applied")
