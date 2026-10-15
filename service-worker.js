@@ -1,4 +1,4 @@
-const CACHE_VERSION = "neustart-immocheck-v8.196";
+const CACHE_VERSION = "neustart-immocheck-v8.197";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -17,6 +17,6 @@ self.addEventListener("fetch", event => {
     fetch(event.request).catch(() => caches.match(event.request))
   );
 });
-// V8.196 fresh deploy trigger
-// V8.196 fresh deploy trigger 2
-// V8.196 fresh deploy trigger 3
+// V8.197 fresh deploy trigger
+// V8.197 fresh deploy trigger 2
+// V8.197 fresh deploy trigger 3
