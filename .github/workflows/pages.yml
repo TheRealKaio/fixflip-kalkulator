@@ -175,9 +175,93 @@ jobs:
             doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(100,110,125);
             doc.text("Orientierungsrechnung - keine Finanzierungszusage",left,y); y+=8;'''
           new_budget_title = '''  drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Wie viel Immobilie kann ich mir leisten?",new Date().toLocaleDateString("de-DE"));
-            title("Budget - Wie viel Immobilie kann ich mir leisten?");
-            doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(100,110,125);
-            doc.text("Orientierungsrechnung - keine Finanzierungszusage",left,y); y+=8;'''
+
+            const budgetPdfNorm = (value) => String(value ?? "").replace(/\\s+/g," ").trim();
+            const budgetPdfFieldValue = (labelPart) => {
+              const wanted = budgetPdfNorm(labelPart).toLowerCase();
+              for(const field of Array.from(document.querySelectorAll(".field"))){
+                const label = field.querySelector("label");
+                if(!label || !budgetPdfNorm(label.textContent).toLowerCase().includes(wanted)) continue;
+                const control = field.querySelector("select,input");
+                if(!control) continue;
+                if(control.tagName === "SELECT"){
+                  const option = control.options && control.selectedIndex >= 0 ? control.options[control.selectedIndex] : null;
+                  return budgetPdfNorm(option ? option.textContent : control.value) || "-";
+                }
+                return budgetPdfNorm(control.value) || "-";
+              }
+              return "-";
+            };
+            const budgetPdfResultValue = (labelPart) => {
+              const wanted = budgetPdfNorm(labelPart).toLowerCase();
+              for(const card of Array.from(document.querySelectorAll(".budget-result-card"))){
+                const name = card.querySelector(".name");
+                if(!name || !budgetPdfNorm(name.textContent).toLowerCase().includes(wanted)) continue;
+                const value = card.querySelector(".value");
+                if(value) return budgetPdfNorm(value.textContent) || "-";
+              }
+              return "-";
+            };
+            const budgetPdfInputNumber = (id) => {
+              const el = document.getElementById(id);
+              if(!el) return 0;
+              const raw = String(el.value ?? "").trim().replace(/\\./g,"").replace(",",".").replace(/[^0-9.-]/g,"");
+              const n = Number(raw);
+              return Number.isFinite(n) ? n : 0;
+            };
+            const budgetPdfEuro = (n) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(Number(n)||0);
+            const budgetPdfPct = (id) => {
+              const n = budgetPdfInputNumber(id);
+              return new Intl.NumberFormat("de-DE",{minimumFractionDigits:1,maximumFractionDigits:2}).format(n) + " %";
+            };
+            const budgetPdfCard = (x, yy, w, h, label, value) => {
+              doc.setFillColor(247,249,252);
+              doc.setDrawColor(225,229,236);
+              doc.roundedRect(x,yy,w,h,2.5,2.5,"FD");
+              doc.setFont("helvetica","normal"); doc.setFontSize(7.2); doc.setTextColor(100,110,125);
+              doc.text(pdfSafeText(label),x+4,yy+6);
+              doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(23,32,51);
+              const valueLines=doc.splitTextToSize(pdfSafeText(value || "-"),w-8);
+              doc.text(valueLines.slice(0,2),x+4,yy+13);
+            };
+
+            doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(23,32,51);
+            doc.text("Handlungsempfehlung | Kurzfazit",left,y); y+=6;
+            const recommendation = "Kaufe nicht die Immobilie, die dir die Bank maximal finanziert, sondern die Immobilie, die du dir langfristig und entspannt leisten kannst. Eine Immobilienfinanzierung ist häufig eine Verpflichtung über 20 bis 35 Jahre. Deshalb sollte man nicht nur auf den Zinssatz schauen, sondern auf die gesamte finanzielle Situation. Berücksichtige zur Überbrückung von Notar, Grundbuch etc. das notwendige Eigenkapital, da häufig schon Rechnungen fällig werden, bevor die Bank eine Auszahlung getätigt hat.";
+            const recommendationLines = doc.splitTextToSize(pdfSafeText(recommendation),contentW-10);
+            const recommendationH = Math.max(34, 10 + recommendationLines.length * 4);
+            doc.setFillColor(246,248,251); doc.setDrawColor(216,222,231);
+            doc.roundedRect(left,y,contentW,recommendationH,3,3,"FD");
+            doc.setFont("helvetica","normal"); doc.setFontSize(8.2); doc.setTextColor(55,65,81);
+            doc.text(recommendationLines,left+5,y+7);
+            y += recommendationH + 9;
+
+            const familyStatus = budgetPdfFieldValue("Familienstatus");
+            const adults = budgetPdfFieldValue("Erwachsene");
+            const children = budgetPdfFieldValue("Kinder");
+            doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(23,32,51);
+            doc.text("Wichtigste Ergebnisse auf einen Blick",left,y); y+=5;
+            doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(155,163,175);
+            doc.text(pdfSafeText("Familienstatus: " + familyStatus + "  |  Erwachsene: " + adults + "  |  Kinder: " + children),left,y); y+=6;
+
+            const maxLoan = budgetPdfResultValue("Max. Darlehen") !== "-" ? budgetPdfResultValue("Max. Darlehen") : budgetPdfResultValue("Darlehen");
+            const freeBudget = budgetPdfResultValue("Frei verfügbares Monatsbudget") !== "-" ? budgetPdfResultValue("Frei verfügbares Monatsbudget") : budgetPdfResultValue("Monatsbudget");
+            const equity = budgetPdfEuro(budgetPdfInputNumber("budgetEquity"));
+            const interest = budgetPdfPct("budgetInterest");
+            const repayment = budgetPdfPct("budgetRepayment");
+            const gap=3;
+            const cardW=(contentW-gap*2)/3;
+            budgetPdfCard(left,y,cardW,24,"Maximales Darlehen",maxLoan);
+            budgetPdfCard(left+cardW+gap,y,cardW,24,"Zinssatz",interest);
+            budgetPdfCard(left+(cardW+gap)*2,y,cardW,24,"Tilgung",repayment);
+            y += 28;
+            const wideW=(contentW-gap)/2;
+            budgetPdfCard(left,y,wideW,24,"Eigenkapital",equity);
+            budgetPdfCard(left+wideW+gap,y,wideW,24,"Frei verfügbares Monatsbudget",freeBudget);
+
+            doc.addPage();
+            drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Finanzierungsdetails",new Date().toLocaleDateString("de-DE"));
+            y=43;'''
           if old_budget_title not in s:
               raise SystemExit("Budget header target not found")
           s = s.replace(old_budget_title,new_budget_title,1)
@@ -186,7 +270,12 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.179");',1)
+          s = s.replace(old_budget_footer,'''  const budgetTotalPages = doc.getNumberOfPages();
+            for(let budgetPageNo=1; budgetPageNo<=budgetTotalPages; budgetPageNo++){
+              doc.setPage(budgetPageNo);
+              drawPdfBrandLogo(doc);
+              drawPdfFooter(doc,budgetPageNo,budgetTotalPages,"V8.179");
+            }''',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
