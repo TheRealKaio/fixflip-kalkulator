@@ -21,7 +21,7 @@ replace_once(
     "assumptions CSS"
 )
 
-# V8.169: Neutral style for the residual-debt explanatory note.
+# V8.170: Neutral style for the residual-debt explanatory note.
 replace_once(
     '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}',
     '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}\\n'
@@ -123,7 +123,7 @@ residual_neutral = '<div class="budget-note neutral-note">\n          ' + residu
 if residual_plain in s:
     s = s.replace(residual_plain, residual_neutral, 1)
 
-# V8.169: Budget UI refinements.
+# V8.170: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
     '<h2>3. Annahme zur möglichen Finanzierung</h2>',
@@ -144,7 +144,7 @@ replace_once(
     "mobile plus-row width"
 )
 
-# V8.169: Default location for Fix & Flip and Eigennutzung.
+# V8.170: Default location for Fix & Flip and Eigennutzung.
 replace_once(
     'stateEl.value="Schleswig-Holstein";',
     'stateEl.value="Hamburg";',
@@ -157,4 +157,4 @@ replace_once(
 )
 
 path.write_text(s, encoding="utf-8")
-print("V8.169 budget UI patch applied")
+print("V8.170 budget UI patch applied")
