@@ -663,7 +663,87 @@ replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page"
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
   drawPdfFooter(doc,1,1,"V8.184");
   return doc;'''
-new_budget_pdf_footer = '''  const budgetPdfPages=doc.getNumberOfPages();
+new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
+  doc.addPage();
+  drawPdfBrandHeader(
+    doc,
+    "Unsere wichtigsten Empfehlungen",
+    "Checkliste für den Immobilienkauf",
+    new Date().toLocaleDateString("de-DE")
+  );
+  y=43;
+
+  const budgetChecklistItem = (number, heading, paragraphs=[], bullets=[]) => {
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(9.2);
+    doc.setTextColor(23,32,51);
+    doc.text(pdfSafeText(number + ". " + heading),left,y);
+    y+=4.5;
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(7.4);
+    doc.setTextColor(55,65,81);
+    for(const paragraph of paragraphs){
+      const lines=doc.splitTextToSize(pdfSafeText(paragraph),contentW);
+      doc.text(lines,left,y);
+      y+=lines.length*3.35+1.8;
+    }
+
+    for(const bullet of bullets){
+      const lines=doc.splitTextToSize(pdfSafeText(bullet),contentW-7);
+      doc.text("•",left+1.5,y);
+      doc.text(lines,left+6,y);
+      y+=lines.length*3.25+0.9;
+    }
+    y+=2.2;
+  };
+
+  budgetChecklistItem(1,"Eigenkapital gezielt einsetzen",[
+    "Ideal sind etwa 20–30 % des Kaufpreises als Eigenkapital, zusätzlich zu den Kaufnebenkosten. Das ist auch die Orientierung der Verbraucherzentrale.",
+    "Wichtig ist aber, nicht die gesamten Ersparnisse einzusetzen. Ein finanzieller Notgroschen sollte erhalten bleiben."
+  ]);
+
+  budgetChecklistItem(2,"Die monatliche Belastung konservativ kalkulieren",[
+    "Als grobe Orientierung würde ich die Kreditrate möglichst auf 30–35 % des monatlichen Haushaltsnettoeinkommens begrenzen. Je nach Einkommen und Lebenshaltungskosten kann auch weniger sinnvoll sein.",
+    "Zusätzlich fallen Hausgeld oder Betriebskosten, Versicherungen, Grundsteuer und Instandhaltung an."
+  ]);
+
+  budgetChecklistItem(3,"Nicht nur den Zinssatz vergleichen",[
+    "Ein niedriger Sollzins allein macht noch keine gute Finanzierung aus. Entscheidend sind auch:"
+  ],[
+    "Effektiver Jahreszins",
+    "Zinsbindung von beispielsweise 10, 15 oder 20 Jahren",
+    "Anfängliche Tilgung, möglichst 2–3 % oder mehr",
+    "Kostenlose Sondertilgungsmöglichkeiten",
+    "Möglichkeit zum Tilgungssatzwechsel",
+    "Restschuld nach Ablauf der Zinsbindung"
+  ]);
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(7.4);
+  doc.setTextColor(55,65,81);
+  const annuityText=doc.splitTextToSize(pdfSafeText("Für viele Käufer ist ein klassisches Annuitätendarlehen die verständlichste und sinnvollste Lösung."),contentW);
+  doc.text(annuityText,left,y);
+  y+=annuityText.length*3.35+4.2;
+
+  budgetChecklistItem(4,"Die Anschlussfinanzierung von Anfang an mitdenken",[
+    "Wenn nach 10 oder 15 Jahren noch 200.000 € Restschuld bestehen, können höhere Zinsen die monatliche Belastung deutlich erhöhen.",
+    "Ich würde deshalb immer ein Szenario mit 2 Prozentpunkten höheren Anschlusszinsen durchrechnen."
+  ]);
+
+  budgetChecklistItem(5,"Die Immobilie unabhängig prüfen lassen",[
+    "Eine günstige Finanzierung rettet keinen schlechten Immobilienkauf. Vor allem bei Bestandsimmobilien würde ich Bausubstanz, Energieeffizienz, Heizung, Dach und möglichen Sanierungsbedarf prüfen lassen."
+  ]);
+
+  budgetChecklistItem(6,"Mehrere Banken vergleichen",[
+    "Mindestens drei Angebote einholen, beispielsweise über Hausbank, Sparkasse oder Volksbank und einen unabhängigen Finanzierungsvermittler. Wichtig ist, wirklich identische Kreditbedingungen gegenüberzustellen."
+  ]);
+
+  budgetChecklistItem(7,"Fördermöglichkeiten vor Vertragsabschluss prüfen",[
+    "Für selbst genutzte Immobilien kommt beispielsweise das KfW-Wohneigentumsprogramm 124 infrage. Für bestimmte Familien und energetische Sanierungen existieren weitere Förderprogramme."
+  ]);
+
+  const budgetPdfPages=doc.getNumberOfPages();
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
