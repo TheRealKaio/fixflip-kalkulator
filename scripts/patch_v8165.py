@@ -242,7 +242,7 @@ if 'class="card market-check-card"' in s:
 
 replace_once(
     '.reno-input-row{display:grid;grid-template-columns:1fr 56px;gap:9px}',
-    '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:9px;width:100%}\\n'
+    '.reno-input-row{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:8px;width:100%}\\n'
     '.reno-input-row .input-wrap{min-width:0;width:100%}\\n'
     '@media(max-width:520px){.reno-input-row{grid-template-columns:minmax(0,1fr) 45px;gap:8px;width:100%}}',
     "mobile plus-row width"
