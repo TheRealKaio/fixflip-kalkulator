@@ -589,7 +589,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.187: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.188: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -602,24 +602,26 @@ s=s.replace(
     1
 )
 
-# Keep all interest and repayment input fields visually normalized to two decimals after load and editing.
-interest_format_js = '''function formatFinancingRateField(id){
-  const el=document.getElementById(id);
+# Normalize every percentage input in every calculator to exactly two decimals.
+interest_format_js = '''function formatPercentInputField(el){
   if(!el) return;
   const n=parseLocalizedNumber(el.value,true);
   if(Number.isFinite(n)) el.value=n.toFixed(2);
 }
-["interest","budgetInterest","repayment","budgetRepayment"].forEach(id=>{
-  const el=document.getElementById(id);
-  if(!el || el.dataset.twoDecimalRate==="1") return;
-  el.dataset.twoDecimalRate="1";
-  el.addEventListener("blur",()=>formatFinancingRateField(id));
-  el.addEventListener("change",()=>formatFinancingRateField(id));
-});
-formatFinancingRateField("interest");
-formatFinancingRateField("budgetInterest");
-formatFinancingRateField("repayment");
-formatFinancingRateField("budgetRepayment");
+function initTwoDecimalPercentFields(){
+  document.querySelectorAll(".input-wrap").forEach(wrap=>{
+    const unit=wrap.querySelector(".unit");
+    const el=wrap.querySelector("input");
+    if(!unit || !el || String(unit.textContent||"").trim()!=="%") return;
+    if(el.dataset.twoDecimalPercent!=="1"){
+      el.dataset.twoDecimalPercent="1";
+      el.addEventListener("blur",()=>formatPercentInputField(el));
+      el.addEventListener("change",()=>formatPercentInputField(el));
+    }
+    formatPercentInputField(el);
+  });
+}
+initTwoDecimalPercentFields();
 
 '''
 interest_anchor='function saveBudget(){'
@@ -708,7 +710,7 @@ s=s.replace(
 
 # Budget recommendation box: compact ~5-line height; freed space is available to the following content.
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
-s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 5;',1)
+s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
 # V8.186: Budget household labels and expanded two-page Budget PDF.
 replace_once(
@@ -782,7 +784,7 @@ new_budget_pdf_flow = '''  section("Haushalt");
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.187");
+  drawPdfFooter(doc,1,1,"V8.188");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -868,10 +870,10 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.187");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.188");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 path.write_text(s, encoding="utf-8")
-print("V8.187 interest and repayment patch applied")
+print("V8.188 interest and repayment patch applied")
