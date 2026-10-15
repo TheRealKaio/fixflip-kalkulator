@@ -17,15 +17,15 @@ replace_once(
     '.budget-assumptions-card.collapsed .budget-assumptions-body{display:none}\n'
     '.budget-assumptions-card .market-check-head h2{margin:0}\n'
     '.budget-rate-ratio{font-size:11px;font-weight:700;color:#365b96;margin-left:4px}\n'
-    '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}\n.budget-result-card.budget-loan-highlight{background:#fff7cc;border-color:#f1cf55;box-shadow:0 0 0 1px rgba(241,207,85,.18) inset}\n.budget-summary-row.rate-status-green{background:#eaf8ef;border-color:#8fd3a5}\n.budget-summary-row.rate-status-yellow{background:#fff7cc;border-color:#f1cf55}\n.budget-summary-row.rate-status-red{background:#fdecec;border-color:#e8a0a0}\n.budget-summary-row.rate-status-green .budget-rate-ratio{color:#287a43}\n.budget-summary-row.rate-status-yellow .budget-rate-ratio{color:#8a6810}\n.budget-summary-row.rate-status-red .budget-rate-ratio{color:#a33a3a}',
+    '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}\n.budget-result-card.budget-loan-highlight{background:#fff7cc;border-color:#f1cf55;box-shadow:0 0 0 1px rgba(241,207,85,.18) inset}\n.budget-summary-row.rate-status-green{background:#eaf8ef;border-color:#8fd3a5}\n.budget-summary-row.rate-status-yellow{background:#fff7cc;border-color:#f1cf55}\n.budget-summary-row.rate-status-red{background:#fdecec;border-color:#e8a0a0}\n.budget-summary-row.rate-status-green .budget-rate-ratio,.budget-summary-row.rate-status-yellow .budget-rate-ratio,.budget-summary-row.rate-status-red .budget-rate-ratio{color:inherit}',
     "assumptions CSS"
 )
 
-# V8.170: Neutral style for the residual-debt explanatory note.
+# V8.171: Neutral style for the residual-debt explanatory note.
 replace_once(
-    '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}',
+    '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}',
     '.budget-note{margin-top:12px;padding:11px 12px;border-radius:13px;background:#fef3c7;border:1px solid #facc15;color:#475569;font-size:11px;line-height:1.45}\\n'
-    '.budget-note.neutral-note{background:#f8fafc;border-color:#d8dee8;color:#5f6b7a}',
+    '.budget-note.neutral-note{background:#f8fafc;border-color:#e2e8f0;color:#52627a}',
     "neutral note CSS"
 )
 
@@ -123,7 +123,7 @@ residual_neutral = '<div class="budget-note neutral-note">\n          ' + residu
 if residual_plain in s:
     s = s.replace(residual_plain, residual_neutral, 1)
 
-# V8.170: Budget UI refinements.
+# V8.171: Budget UI refinements.
 replace_once(
     '<h2>3. Weitere Annahmen</h2>',
     '<h2>3. Annahme zur möglichen Finanzierung</h2>',
@@ -144,7 +144,7 @@ replace_once(
     "mobile plus-row width"
 )
 
-# V8.170: Default location for Fix & Flip and Eigennutzung.
+# V8.171: Default location for Fix & Flip and Eigennutzung.
 replace_once(
     'stateEl.value="Schleswig-Holstein";',
     'stateEl.value="Hamburg";',
@@ -157,4 +157,4 @@ replace_once(
 )
 
 path.write_text(s, encoding="utf-8")
-print("V8.170 budget UI patch applied")
+print("V8.171 budget UI patch applied")
