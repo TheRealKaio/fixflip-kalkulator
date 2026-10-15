@@ -261,7 +261,7 @@ replace_once(
 )
 
 
-# V8.175: Consistent interest / repayment logic.
+# V8.176: Consistent interest / repayment logic.
 # Standard initial repayment is 1.5% in both financing calculators.
 s = s.replace(
     '<input id="repayment" inputmode="decimal" value="2">',
@@ -307,7 +307,7 @@ annuity_helper = '''function annuityProjection(debt, annualInterestRate, initial
 annuity_anchor='function calculateFlipTargetSale(){'
 if annuity_helper not in s:
     if annuity_anchor not in s:
-        raise SystemExit("V8.175 annuity helper anchor not found")
+        raise SystemExit("V8.176 annuity helper anchor not found")
     s=s.replace(annuity_anchor,annuity_helper+annuity_anchor,1)
 
 old_target_interest = '''  const monthlyInterest = debt * Math.max(0, pct("interest")) / 12;
@@ -320,7 +320,7 @@ new_target_interest = '''  const financingProjection = annuityProjection(
   );
   const interest = financingProjection.totalInterest;'''
 if old_target_interest not in s:
-    raise SystemExit("V8.175 target interest block not found")
+    raise SystemExit("V8.176 target interest block not found")
 s=s.replace(old_target_interest,new_target_interest,1)
 
 old_model_finance = '''  const monthlyInterestRate = Math.max(0, pct("interest") / 12);
@@ -339,13 +339,13 @@ new_model_finance = '''  const financingProjection = annuityProjection(
   const interest = financingProjection.totalInterest;
   const repayment = financingProjection.totalRepayment;'''
 if old_model_finance not in s:
-    raise SystemExit("V8.175 model finance block not found")
+    raise SystemExit("V8.176 model finance block not found")
 s=s.replace(old_model_finance,new_model_finance,1)
 
 old_int_factor = '  const intFactor = pct("interest")*(months/12);'
 new_int_factor = '  const intFactor = annuityProjection(1,Math.max(0,pct("interest")),Math.max(0,pct("repayment")),months).totalInterest;'
 if old_int_factor not in s:
-    raise SystemExit("V8.175 max-buy interest factor not found")
+    raise SystemExit("V8.176 max-buy interest factor not found")
 s=s.replace(old_int_factor,new_int_factor,1)
 
 # Update explanatory texts to match the annuity calculation.
@@ -371,8 +371,11 @@ s=s.replace(
 )
 
 # Fresh-session interest reference from Deutsche Bundesbank, with an offline fallback.
+# V8.176 migration: old saved values are not treated as intentional manual overrides.
+# Only values changed by the user from this version onward are protected.
 reference_interest_js = '''const REFERENCE_INTEREST_FALLBACK = 4.0;
 const REFERENCE_INTEREST_URL = "https://api.statistiken.bundesbank.de/rest/data/BBIM1/M.DE.B.A2C.A.R.A.2250.EUR.N?format=csv&lang=de";
+const DEFAULT_REPAYMENT_RATE = 1.5;
 
 function parseBundesbankInterestCsv(csvText){
   const lines=String(csvText||"").split(/\\\\r?\\\\n/).filter(Boolean);
@@ -402,10 +405,35 @@ async function fetchReferenceInterest(){
   }
 }
 
+function installFinancingManualOverrideTracking(){
+  const bindings=[
+    ["interest","ff_interest_manual"],
+    ["budgetInterest","ff_budget_interest_manual"],
+    ["repayment","ff_repayment_manual"],
+    ["budgetRepayment","ff_budget_repayment_manual"]
+  ];
+  bindings.forEach(([id,key])=>{
+    const el=$(id);
+    if(!el || el.dataset.manualOverrideTracking==="1") return;
+    const markManual=()=>localStorage.setItem(key,"1");
+    el.addEventListener("input",markManual);
+    el.addEventListener("change",markManual);
+    el.dataset.manualOverrideTracking="1";
+  });
+}
+
+function initializeRepaymentDefaults(){
+  if(localStorage.getItem("ff_repayment_manual")!=="1" && $("repayment")){
+    $("repayment").value=String(DEFAULT_REPAYMENT_RATE);
+  }
+  if(localStorage.getItem("ff_budget_repayment_manual")!=="1" && $("budgetRepayment")){
+    $("budgetRepayment").value=String(DEFAULT_REPAYMENT_RATE);
+  }
+}
+
 async function initializeReferenceInterest(){
-  const mainSaved=localStorage.getItem("ff_interest")!==null;
-  const budgetSaved=localStorage.getItem("ff_budget_budgetInterest")!==null;
-  if(mainSaved && budgetSaved) return;
+  const mainManual=localStorage.getItem("ff_interest_manual")==="1";
+  const budgetManual=localStorage.getItem("ff_budget_interest_manual")==="1";
   let rate=REFERENCE_INTEREST_FALLBACK;
   try{
     rate=await fetchReferenceInterest();
@@ -415,8 +443,10 @@ async function initializeReferenceInterest(){
     localStorage.setItem("ff_reference_interest_source","Fallback");
   }
   const value=(Math.round(rate*100)/100).toFixed(2);
-  if(!mainSaved && $("interest")) $("interest").value=value;
-  if(!budgetSaved && $("budgetInterest")) $("budgetInterest").value=value;
+  if(!mainManual && $("interest")) $("interest").value=value;
+  if(!budgetManual && $("budgetInterest")) $("budgetInterest").value=value;
+  initializeRepaymentDefaults();
+  installFinancingManualOverrideTracking();
   render();
 }
 
@@ -424,13 +454,13 @@ async function initializeReferenceInterest(){
 reference_anchor='function saveBudget(){'
 if reference_interest_js not in s:
     if reference_anchor not in s:
-        raise SystemExit("V8.175 reference interest anchor not found")
+        raise SystemExit("V8.176 reference interest anchor not found")
     s=s.replace(reference_anchor,reference_interest_js+reference_anchor,1)
 
 init_anchor='setDealType(savedDealType, false);'
 if init_anchor not in s:
-    raise SystemExit("V8.175 init anchor not found")
+    raise SystemExit("V8.176 init anchor not found")
 s=s.replace(init_anchor,init_anchor+chr(10)+'initializeReferenceInterest();',1)
 
 path.write_text(s, encoding="utf-8")
-print("V8.175 interest and repayment patch applied")
+print("V8.176 interest and repayment patch applied")
