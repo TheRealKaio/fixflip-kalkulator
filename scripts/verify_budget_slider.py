@@ -52,10 +52,6 @@ required_implementation = {
     "reached warning shows theoretical undershoot": 'Mindestpuffer erreicht. Ohne Anpassung wäre er um "+eur(rateReduction)+" unterschritten. Kreditrate um "+eur(rateReduction)+" reduziert.',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
-    "toast exists": 'id="budgetBufferToast"',
-    "toast only on threshold crossing": 'if(minimumBufferBelow && !budgetMinimumBufferWasBelow){',
-    "toast uses shortfall": 'showBudgetBufferToast("Mindestpuffer unterschritten um "+eur(bufferShortfall)',
-    "toast state updated": 'budgetMinimumBufferWasBelow=minimumBufferBelow;',
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "warning at exact minimum": 'Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
@@ -65,6 +61,15 @@ required_implementation = {
     "rate jumps to recalculated maximum": 'const newRate=Math.max(0,m.maxMonthlyRate||0);',
     "post-sync recalculation render": 'renderBudget();',
 }
+
+forbidden_implementation = {
+    "toast markup removed": 'id="budgetBufferToast"',
+    "toast helper removed": 'showBudgetBufferToast(',
+    "toast CSS removed": '.budget-buffer-toast',
+}
+present_forbidden = [name for name, token in forbidden_implementation.items() if token in html]
+if present_forbidden:
+    raise SystemExit("Slider acceptance failed - removed toast still present: " + ", ".join(present_forbidden))
 
 missing = [name for name, token in required_implementation.items() if token not in html]
 if missing:
