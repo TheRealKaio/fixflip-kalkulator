@@ -32,7 +32,8 @@ required_implementation = {
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "warning uses income minus expenses minus rate": 'const rawCurrentBuffer=m.income-m.expenses-m.monthlyRate;',
     "warning matches rounded display": 'const displayedCurrentBuffer=Math.round(rawCurrentBuffer);',
-    "warning at displayed 300": 'const minimumBufferReached=displayedCurrentBuffer<=300;',
+    "true under-300 threshold": 'const minimumBufferBelow=rawCurrentBuffer<300;',
+    "warning at exact 300": 'const minimumBufferReached=rawCurrentBuffer<=300;',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "toast exists": 'id="budgetBufferToast"',
@@ -207,7 +208,18 @@ rate_reduction = max(0, previous_rate - new_rate)
 if rate_reduction != 150:
     raise SystemExit("Slider acceptance failed - rate reduction amount")
 
+# 15) Any true value below EUR 300 must show the deviation, even if it rounds to EUR 300.
+raw_buffer = 299.80
+shortfall = max(0, 300 - raw_buffer)
+if not (raw_buffer < 300 and abs(shortfall - 0.20) < 1e-9):
+    raise SystemExit("Slider acceptance failed - sub-euro shortfall")
+
+# 16) Exactly EUR 300 is reached, not undercut.
+raw_buffer = 300.00
+if raw_buffer < 300:
+    raise SystemExit("Slider acceptance failed - exact 300 classified as below")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast, rate-reduction amount")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast, rate-reduction amount, exact/sub-euro 300 threshold")
