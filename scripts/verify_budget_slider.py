@@ -55,7 +55,6 @@ required_implementation = {
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
-    "expense change detected": 'const expenseChanged=budgetRateExpenseIds.has(el.id);',
     "automatic 35 percent rate": 'const automaticRate=Math.min(Math.max(0,recalculated.net*0.35),Math.max(0,recalculated.rateCap||0));',
     "manual mode selector": 'const adjustedRate=budgetRateManualSelection',
     "manual selection safety cap": '? Math.min(previousRate,Math.max(0,recalculated.rateCap||0))',
