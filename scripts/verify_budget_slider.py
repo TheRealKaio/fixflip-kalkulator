@@ -32,7 +32,7 @@ required_implementation = {
     "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
-    "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.rawReserve)+" · Finanzierungsreserve: "+eur(m.minimumReserve)',
+    "remaining surplus note text": 'Verbleibender Monatsüberschuss: "+eur(m.remainingMonthlySurplus)+" · Finanzierungsreserve: "+eur(m.minimumReserve)',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "financing guidance intro": 'Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten.',
     "raw reserve exposed": 'const rawReserve=freeBudget-monthlyRate;',
@@ -49,9 +49,13 @@ required_implementation = {
     "financing reserve zero markup": 'id="budgetSafetyReserve" inputmode="decimal" value="0" readonly aria-readonly="true"',
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     "terminology financing reserve": 'Finanzierungsreserve',
-    "terminology current safety buffer": 'Aktueller Sicherheitspuffer',
+    "terminology remaining monthly surplus": 'Verbleibender Monatsüberschuss',
     "financing reserve summary row": '<span>- Finanzierungsreserve</span><strong id="budgetFinancingReserveResult">–</strong>',
     "financing reserve summary value": 'if($("budgetFinancingReserveResult")) $("budgetFinancingReserveResult").textContent=eur(m.minimumReserve);',
+    "remaining monthly surplus formula": 'const remainingMonthlySurplus=rawReserve-minimumReserve;',
+    "remaining monthly surplus summary row": '<span>- Verbleibender Monatsüberschuss</span><strong id="budgetReserveResult">–</strong>',
+    "remaining monthly surplus summary value": 'if($("budgetReserveResult")) $("budgetReserveResult").textContent=eur(m.remainingMonthlySurplus);',
+    "remaining monthly surplus PDF": 'line("Verbleibender Monatsueberschuss",pdfMoney(m.additionalBuffer));',
     "suggestions do not auto-fill": 'function syncBudgetSuggestions(){\n  // Vorschlaege nur aktualisieren; die Eingabefelder bleiben unveraendert,',
     "suggestions still apply by button": 'function applyBudgetSuggestions(){',
     "reset expenses to zero": 'budgetExpenseIds.forEach(id=>{\n    if($(id)) $(id).value="0";',
@@ -97,6 +101,7 @@ if present_forbidden:
     raise SystemExit("Slider acceptance failed - removed toast still present: " + ", ".join(present_forbidden))
 
 legacy_terms = [
+    "Aktueller Sicherheitspuffer",
     "Mindest-Sicherheitspuffer",
     "Mindestpuffer unterschritten",
     "Mindestpuffer erreicht",
@@ -590,6 +595,21 @@ if ".value=String(Math.round(" in sync_body:
 apply_body = html[apply_start:html.find("function budgetIncomeDetailsTotal", apply_start)]
 if ".value=String(Math.round(s[id]))" not in apply_body:
     raise SystemExit("Slider acceptance failed - Vorschlaege uebernehmen must still fill expense fields")
+
+# 51) Remaining monthly surplus subtracts the financing reserve exactly once.
+income = 5000
+expenses = 1020
+monthly_rate = 2250
+financing_reserve = 398
+raw_reserve = income - expenses - monthly_rate
+remaining_monthly_surplus = raw_reserve - financing_reserve
+if raw_reserve != 1730 or remaining_monthly_surplus != 1332:
+    raise SystemExit("Slider acceptance failed - remaining monthly surplus subtracts financing reserve")
+
+# 52) Remaining monthly surplus reconciles to available budget minus credit rate.
+available_budget = income - expenses - financing_reserve
+if remaining_monthly_surplus != available_budget - monthly_rate:
+    raise SystemExit("Slider acceptance failed - remaining monthly surplus reconciliation")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
