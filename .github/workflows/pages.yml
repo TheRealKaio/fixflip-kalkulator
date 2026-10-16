@@ -270,7 +270,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.202");',1)
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.203");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -312,7 +312,7 @@ jobs:
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer in s:
-              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.202");',1)
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.203");',1)
 
           old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
             addPage();
@@ -365,34 +365,34 @@ jobs:
           footer_loop_old = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.202");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.203");',
               '  }'
           ])
           footer_loop_new = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
               '    drawPdfBrandLogo(doc);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.202");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.203");',
               '  }'
           ])
           if footer_loop_old in s:
               s = s.replace(footer_loop_old, footer_loop_new, 1)
 
-          s = s.replace("V8.152","V8.202")
+          s = s.replace("V8.152","V8.203")
           final_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.202");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.203");
           }'''
           final_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
             // Abschluss-Pass: Logo auf jeder Seite nochmals zeichnen, insbesondere Seite 1.
             drawPdfBrandLogo(doc);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.202");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.203");
           }'''
           if final_loop_old in s:
               s = s.replace(final_loop_old,final_loop_new,1)
           s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.202", {updateViaCache:"none"})')
+          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.203", {updateViaCache:"none"})')
 
           p.write_text(s,encoding="utf-8")
           PY
@@ -406,7 +406,12 @@ jobs:
           scripts = re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', html, flags=re.I | re.S)
           Path("/tmp/fixflip-inline.js").write_text("\n;\n".join(scripts), encoding="utf-8")
           PY
-          node --check /tmp/fixflip-inline.js\n\n          # Product acceptance: test the generated site against the actual slider requirement.\n          python scripts/verify_budget_slider.py _site/index.html\n\n          # Deployment gate: fail the build unless the generated site actually contains
+          node --check /tmp/fixflip-inline.js
+
+          # Product acceptance: test the generated site against the actual slider requirement.
+          python scripts/verify_budget_slider.py _site/index.html
+
+          # Deployment gate: fail the build unless the generated site actually contains
           # the version and UI changes expected for this release.
           python - <<'PY'
           from pathlib import Path
@@ -415,11 +420,11 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.202": "V8.202" in index,
-              "service-worker registration V8.202": 'service-worker.js?v=8.202' in index,
+              "visible/PDF version V8.203": "V8.203" in index,
+              "service-worker registration V8.203": 'service-worker.js?v=8.203' in index,
               "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
               "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
-              "service-worker cache version V8.202": "neustart-immocheck-v8.202" in sw,
+              "service-worker cache version V8.203": "neustart-immocheck-v8.203" in sw,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
