@@ -1518,7 +1518,7 @@ required_v8203_tokens = [
     'Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten.',
     'const maxRateByReserve=Math.max(0,ratePool-minimumReserve);',
     'const maxRateByPct=Math.max(0,net*0.45);',
-    'Sicherheitspuffer: "+eur(m.reserve)',
+    'Sicherheitspuffer: "+eur(m.rawReserve)',
     ':not(#budgetRateSlider),select\')',
     'const budgetRateIncomeIds=new Set([',
     'const budgetRateExpenseIds=new Set([',
