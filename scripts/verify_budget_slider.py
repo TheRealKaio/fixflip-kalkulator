@@ -55,6 +55,12 @@ required_implementation = {
     "initial rate uses existing max": 'const initialRatePct=Math.max(0,m.maxRatePct||0);',
     "initial rate stored once": 'localStorage.setItem("ff_budget_rateSliderPct",String(initialRatePct));',
     "initialization disabled afterwards": 'budgetRateNeedsInitialValue=false;',
+    "loan monthly rate from max loan": 'const loanMonthlyRate=loan*debtServicePct/12;',
+    "interest part from max loan": 'const interestPart=loan*interestPct/12;',
+    "repayment part from max loan": 'const repaymentPart=loan*repaymentPct/12;',
+    "remaining debt uses loan monthly rate": 'loanMonthlyRate*((factor-1)/r)',
+    "monthly rate label renamed": 'Monatliche Rate (Max. Darlehen)',
+    "monthly rate UI uses loan rate": 'eur(m.loanMonthlyRate)',
     "post-sync recalculation render": 'renderBudget();',
 }
 
@@ -332,6 +338,22 @@ if not (needs_initial and previous_rate == 0):
 needs_initial = False
 if needs_initial:
     raise SystemExit("Slider acceptance failed - initial rate state must disable after first initialization")
+
+# 31) Monthly rate in the debt section is derived from Max. Darlehen, interest and repayment.
+loan = 300000
+interest_pct = 0.04
+repayment_pct = 0.015
+loan_monthly_rate = loan * (interest_pct + repayment_pct) / 12
+interest_part = loan * interest_pct / 12
+repayment_part = loan * repayment_pct / 12
+if round(loan_monthly_rate, 2) != 1375.00:
+    raise SystemExit("Slider acceptance failed - loan monthly rate equals annuity from max loan")
+if round(interest_part, 2) != 1000.00:
+    raise SystemExit("Slider acceptance failed - interest part from max loan")
+if round(repayment_part, 2) != 375.00:
+    raise SystemExit("Slider acceptance failed - repayment part from max loan")
+if round(interest_part + repayment_part, 2) != round(loan_monthly_rate, 2):
+    raise SystemExit("Slider acceptance failed - interest and repayment sum to loan monthly rate")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
