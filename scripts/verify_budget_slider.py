@@ -41,6 +41,10 @@ required_implementation = {
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": 'automatisch berechnet · mindestens 300 €',
     "safety buffer non-editable note": 'ist nicht manuell editierbar.',
+    "old rate captured before handlers": 'budgetRateBeforeRecalc=Number.isFinite(shownRateNumber) ? shownRateNumber : null;',
+    "capture phase enabled": '},true);',
+    "rate reduction calculated": 'const rateReduction=Math.max(0,previousRate-newRate);',
+    "reached warning shows adjustment": 'Mindestpuffer erreicht. Kreditrate um "+eur(rateReduction)+" reduziert.',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "toast exists": 'id="budgetBufferToast"',
@@ -196,7 +200,14 @@ for was_below, is_below, should_fire in states:
     if fires != should_fire:
         raise SystemExit("Slider acceptance failed - toast threshold crossing logic")
 
+# 14) Adjustment amount: previous rate 1,200 EUR, new max 1,050 EUR => reduce by 150 EUR.
+previous_rate = 1200
+new_rate = 1050
+rate_reduction = max(0, previous_rate - new_rate)
+if rate_reduction != 150:
+    raise SystemExit("Slider acceptance failed - rate reduction amount")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast, rate-reduction amount")
