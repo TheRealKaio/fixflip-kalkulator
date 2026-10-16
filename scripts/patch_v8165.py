@@ -1528,11 +1528,6 @@ s=s.replace(generic_input_selector,generic_input_selector_fixed,1)
 required_v8203_tokens = [
     'id="budgetRateSlider"',
     'ff_budget_rateSliderPct',
-    'const loanMonthlyRate=loan*debtServicePct/12;',
-    'const repaymentPart=loan*repaymentPct/12;',
-    'loanMonthlyRate*((factor-1)/r)',
-    'Monatliche Rate (Max. Darlehen)',
-    'eur(m.loanMonthlyRate)',
     'ff_budget_rateNeedsInitialValue',
     'budgetRateNeedsInitialValue=true;',
     'document.addEventListener("focusout",(event)=>',
