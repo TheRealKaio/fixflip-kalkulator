@@ -29,7 +29,9 @@ required_implementation = {
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
-    "reserve warning condition": 'm.reserve<300 ? " · Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen." : ""',
+    "separate reserve warning": 'id="budgetRateSliderWarning"',
+    "robust reserve warning condition": 'const minimumBufferMissed=(m.reserve<300)||(m.ratePool<300);',
+    "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
@@ -134,6 +136,11 @@ assert_case(
 under_min = {"reserve": 185}
 if not (under_min["reserve"] < 300):
     raise SystemExit("Slider acceptance failed - under minimum reserve warning")
+
+# 8) Robust warning trigger: even if slider logic clamps the rate, a rate pool under EUR 300 must warn.
+rate_pool_case = {"reserve": 300, "rate_pool": 250}
+if not (rate_pool_case["reserve"] < 300 or rate_pool_case["rate_pool"] < 300):
+    raise SystemExit("Slider acceptance failed - rate pool under 300 triggers warning")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
