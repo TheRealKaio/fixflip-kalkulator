@@ -1671,10 +1671,10 @@ missing_v8224_tokens=[token for token in required_v8224_tokens if token not in s
 if missing_v8224_tokens:
     raise SystemExit("V8.226 credit-rate cap verification failed: "+", ".join(missing_v8224_tokens))
 
-# V8.226: Nachtraegliche Ausgabenerhoehungen reduzieren die Rate zugunsten des Mindestpuffers.
+# V8.226: Jede nachtraegliche Ausgabenaenderung setzt die Rate auf die neu sichere Maximalrate.
 required_v8225_tokens = [
     'const expenseChanged=budgetRateExpenseIds.has(el.id);',
-    'const adjustedRate=expenseChanged ? Math.min(previousRate,Math.max(0,recalculated.rateCap||0)) : previousRate;',
+    'const adjustedRate=expenseChanged ? Math.max(0,recalculated.rateCap||0) : previousRate;',
     'const preservedRatePct=recalculated.net>0 ? (adjustedRate/recalculated.net)*100 : 0;'
 ]
 missing_v8225_tokens=[token for token in required_v8225_tokens if token not in s]
