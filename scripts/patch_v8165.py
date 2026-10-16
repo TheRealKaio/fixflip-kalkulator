@@ -1458,11 +1458,14 @@ budget_recalc_listener = '''const budgetRateRecalcIds=new Set([
 document.addEventListener("input",(event)=>{
   const el=event.target;
   if(!el || !budgetRateRecalcIds.has(el.id)) return;
-  if(budgetRateBeforeRecalc===null){
-    const shownRateText=$("budgetRate") ? $("budgetRate").textContent : "";
-    const shownRateNumber=Number(String(shownRateText).replace(/[^0-9,.-]/g,"").replace(/\./g,"").replace(",","."));
-    budgetRateBeforeRecalc=Number.isFinite(shownRateNumber) ? shownRateNumber : null;
-  }
+  const shownRateText=$("budgetRate") ? $("budgetRate").textContent : "";
+  const shownRateNumber=Number(String(shownRateText).replace(/[^0-9,.-]/g,"").replace(/\./g,"").replace(",","."));
+  budgetRateBeforeRecalc=Number.isFinite(shownRateNumber) ? shownRateNumber : null;
+},true);
+
+document.addEventListener("input",(event)=>{
+  const el=event.target;
+  if(!el || !budgetRateRecalcIds.has(el.id)) return;
 
   // Die Ziel-Feldhandler haben zu diesem Zeitpunkt z. B. das Haushaltsnetto
   // bereits aus den Einkommensdetails synchronisiert.
@@ -1531,6 +1534,9 @@ required_v8203_tokens = [
     'automatisch berechnet · mindestens 300 €',
     'ist nicht manuell editierbar.',
     '"Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen."',
+    'document.addEventListener("input",(event)=>',
+    'budgetRateBeforeRecalc=Number.isFinite(shownRateNumber) ? shownRateNumber : null;',
+    '},true);',
     'const previousRate=Math.max(0,Number(budgetRateBeforeRecalc)||0);',
     'const rateReduction=Math.max(0,previousRate-newRate);',
     'Mindestpuffer erreicht. Kreditrate um "+eur(rateReduction)+" reduziert.',
