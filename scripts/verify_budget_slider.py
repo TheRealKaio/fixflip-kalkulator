@@ -31,13 +31,13 @@ required_implementation = {
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "current buffer uses model reserve": 'const currentBuffer=Math.max(0,Number(m.reserve)||0);',
-    "under 300 threshold": 'const minimumBufferBelow=currentBuffer<300;',
-    "exact 300 threshold": 'const minimumBufferReached=Math.abs(currentBuffer-300)<=0.005;',
-    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-currentBuffer);',
-    "warning hidden above 300": '$("budgetRateSliderWarning").hidden=currentBuffer>300;',
+    "under minimum threshold": 'const minimumBufferBelow=currentBuffer<minimumReserve-0.005;',
+    "exact minimum threshold": 'const minimumBufferReached=Math.abs(currentBuffer-minimumReserve)<=0.005;',
+    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,minimumReserve-currentBuffer);',
+    "warning hidden above minimum": '$("budgetRateSliderWarning").hidden=currentBuffer>minimumReserve+0.005;',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
-    "safety buffer auto label": 'automatisch berechnet · mindestens 300 €',
+    "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     "safety buffer non-editable note": 'ist nicht manuell editierbar.',
     "capture phase enabled": '},true);',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
@@ -223,7 +223,7 @@ previous_rate = 1200
 new_rate = 1115
 pre_adjustment_undershoot = max(0, previous_rate - new_rate)
 if pre_adjustment_undershoot != 85:
-    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, buffer state only")
+    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, dynamic minimum reserve")
 
 
 
@@ -244,6 +244,31 @@ current_buffer = 215
 shortfall = max(0, 300 - current_buffer)
 if not (current_buffer < 300 and shortfall == 85):
     raise SystemExit("Slider acceptance failed - under-300 shortfall")
+
+# 21) Minimum reserve: 10% of free budget, but at least EUR 300.
+rate_pool = 3000
+minimum_reserve = max(300, rate_pool * 0.10)
+if minimum_reserve != 300:
+    raise SystemExit("Slider acceptance failed - minimum reserve floor")
+
+rate_pool = 4000
+minimum_reserve = max(300, rate_pool * 0.10)
+if minimum_reserve != 400:
+    raise SystemExit("Slider acceptance failed - minimum reserve 10 percent of free budget")
+
+# 22) Maximum rate is free budget minus minimum reserve.
+rate_pool = 4000
+minimum_reserve = max(300, rate_pool * 0.10)
+max_rate_by_reserve = max(0, rate_pool - minimum_reserve)
+if max_rate_by_reserve != 3600:
+    raise SystemExit("Slider acceptance failed - max rate after minimum reserve")
+
+# 23) Warning compares current buffer to dynamic minimum reserve.
+current_buffer = 315
+minimum_reserve = 400
+shortfall = max(0, minimum_reserve - current_buffer)
+if not (current_buffer < minimum_reserve and shortfall == 85):
+    raise SystemExit("Slider acceptance failed - dynamic minimum reserve warning")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
