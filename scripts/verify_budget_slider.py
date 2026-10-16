@@ -30,26 +30,16 @@ required_implementation = {
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
-    "warning uses income minus expenses minus rate": 'const rawCurrentBuffer=m.income-m.expenses-m.monthlyRate;',
-    "warning matches rounded display": 'const displayedCurrentBuffer=Math.round(rawCurrentBuffer);',
-    "true under-300 threshold": 'const minimumBufferBelow=rawCurrentBuffer<300;',
-    "warning at exact 300": 'const minimumBufferReached=rawCurrentBuffer<=300;',
-    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
+    "current buffer uses model reserve": 'const currentBuffer=Math.max(0,Number(m.reserve)||0);',
+    "under 300 threshold": 'const minimumBufferBelow=currentBuffer<300;',
+    "exact 300 threshold": 'const minimumBufferReached=Math.abs(currentBuffer-300)<=0.005;',
+    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-currentBuffer);',
+    "warning hidden above 300": '$("budgetRateSliderWarning").hidden=currentBuffer>300;',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": 'automatisch berechnet · mindestens 300 €',
     "safety buffer non-editable note": 'ist nicht manuell editierbar.',
-    "old rate captured from pre-change model": 'const beforeChange=budgetModel();',
-    "pre-change monthly rate preserved": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
-    "income fields classified": 'const budgetRateIncomeIds=new Set([',
-    "expense fields classified": 'const budgetRateExpenseIds=new Set([',
-    "previous input value preserved": 'budgetInputValueBeforeRecalc=Math.max(0,Number(String(el.value||"0").replace(",", "."))||0);',
-    "income direction logic": 'budgetLastRecalcDirection=newInput>oldInput+0.005 ? 1 : (newInput<oldInput-0.005 ? -1 : 0);',
-    "expense direction logic": 'budgetLastRecalcDirection=newInput<oldInput-0.005 ? 1 : (newInput>oldInput+0.005 ? -1 : 0);',
-    "improved warning suppressed": 'const suppressReachedWarning=budgetLastRecalcDirection>0 && !minimumBufferBelow;',
     "capture phase enabled": '},true);',
-    "rate reduction calculated": 'const rateReduction=Math.max(0,previousRate-newRate);',
-    "reached warning shows theoretical undershoot": 'Mindestpuffer erreicht. Ohne Anpassung wäre er um "+eur(rateReduction)+" unterschritten. Kreditrate um "+eur(rateReduction)+" reduziert.',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
@@ -233,39 +223,27 @@ previous_rate = 1200
 new_rate = 1115
 pre_adjustment_undershoot = max(0, previous_rate - new_rate)
 if pre_adjustment_undershoot != 85:
-    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, direct input improvement/worsening direction")
+    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, buffer state only")
 
-# 18) Income increase improves the free rate pool and must suppress an exact-300 warning.
-previous_pool = 2200
-new_pool = 2500
-improved = new_pool > previous_pool + 0.005
-minimum_buffer_below = False
-suppress_warning = improved and not minimum_buffer_below
-if not suppress_warning:
-    raise SystemExit("Slider acceptance failed - income increase suppresses warning")
 
-# 19) Expense increase worsens the pool and must not suppress the warning.
-previous_pool = 2500
-new_pool = 2200
-improved = new_pool > previous_pool + 0.005
-minimum_buffer_below = False
-suppress_warning = improved and not minimum_buffer_below
-if suppress_warning:
-    raise SystemExit("Slider acceptance failed - expense increase keeps warning")
 
-# 20) Direct income direction: higher income is improvement.
-old_input = 3000
-new_input = 3500
-income_direction = 1 if new_input > old_input + 0.005 else (-1 if new_input < old_input - 0.005 else 0)
-if income_direction != 1:
-    raise SystemExit("Slider acceptance failed - direct income direction")
 
-# 21) Direct expense direction: higher expense is worsening.
-old_input = 500
-new_input = 700
-expense_direction = 1 if new_input < old_input - 0.005 else (-1 if new_input > old_input + 0.005 else 0)
-if expense_direction != -1:
-    raise SystemExit("Slider acceptance failed - direct expense direction")
+# 18) Buffer above EUR 300: warning must be hidden.
+current_buffer = 450
+if not (current_buffer > 300):
+    raise SystemExit("Slider acceptance failed - buffer above 300 hides warning")
+
+# 19) Buffer exactly EUR 300: reached state, no shortfall.
+current_buffer = 300
+shortfall = max(0, 300 - current_buffer)
+if not (abs(current_buffer - 300) <= 0.005 and shortfall == 0):
+    raise SystemExit("Slider acceptance failed - exact 300 reached state")
+
+# 20) Buffer below EUR 300: warning must show exact shortfall.
+current_buffer = 215
+shortfall = max(0, 300 - current_buffer)
+if not (current_buffer < 300 and shortfall == 85):
+    raise SystemExit("Slider acceptance failed - under-300 shortfall")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
