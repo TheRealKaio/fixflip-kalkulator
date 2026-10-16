@@ -23,8 +23,8 @@ required_implementation = {
     "45 percent limit": 'const maxRateByPct=Math.max(0,net*0.45);',
     "earlier limit wins": 'const rateCap=Math.max(0,Math.min(maxRateByReserve,maxRateByPct));',
     "initial rate from minimum reserve": 'const defaultRate=Math.max(0,ratePool-minimumReserve);',
-    "initial/stored value clamped": 'const selectedRatePct=Math.max(0,Math.min(maxRatePct,requestedRatePct));',
-    "left edge supports zero": 'const selectedPct=Math.max(0,Math.min(maxPct,Number($("budgetRateSlider").value)||0));',
+    "stored rate may remain temporarily above safe maximum": 'const selectedRatePct=Math.max(0,requestedRatePct);',
+    "left edge supports zero": 'const selectedPct=Math.max(0,Math.min(sliderMaxPct,Number($("budgetRateSlider").value)||0));',
     "reserve moves opposite to rate": 'const totalReserve=Math.max(0,(current.ratePool||0)-selectedRate);',
     "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
@@ -46,8 +46,8 @@ required_implementation = {
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
-    "slider jumps to recalculated maximum": 'const newPct=Math.max(0,m.maxRatePct||0);',
-    "rate jumps to recalculated maximum": 'const newRate=Math.max(0,m.maxMonthlyRate||0);',
+    "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
+    "previous rate preserved after recalculation": 'const preservedRatePct=recalculated.net>0 ? (previousRate/recalculated.net)*100 : 0;',
     "post-sync recalculation render": 'renderBudget();',
 }
 
@@ -268,6 +268,27 @@ minimum_reserve = 400
 shortfall = max(0, minimum_reserve - current_buffer)
 if not (current_buffer < minimum_reserve and shortfall == 85):
     raise SystemExit("Slider acceptance failed - dynamic minimum reserve warning")
+
+# 24) Expense increase keeps the absolute credit rate so the buffer can really fall below the minimum.
+previous_rate = 2600
+income = 4000
+expenses = 1200
+rate_pool = max(0, income - expenses)
+minimum_reserve = max(300, rate_pool * 0.10)
+current_buffer = max(0, rate_pool - previous_rate)
+shortfall = max(0, minimum_reserve - current_buffer)
+if not (current_buffer == 200 and minimum_reserve == 300 and shortfall == 100):
+    raise SystemExit("Slider acceptance failed - expense increase keeps absolute credit rate")
+
+# 25) Income increase with unchanged absolute credit rate raises the actual buffer.
+previous_rate = 2600
+income = 4300
+expenses = 1020
+rate_pool = max(0, income - expenses)
+minimum_reserve = max(300, rate_pool * 0.10)
+current_buffer = max(0, rate_pool - previous_rate)
+if not (minimum_reserve == 328 and current_buffer == 680 and current_buffer > minimum_reserve):
+    raise SystemExit("Slider acceptance failed - income increase raises current buffer")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
