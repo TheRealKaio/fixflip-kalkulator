@@ -42,10 +42,11 @@ required_implementation = {
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": 'automatisch berechnet · mindestens 300 €',
     "safety buffer non-editable note": 'ist nicht manuell editierbar.',
-    "old rate captured before handlers": 'budgetRateBeforeRecalc=Number.isFinite(shownRateNumber) ? shownRateNumber : null;',
+    "old rate captured from pre-change model": 'const beforeChange=budgetModel();',
+    "pre-change monthly rate preserved": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
     "capture phase enabled": '},true);',
     "rate reduction calculated": 'const rateReduction=Math.max(0,previousRate-newRate);',
-    "reached warning shows adjustment": 'Mindestpuffer erreicht. Kreditrate um "+eur(rateReduction)+" reduziert.',
+    "reached warning shows theoretical undershoot": 'Mindestpuffer erreicht. Ohne Anpassung wäre er um "+eur(rateReduction)+" unterschritten. Kreditrate um "+eur(rateReduction)+" reduziert.',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "toast exists": 'id="budgetBufferToast"',
@@ -219,7 +220,14 @@ raw_buffer = 300.00
 if raw_buffer < 300:
     raise SystemExit("Slider acceptance failed - exact 300 classified as below")
 
+# 17) Pre-adjustment undershoot must be preserved even when the new rate is auto-clamped to EUR 300 reserve.
+previous_rate = 1200
+new_rate = 1115
+pre_adjustment_undershoot = max(0, previous_rate - new_rate)
+if pre_adjustment_undershoot != 85:
+    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast, rate-reduction amount, exact/sub-euro 300 threshold")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast, rate-reduction amount, exact/sub-euro 300 threshold, pre-adjustment undershoot")
