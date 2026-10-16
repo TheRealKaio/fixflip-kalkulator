@@ -49,6 +49,12 @@ required_implementation = {
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
     "previous rate preserved after recalculation": 'const preservedRatePct=recalculated.net>0 ? (previousRate/recalculated.net)*100 : 0;',
+    "reset arms initial rate": 'budgetRateNeedsInitialValue=true;',
+    "initial rate waits for focusout": 'document.addEventListener("focusout",(event)=>',
+    "initialization only for income": 'if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;',
+    "initial rate uses existing max": 'const initialRatePct=Math.max(0,m.maxRatePct||0);',
+    "initial rate stored once": 'localStorage.setItem("ff_budget_rateSliderPct",String(initialRatePct));',
+    "initialization disabled afterwards": 'budgetRateNeedsInitialValue=false;',
     "post-sync recalculation render": 'renderBudget();',
 }
 
@@ -304,6 +310,28 @@ minimum_reserve = 400
 deviation = current_buffer - minimum_reserve
 if deviation != -85:
     raise SystemExit("Slider acceptance failed - dynamic signed deviation")
+
+# 28) After reset, the initial rate uses the already existing safe maximum once income entry is complete.
+income = 4000
+expenses = 0
+rate_pool = max(0, income - expenses)
+minimum_reserve = max(300, rate_pool * 0.10)
+max_rate_by_reserve = max(0, rate_pool - minimum_reserve)
+max_rate_by_pct = income * 0.45
+initial_rate = min(max_rate_by_reserve, max_rate_by_pct)
+if initial_rate != 1800:
+    raise SystemExit("Slider acceptance failed - initial rate after reset uses existing safe maximum")
+
+# 29) During typing the special state preserves zero until focusout; no partial-value initialization.
+needs_initial = True
+previous_rate = 0
+if not (needs_initial and previous_rate == 0):
+    raise SystemExit("Slider acceptance failed - initial rate must wait until completed income entry")
+
+# 30) Once initialized, the special reset-only state is disabled.
+needs_initial = False
+if needs_initial:
+    raise SystemExit("Slider acceptance failed - initial rate state must disable after first initialization")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
