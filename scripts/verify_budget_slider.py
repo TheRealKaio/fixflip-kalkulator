@@ -56,6 +56,16 @@ required_implementation = {
     "remaining monthly surplus summary row": '<span>- Verbleibender Monatsüberschuss</span><strong id="budgetReserveResult">–</strong>',
     "remaining monthly surplus summary value": 'if($("budgetReserveResult")) $("budgetReserveResult").textContent=eur(m.remainingMonthlySurplus);',
     "remaining monthly surplus PDF": 'line("Verbleibender Monatsueberschuss",pdfMoney(m.additionalBuffer));',
+    "own budget import button": 'id="ownImportBudgetValues">Budgetwerte übernehmen</button>',
+    "own imported income display": 'id="ownHouseholdIncome"',
+    "own imported expenses display": 'id="ownHouseholdExpenses"',
+    "own property cost display": 'id="ownHouseholdPropertyCost"',
+    "own remaining surplus display": 'id="ownHouseholdRemaining"',
+    "own budget import source": 'const budget=budgetModel();',
+    "own remaining surplus calculation": 'const remaining=imported.hasValues ? imported.income-imported.expenses-propertyCost : null;',
+    "own budget reset income": 'localStorage.removeItem("ff_own_budget_income");',
+    "own budget reset expenses": 'localStorage.removeItem("ff_own_budget_expenses");',
+    "own budget reset timestamp": 'localStorage.removeItem("ff_own_budget_imported_at");',
     "suggestions do not auto-fill": 'function syncBudgetSuggestions(){\n  // Vorschlaege nur aktualisieren; die Eingabefelder bleiben unveraendert,',
     "suggestions still apply by button": 'function applyBudgetSuggestions(){',
     "reset expenses to zero": 'budgetExpenseIds.forEach(id=>{\n    if($(id)) $(id).value="0";',
@@ -610,6 +620,21 @@ if raw_reserve != 1730 or remaining_monthly_surplus != 1332:
 available_budget = income - expenses - financing_reserve
 if remaining_monthly_surplus != available_budget - monthly_rate:
     raise SystemExit("Slider acceptance failed - remaining monthly surplus reconciliation")
+
+# 53) Eigennutzung budget transfer uses real household values and concrete property costs.
+household_income = 5000
+household_expenses = 1020
+credit_rate = 2250
+running_property_costs = 350
+property_cost = credit_rate + running_property_costs
+remaining = household_income - household_expenses - property_cost
+if property_cost != 2600 or remaining != 1380:
+    raise SystemExit("Slider acceptance failed - own-use budget transfer calculation")
+
+# 54) Financing reserve must not be subtracted again in Eigennutzung.
+financing_reserve = 398
+if remaining == household_income - household_expenses - property_cost - financing_reserve:
+    raise SystemExit("Slider acceptance failed - financing reserve must not be double-subtracted in Eigennutzung")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
