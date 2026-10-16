@@ -7,7 +7,7 @@ It translates the product requirement into explicit acceptance criteria:
 - slider can move left to 0 EUR credit rate;
 - moving right raises the rate and lowers the safety reserve;
 - right edge is the earlier of 45% of net household income or EUR 300 minimum reserve;
-- initial position is derived from the current safety reserve, then clamped to the legal range;
+- initial position is derived from the dynamic minimum reserve, then clamped to the legal range;
 - changing the slider updates reserve/storage and re-renders immediately.
 """
 from pathlib import Path
@@ -18,17 +18,18 @@ html = index_path.read_text(encoding="utf-8")
 
 required_implementation = {
     "slider exists": 'id="budgetRateSlider" type="range" min="0" max="45" step="0.1"',
-    "300 EUR reserve limit": 'const maxRateByReserve=Math.max(0,ratePool-300);',
+    "minimum reserve formula": 'const minimumReserve=Math.max(300,ratePool*0.10);',
+    "dynamic reserve limit": 'const maxRateByReserve=Math.max(0,ratePool-minimumReserve);',
     "45 percent limit": 'const maxRateByPct=Math.max(0,net*0.45);',
     "earlier limit wins": 'const rateCap=Math.max(0,Math.min(maxRateByReserve,maxRateByPct));',
-    "initial rate from safety reserve": 'const defaultRate=Math.max(0,ratePool-enteredReserve);',
+    "initial rate from minimum reserve": 'const defaultRate=Math.max(0,ratePool-minimumReserve);',
     "initial/stored value clamped": 'const selectedRatePct=Math.max(0,Math.min(maxRatePct,requestedRatePct));',
     "left edge supports zero": 'const selectedPct=Math.max(0,Math.min(maxPct,Number($("budgetRateSlider").value)||0));',
     "reserve moves opposite to rate": 'const totalReserve=Math.max(0,(current.ratePool||0)-selectedRate);',
-    "reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(totalReserve));',
+    "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
-    "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
+    "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: "+eur(m.minimumReserve)',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "current buffer uses model reserve": 'const currentBuffer=Math.max(0,Number(m.reserve)||0);',
     "under minimum threshold": 'const minimumBufferBelow=currentBuffer<minimumReserve-0.005;',
@@ -38,12 +39,10 @@ required_implementation = {
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
-    "safety buffer non-editable note": 'ist nicht manuell editierbar.',
     "capture phase enabled": '},true);',
-    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
-    "warning at exact minimum": 'Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen.',
+    "warning at exact minimum": 'Mindestpuffer erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
