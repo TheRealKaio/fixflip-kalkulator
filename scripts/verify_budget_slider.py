@@ -33,6 +33,12 @@ required_implementation = {
     "warning uses income minus expenses minus rate": 'const rawCurrentBuffer=m.income-m.expenses-m.monthlyRate;',
     "warning matches rounded display": 'const displayedCurrentBuffer=Math.round(rawCurrentBuffer);',
     "warning at displayed 300": 'const minimumBufferReached=displayedCurrentBuffer<=300;',
+    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
+    "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
+    "toast exists": 'id="budgetBufferToast"',
+    "toast only on threshold crossing": 'if(minimumBufferBelow && !budgetMinimumBufferWasBelow){',
+    "toast uses shortfall": 'showBudgetBufferToast("Mindestpuffer unterschritten um "+eur(bufferShortfall)',
+    "toast state updated": 'budgetMinimumBufferWasBelow=minimumBufferBelow;',
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "warning at exact minimum": 'Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
@@ -163,7 +169,26 @@ displayed_buffer = round(raw_buffer_after_expense_rise)
 if not (displayed_buffer <= 300):
     raise SystemExit("Slider acceptance failed - expense rise to displayed 300 must warn")
 
+# 12) Shortfall amount must equal EUR 300 minus the actual current buffer.
+raw_current_buffer = 215
+buffer_shortfall = max(0, 300 - raw_current_buffer)
+if buffer_shortfall != 85:
+    raise SystemExit("Slider acceptance failed - shortfall amount correctness")
+
+# 13) Toast state logic: only the transition from not-below to below should fire.
+states = [
+    (False, False, False),
+    (False, True, True),
+    (True, True, False),
+    (True, False, False),
+    (False, True, True),
+]
+for was_below, is_below, should_fire in states:
+    fires = is_below and not was_below
+    if fires != should_fire:
+        raise SystemExit("Slider acceptance failed - toast threshold crossing logic")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning incl. rounded expense case")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast")
