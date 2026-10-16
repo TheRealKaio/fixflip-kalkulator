@@ -1849,12 +1849,6 @@ if old_sync_suggestions not in s:
 s=s.replace(old_sync_suggestions,new_sync_suggestions,1)
 
 # Finanzierungsreserve erst berechnen, sobald ein positives Haushaltsnettoeinkommen vorliegt.
-s=s.replace(
-    'const minimumReserve=Math.max(300,freeBudget*0.10);',
-    'const minimumReserve=net>0 ? Math.max(300,freeBudget*0.10) : 0;',
-    1
-)
-
 old_sync_reserve = '''  const freeBudget=income-expenses;
   const minimumReserve=Math.max(300,freeBudget*0.10);
   budgetAutoUpdating=true;'''
@@ -1864,6 +1858,12 @@ new_sync_reserve = '''  const freeBudget=income-expenses;
 if old_sync_reserve not in s:
     raise SystemExit("V8.233 reserve sync anchor not found")
 s=s.replace(old_sync_reserve,new_sync_reserve,1)
+
+old_model_reserve = '  const minimumReserve=Math.max(300,freeBudget*0.10);'
+new_model_reserve = '  const minimumReserve=net>0 ? Math.max(300,freeBudget*0.10) : 0;'
+if old_model_reserve not in s:
+    raise SystemExit("V8.233 budget model reserve anchor not found")
+s=s.replace(old_model_reserve,new_model_reserve,1)
 
 # Reset erzwingt 0 EUR fuer alle festen Ausgaben und fuer die Finanzierungsreserve.
 reset_anchor = '''  if($("budgetIncomeEmployment")) $("budgetIncomeEmployment").value="0";
