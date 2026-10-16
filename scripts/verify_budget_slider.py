@@ -29,6 +29,7 @@ required_implementation = {
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
+    "reserve warning condition": 'm.reserve<300 ? " · Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen." : ""',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
@@ -129,7 +130,12 @@ assert_case(
     pct=45,
 )
 
+# 7) Warning threshold: any computed reserve below EUR 300 must trigger the warning condition.
+under_min = {"reserve": 185}
+if not (under_min["reserve"] < 300):
+    raise SystemExit("Slider acceptance failed - under minimum reserve warning")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income/expense recalculation, net-income basis")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income/expense recalculation, net-income basis, under-300 warning")
