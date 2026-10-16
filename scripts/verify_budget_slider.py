@@ -31,12 +31,14 @@ required_implementation = {
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: "+eur(m.minimumReserve)',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
-    "current buffer uses model reserve": 'const currentBuffer=Math.max(0,Number(m.reserve)||0);',
-    "under minimum threshold": 'const minimumBufferBelow=currentBuffer<minimumReserve-0.005;',
-    "exact minimum threshold": 'const minimumBufferReached=Math.abs(currentBuffer-minimumReserve)<=0.005;',
-    "shortfall amount calculated": 'const bufferShortfall=Math.max(0,minimumReserve-currentBuffer);',
-    "warning hidden above minimum": '$("budgetRateSliderWarning").hidden=currentBuffer>minimumReserve+0.005;',
-    "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
+    "financing guidance intro": 'Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten.',
+    "raw reserve exposed": 'const rawReserve=ratePool-monthlyRate;',
+    "current buffer uses raw reserve": 'const currentBuffer=Number.isFinite(Number(m.rawReserve)) ? Number(m.rawReserve) : 0;',
+    "signed deviation calculated": 'const bufferDeviation=currentBuffer-minimumReserve;',
+    "under minimum threshold": 'const minimumBufferBelow=bufferDeviation<-0.005;',
+    "exact minimum threshold": 'const minimumBufferReached=Math.abs(bufferDeviation)<=0.005;',
+    "warning hidden above minimum": '$("budgetRateSliderWarning").hidden=bufferDeviation>0.005;',
+    "signed deviation shown in warning": 'Mindestpuffer unterschritten · Abweichung: "+eur(bufferDeviation)',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     "capture phase enabled": '},true);',
@@ -289,6 +291,20 @@ minimum_reserve = max(300, rate_pool * 0.10)
 current_buffer = max(0, rate_pool - previous_rate)
 if not (minimum_reserve == 328 and current_buffer == 680 and current_buffer > minimum_reserve):
     raise SystemExit("Slider acceptance failed - income increase raises current buffer")
+
+# 26) Signed deviation may exceed EUR 300 when the actual buffer is negative.
+current_buffer = -150
+minimum_reserve = 300
+deviation = current_buffer - minimum_reserve
+if deviation != -450:
+    raise SystemExit("Slider acceptance failed - negative deviation beyond 300")
+
+# 27) Dynamic minimum reserve also uses signed deviation.
+current_buffer = 315
+minimum_reserve = 400
+deviation = current_buffer - minimum_reserve
+if deviation != -85:
+    raise SystemExit("Slider acceptance failed - dynamic signed deviation")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
