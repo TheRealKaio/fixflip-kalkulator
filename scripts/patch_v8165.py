@@ -235,7 +235,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.201: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.202: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -590,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.201: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.202: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -713,7 +713,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.201: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.202: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -811,7 +811,7 @@ new_budget_pdf_flow = '''
   line("Zusaetzlicher Monats-Puffer",pdfMoney(m.additionalBuffer));
   line("Maximal tragbare Kreditrate",pdfMoney(m.monthlyRate),true);
 
-  // V8.201: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
+  // V8.202: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
   doc.addPage();
   drawPdfBrandHeader(
     doc,
@@ -837,10 +837,10 @@ new_budget_pdf_flow = '''
 
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
-# V8.201 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
+# V8.202 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.201");
+  drawPdfFooter(doc,1,1,"V8.202");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -926,13 +926,13 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.201");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.202");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 
-# V8.201: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+# V8.202: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
 s=s.replace(
     '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
     '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
@@ -1086,10 +1086,10 @@ $("recalc").addEventListener("click",()=>{
   }
 });'''
 
-replace_once(old_recalc_handler, new_recalc_handler, "V8.201 recalc reset handler")
+replace_once(old_recalc_handler, new_recalc_handler, "V8.202 recalc reset handler")
 
 
-# V8.201: Eigennutzung - feste Initial-/Reset-Standardwerte.
+# V8.202: Eigennutzung - feste Initial-/Reset-Standardwerte.
 own_defaults_helper = '''function applyOwnUseStandardValues(){
   const ownDefaults={
     purchase:"0",
@@ -1121,7 +1121,7 @@ own_defaults_helper = '''function applyOwnUseStandardValues(){
 if own_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.201 own defaults reset anchor not found")
+        raise SystemExit("V8.202 own defaults reset anchor not found")
     s = s.replace(target, own_defaults_helper + '\n\n' + target, 1)
 
 own_switch_old = '''      zeroOwnUseGoals();
@@ -1135,7 +1135,7 @@ own_switch_new = '''      zeroOwnUseGoals();
         localStorage.setItem("ff_own_defaults_v8197","1");
       }'''
 if own_switch_old not in s:
-    raise SystemExit("V8.201 own setDealType anchor not found")
+    raise SystemExit("V8.202 own setDealType anchor not found")
 s = s.replace(own_switch_old, own_switch_new, 1)
 
 own_reset_old = '''  stateEl.value="Hamburg";
@@ -1148,11 +1148,11 @@ own_reset_new = '''  if(mode==="own"){
   stateEl.value="Hamburg";
   comp1ManualOverride=false;'''
 if own_reset_old not in s:
-    raise SystemExit("V8.201 own reset injection anchor not found")
+    raise SystemExit("V8.202 own reset injection anchor not found")
 s = s.replace(own_reset_old, own_reset_new, 1)
 
 
-# V8.201: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
+# V8.202: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
 flip_defaults_helper = '''function applyFlipStandardValues(){
   const flipDefaults={
     purchase:"0",
@@ -1185,7 +1185,7 @@ flip_defaults_helper = '''function applyFlipStandardValues(){
 if flip_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.201 flip defaults reset anchor not found")
+        raise SystemExit("V8.202 flip defaults reset anchor not found")
     s = s.replace(target, flip_defaults_helper + '\n\n' + target, 1)
 
 flip_switch_old = '''    } else {
@@ -1203,7 +1203,7 @@ flip_switch_new = '''    } else {
       }
     }'''
 if flip_switch_old not in s:
-    raise SystemExit("V8.201 flip setDealType anchor not found")
+    raise SystemExit("V8.202 flip setDealType anchor not found")
 s = s.replace(flip_switch_old, flip_switch_new, 1)
 
 flip_reset_old = '''  if(mode==="own"){
@@ -1222,7 +1222,7 @@ flip_reset_new = '''  if(mode==="own"){
 
   stateEl.value="Hamburg";'''
 if flip_reset_old not in s:
-    raise SystemExit("V8.201 flip reset injection anchor not found")
+    raise SystemExit("V8.202 flip reset injection anchor not found")
 s = s.replace(flip_reset_old, flip_reset_new, 1)
 
 # Build-time guards: fail deployment if the requested Fix-&-Flip reset values are missing.
@@ -1245,20 +1245,21 @@ required_flip_reset_tokens = [
 ]
 missing_flip_reset_tokens = [token for token in required_flip_reset_tokens if token not in s]
 if missing_flip_reset_tokens:
-    raise SystemExit("V8.201 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
+    raise SystemExit("V8.202 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
 
 
-# V8.201: Adjustable credit-rate slider below "Maximal tragbare Kreditrate".
-# The calculated maximum remains unchanged. Moving the slider below that maximum
-# increases the visible safety buffer by exactly the difference.
+# V8.202: Dynamischer Kreditraten-Regler.
+# Der Regler arbeitet prozentual zum Netto-Haushaltseinkommen.
+# Links endet er bei 0 EUR Kreditrate. Rechts endet er dort, wo zuerst
+# entweder 45 % vom Netto oder 300 EUR Mindest-Sicherheitspuffer erreicht sind.
 slider_css = '''
 .budget-rate-slider-wrap{margin-top:10px;padding:11px 12px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc}
 .budget-rate-slider-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:7px;font-size:11px;color:#52627a}
 .budget-rate-slider-head strong{font-size:12px;color:#172033}
 #budgetRateSlider{width:100%;height:24px;min-height:24px;padding:0;border:0;background:transparent;accent-color:var(--rate-slider-color,#22c55e);cursor:pointer}
-#budgetRateSlider::-webkit-slider-runnable-track{height:7px;border-radius:999px;background:var(--rate-slider-color,#22c55e)}
+#budgetRateSlider::-webkit-slider-runnable-track{height:7px;border-radius:999px;background:linear-gradient(to right,var(--rate-slider-color,#22c55e) 0 var(--rate-slider-fill,0%),#dbe3ec var(--rate-slider-fill,0%) 100%)}
 #budgetRateSlider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--rate-slider-color,#22c55e);border:3px solid #fff;box-shadow:0 1px 5px rgba(15,23,42,.22);margin-top:-6.5px}
-#budgetRateSlider::-moz-range-track{height:7px;border-radius:999px;background:var(--rate-slider-color,#22c55e)}
+#budgetRateSlider::-moz-range-track{height:7px;border-radius:999px;background:#dbe3ec}
 #budgetRateSlider::-moz-range-progress{height:7px;border-radius:999px;background:var(--rate-slider-color,#22c55e)}
 #budgetRateSlider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--rate-slider-color,#22c55e);border:3px solid #fff;box-shadow:0 1px 5px rgba(15,23,42,.22)}
 .budget-rate-slider-note{margin-top:6px;font-size:10.5px;line-height:1.4;color:#64748b}
@@ -1266,88 +1267,101 @@ slider_css = '''
 css_anchor = '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}'
 if slider_css.strip() not in s:
     if css_anchor not in s:
-        raise SystemExit("V8.201 slider CSS anchor not found")
+        raise SystemExit("V8.202 slider CSS anchor not found")
     s=s.replace(css_anchor,css_anchor+slider_css,1)
 
 slider_markup = '''          <div class="budget-rate-slider-wrap">
             <div class="budget-rate-slider-head">
-              <span>Gewählte Kreditrate</span>
+              <span>Maximal tragbare Kreditrate</span>
               <strong id="budgetRateSliderValue">–</strong>
             </div>
-            <input id="budgetRateSlider" type="range" min="0" max="0" step="10" value="0" aria-label="Gewählte Kreditrate">
-            <div class="budget-rate-slider-note" id="budgetRateSliderNote">Die Differenz zur maximal tragbaren Kreditrate erhöht deinen Sicherheitspuffer.</div>
+            <input id="budgetRateSlider" type="range" min="0" max="45" step="0.1" value="0" aria-label="Maximal tragbare Kreditrate in Prozent vom Netto-Haushaltseinkommen">
+            <div class="budget-rate-slider-note" id="budgetRateSliderNote">Nach links sinkt die Kreditrate und der Sicherheitspuffer steigt. Nach rechts umgekehrt.</div>
           </div>
 '''
 guidance_anchor = '          <div class="budget-rate-guidance" id="budgetRateGuidance">Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung.</div>'
 if slider_markup.strip() not in s:
     if guidance_anchor not in s:
-        raise SystemExit("V8.201 slider markup anchor not found")
+        raise SystemExit("V8.202 slider markup anchor not found")
     s=s.replace(guidance_anchor,slider_markup+guidance_anchor,1)
 
-# Keep an explicit guard while the slider writes the safety-buffer field.
 state_anchor='let budgetIncomeAutoUpdating = false;'
 if 'let budgetRateSliderSyncing = false;' not in s:
     if state_anchor not in s:
-        raise SystemExit("V8.201 slider state anchor not found")
+        raise SystemExit("V8.202 slider state anchor not found")
     s=s.replace(state_anchor,state_anchor+'\nlet budgetRateSliderSyncing = false;',1)
 
 old_budget_model='''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
   const available=Math.max(0,income-expenses-reserve);
   const rateCap=available;
   const monthlyRate=available;'''
-new_budget_model='''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
-  const storedRateSliderExtra=Math.max(0,Number(localStorage.getItem("ff_budget_rateSliderExtra")||0));
-  const baseReserve=Math.max(0,reserve-storedRateSliderExtra);
-  const maxAvailable=Math.max(0,income-expenses-baseReserve);
-  const rateSliderExtra=Math.min(storedRateSliderExtra,maxAvailable);
-  const available=Math.max(0,maxAvailable-rateSliderExtra);
-  const rateCap=maxAvailable;
-  const monthlyRate=available;'''
+new_budget_model='''  const enteredReserve=Math.max(0,budgetVal("budgetSafetyReserve"));
+  const ratePool=Math.max(0,income-expenses);
+  const maxRateByReserve=Math.max(0,ratePool-300);
+  const maxRateByPct=Math.max(0,net*0.45);
+  const rateCap=Math.max(0,Math.min(maxRateByReserve,maxRateByPct));
+  const maxRatePct=net>0 ? (rateCap/net)*100 : 0;
+  const defaultRate=Math.max(0,ratePool-enteredReserve);
+  const defaultRatePct=net>0 ? (defaultRate/net)*100 : 0;
+  const storedRatePctRaw=localStorage.getItem("ff_budget_rateSliderPct");
+  const hasStoredRatePct=storedRatePctRaw!==null && Number.isFinite(Number(storedRatePctRaw));
+  const requestedRatePct=hasStoredRatePct ? Number(storedRatePctRaw) : defaultRatePct;
+  const selectedRatePct=Math.max(0,Math.min(maxRatePct,requestedRatePct));
+  const monthlyRate=net>0 ? Math.min(rateCap,net*(selectedRatePct/100)) : 0;
+  const reserve=Math.max(0,ratePool-monthlyRate);
+  const available=monthlyRate;'''
 if old_budget_model not in s:
-    raise SystemExit("V8.201 budget model anchor not found")
+    raise SystemExit("V8.202 budget model anchor not found")
 s=s.replace(old_budget_model,new_budget_model,1)
 
 old_return='''    net,childBenefit,income,expenses,reserve,available,rateCap,monthlyRate,
     additionalBuffer:Math.max(0,available-monthlyRate),'''
-new_return='''    net,childBenefit,income,expenses,reserve,baseReserve,rateSliderExtra,available,rateCap,monthlyRate,
-    maxMonthlyRate:rateCap,
-    additionalBuffer:Math.max(0,rateCap-monthlyRate),'''
+new_return='''    net,childBenefit,income,expenses,reserve,enteredReserve,ratePool,available,rateCap,monthlyRate,
+    maxMonthlyRate:rateCap,maxRatePct,selectedRatePct,
+    additionalBuffer:reserve,'''
 if old_return not in s:
-    raise SystemExit("V8.201 budget model return anchor not found")
+    raise SystemExit("V8.202 budget model return anchor not found")
 s=s.replace(old_return,new_return,1)
 
 old_rate_line='  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);'
-new_rate_line='''  if($("budgetRate")) $("budgetRate").textContent=eur(m.maxMonthlyRate);
+new_rate_line='''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);
   if($("budgetRateSlider")){
     const slider=$("budgetRateSlider");
-    const maxRate=Math.max(0,m.maxMonthlyRate||0);
-    const selectedRate=Math.max(0,Math.min(maxRate,m.monthlyRate||0));
-    slider.max=String(Math.max(0,Math.round(maxRate)));
-    slider.value=String(Math.max(0,Math.round(selectedRate)));
-    const selectedPct=m.net>0 ? (selectedRate/m.net)*100 : 0;
+    const selectedPct=Math.max(0,m.selectedRatePct||0);
+    const maxPct=Math.max(0,m.maxRatePct||0);
+    slider.max=String(maxPct);
+    slider.value=String(Math.min(maxPct,selectedPct));
+    const fillPct=maxPct>0 ? Math.max(0,Math.min(100,(selectedPct/maxPct)*100)) : 0;
     const sliderColor=selectedPct>=40 ? "#dc2626" : (selectedPct>=35 ? "#eab308" : "#16a34a");
     slider.style.setProperty("--rate-slider-color",sliderColor);
-    slider.setAttribute("aria-valuetext",eur(selectedRate)+" · "+new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" % vom Haushaltsnetto");
+    slider.style.setProperty("--rate-slider-fill",fillPct+"%");
+    slider.setAttribute("aria-valuetext",eur(m.monthlyRate)+" · "+new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" % vom Netto-Haushaltseinkommen");
     if($("budgetRateSliderValue")){
-      $("budgetRateSliderValue").textContent=eur(selectedRate)+" · "+new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" %";
+      $("budgetRateSliderValue").textContent=eur(m.monthlyRate)+" · "+new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" %";
     }
     if($("budgetRateSliderNote")){
-      $("budgetRateSliderNote").textContent="Zusätzlicher Sicherheitspuffer durch Regler: "+eur(Math.max(0,maxRate-selectedRate))+". Die maximal tragbare Kreditrate bleibt unverändert.";
+      const limitingReserve=m.rateCap<=Math.max(0,m.ratePool-300)+0.01 && Math.max(0,m.ratePool-300)<=Math.max(0,m.net*0.45)+0.01;
+      const limitText=limitingReserve ? "300 € Mindest-Sicherheitspuffer" : "45 % vom Netto-Haushaltseinkommen";
+      $("budgetRateSliderNote").textContent="Sicherheitspuffer: "+eur(m.reserve)+" · rechte Grenze: "+limitText+".";
+    }
+    if($("budgetSafetyReserve") && localStorage.getItem("ff_budget_rateSliderPct")!==null){
+      budgetRateSliderSyncing=true;
+      $("budgetSafetyReserve").value=String(Math.round(m.reserve));
+      budgetRateSliderSyncing=false;
+      localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));
     }
   }'''
 if old_rate_line not in s:
-    raise SystemExit("V8.201 rate render anchor not found")
+    raise SystemExit("V8.202 rate render anchor not found")
 s=s.replace(old_rate_line,new_rate_line,1)
 
-# The existing status next to the unchanged maximum must continue to describe the maximum,
-# while the slider itself uses the selected rate for green/yellow/red.
+# Der Status neben der Rate folgt der aktuell gewählten, dynamischen Kreditrate.
 old_ratio='const budgetRatePct = m.net > 0 ? (m.monthlyRate / m.net) * 100 : 0;'
-new_ratio='const budgetRatePct = m.net > 0 ? (m.maxMonthlyRate / m.net) * 100 : 0;'
 if old_ratio not in s:
-    raise SystemExit("V8.201 max-rate ratio anchor not found")
-s=s.replace(old_ratio,new_ratio,1)
+    raise SystemExit("V8.202 rate ratio anchor not found")
 
-# Manual edits of the safety buffer become the new baseline and clear any slider-added extra.
+# Manuelle Änderung des Sicherheitspuffers setzt die Regler-Auswahl auf den daraus
+# neu berechneten Startwert zurück.
 old_reserve_listener='''  if(el.id==="budgetSafetyReserve" && !budgetAutoUpdating){
     budgetSafetyReserveManual=true;
     localStorage.setItem("ff_budget_safetyReserveManual","1");
@@ -1355,24 +1369,24 @@ old_reserve_listener='''  if(el.id==="budgetSafetyReserve" && !budgetAutoUpdatin
 new_reserve_listener='''  if(el.id==="budgetSafetyReserve" && !budgetAutoUpdating && !budgetRateSliderSyncing){
     budgetSafetyReserveManual=true;
     localStorage.setItem("ff_budget_safetyReserveManual","1");
-    localStorage.removeItem("ff_budget_rateSliderExtra");
+    localStorage.removeItem("ff_budget_rateSliderPct");
   }'''
 if old_reserve_listener not in s:
-    raise SystemExit("V8.201 reserve listener anchor not found")
+    raise SystemExit("V8.202 reserve listener anchor not found")
 s=s.replace(old_reserve_listener,new_reserve_listener,1)
 
 slider_handler = '''if($("budgetRateSlider")){
   $("budgetRateSlider").addEventListener("input",()=>{
-    const m=budgetModel();
-    const maxRate=Math.max(0,m.maxMonthlyRate||0);
-    const selectedRate=Math.max(0,Math.min(maxRate,Number($("budgetRateSlider").value)||0));
-    const extra=Math.max(0,maxRate-selectedRate);
-    const totalReserve=Math.max(0,(m.baseReserve||0)+extra);
+    const current=budgetModel();
+    const maxPct=Math.max(0,current.maxRatePct||0);
+    const selectedPct=Math.max(0,Math.min(maxPct,Number($("budgetRateSlider").value)||0));
+    const selectedRate=current.net>0 ? current.net*(selectedPct/100) : 0;
+    const totalReserve=Math.max(0,(current.ratePool||0)-selectedRate);
 
     budgetRateSliderSyncing=true;
     budgetSafetyReserveManual=true;
     if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(totalReserve));
-    localStorage.setItem("ff_budget_rateSliderExtra",String(extra));
+    localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));
     localStorage.setItem("ff_budget_safetyReserveManual","1");
     saveBudget();
     budgetRateSliderSyncing=false;
@@ -1384,31 +1398,26 @@ slider_handler = '''if($("budgetRateSlider")){
 handler_anchor='if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){'
 if slider_handler not in s:
     if handler_anchor not in s:
-        raise SystemExit("V8.201 slider handler anchor not found")
+        raise SystemExit("V8.202 slider handler anchor not found")
     s=s.replace(handler_anchor,slider_handler+handler_anchor,1)
 
-# Budget PDF: distinguish the unchanged maximum from the slider-selected rate.
-s=s.replace(
-    'line("Maximal tragbare Kreditrate",pdfMoney(m.monthlyRate),true);',
-    'line("Maximal tragbare Kreditrate",pdfMoney(m.maxMonthlyRate),true);\n  line("Gewählte Kreditrate",pdfMoney(m.monthlyRate),true);',
-    1
-)
+# Alte V8.200-Speicherung nicht weiter verwenden.
+s=s.replace('localStorage.removeItem("ff_budget_rateSliderExtra");','localStorage.removeItem("ff_budget_rateSliderPct");',1)
 
-# Build-time verification for the slider behavior.
-required_v8200_tokens = [
+required_v8202_tokens = [
     'id="budgetRateSlider"',
-    'id="budgetRateSliderValue"',
-    'ff_budget_rateSliderExtra',
-    'maxMonthlyRate:rateCap',
-    'selectedPct>=40',
-    'selectedPct>=35',
-    'Zusätzlicher Sicherheitspuffer durch Regler',
-    'line("Gewählte Kreditrate",pdfMoney(m.monthlyRate),true);'
+    'ff_budget_rateSliderPct',
+    'const maxRateByReserve=Math.max(0,ratePool-300);',
+    'const maxRateByPct=Math.max(0,net*0.45);',
+    'const selectedRatePct=Math.max(0,Math.min(maxRatePct,requestedRatePct));',
+    'Sicherheitspuffer: "+eur(m.reserve)',
+    'slider.max=String(maxPct)',
+    'slider.value=String(Math.min(maxPct,selectedPct))'
 ]
-missing_v8200_tokens=[token for token in required_v8200_tokens if token not in s]
-if missing_v8200_tokens:
-    raise SystemExit("V8.201 slider verification failed: "+", ".join(missing_v8200_tokens))
+missing_v8202_tokens=[token for token in required_v8202_tokens if token not in s]
+if missing_v8202_tokens:
+    raise SystemExit("V8.202 slider verification failed: "+", ".join(missing_v8202_tokens))
 
 
 path.write_text(s, encoding="utf-8")
-print("V8.201 interest and repayment patch applied")
+print("V8.202 interest and repayment patch applied")
