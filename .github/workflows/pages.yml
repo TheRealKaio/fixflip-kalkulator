@@ -406,9 +406,7 @@ jobs:
           scripts = re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', html, flags=re.I | re.S)
           Path("/tmp/fixflip-inline.js").write_text("\n;\n".join(scripts), encoding="utf-8")
           PY
-          node --check /tmp/fixflip-inline.js
-
-          # Deployment gate: fail the build unless the generated site actually contains
+          node --check /tmp/fixflip-inline.js\n\n          # Product acceptance: test the generated site against the actual slider requirement.\n          python scripts/verify_budget_slider.py _site/index.html\n\n          # Deployment gate: fail the build unless the generated site actually contains
           # the version and UI changes expected for this release.
           python - <<'PY'
           from pathlib import Path
@@ -418,10 +416,10 @@ jobs:
 
           checks = {
               "visible/PDF version V8.202": "V8.202" in index,
-              "service-worker registration 8.198": 'service-worker.js?v=8.202' in index,
+              "service-worker registration V8.202": 'service-worker.js?v=8.202' in index,
               "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
               "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
-              "service-worker cache version 8.198": "neustart-immocheck-v8.202" in sw,
+              "service-worker cache version V8.202": "neustart-immocheck-v8.202" in sw,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
