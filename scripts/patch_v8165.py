@@ -235,7 +235,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.198: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.199: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -590,7 +590,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.198: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.199: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -713,7 +713,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.198: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.199: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -790,7 +790,9 @@ old_budget_pdf_flow = '''  section("Haushalt");
 
   section("Finanzierung");'''
 
-new_budget_pdf_flow = '''  section("Haushalt");
+new_budget_pdf_flow = '''
+  section("Haushalt");
+  y+=1.2;
   line("Haushaltsnettoeinkommen",pdfMoney(m.net),true);
   line("  Gehalt / Lohn netto",pdfMoney(Math.max(0,budgetVal("budgetIncomeEmployment"))));
   line("  Rente / Pension",pdfMoney(Math.max(0,budgetVal("budgetIncomePension"))));
@@ -798,13 +800,26 @@ new_budget_pdf_flow = '''  section("Haushalt");
   line("  Nebentaetigkeit",pdfMoney(Math.max(0,budgetVal("budgetIncomeSide"))));
   line("  Mieteinnahmen",pdfMoney(Math.max(0,budgetVal("budgetIncomeRent"))));
   line("  Sonstige Einnahmen",pdfMoney(Math.max(0,budgetVal("budgetIncomeOther"))));
+  y+=1.6;
   line("Kindergeld",pdfMoney(m.childBenefit));
   line("Gesamte Einnahmen",pdfMoney(m.income),true);
+  y+=1.6;
   line("Feste Ausgaben",pdfMoney(m.expenses));
   line("Sicherheitspuffer",pdfMoney(m.reserve));
+  y+=1.6;
   line("Frei verfuegbares Monatsbudget",pdfMoney(m.available),true);
   line("Zusaetzlicher Monats-Puffer",pdfMoney(m.additionalBuffer));
   line("Maximal tragbare Kreditrate",pdfMoney(m.monthlyRate),true);
+
+  // V8.199: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
+  doc.addPage();
+  drawPdfBrandHeader(
+    doc,
+    "Budget - Immobilien-Report",
+    "Ausgaben und Finanzierungsdetails",
+    new Date().toLocaleDateString("de-DE")
+  );
+  y=43;
 
   section("Übersicht der Festen Ausgaben als Einzelposition");
   line("Lebensmittel / Haushalt",pdfMoney(Math.max(0,budgetVal("budgetFood"))));
@@ -817,17 +832,15 @@ new_budget_pdf_flow = '''  section("Haushalt");
   line("Sonstige Ausgaben",pdfMoney(Math.max(0,budgetVal("budgetOther"))));
   line("Gesamte feste Ausgaben",pdfMoney(m.expenses),true);
 
-  // V8.186 Budget-PDF Seite 2 ab Finanzierung
-  doc.addPage();
-  drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Wie viel Immobilie kann ich mir leisten?",new Date().toLocaleDateString("de-DE"));
-  y=43;
-
+  y+=2.0;
   section("Finanzierung");'''
 
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
+# V8.199 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
+
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.198");
+  drawPdfFooter(doc,1,1,"V8.199");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -913,13 +926,13 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.198");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.199");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 
-# V8.198: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+# V8.199: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
 s=s.replace(
     '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
     '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
@@ -1073,10 +1086,10 @@ $("recalc").addEventListener("click",()=>{
   }
 });'''
 
-replace_once(old_recalc_handler, new_recalc_handler, "V8.198 recalc reset handler")
+replace_once(old_recalc_handler, new_recalc_handler, "V8.199 recalc reset handler")
 
 
-# V8.198: Eigennutzung - feste Initial-/Reset-Standardwerte.
+# V8.199: Eigennutzung - feste Initial-/Reset-Standardwerte.
 own_defaults_helper = '''function applyOwnUseStandardValues(){
   const ownDefaults={
     purchase:"0",
@@ -1108,7 +1121,7 @@ own_defaults_helper = '''function applyOwnUseStandardValues(){
 if own_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.198 own defaults reset anchor not found")
+        raise SystemExit("V8.199 own defaults reset anchor not found")
     s = s.replace(target, own_defaults_helper + '\n\n' + target, 1)
 
 own_switch_old = '''      zeroOwnUseGoals();
@@ -1122,7 +1135,7 @@ own_switch_new = '''      zeroOwnUseGoals();
         localStorage.setItem("ff_own_defaults_v8197","1");
       }'''
 if own_switch_old not in s:
-    raise SystemExit("V8.198 own setDealType anchor not found")
+    raise SystemExit("V8.199 own setDealType anchor not found")
 s = s.replace(own_switch_old, own_switch_new, 1)
 
 own_reset_old = '''  stateEl.value="Hamburg";
@@ -1135,11 +1148,11 @@ own_reset_new = '''  if(mode==="own"){
   stateEl.value="Hamburg";
   comp1ManualOverride=false;'''
 if own_reset_old not in s:
-    raise SystemExit("V8.198 own reset injection anchor not found")
+    raise SystemExit("V8.199 own reset injection anchor not found")
 s = s.replace(own_reset_old, own_reset_new, 1)
 
 
-# V8.198: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
+# V8.199: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
 flip_defaults_helper = '''function applyFlipStandardValues(){
   const flipDefaults={
     purchase:"0",
@@ -1172,7 +1185,7 @@ flip_defaults_helper = '''function applyFlipStandardValues(){
 if flip_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.198 flip defaults reset anchor not found")
+        raise SystemExit("V8.199 flip defaults reset anchor not found")
     s = s.replace(target, flip_defaults_helper + '\n\n' + target, 1)
 
 flip_switch_old = '''    } else {
@@ -1190,7 +1203,7 @@ flip_switch_new = '''    } else {
       }
     }'''
 if flip_switch_old not in s:
-    raise SystemExit("V8.198 flip setDealType anchor not found")
+    raise SystemExit("V8.199 flip setDealType anchor not found")
 s = s.replace(flip_switch_old, flip_switch_new, 1)
 
 flip_reset_old = '''  if(mode==="own"){
@@ -1209,7 +1222,7 @@ flip_reset_new = '''  if(mode==="own"){
 
   stateEl.value="Hamburg";'''
 if flip_reset_old not in s:
-    raise SystemExit("V8.198 flip reset injection anchor not found")
+    raise SystemExit("V8.199 flip reset injection anchor not found")
 s = s.replace(flip_reset_old, flip_reset_new, 1)
 
 # Build-time guards: fail deployment if the requested Fix-&-Flip reset values are missing.
@@ -1232,7 +1245,7 @@ required_flip_reset_tokens = [
 ]
 missing_flip_reset_tokens = [token for token in required_flip_reset_tokens if token not in s]
 if missing_flip_reset_tokens:
-    raise SystemExit("V8.198 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
+    raise SystemExit("V8.199 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
 
 path.write_text(s, encoding="utf-8")
-print("V8.198 interest and repayment patch applied")
+print("V8.199 interest and repayment patch applied")
