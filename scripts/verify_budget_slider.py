@@ -50,6 +50,8 @@ required_implementation = {
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     "terminology financing reserve": 'Finanzierungsreserve',
     "terminology current safety buffer": 'Aktueller Sicherheitspuffer',
+    "financing reserve summary row": '<span>- Finanzierungsreserve</span><strong id="budgetFinancingReserveResult">–</strong>',
+    "financing reserve summary value": 'if($("budgetFinancingReserveResult")) $("budgetFinancingReserveResult").textContent=eur(m.minimumReserve);',
     "capture phase enabled": '},true);',
     "warning message": 'Finanzierungsreserve unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "warning at exact minimum": 'Finanzierungsreserve erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
@@ -539,6 +541,17 @@ available = pre_reserve_budget - minimum_reserve
 max_rate_by_reserve = max(0, max(0, pre_reserve_budget) - minimum_reserve)
 if not (available == -200 and max_rate_by_reserve == 0):
     raise SystemExit("Slider acceptance failed - negative post-reserve budget handled correctly")
+
+# 47) Finanzierungsreserve appears directly after fixed expenses in the monthly budget summary.
+expenses_row = '<div class="budget-summary-row"><span>- Feste Ausgaben</span><strong id="budgetExpensesResult">–</strong></div>'
+reserve_row = '<div class="budget-summary-row"><span>- Finanzierungsreserve</span><strong id="budgetFinancingReserveResult">–</strong></div>'
+expenses_pos = html.find(expenses_row)
+reserve_pos = html.find(reserve_row)
+if expenses_pos < 0 or reserve_pos < 0 or reserve_pos <= expenses_pos:
+    raise SystemExit("Slider acceptance failed - financing reserve row position")
+between = html[expenses_pos + len(expenses_row):reserve_pos]
+if "<div class=\"budget-summary-row" in between:
+    raise SystemExit("Slider acceptance failed - financing reserve must be directly below fixed expenses")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
