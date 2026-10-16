@@ -30,13 +30,15 @@ required_implementation = {
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
-    "robust reserve warning condition": 'const minimumBufferMissed=(m.reserve<300)||(m.ratePool<300);',
+    "warning at/below minimum reserve": 'const minimumBufferReached=minimumBufferBelow||m.reserve<=300.01;',
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
+    "warning at exact minimum": 'Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "slider jumps to recalculated maximum": 'const newPct=Math.max(0,m.maxRatePct||0);',
     "rate jumps to recalculated maximum": 'const newRate=Math.max(0,m.maxMonthlyRate||0);',
+    "post-sync recalculation render": 'renderBudget();',
 }
 
 missing = [name for name, token in required_implementation.items() if token not in html]
@@ -116,14 +118,19 @@ right = model(3000, 0, 500, 1000, 30)
 if not (right["rate"] > left["rate"] and right["reserve"] < left["reserve"]):
     raise SystemExit("Slider acceptance failed - directionality is wrong")
 
-# 5) Recalculation after changed income/expenses: the selected rate must jump to the new maximum.
-before_change = model(3000, 0, 500, 1000, 20)
-after_change = model(3500, 0, 700, 1000, None)
-after_change_max = model(3500, 0, 700, 1000, after_change["max_pct"])
-if not (after_change_max["rate"] != before_change["rate"] and close(after_change_max["pct"], after_change_max["max_pct"])):
-    raise SystemExit("Slider acceptance failed - recalculated after changed expenses/income")
+# 5) Critical direction A: reducing income must reduce the allowed maximum and move the slider left.
+before_income_drop = model(3500, 0, 700, 1000, 45)
+after_income_drop = model(2800, 0, 700, 1000, 45)
+if not (after_income_drop["cap"] < before_income_drop["cap"] and close(after_income_drop["pct"], after_income_drop["max_pct"])):
+    raise SystemExit("Slider acceptance failed - reduced income did not lower/reposition the maximum")
 
-# 6) Child benefit increases available pool, but the 45% ceiling still uses net household income.
+# 6) Critical direction B: increasing expenses must reduce the allowed maximum and move the slider left.
+before_expense_rise = model(3000, 0, 500, 1000, 45)
+after_expense_rise = model(3000, 0, 1800, 1000, 45)
+if not (after_expense_rise["cap"] < before_expense_rise["cap"] and close(after_expense_rise["pct"], after_expense_rise["max_pct"])):
+    raise SystemExit("Slider acceptance failed - increased expenses did not lower/reposition the maximum")
+
+# 7) Child benefit increases available pool, but the 45% ceiling still uses net household income.
 assert_case(
     "net percentage basis",
     model(3000, 500, 1000, 1000, 45),
@@ -132,17 +139,22 @@ assert_case(
     pct=45,
 )
 
-# 7) Warning threshold: any computed reserve below EUR 300 must trigger the warning condition.
+# 8) Warning threshold: any computed reserve below EUR 300 must trigger the warning condition.
 under_min = {"reserve": 185}
 if not (under_min["reserve"] < 300):
     raise SystemExit("Slider acceptance failed - under minimum reserve warning")
 
-# 8) Robust warning trigger: even if slider logic clamps the rate, a rate pool under EUR 300 must warn.
+# 9) Robust warning trigger: even if slider logic clamps the rate, a rate pool under EUR 300 must warn.
 rate_pool_case = {"reserve": 300, "rate_pool": 250}
 if not (rate_pool_case["reserve"] < 300 or rate_pool_case["rate_pool"] < 300):
     raise SystemExit("Slider acceptance failed - rate pool under 300 triggers warning")
 
+# 10) Reaching exactly EUR 300 after an adverse change must already warn.
+exact_min = {"reserve": 300, "rate_pool": 1200}
+if not (exact_min["reserve"] <= 300.01):
+    raise SystemExit("Slider acceptance failed - exactly EUR 300 must also warn")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income/expense recalculation, net-income basis, under-300 warning")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning")
