@@ -28,6 +28,7 @@ required_implementation = {
     "reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(totalReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
+    "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
 }
 
 missing = [name for name, token in required_implementation.items() if token not in html]
