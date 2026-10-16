@@ -239,7 +239,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.220: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.221: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -594,7 +594,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.220: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.221: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -717,7 +717,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.220: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.221: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -815,7 +815,7 @@ new_budget_pdf_flow = '''
   line("Zusaetzlicher Monats-Puffer",pdfMoney(m.additionalBuffer));
   line("Maximal tragbare Kreditrate",pdfMoney(m.monthlyRate),true);
 
-  // V8.220: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
+  // V8.221: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
   doc.addPage();
   drawPdfBrandHeader(
     doc,
@@ -841,10 +841,10 @@ new_budget_pdf_flow = '''
 
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
-# V8.220 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
+# V8.221 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.220");
+  drawPdfFooter(doc,1,1,"V8.221");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -930,13 +930,13 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.220");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.221");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 
-# V8.220: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+# V8.221: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
 s=s.replace(
     '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
     '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
@@ -1020,6 +1020,12 @@ function resetBudgetCalculatorToDefaults(){
   if($("budgetIncomeEmployment")) $("budgetIncomeEmployment").value="0";
   if($("budgetChildBenefit")) $("budgetChildBenefit").value="0";
 
+  // Nach einem echten Reset wird die erste Kreditrate erst nach der ersten
+  // abgeschlossenen Einkommenseingabe gesetzt. Danach gilt wieder die normale Logik.
+  budgetRateNeedsInitialValue=true;
+  localStorage.setItem("ff_budget_rateNeedsInitialValue","1");
+  localStorage.removeItem("ff_budget_rateSliderPct");
+
   initTwoDecimalPercentFields();
   initializeRepaymentDefaults();
   renderBudget();
@@ -1090,10 +1096,10 @@ $("recalc").addEventListener("click",()=>{
   }
 });'''
 
-replace_once(old_recalc_handler, new_recalc_handler, "V8.220 recalc reset handler")
+replace_once(old_recalc_handler, new_recalc_handler, "V8.221 recalc reset handler")
 
 
-# V8.220: Eigennutzung - feste Initial-/Reset-Standardwerte.
+# V8.221: Eigennutzung - feste Initial-/Reset-Standardwerte.
 own_defaults_helper = '''function applyOwnUseStandardValues(){
   const ownDefaults={
     purchase:"0",
@@ -1125,7 +1131,7 @@ own_defaults_helper = '''function applyOwnUseStandardValues(){
 if own_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.220 own defaults reset anchor not found")
+        raise SystemExit("V8.221 own defaults reset anchor not found")
     s = s.replace(target, own_defaults_helper + '\n\n' + target, 1)
 
 own_switch_old = '''      zeroOwnUseGoals();
@@ -1139,7 +1145,7 @@ own_switch_new = '''      zeroOwnUseGoals();
         localStorage.setItem("ff_own_defaults_v8197","1");
       }'''
 if own_switch_old not in s:
-    raise SystemExit("V8.220 own setDealType anchor not found")
+    raise SystemExit("V8.221 own setDealType anchor not found")
 s = s.replace(own_switch_old, own_switch_new, 1)
 
 own_reset_old = '''  stateEl.value="Hamburg";
@@ -1152,11 +1158,11 @@ own_reset_new = '''  if(mode==="own"){
   stateEl.value="Hamburg";
   comp1ManualOverride=false;'''
 if own_reset_old not in s:
-    raise SystemExit("V8.220 own reset injection anchor not found")
+    raise SystemExit("V8.221 own reset injection anchor not found")
 s = s.replace(own_reset_old, own_reset_new, 1)
 
 
-# V8.220: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
+# V8.221: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
 flip_defaults_helper = '''function applyFlipStandardValues(){
   const flipDefaults={
     purchase:"0",
@@ -1189,7 +1195,7 @@ flip_defaults_helper = '''function applyFlipStandardValues(){
 if flip_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.220 flip defaults reset anchor not found")
+        raise SystemExit("V8.221 flip defaults reset anchor not found")
     s = s.replace(target, flip_defaults_helper + '\n\n' + target, 1)
 
 flip_switch_old = '''    } else {
@@ -1207,7 +1213,7 @@ flip_switch_new = '''    } else {
       }
     }'''
 if flip_switch_old not in s:
-    raise SystemExit("V8.220 flip setDealType anchor not found")
+    raise SystemExit("V8.221 flip setDealType anchor not found")
 s = s.replace(flip_switch_old, flip_switch_new, 1)
 
 flip_reset_old = '''  if(mode==="own"){
@@ -1226,7 +1232,7 @@ flip_reset_new = '''  if(mode==="own"){
 
   stateEl.value="Hamburg";'''
 if flip_reset_old not in s:
-    raise SystemExit("V8.220 flip reset injection anchor not found")
+    raise SystemExit("V8.221 flip reset injection anchor not found")
 s = s.replace(flip_reset_old, flip_reset_new, 1)
 
 # Build-time guards: fail deployment if the requested Fix-&-Flip reset values are missing.
@@ -1249,10 +1255,10 @@ required_flip_reset_tokens = [
 ]
 missing_flip_reset_tokens = [token for token in required_flip_reset_tokens if token not in s]
 if missing_flip_reset_tokens:
-    raise SystemExit("V8.220 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
+    raise SystemExit("V8.221 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
 
 
-# V8.220: Dynamischer Kreditraten-Regler.
+# V8.221: Dynamischer Kreditraten-Regler.
 # Der Regler arbeitet prozentual zum Netto-Haushaltseinkommen.
 # Links endet er bei 0 EUR Kreditrate. Rechts endet er dort, wo zuerst
 # entweder 45 % vom Netto oder 300 EUR Mindest-Sicherheitspuffer erreicht sind.
@@ -1273,7 +1279,7 @@ slider_css = '''
 css_anchor = '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}'
 if slider_css.strip() not in s:
     if css_anchor not in s:
-        raise SystemExit("V8.220 slider CSS anchor not found")
+        raise SystemExit("V8.221 slider CSS anchor not found")
     s=s.replace(css_anchor,css_anchor+slider_css,1)
 
 slider_markup = '''          <div class="budget-rate-slider-wrap">
@@ -1289,16 +1295,17 @@ slider_markup = '''          <div class="budget-rate-slider-wrap">
 guidance_anchor = '          <div class="budget-rate-guidance" id="budgetRateGuidance">Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten. Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung.</div>'
 if slider_markup.strip() not in s:
     if guidance_anchor not in s:
-        raise SystemExit("V8.220 slider markup anchor not found")
+        raise SystemExit("V8.221 slider markup anchor not found")
     s=s.replace(guidance_anchor,slider_markup+guidance_anchor,1)
 
 state_anchor='let budgetIncomeAutoUpdating = false;'
 toast_state_block='''let budgetRateSliderSyncing = false;
 let budgetRateBeforeRecalc=null;
-let budgetInputValueBeforeRecalc=null;'''
+let budgetInputValueBeforeRecalc=null;
+let budgetRateNeedsInitialValue=localStorage.getItem("ff_budget_rateNeedsInitialValue")==="1";'''
 if toast_state_block not in s:
     if state_anchor not in s:
-        raise SystemExit("V8.220 slider state anchor not found")
+        raise SystemExit("V8.221 slider state anchor not found")
     s=s.replace(state_anchor,state_anchor+'\n'+toast_state_block,1)
 
 old_budget_model='''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
@@ -1322,7 +1329,7 @@ new_budget_model='''  const ratePool=Math.max(0,income-expenses);
   const reserve=Math.max(0,rawReserve);
   const available=monthlyRate;'''
 if old_budget_model not in s:
-    raise SystemExit("V8.220 budget model anchor not found")
+    raise SystemExit("V8.221 budget model anchor not found")
 s=s.replace(old_budget_model,new_budget_model,1)
 
 old_return='''    net,childBenefit,income,expenses,reserve,available,rateCap,monthlyRate,
@@ -1331,7 +1338,7 @@ new_return='''    net,childBenefit,income,expenses,reserve,rawReserve,minimumRes
     maxMonthlyRate:rateCap,maxRatePct,selectedRatePct,
     additionalBuffer:reserve,'''
 if old_return not in s:
-    raise SystemExit("V8.220 budget model return anchor not found")
+    raise SystemExit("V8.221 budget model return anchor not found")
 s=s.replace(old_return,new_return,1)
 
 old_rate_line='  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);'
@@ -1376,13 +1383,13 @@ new_rate_line='''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthly
     }
   }'''
 if old_rate_line not in s:
-    raise SystemExit("V8.220 rate render anchor not found")
+    raise SystemExit("V8.221 rate render anchor not found")
 s=s.replace(old_rate_line,new_rate_line,1)
 
 # Der Status neben der Rate folgt der aktuell gewählten, dynamischen Kreditrate.
 old_ratio='const budgetRatePct = m.net > 0 ? (m.monthlyRate / m.net) * 100 : 0;'
 if old_ratio not in s:
-    raise SystemExit("V8.220 rate ratio anchor not found")
+    raise SystemExit("V8.221 rate ratio anchor not found")
 
 # Manuelle Änderung des Sicherheitspuffers setzt die Regler-Auswahl auf den daraus
 # neu berechneten Startwert zurück.
@@ -1396,11 +1403,13 @@ new_reserve_listener='''  if(el.id==="budgetSafetyReserve" && !budgetAutoUpdatin
     localStorage.removeItem("ff_budget_rateSliderPct");
   }'''
 if old_reserve_listener not in s:
-    raise SystemExit("V8.220 reserve listener anchor not found")
+    raise SystemExit("V8.221 reserve listener anchor not found")
 s=s.replace(old_reserve_listener,new_reserve_listener,1)
 
 slider_handler = '''if($("budgetRateSlider")){
   $("budgetRateSlider").addEventListener("input",()=>{
+    budgetRateNeedsInitialValue=false;
+    localStorage.setItem("ff_budget_rateNeedsInitialValue","0");
     const current=budgetModel();
     const safeMaxPct=Math.max(0,current.maxRatePct||0);
     const currentPct=Math.max(0,current.selectedRatePct||0);
@@ -1424,13 +1433,13 @@ slider_handler = '''if($("budgetRateSlider")){
 handler_anchor='if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){'
 if slider_handler not in s:
     if handler_anchor not in s:
-        raise SystemExit("V8.220 slider handler anchor not found")
+        raise SystemExit("V8.221 slider handler anchor not found")
     s=s.replace(handler_anchor,slider_handler+handler_anchor,1)
 
 # Alte V8.200-Speicherung nicht weiter verwenden.
 s=s.replace('localStorage.removeItem("ff_budget_rateSliderExtra");','localStorage.removeItem("ff_budget_rateSliderPct");',1)
 
-# V8.220: Einkommen/Ausgaben erst nach den bestehenden Feld-Synchronisierungen
+# V8.221: Einkommen/Ausgaben erst nach den bestehenden Feld-Synchronisierungen
 # neu bewerten. Der Listener laeuft in der Bubble-Phase und wird ausserhalb von
 # renderBudget installiert, damit immer der aktuelle Netto-/Ausgabenstand gilt.
 budget_recalc_listener = '''const budgetRateIncomeIds=new Set([
@@ -1481,25 +1490,51 @@ document.addEventListener("input",(event)=>{
   budgetRateBeforeRecalc=null;
   budgetInputValueBeforeRecalc=newInput;
 });
+
+// V8.221: Nur nach einem bestätigten Budget-Reset wird beim ersten abgeschlossenen
+// Einkommenseintrag einmalig eine sinnvolle Start-Kreditrate gesetzt.
+// Während des Tippens bleibt die Rate 0; so wird z. B. "4000" nicht schon bei "4"
+// oder "40" initialisiert. Danach bleibt die bestehende V8.221-Logik unverändert.
+document.addEventListener("focusout",(event)=>{
+  const el=event.target;
+  if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;
+
+  const m=budgetModel();
+  if(!(m.net>0)) return;
+
+  const initialRatePct=Math.max(0,m.maxRatePct||0);
+  localStorage.setItem("ff_budget_rateSliderPct",String(initialRatePct));
+  budgetRateNeedsInitialValue=false;
+  localStorage.setItem("ff_budget_rateNeedsInitialValue","0");
+  budgetRateBeforeRecalc=null;
+  renderBudget();
+},true);
 '''
 recalc_anchor='if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){'
 if budget_recalc_listener not in s:
     if recalc_anchor not in s:
-        raise SystemExit("V8.220 budget recalc listener anchor not found")
+        raise SystemExit("V8.221 budget recalc listener anchor not found")
     s=s.replace(recalc_anchor,budget_recalc_listener+"\n"+recalc_anchor,1)
 
-# V8.220: Den Kreditraten-Regler aus dem globalen Input-Listener ausschliessen.
+# V8.221: Den Kreditraten-Regler aus dem globalen Input-Listener ausschliessen.
 # Sonst rendert der globale Listener zuerst und setzt den Slider zurueck,
 # bevor sein eigener input-Handler den neuen Wert lesen kann.
 generic_input_selector = "document.querySelectorAll('input:not(.trade-amount):not([name=\"dealType\"]),select')"
 generic_input_selector_fixed = "document.querySelectorAll('input:not(.trade-amount):not([name=\"dealType\"]):not(#budgetRateSlider),select')"
 if generic_input_selector not in s:
-    raise SystemExit("V8.220 global input selector anchor not found")
+    raise SystemExit("V8.221 global input selector anchor not found")
 s=s.replace(generic_input_selector,generic_input_selector_fixed,1)
 
 required_v8203_tokens = [
     'id="budgetRateSlider"',
     'ff_budget_rateSliderPct',
+    'ff_budget_rateNeedsInitialValue',
+    'budgetRateNeedsInitialValue=true;',
+    'document.addEventListener("focusout",(event)=>',
+    'if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;',
+    'const initialRatePct=Math.max(0,m.maxRatePct||0);',
+    'localStorage.setItem("ff_budget_rateSliderPct",String(initialRatePct));',
+    'budgetRateNeedsInitialValue=false;',
     'const selectedRatePct=Math.max(0,requestedRatePct);',
     'const monthlyRate=net>0 ? net*(selectedRatePct/100) : 0;',
     'const sliderMaxPct=Math.max(safeMaxPct,selectedPct);',
@@ -1536,8 +1571,8 @@ required_v8203_tokens = [
 ]
 missing_v8203_tokens=[token for token in required_v8203_tokens if token not in s]
 if missing_v8203_tokens:
-    raise SystemExit("V8.220 slider verification failed: "+", ".join(missing_v8203_tokens))
+    raise SystemExit("V8.221 slider verification failed: "+", ".join(missing_v8203_tokens))
 
 
 path.write_text(s, encoding="utf-8")
-print("V8.220 interest and repayment patch applied")
+print("V8.221 interest and repayment patch applied")
