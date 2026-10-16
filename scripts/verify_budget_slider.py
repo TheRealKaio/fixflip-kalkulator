@@ -32,7 +32,7 @@ required_implementation = {
     "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
-    "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.rawReserve)+" · Mindest-Sicherheitspuffer: "+eur(m.minimumReserve)',
+    "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.rawReserve)+" · Finanzierungsreserve: "+eur(m.minimumReserve)',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "financing guidance intro": 'Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten.',
     "raw reserve exposed": 'const rawReserve=freeBudget-monthlyRate;',
@@ -42,15 +42,17 @@ required_implementation = {
     "exact minimum threshold": 'const minimumBufferReached=Math.abs(bufferDeviation)<=0.005;',
     "warning has explicit above-minimum state": 'const minimumBufferAbove=bufferDeviation>0.005;',
     "warning hidden only above minimum": '$("budgetRateSliderWarning").hidden=minimumBufferAbove;',
-    "signed deviation shown in warning": 'Mindestpuffer unterschritten · Abweichung: "+eur(bufferDeviation)',
+    "signed deviation shown in warning": 'Finanzierungsreserve unterschritten · Abweichung: "+eur(bufferDeviation)',
     "warning explicit below branch": 'if(minimumBufferBelow){',
     "warning exact-minimum branch": '}else if(minimumBufferReached){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
+    "terminology financing reserve": 'Finanzierungsreserve',
+    "terminology current safety buffer": 'Aktueller Sicherheitspuffer',
     "capture phase enabled": '},true);',
-    "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
-    "warning at exact minimum": 'Mindestpuffer erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
+    "warning message": 'Finanzierungsreserve unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
+    "warning at exact minimum": 'Finanzierungsreserve erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "financing assumptions included": 'const budgetFinancingAssumptionIds=new Set([',
     "financing assumption fields": '"budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"',
@@ -87,6 +89,15 @@ forbidden_implementation = {
 present_forbidden = [name for name, token in forbidden_implementation.items() if token in html]
 if present_forbidden:
     raise SystemExit("Slider acceptance failed - removed toast still present: " + ", ".join(present_forbidden))
+
+legacy_terms = [
+    "Mindest-Sicherheitspuffer",
+    "Mindestpuffer unterschritten",
+    "Mindestpuffer erreicht",
+]
+legacy_found = [term for term in legacy_terms if term in html]
+if legacy_found:
+    raise SystemExit("Slider acceptance failed - legacy terminology remains: " + ", ".join(legacy_found))
 
 missing = [name for name, token in required_implementation.items() if token not in html]
 if missing:
