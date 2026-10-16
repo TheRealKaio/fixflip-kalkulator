@@ -1292,7 +1292,7 @@ if slider_markup.strip() not in s:
     s=s.replace(guidance_anchor,slider_markup+guidance_anchor,1)
 
 state_anchor='let budgetIncomeAutoUpdating = false;'
-if 'let budgetRateSliderSyncing = false;
+toast_state_block='''let budgetRateSliderSyncing = false;
 let budgetMinimumBufferWasBelow=false;
 let budgetBufferToastTimer=null;
 
@@ -1306,10 +1306,11 @@ function showBudgetBufferToast(message){
     toast.hidden=true;
     budgetBufferToastTimer=null;
   },4200);
-}' not in s:
+}'''
+if toast_state_block not in s:
     if state_anchor not in s:
         raise SystemExit("V8.210 slider state anchor not found")
-    s=s.replace(state_anchor,state_anchor+'\nlet budgetRateSliderSyncing = false;',1)
+    s=s.replace(state_anchor,state_anchor+'\n'+toast_state_block,1)
 
 old_budget_model='''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
   const available=Math.max(0,income-expenses-reserve);
