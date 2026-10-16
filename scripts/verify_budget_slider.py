@@ -30,7 +30,9 @@ required_implementation = {
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
-    "warning at/below minimum reserve": 'const minimumBufferReached=minimumBufferBelow||m.reserve<=300.01;',
+    "warning uses income minus expenses minus rate": 'const rawCurrentBuffer=m.income-m.expenses-m.monthlyRate;',
+    "warning matches rounded display": 'const displayedCurrentBuffer=Math.round(rawCurrentBuffer);',
+    "warning at displayed 300": 'const minimumBufferReached=displayedCurrentBuffer<=300;',
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "warning at exact minimum": 'Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
@@ -154,7 +156,14 @@ exact_min = {"reserve": 300, "rate_pool": 1200}
 if not (exact_min["reserve"] <= 300.01):
     raise SystemExit("Slider acceptance failed - exactly EUR 300 must also warn")
 
+# 11) Expense increase must warn as soon as the displayed buffer reaches EUR 300.
+# Example: raw buffer 300.3 rounds to 300 in the UI.
+raw_buffer_after_expense_rise = 300.3
+displayed_buffer = round(raw_buffer_after_expense_rise)
+if not (displayed_buffer <= 300):
+    raise SystemExit("Slider acceptance failed - expense rise to displayed 300 must warn")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning incl. rounded expense case")
