@@ -24,7 +24,6 @@ required_implementation = {
     "earlier limit wins": 'const rateCap=Math.max(0,Math.min(maxRateByReserve,maxRateByPct));',
     "initial rate from minimum reserve": 'const defaultRate=Math.max(0,ratePool-minimumReserve);',
     "stored rate may remain temporarily above safe maximum": 'const selectedRatePct=freeBudget>0 ? Math.max(0,requestedRatePct) : 0;',
-    "deficit forces zero monthly rate": 'const monthlyRate=freeBudget>0 && net>0 ? net*(selectedRatePct/100) : 0;',
     "free budget exposed": 'const available=freeBudget;',
     "left edge supports zero": 'const selectedPct=Math.max(0,Math.min(sliderMaxPct,Number($("budgetRateSlider").value)||0));',
     "reserve moves opposite to rate": 'const totalReserve=Math.max(0,(current.ratePool||0)-selectedRate);',
@@ -378,6 +377,27 @@ minimum_reserve = max(300, free_budget * 0.10)
 rate_cap = max(0, min(max(0, financing_pool - minimum_reserve), income * 0.45))
 if not (free_budget == 100 and minimum_reserve == 300 and rate_cap == 0):
     raise SystemExit("Slider acceptance failed - free budget below minimum reserve yields zero credit rate")
+
+# 34) The actual credit rate can never exceed the free monthly budget and is never negative.
+net = 4000
+free_budget = 500
+requested_pct = 30
+requested_rate = net * requested_pct / 100
+monthly_rate = max(0, min(max(0, free_budget), requested_rate))
+if monthly_rate != 500:
+    raise SystemExit("Slider acceptance failed - stored rate above free budget is capped")
+
+free_budget = -250
+requested_rate = 1200
+monthly_rate = max(0, min(max(0, free_budget), requested_rate))
+if monthly_rate != 0:
+    raise SystemExit("Slider acceptance failed - negative free budget forces zero credit rate")
+
+free_budget = 1800
+requested_rate = 1200
+monthly_rate = max(0, min(max(0, free_budget), requested_rate))
+if monthly_rate != 1200:
+    raise SystemExit("Slider acceptance failed - rate below free budget remains unchanged")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
