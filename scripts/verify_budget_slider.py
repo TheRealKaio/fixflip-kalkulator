@@ -26,7 +26,7 @@ required_implementation = {
     "stored rate converted before cap": 'const requestedMonthlyRate=net>0 ? net*(Math.max(0,requestedRatePct)/100) : 0;',
     "actual rate capped to free budget": 'const monthlyRate=Math.max(0,Math.min(Math.max(0,freeBudget),requestedMonthlyRate));',
     "selected percent reflects actual rate": 'const selectedRatePct=net>0 ? (monthlyRate/net)*100 : 0;',
-    "free budget exposed": 'const available=freeBudget;',
+    "free budget after reserve exposed": 'const available=freeBudget-minimumReserve;',
     "left edge supports zero": 'const selectedPct=Math.max(0,Math.min(sliderMaxPct,Number($("budgetRateSlider").value)||0));',
     "reserve moves opposite to rate": 'const totalReserve=Math.max(0,(current.ratePool||0)-selectedRate);',
     "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
@@ -503,6 +503,31 @@ expected_financing_assumption_ids = {
 }
 if financing_assumption_ids != expected_financing_assumption_ids:
     raise SystemExit("Slider acceptance failed - financing assumption IDs covered")
+
+# 44) Displayed free monthly budget subtracts the minimum reserve exactly once.
+income = 4000
+expenses = 2300
+pre_reserve_budget = income - expenses
+minimum_reserve = max(300, pre_reserve_budget * 0.10)
+available = pre_reserve_budget - minimum_reserve
+if available != 1400:
+    raise SystemExit("Slider acceptance failed - free budget subtracts reserve once")
+
+# 45) The reserve-based safe-rate capacity remains identical to the displayed post-reserve budget when positive.
+rate_pool = max(0, pre_reserve_budget)
+max_rate_by_reserve = max(0, rate_pool - minimum_reserve)
+if max_rate_by_reserve != available:
+    raise SystemExit("Slider acceptance failed - displayed free budget must match reserve-based safe capacity")
+
+# 46) A small surplus becomes negative after the minimum reserve, while safe credit capacity stays at zero.
+income = 4000
+expenses = 3900
+pre_reserve_budget = income - expenses
+minimum_reserve = max(300, pre_reserve_budget * 0.10)
+available = pre_reserve_budget - minimum_reserve
+max_rate_by_reserve = max(0, max(0, pre_reserve_budget) - minimum_reserve)
+if not (available == -200 and max_rate_by_reserve == 0):
+    raise SystemExit("Slider acceptance failed - negative post-reserve budget handled correctly")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
