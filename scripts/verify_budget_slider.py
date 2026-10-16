@@ -44,6 +44,9 @@ required_implementation = {
     "safety buffer non-editable note": 'ist nicht manuell editierbar.',
     "old rate captured from pre-change model": 'const beforeChange=budgetModel();',
     "pre-change monthly rate preserved": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
+    "pre-change rate pool preserved": 'budgetRatePoolBeforeRecalc=Math.max(0,Number(beforeChange.ratePool)||0);',
+    "improvement detected": 'budgetLastRecalcImproved=(m.ratePool>previousRatePool+0.005);',
+    "improved reached warning suppressed": 'const suppressReachedWarning=budgetLastRecalcImproved && !minimumBufferBelow;',
     "capture phase enabled": '},true);',
     "rate reduction calculated": 'const rateReduction=Math.max(0,previousRate-newRate);',
     "reached warning shows theoretical undershoot": 'Mindestpuffer erreicht. Ohne Anpassung wäre er um "+eur(rateReduction)+" unterschritten. Kreditrate um "+eur(rateReduction)+" reduziert.',
@@ -225,7 +228,25 @@ previous_rate = 1200
 new_rate = 1115
 pre_adjustment_undershoot = max(0, previous_rate - new_rate)
 if pre_adjustment_undershoot != 85:
-    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot")
+    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, improvement/worsening direction")
+
+# 18) Income increase improves the free rate pool and must suppress an exact-300 warning.
+previous_pool = 2200
+new_pool = 2500
+improved = new_pool > previous_pool + 0.005
+minimum_buffer_below = False
+suppress_warning = improved and not minimum_buffer_below
+if not suppress_warning:
+    raise SystemExit("Slider acceptance failed - income increase suppresses warning")
+
+# 19) Expense increase worsens the pool and must not suppress the warning.
+previous_pool = 2500
+new_pool = 2200
+improved = new_pool > previous_pool + 0.005
+minimum_buffer_below = False
+suppress_warning = improved and not minimum_buffer_below
+if suppress_warning:
+    raise SystemExit("Slider acceptance failed - expense increase keeps warning")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
