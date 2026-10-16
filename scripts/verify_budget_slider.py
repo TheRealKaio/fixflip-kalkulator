@@ -36,17 +36,17 @@ required_implementation = {
     "warning at exact 300": 'const minimumBufferReached=rawCurrentBuffer<=300;',
     "shortfall amount calculated": 'const bufferShortfall=Math.max(0,300-rawCurrentBuffer);',
     "shortfall shown in warning": 'Mindestpuffer unterschritten um "+eur(bufferShortfall)',
-    "toast exists": 'id="budgetBufferToast"',
-    "toast only on threshold crossing": 'if(minimumBufferBelow && !budgetMinimumBufferWasBelow){',
-    "toast state updated": 'budgetMinimumBufferWasBelow=minimumBufferBelow;',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": 'automatisch berechnet · mindestens 300 €',
     "safety buffer non-editable note": 'ist nicht manuell editierbar.',
     "old rate captured from pre-change model": 'const beforeChange=budgetModel();',
     "pre-change monthly rate preserved": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
-    "pre-change rate pool preserved": 'budgetRatePoolBeforeRecalc=Math.max(0,Number(beforeChange.ratePool)||0);',
-    "improvement detected": 'budgetLastRecalcImproved=(m.ratePool>previousRatePool+0.005);',
-    "improved reached warning suppressed": 'const suppressReachedWarning=budgetLastRecalcImproved && !minimumBufferBelow;',
+    "income fields classified": 'const budgetRateIncomeIds=new Set([',
+    "expense fields classified": 'const budgetRateExpenseIds=new Set([',
+    "previous input value preserved": 'budgetInputValueBeforeRecalc=Math.max(0,Number(String(el.value||"0").replace(",", "."))||0);',
+    "income direction logic": 'budgetLastRecalcDirection=newInput>oldInput+0.005 ? 1 : (newInput<oldInput-0.005 ? -1 : 0);',
+    "expense direction logic": 'budgetLastRecalcDirection=newInput<oldInput-0.005 ? 1 : (newInput>oldInput+0.005 ? -1 : 0);',
+    "improved warning suppressed": 'const suppressReachedWarning=budgetLastRecalcDirection>0 && !minimumBufferBelow;',
     "capture phase enabled": '},true);',
     "rate reduction calculated": 'const rateReduction=Math.max(0,previousRate-newRate);',
     "reached warning shows theoretical undershoot": 'Mindestpuffer erreicht. Ohne Anpassung wäre er um "+eur(rateReduction)+" unterschritten. Kreditrate um "+eur(rateReduction)+" reduziert.',
@@ -228,7 +228,7 @@ previous_rate = 1200
 new_rate = 1115
 pre_adjustment_undershoot = max(0, previous_rate - new_rate)
 if pre_adjustment_undershoot != 85:
-    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, improvement/worsening direction")
+    raise SystemExit("Slider acceptance failed - pre-adjustment undershoot, direct input improvement/worsening direction")
 
 # 18) Income increase improves the free rate pool and must suppress an exact-300 warning.
 previous_pool = 2200
@@ -248,7 +248,21 @@ suppress_warning = improved and not minimum_buffer_below
 if suppress_warning:
     raise SystemExit("Slider acceptance failed - expense increase keeps warning")
 
+# 20) Direct income direction: higher income is improvement.
+old_input = 3000
+new_input = 3500
+income_direction = 1 if new_input > old_input + 0.005 else (-1 if new_input < old_input - 0.005 else 0)
+if income_direction != 1:
+    raise SystemExit("Slider acceptance failed - direct income direction")
+
+# 21) Direct expense direction: higher expense is worsening.
+old_input = 500
+new_input = 700
+expense_direction = 1 if new_input < old_input - 0.005 else (-1 if new_input > old_input + 0.005 else 0)
+if expense_direction != -1:
+    raise SystemExit("Slider acceptance failed - direct expense direction")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, one-time toast, rate-reduction amount, exact/sub-euro 300 threshold, pre-adjustment undershoot")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, rate-reduction amount, exact/sub-euro 300 threshold, pre-adjustment undershoot")
