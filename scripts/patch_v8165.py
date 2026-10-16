@@ -1519,7 +1519,7 @@ required_v8203_tokens = [
     'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     'Mindest-Sicherheitspuffer',
-    '"Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen."',
+    '"Mindestpuffer erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen."',
     'document.addEventListener("input",(event)=>',
     '},true);',
     'renderBudget();'
