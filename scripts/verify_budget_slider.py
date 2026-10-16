@@ -51,7 +51,9 @@ required_implementation = {
     "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
-    "previous rate preserved after recalculation": 'const preservedRatePct=recalculated.net>0 ? (previousRate/recalculated.net)*100 : 0;',
+    "expense change detected": 'const expenseChanged=budgetRateExpenseIds.has(el.id);',
+    "expense increase can reduce rate": 'const adjustedRate=expenseChanged ? Math.min(previousRate,Math.max(0,recalculated.rateCap||0)) : previousRate;',
+    "adjusted rate persisted": 'const preservedRatePct=recalculated.net>0 ? (adjustedRate/recalculated.net)*100 : 0;',
     "reset arms initial rate": 'budgetRateNeedsInitialValue=true;',
     "initial rate waits for focusout": 'document.addEventListener("focusout",(event)=>',
     "initialization only for income": 'if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;',
@@ -400,6 +402,27 @@ requested_rate = 1200
 monthly_rate = max(0, min(max(0, free_budget), requested_rate))
 if monthly_rate != 1200:
     raise SystemExit("Slider acceptance failed - rate below free budget remains unchanged")
+
+# 35) A later expense increase reduces the existing rate only as far as needed to protect the safe cap.
+previous_rate = 1200
+new_rate_cap = 700
+adjusted_rate = min(previous_rate, max(0, new_rate_cap))
+if adjusted_rate != 700:
+    raise SystemExit("Slider acceptance failed - expense increase protects minimum reserve")
+
+# 36) Lower expenses do not automatically increase a previously selected lower rate.
+previous_rate = 700
+new_rate_cap = 1200
+adjusted_rate = min(previous_rate, max(0, new_rate_cap))
+if adjusted_rate != 700:
+    raise SystemExit("Slider acceptance failed - expense decrease must not auto-increase rate")
+
+# 37) A manually lower rate remains untouched when it is already below the new safe cap.
+previous_rate = 500
+new_rate_cap = 700
+adjusted_rate = min(previous_rate, max(0, new_rate_cap))
+if adjusted_rate != 500:
+    raise SystemExit("Slider acceptance failed - lower manual rate must be preserved")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
