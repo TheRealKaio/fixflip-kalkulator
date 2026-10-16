@@ -18,7 +18,7 @@ html = index_path.read_text(encoding="utf-8")
 
 required_implementation = {
     "slider exists": 'id="budgetRateSlider" type="range" min="0" max="45" step="0.1"',
-    "minimum reserve formula": 'const minimumReserve=Math.max(300,freeBudget*0.10);',
+    "minimum reserve activates after net income": 'const minimumReserve=net>0 ? Math.max(300,freeBudget*0.10) : 0;',
     "dynamic reserve limit": 'const maxRateByReserve=Math.max(0,ratePool-minimumReserve);',
     "45 percent limit": 'const maxRateByPct=Math.max(0,net*0.45);',
     "earlier limit wins": 'const rateCap=Math.max(0,Math.min(maxRateByReserve,maxRateByPct));',
@@ -46,12 +46,16 @@ required_implementation = {
     "warning explicit below branch": 'if(minimumBufferBelow){',
     "warning exact-minimum branch": '}else if(minimumBufferReached){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
-    "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
+    "financing reserve zero markup": 'id="budgetSafetyReserve" inputmode="decimal" value="0" readonly aria-readonly="true"',
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     "terminology financing reserve": 'Finanzierungsreserve',
     "terminology current safety buffer": 'Aktueller Sicherheitspuffer',
     "financing reserve summary row": '<span>- Finanzierungsreserve</span><strong id="budgetFinancingReserveResult">–</strong>',
     "financing reserve summary value": 'if($("budgetFinancingReserveResult")) $("budgetFinancingReserveResult").textContent=eur(m.minimumReserve);',
+    "suggestions do not auto-fill": 'function syncBudgetSuggestions(){\n  // Vorschlaege nur aktualisieren; die Eingabefelder bleiben unveraendert,',
+    "suggestions still apply by button": 'function applyBudgetSuggestions(){',
+    "reset expenses to zero": 'budgetExpenseIds.forEach(id=>{\n    if($(id)) $(id).value="0";',
+    "reset financing reserve to zero": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value="0";',
     "capture phase enabled": '},true);',
     "warning message": 'Finanzierungsreserve unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "warning at exact minimum": 'Finanzierungsreserve erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
@@ -552,6 +556,40 @@ if expenses_pos < 0 or reserve_pos < 0 or reserve_pos <= expenses_pos:
 between = html[expenses_pos + len(expenses_row):reserve_pos]
 if "<div class=\"budget-summary-row" in between:
     raise SystemExit("Slider acceptance failed - financing reserve must be directly below fixed expenses")
+
+# 48) All fixed monthly expense inputs start at zero.
+expense_ids = [
+    "budgetFood","budgetMobility","budgetInsurance","budgetTelecom",
+    "budgetLeisure","budgetChildCosts","budgetExistingLoans","budgetOther"
+]
+for expense_id in expense_ids:
+    token = f'id="{expense_id}" inputmode="decimal" value="0"'
+    if token not in html:
+        raise SystemExit("Slider acceptance failed - all fixed expense markup defaults are zero: " + expense_id)
+
+# 49) Financing reserve stays zero until positive household net income exists.
+def financing_reserve(net, income, expenses):
+    free_budget = income - expenses
+    return max(300, free_budget * 0.10) if net > 0 else 0
+
+if financing_reserve(0, 0, 0) != 0:
+    raise SystemExit("Slider acceptance failed - financing reserve must start at zero")
+if financing_reserve(4000, 4000, 0) != 400:
+    raise SystemExit("Slider acceptance failed - financing reserve must use existing formula after net income")
+if financing_reserve(2000, 2000, 0) != 300:
+    raise SystemExit("Slider acceptance failed - financing reserve minimum floor remains 300")
+
+# 50) Suggestion synchronization no longer writes values into expense fields.
+sync_start = html.find("function syncBudgetSuggestions(){")
+apply_start = html.find("function applyBudgetSuggestions(){")
+if sync_start < 0 or apply_start < 0 or apply_start <= sync_start:
+    raise SystemExit("Slider acceptance failed - suggestion functions missing")
+sync_body = html[sync_start:apply_start]
+if ".value=String(Math.round(" in sync_body:
+    raise SystemExit("Slider acceptance failed - suggestions must not auto-fill expense fields")
+apply_body = html[apply_start:html.find("function budgetIncomeDetailsTotal", apply_start)]
+if ".value=String(Math.round(s[id]))" not in apply_body:
+    raise SystemExit("Slider acceptance failed - Vorschlaege uebernehmen must still fill expense fields")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
