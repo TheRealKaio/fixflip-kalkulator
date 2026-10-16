@@ -355,6 +355,28 @@ if round(repayment_part, 2) != 375.00:
 if round(interest_part + repayment_part, 2) != round(loan_monthly_rate, 2):
     raise SystemExit("Slider acceptance failed - interest and repayment sum to loan monthly rate")
 
+# 32) Expenses above income must show a negative free budget and zero credit rate.
+income = 4000
+expenses = 4250
+free_budget = income - expenses
+financing_pool = max(0, free_budget)
+minimum_reserve = max(300, free_budget * 0.10)
+max_rate_by_reserve = max(0, financing_pool - minimum_reserve)
+max_rate_by_pct = income * 0.45
+rate_cap = max(0, min(max_rate_by_reserve, max_rate_by_pct))
+if not (free_budget == -250 and minimum_reserve == 300 and rate_cap == 0):
+    raise SystemExit("Slider acceptance failed - negative free budget yields zero credit rate")
+
+# 33) A positive free budget below the 300 EUR minimum reserve also yields zero credit rate.
+income = 4000
+expenses = 3900
+free_budget = income - expenses
+financing_pool = max(0, free_budget)
+minimum_reserve = max(300, free_budget * 0.10)
+rate_cap = max(0, min(max(0, financing_pool - minimum_reserve), income * 0.45))
+if not (free_budget == 100 and minimum_reserve == 300 and rate_cap == 0):
+    raise SystemExit("Slider acceptance failed - free budget below minimum reserve yields zero credit rate")
+
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
