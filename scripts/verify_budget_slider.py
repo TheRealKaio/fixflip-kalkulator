@@ -30,6 +30,10 @@ required_implementation = {
     "UI recalculated immediately": 'renderBudget();',
     "new reserve note text": 'Aktueller Sicherheitspuffer: "+eur(m.reserve)+" · Mindest-Sicherheitspuffer: 300 €',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
+    "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
+    "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
+    "slider jumps to recalculated maximum": 'const newPct=Math.max(0,m.maxRatePct||0);',
+    "rate jumps to recalculated maximum": 'const newRate=Math.max(0,m.maxMonthlyRate||0);',
 }
 
 missing = [name for name, token in required_implementation.items() if token not in html]
@@ -109,7 +113,14 @@ right = model(3000, 0, 500, 1000, 30)
 if not (right["rate"] > left["rate"] and right["reserve"] < left["reserve"]):
     raise SystemExit("Slider acceptance failed - directionality is wrong")
 
-# 5) Child benefit increases available pool, but the 45% ceiling still uses net household income.
+# 5) Recalculation after changed income/expenses: the selected rate must jump to the new maximum.
+before_change = model(3000, 0, 500, 1000, 20)
+after_change = model(3500, 0, 700, 1000, None)
+after_change_max = model(3500, 0, 700, 1000, after_change["max_pct"])
+if not (after_change_max["rate"] != before_change["rate"] and close(after_change_max["pct"], after_change_max["max_pct"])):
+    raise SystemExit("Slider acceptance failed - recalculated after changed expenses/income")
+
+# 6) Child benefit increases available pool, but the 45% ceiling still uses net household income.
 assert_case(
     "net percentage basis",
     model(3000, 500, 1000, 1000, 45),
@@ -121,4 +132,4 @@ assert_case(
 print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
-print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, net-income basis")
+print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income/expense recalculation, net-income basis")
