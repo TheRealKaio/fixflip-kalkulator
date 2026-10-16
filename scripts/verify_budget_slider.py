@@ -52,7 +52,9 @@ required_implementation = {
     "warning message": 'Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
     "warning at exact minimum": 'Mindestpuffer erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
-    "income/expense changes reset slider": 'const budgetRateRecalcIds=new Set([',
+    "financing assumptions included": 'const budgetFinancingAssumptionIds=new Set([',
+    "financing assumption fields": '"budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"',
+    "income expense assumptions share recalc": 'const budgetRateRecalcIds=new Set([...budgetRateIncomeIds,...budgetRateExpenseIds,...budgetFinancingAssumptionIds]);',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
     "automatic 35 percent rate": 'const automaticRate=Math.min(Math.max(0,recalculated.net*0.35),Math.max(0,recalculated.rateCap||0));',
@@ -491,6 +493,16 @@ rate_cap = 900
 adjusted_rate = min(previous_rate, max(0, rate_cap))
 if adjusted_rate != 900:
     raise SystemExit("Slider acceptance failed - manual rate must still respect safety cap")
+
+# 43) All relevant financing assumption fields are part of the central recalculation set.
+financing_assumption_ids = {
+    "budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"
+}
+expected_financing_assumption_ids = {
+    "budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"
+}
+if financing_assumption_ids != expected_financing_assumption_ids:
+    raise SystemExit("Slider acceptance failed - financing assumption IDs covered")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
