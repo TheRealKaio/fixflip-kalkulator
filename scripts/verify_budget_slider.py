@@ -40,8 +40,12 @@ required_implementation = {
     "signed deviation calculated": 'const bufferDeviation=currentBuffer-minimumReserve;',
     "under minimum threshold": 'const minimumBufferBelow=bufferDeviation<-0.005;',
     "exact minimum threshold": 'const minimumBufferReached=Math.abs(bufferDeviation)<=0.005;',
-    "warning hidden above minimum": '$("budgetRateSliderWarning").hidden=bufferDeviation>0.005;',
+    "warning has explicit above-minimum state": 'const minimumBufferAbove=bufferDeviation>0.005;',
+    "warning hidden only above minimum": '$("budgetRateSliderWarning").hidden=minimumBufferAbove;',
     "signed deviation shown in warning": 'Mindestpuffer unterschritten · Abweichung: "+eur(bufferDeviation)',
+    "warning explicit below branch": 'if(minimumBufferBelow){',
+    "warning exact-minimum branch": '}else if(minimumBufferReached){',
+    "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
     "safety buffer readonly": 'id="budgetSafetyReserve" inputmode="decimal" value="300" readonly aria-readonly="true"',
     "safety buffer auto label": '10 % von Einnahmen − Ausgaben · mindestens 300 €',
     "capture phase enabled": '},true);',
@@ -423,6 +427,32 @@ new_rate_cap = 700
 adjusted_rate = max(0, new_rate_cap)
 if adjusted_rate != 700:
     raise SystemExit("Slider acceptance failed - expense change must replace prior manual rate")
+
+# 38) Warning display states: above hidden, equal reached, below undershot.
+def warning_state(current_buffer, minimum_reserve):
+    deviation = current_buffer - minimum_reserve
+    below = deviation < -0.005
+    reached = abs(deviation) <= 0.005
+    above = deviation > 0.005
+    if above:
+        return ("hidden", deviation)
+    if below:
+        return ("below", deviation)
+    if reached:
+        return ("reached", deviation)
+    return ("clear", deviation)
+
+state, deviation = warning_state(350, 300)
+if state != "hidden":
+    raise SystemExit("Slider acceptance failed - display state above minimum hidden")
+
+state, deviation = warning_state(300, 300)
+if state != "reached":
+    raise SystemExit("Slider acceptance failed - exact minimum must show reached warning")
+
+state, deviation = warning_state(250, 300)
+if not (state == "below" and deviation == -50):
+    raise SystemExit("Slider acceptance failed - below minimum must show undershoot warning with existing deviation")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
