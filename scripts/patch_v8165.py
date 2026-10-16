@@ -1482,7 +1482,9 @@ required_v8203_tokens = [
     'const newPct=Math.max(0,m.maxRatePct||0);',
     'const newRate=Math.max(0,m.maxMonthlyRate||0);',
     'document.addEventListener("input",(event)=>',
-    'const minimumBufferReached=minimumBufferBelow||m.reserve<=300.01;',
+    'const rawCurrentBuffer=m.income-m.expenses-m.monthlyRate;',
+    'const displayedCurrentBuffer=Math.round(rawCurrentBuffer);',
+    'const minimumBufferReached=displayedCurrentBuffer<=300;',
     '"Mindestpuffer erreicht. Bitte Einnahmen oder Ausgaben prüfen."',
     'renderBudget();'
 ]
