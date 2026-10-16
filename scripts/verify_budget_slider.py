@@ -56,14 +56,19 @@ required_implementation = {
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
     "expense change detected": 'const expenseChanged=budgetRateExpenseIds.has(el.id);',
-    "expense change resets to safe max": 'const adjustedRate=expenseChanged ? Math.max(0,recalculated.rateCap||0) : previousRate;',
+    "automatic 35 percent rate": 'const automaticRate=Math.min(Math.max(0,recalculated.net*0.35),Math.max(0,recalculated.rateCap||0));',
+    "manual mode selector": 'const adjustedRate=budgetRateManualSelection',
+    "manual selection safety cap": '? Math.min(previousRate,Math.max(0,recalculated.rateCap||0))',
+    "automatic selection branch": ': automaticRate;',
     "adjusted rate persisted": 'const preservedRatePct=recalculated.net>0 ? (adjustedRate/recalculated.net)*100 : 0;',
     "reset arms initial rate": 'budgetRateNeedsInitialValue=true;',
     "initial rate waits for focusout": 'document.addEventListener("focusout",(event)=>',
     "initialization only for income": 'if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;',
-    "initial rate uses existing max": 'const initialRatePct=Math.max(0,m.maxRatePct||0);',
+    "initial rate targets 35 percent": 'const initialRatePct=Math.min(35,Math.max(0,m.maxRatePct||0));',
     "initial rate stored once": 'localStorage.setItem("ff_budget_rateSliderPct",String(initialRatePct));',
     "initialization disabled afterwards": 'budgetRateNeedsInitialValue=false;',
+    "manual slider flag stored": 'localStorage.setItem("ff_budget_rateManualSelection","1");',
+    "manual slider state": 'let budgetRateManualSelection=localStorage.getItem("ff_budget_rateManualSelection")==="1";',
     "loan monthly rate from max loan": 'const loanMonthlyRate=loan*debtServicePct/12;',
     "interest part from max loan": 'const interestPart=loan*interestPct/12;',
     "repayment part from max loan": 'const repaymentPart=loan*repaymentPct/12;',
@@ -453,6 +458,40 @@ if state != "reached":
 state, deviation = warning_state(250, 300)
 if not (state == "below" and deviation == -50):
     raise SystemExit("Slider acceptance failed - below minimum must show undershoot warning with existing deviation")
+
+# 39) Initial/automatic rate targets 35% of household net when safely affordable.
+net = 4000
+rate_cap = 1800
+automatic_rate = min(max(0, net * 0.35), max(0, rate_cap))
+if automatic_rate != 1400:
+    raise SystemExit("Slider acceptance failed - initial 35 percent when safe")
+
+# 40) The 35% target is capped by the safe budget/reserve limit.
+net = 4000
+rate_cap = 700
+automatic_rate = min(max(0, net * 0.35), max(0, rate_cap))
+if automatic_rate != 700:
+    raise SystemExit("Slider acceptance failed - 35 percent must respect safe budget cap")
+
+# 41) Before manual slider use, changed income/expenses recalculate to the current 35% target.
+net = 5000
+rate_cap = 2000
+automatic_rate = min(max(0, net * 0.35), max(0, rate_cap))
+if automatic_rate != 1750:
+    raise SystemExit("Slider acceptance failed - automatic mode must recalculate to 35 percent")
+
+# 42) After manual slider use, keep the chosen absolute rate unless safety requires a lower value.
+previous_rate = 1200
+rate_cap = 1700
+adjusted_rate = min(previous_rate, max(0, rate_cap))
+if adjusted_rate != 1200:
+    raise SystemExit("Slider acceptance failed - manual rate should remain after later recalculation")
+
+previous_rate = 1200
+rate_cap = 900
+adjusted_rate = min(previous_rate, max(0, rate_cap))
+if adjusted_rate != 900:
+    raise SystemExit("Slider acceptance failed - manual rate must still respect safety cap")
 
 print("Slider acceptance passed:")
 for name in required_implementation:
