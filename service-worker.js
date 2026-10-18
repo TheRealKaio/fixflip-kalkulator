@@ -1,4 +1,4 @@
-const CACHE_VERSION = "neustart-immocheck-v8.262";
+const CACHE_VERSION = "neustart-immocheck-v8.263";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
