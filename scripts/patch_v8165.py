@@ -2225,7 +2225,17 @@ if not term_candidates:
         for _m in _re.findall(r"<label[^>]*>.*?</label>", s, flags=_re.I | _re.S)
         if "Laufzeit" in _m
     ]
-    raise SystemExit("V8.236 layout term field block not found; Laufzeit labels=" + repr(_laufzeit_labels))
+    _candidate_labels = [
+        _re.sub(r"<[^>]+>", "", _m).strip()
+        for _m in _re.findall(r"<label[^>]*>.*?</label>", s, flags=_re.I | _re.S)
+        if any(_key in _m.lower() for _key in ("finanz", "dauer", "jahr", "monat"))
+    ]
+    raise SystemExit(
+        "V8.236 layout term field block not found; Laufzeit labels="
+        + repr(_laufzeit_labels)
+        + "; candidates="
+        + repr(_candidate_labels)
+    )
 
 term_start, term_end, term_block, _ = min(term_candidates, key=lambda item: item[3])
 
