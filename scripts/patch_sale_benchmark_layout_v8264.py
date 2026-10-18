@@ -30,25 +30,25 @@ if old_block not in s:
     raise SystemExit("V8.264 old benchmark block missing")
 s=s.replace(old_block,"",1)
 
-# Add the 3 benchmark boxes immediately below the sale input.
-sale_anchor='''        <div class="input-wrap"><input id="flipSaleTarget" inputmode="decimal" value="0"><span class="unit">€</span></div>
-        <div class="mini">'''
-sale_insert='''        <div class="input-wrap"><input id="flipSaleTarget" inputmode="decimal" value="0"><span class="unit">€</span></div>
-        <div class="flip-sale-benchmarks mode-hidden" id="flipSaleBenchmarks">
-          <div class="flip-sale-benchmark">
-            <span>Erwarteter Verkaufspreis</span>
-            <strong id="saleExpectedBenchmark">–</strong>
-          </div>
-          <div class="flip-sale-benchmark">
-            <span>Break-even-Verkaufspreis</span>
-            <strong id="saleBreakEvenBenchmark">–</strong>
-          </div>
-          <div class="flip-sale-benchmark">
-            <span>Verkaufspreis Projektziele</span>
-            <strong id="saleGoalBenchmark">–</strong>
-          </div>
-        </div>
-        <div class="mini">'''
+# Add the 3 benchmark boxes below the yellow information box of the sale field.
+sale_anchor='''          <div class="equity-capital-note" id="flipPurchaseCheckNote">
+            <strong>Hinweis:</strong> Trage hier deine realistische Verkaufserwartung nach der Sanierung ein. Ziel-Gewinn und Ziel-Marge verändern diesen Wert nicht; die Ampel zeigt dir stattdessen, ob deine Ziele mit dieser Verkaufserwartung erreichbar sind.
+          </div>'''
+sale_insert=sale_anchor+'''
+          <div class="flip-sale-benchmarks mode-hidden" id="flipSaleBenchmarks">
+            <div class="flip-sale-benchmark">
+              <span>Erwarteter Verkaufspreis</span>
+              <strong id="saleExpectedBenchmark">–</strong>
+            </div>
+            <div class="flip-sale-benchmark">
+              <span>Break-even-Verkaufspreis</span>
+              <strong id="saleBreakEvenBenchmark">–</strong>
+            </div>
+            <div class="flip-sale-benchmark">
+              <span>Verkaufspreis Projektziele</span>
+              <strong id="saleGoalBenchmark">–</strong>
+            </div>
+          </div>'''
 replace_once(sale_anchor,sale_insert,"sale benchmark placement")
 
 # Tighten spacing for boxes under sale field.
@@ -74,11 +74,12 @@ if missing:
 if "Verkaufspreis für deine Projektziele" in s:
     raise SystemExit("V8.264 old goal sale label still present")
 
-# Ensure benchmark block now follows sale field, not purchase.
+# Ensure benchmark block now follows the yellow information box of the sale field.
 sale_pos=s.find('id="flipSaleTarget"')
+note_pos=s.find('id="flipPurchaseCheckNote"')
 bench_pos=s.find('id="flipSaleBenchmarks"')
 purchase_pos=s.find('id="purchase"')
-if not (purchase_pos < sale_pos < bench_pos):
+if not (purchase_pos < sale_pos < note_pos < bench_pos):
     raise SystemExit("V8.264 benchmark placement order invalid")
 
 path.write_text(s,encoding="utf-8")
