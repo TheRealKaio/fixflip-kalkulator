@@ -2187,11 +2187,14 @@ for _label in ("Laufzeit Finanzierung", "Laufende Kosten pro Monat", "Sanierungs
     if s.count(_label) < 1:
         raise SystemExit("V8.236 layout verification failed for: " + _label)
 
-_term_pos = s.find("Laufzeit Finanzierung")
-_buffer_pos = s.find("Sanierungs-Puffer")
-_holding_pos = s.find("Laufende Kosten pro Monat")
+_holding_pos, _, _ = _field_block_by_label(s, "Laufende Kosten pro Monat")
+_term_pos, _, _ = _field_block_by_label(s, "Laufzeit Finanzierung")
+_buffer_pos, _, _ = _field_block_by_label(s, "Sanierungs-Puffer")
 if not (_holding_pos < _term_pos < _buffer_pos):
-    raise SystemExit("V8.236 layout verification failed: expected laufende Kosten at former Laufzeit slot and Laufzeit before Sanierungs-Puffer")
+    raise SystemExit(
+        "V8.236 layout verification failed: field order holding/term/buffer = "
+        + str((_holding_pos, _term_pos, _buffer_pos))
+    )
 
 path.write_text(s, encoding="utf-8")
 print("V8.236 interest and repayment patch applied")
