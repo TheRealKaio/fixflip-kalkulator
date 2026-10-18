@@ -2463,11 +2463,5 @@ if missing_v8237_tokens:
     raise SystemExit("V8.237 separated mode storage verification failed: "+", ".join(missing_v8237_tokens))
 
 
-# TEMP diagnostic for renovation suggestion logic
-for _needle in ["fixedTradeHints","function initializeTrades","const trades","trade-amount"]:
-    _i=s.find(_needle)
-    if _i>=0:
-        print("DIAG",_needle,repr(s[max(0,_i-1800):min(len(s),_i+6500)]))
-
 path.write_text(s, encoding="utf-8")
 print("V8.236 interest and repayment patch applied")
