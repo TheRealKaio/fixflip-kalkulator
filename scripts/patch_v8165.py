@@ -2439,7 +2439,7 @@ deal_mode_storage_js = r'''
 </script>
 '''
 
-if SNAPSHOT_VERSION not in s:
+if 'ff_mode_snapshot_"+SNAPSHOT_VERSION+"_' not in s:
     if "</body>" not in s:
         raise SystemExit("V8.237 body anchor not found")
     s=s.replace("</body>",deal_mode_storage_js+"\n</body>",1)
