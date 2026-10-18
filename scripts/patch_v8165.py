@@ -2163,7 +2163,10 @@ def _field_block_at_label(html, label, label_pos):
             depth -= 1
             pos = next_close + len("</div>")
             if depth == 0:
-                return start, pos, html[start:pos]
+                block = html[start:pos]
+                if not (start <= label_pos < pos) or label not in block:
+                    raise SystemExit("V8.236 label occurrence is not inside selected field: " + label)
+                return start, pos, block
 
 def _label_positions(html, label, start=0, end=None):
     if end is None:
