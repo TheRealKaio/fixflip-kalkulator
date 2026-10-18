@@ -52,9 +52,9 @@ js=r"""
   const dealCard=Array.from(root.children).find(function(el){
     return el.matches && el.matches("section.card") &&
       el.querySelector && el.querySelector("h2") &&
-      el.querySelector("h2").textContent.trim()==="1. Dein Deal";
+      el.querySelector("h2").textContent.trim()==="1. Deine Immobilie";
   });
-  if(!dealCard) return;
+  if(!dealCard) return;\n  const dealHeading=dealCard.querySelector("h2");\n  if(dealHeading) dealHeading.textContent="1. Deine Immobilie";
 
   const financeDetails=Array.from(dealCard.querySelectorAll("details.advanced")).find(function(el){
     const summary=el.querySelector(":scope > summary");
