@@ -120,7 +120,7 @@ js=r"""
     goalsSubtitle=document.createElement("p");
     goalsSubtitle.id="flipGoalsSubtitle";
     goalsSubtitle.className="flip-section-subtitle";
-    goalsSubtitle.textContent="Trage hier die Bedingungen deiner Finanzziele ein.";
+    goalsSubtitle.textContent="Trage hier die Bedingungen deiner Finanzziele ein. Sie steuern auch die Farbampel der Ergebnisse.";
   }
 
   function setFinanceHeading(text){
