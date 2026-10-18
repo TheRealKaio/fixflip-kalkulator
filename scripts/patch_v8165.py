@@ -2145,10 +2145,7 @@ if missing_v8236_tokens:
     raise SystemExit("V8.236 financing header verification failed: "+", ".join(missing_v8236_tokens))
 
 # V8.236: Layout Finanzierungsfelder - Laufzeit vor Sanierungs-Puffer, laufende Kosten an Laufzeit-Position.
-def _field_block_by_label(html, label):
-    label_pos = html.find(label)
-    if label_pos < 0:
-        raise SystemExit("V8.236 layout field label not found: " + label)
+def _field_block_at_label(html, label, label_pos):
     start = html.rfind('<div class="field">', 0, label_pos)
     if start < 0:
         raise SystemExit("V8.236 layout field start not found: " + label)
@@ -2168,33 +2165,92 @@ def _field_block_by_label(html, label):
             if depth == 0:
                 return start, pos, html[start:pos]
 
-term_start, term_end, term_block = _field_block_by_label(s, "Laufzeit Finanzierung")
-holding_start, holding_end, holding_block = _field_block_by_label(s, "Laufende Kosten pro Monat")
+def _label_positions(html, label, start=0, end=None):
+    if end is None:
+        end = len(html)
+    positions = []
+    pos = start
+    while True:
+        pos = html.find(label, pos, end)
+        if pos < 0:
+            return positions
+        positions.append(pos)
+        pos += len(label)
 
-# Laufende Kosten aus der bisherigen Position entfernen.
+def _target_financing_section(html):
+    menu_pos = html.find("Finanzierung & Nebenkosten anpassen")
+    if menu_pos < 0:
+        raise SystemExit("V8.236 layout section heading not found")
+    section_start = html.rfind("<section", 0, menu_pos)
+    section_end = html.find("</section>", menu_pos)
+    if section_start < 0 or section_end < 0:
+        raise SystemExit("V8.236 layout section bounds not found")
+    return menu_pos, section_start, section_end + len("</section>")
+
+menu_pos, section_start, section_end = _target_financing_section(s)
+
+# Ziel-Felder im geöffneten Bereich eindeutig auswählen.
+holding_positions = _label_positions(s, "Laufende Kosten pro Monat", section_start, section_end)
+buffer_positions = _label_positions(s, "Sanierungs-Puffer", section_start, section_end)
+if len(holding_positions) != 1 or len(buffer_positions) != 1:
+    raise SystemExit(
+        "V8.236 layout target fields not unique in financing section: holding="
+        + str(holding_positions) + ", buffer=" + str(buffer_positions)
+    )
+holding_start, holding_end, holding_block = _field_block_at_label(
+    s, "Laufende Kosten pro Monat", holding_positions[0]
+)
+buffer_start, buffer_end, buffer_block = _field_block_at_label(
+    s, "Sanierungs-Puffer", buffer_positions[0]
+)
+
+# Laufzeit-Feld des gleichen Rechnerbereichs über die räumliche Nähe zum Menüpunkt bestimmen.
+term_positions = _label_positions(s, "Laufzeit Finanzierung")
+if not term_positions:
+    raise SystemExit("V8.236 layout term field not found")
+term_candidates = []
+for _pos in term_positions:
+    try:
+        _start, _end, _block = _field_block_at_label(s, "Laufzeit Finanzierung", _pos)
+        term_candidates.append((_start, _end, _block, abs(_pos - menu_pos)))
+    except SystemExit:
+        pass
+if not term_candidates:
+    raise SystemExit("V8.236 layout term field block not found")
+term_start, term_end, term_block, _ = min(term_candidates, key=lambda item: item[3])
+
+# Laufende Kosten aus dem Anpassungsbereich entfernen.
 s = s[:holding_start] + s[holding_end:]
 
-# Den frei gewordenen Platz der Laufzeit mit den laufenden Kosten belegen.
-term_start, term_end, _ = _field_block_by_label(s, "Laufzeit Finanzierung")
-s = s[:term_start] + holding_block + s[term_end:]
+# Am bisherigen Laufzeit-Platz die laufenden Kosten einsetzen.
+term_now = s.find(term_block)
+if term_now < 0:
+    raise SystemExit("V8.236 layout term block disappeared before replacement")
+s = s[:term_now] + holding_block + s[term_now + len(term_block):]
 
-# Laufzeit Finanzierung unmittelbar vor den Sanierungs-Puffer verschieben.
-buffer_start, _, _ = _field_block_by_label(s, "Sanierungs-Puffer")
+# Laufzeit Finanzierung im Anpassungsbereich direkt vor den Sanierungs-Puffer setzen.
+_, section_start, section_end = _target_financing_section(s)
+buffer_positions = _label_positions(s, "Sanierungs-Puffer", section_start, section_end)
+if len(buffer_positions) != 1:
+    raise SystemExit("V8.236 layout buffer field not unique after replacement")
+buffer_start, _, _ = _field_block_at_label(s, "Sanierungs-Puffer", buffer_positions[0])
 s = s[:buffer_start] + term_block + "\n\n        " + s[buffer_start:]
 
-# Abnahmekontrolle: jedes Feld genau einmal und Laufzeit direkt vor Sanierungs-Puffer.
-for _label in ("Laufzeit Finanzierung", "Laufende Kosten pro Monat", "Sanierungs-Puffer"):
-    if s.count(_label) < 1:
-        raise SystemExit("V8.236 layout verification failed for: " + _label)
-
-_holding_pos, _, _ = _field_block_by_label(s, "Laufende Kosten pro Monat")
-_term_pos, _, _ = _field_block_by_label(s, "Laufzeit Finanzierung")
-_buffer_pos, _, _ = _field_block_by_label(s, "Sanierungs-Puffer")
-if not (_holding_pos < _term_pos < _buffer_pos):
+# Abnahmekontrolle nur im gemeinten Formularbereich.
+_, section_start, section_end = _target_financing_section(s)
+section_html = s[section_start:section_end]
+term_in_section = section_html.find("Laufzeit Finanzierung")
+buffer_in_section = section_html.find("Sanierungs-Puffer")
+holding_in_section = section_html.find("Laufende Kosten pro Monat")
+if term_in_section < 0 or buffer_in_section < 0 or not (term_in_section < buffer_in_section):
     raise SystemExit(
-        "V8.236 layout verification failed: field order holding/term/buffer = "
-        + str((_holding_pos, _term_pos, _buffer_pos))
+        "V8.236 layout verification failed in financing section: term/buffer="
+        + str((term_in_section, buffer_in_section))
     )
+if holding_in_section >= 0:
+    raise SystemExit("V8.236 layout verification failed: laufende Kosten still inside financing section")
+if s.count('id="holding"') != 1:
+    raise SystemExit("V8.236 layout verification failed: holding input duplicated or missing")
 
 path.write_text(s, encoding="utf-8")
 print("V8.236 interest and repayment patch applied")
