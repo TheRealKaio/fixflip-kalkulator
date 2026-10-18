@@ -293,7 +293,7 @@ required=[
   'const projection=annuityProjection(amount,interestRate,repaymentRate,months);',
   'm.interest=(Number(m.interest)||0)+extra.totalInterest;',
   'm.repayment=(Number(m.repayment)||0)+extra.totalRepayment;',
-  'renderOwnHouseholdBudget=function(m)',
+  'const baseModelAdditionalFinance=model;',
   'Weitere Finanzierung - Monatsrate',
   'Monatliche Gesamtbelastung',
   'V8.246',
