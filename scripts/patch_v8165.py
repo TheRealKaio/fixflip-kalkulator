@@ -2253,5 +2253,215 @@ if s.count('id="holding"') != 1:
 if s.count('id="monthsLabel"') != 1 or s.count('id="months"') != 1:
     raise SystemExit("V8.236 layout verification failed: duration field duplicated or missing")
 
+
+# V8.237: Eigennutzung und Fix & Flip erhalten vollständig getrennte Eingabestände.
+# Die Berechnungslogik bleibt unverändert; nur die Persistenz beim Moduswechsel wird getrennt.
+deal_mode_storage_js = r'''
+<script>
+(function(){
+  const SNAPSHOT_VERSION="v8237";
+  const SNAPSHOT_PREFIX="ff_mode_snapshot_"+SNAPSHOT_VERSION+"_";
+
+  function modeNow(){
+    try{
+      const mode=typeof currentDealType==="function" ? currentDealType() : "";
+      return mode==="own" || mode==="flip" ? mode : null;
+    }catch(_err){
+      return null;
+    }
+  }
+
+  function snapshotKey(mode){
+    return SNAPSHOT_PREFIX+mode;
+  }
+
+  function dealControls(){
+    const root=document.getElementById("dealCalculatorContent");
+    if(!root) return [];
+    return Array.from(root.querySelectorAll("input,select,textarea"))
+      .filter(el=>!(el.name==="dealType"));
+  }
+
+  function serializeControl(el,index){
+    return {
+      index,
+      id:el.id || "",
+      value:el.value,
+      checked:!!el.checked,
+      selectedIndex:typeof el.selectedIndex==="number" ? el.selectedIndex : null,
+      type:(el.type || "").toLowerCase(),
+      tag:el.tagName
+    };
+  }
+
+  function saveModeSnapshot(mode){
+    if(mode!=="own" && mode!=="flip") return;
+    const controls=dealControls();
+    const payload={
+      version:SNAPSHOT_VERSION,
+      mode,
+      savedAt:Date.now(),
+      controls:controls.map(serializeControl)
+    };
+    localStorage.setItem(snapshotKey(mode),JSON.stringify(payload));
+  }
+
+  function readModeSnapshot(mode){
+    try{
+      const raw=localStorage.getItem(snapshotKey(mode));
+      if(!raw) return null;
+      const parsed=JSON.parse(raw);
+      return parsed && Array.isArray(parsed.controls) ? parsed : null;
+    }catch(_err){
+      return null;
+    }
+  }
+
+  function restoreControl(el,item){
+    if(!el || !item) return;
+    const type=(el.type || "").toLowerCase();
+    if(type==="checkbox" || type==="radio"){
+      el.checked=!!item.checked;
+      return;
+    }
+    if(el.tagName==="SELECT" && Number.isInteger(item.selectedIndex) && item.selectedIndex>=0){
+      el.selectedIndex=item.selectedIndex;
+      return;
+    }
+    el.value=item.value == null ? "" : String(item.value);
+  }
+
+  function restoreModeSnapshot(mode){
+    const snap=readModeSnapshot(mode);
+    if(!snap) return false;
+    const controls=dealControls();
+    const byId=new Map(controls.filter(el=>el.id).map(el=>[el.id,el]));
+    snap.controls.forEach(item=>{
+      const el=(item.id && byId.get(item.id)) || controls[item.index];
+      restoreControl(el,item);
+    });
+    return true;
+  }
+
+  function initializeModeDefaults(mode){
+    const root=document.getElementById("dealCalculatorContent");
+    if(root && typeof resetControlToMarkupDefault==="function"){
+      root.querySelectorAll('input:not([name="dealType"]),select,textarea')
+        .forEach(resetControlToMarkupDefault);
+    }
+    if(typeof stateEl!=="undefined" && stateEl) stateEl.value="Hamburg";
+    if(typeof initializeTrades==="function") initializeTrades(true);
+
+    if(mode==="own"){
+      if(typeof applyOwnUseStandardValues==="function") applyOwnUseStandardValues();
+      if(typeof zeroOwnUseGoals==="function") zeroOwnUseGoals();
+    }else{
+      if(typeof applyFlipStandardValues==="function") applyFlipStandardValues();
+    }
+  }
+
+  function syncCurrentDomToExistingStorageAndRender(){
+    try{
+      if(typeof save==="function") save();
+    }catch(_err){}
+    try{
+      if(typeof initTwoDecimalPercentFields==="function") initTwoDecimalPercentFields();
+    }catch(_err){}
+    try{
+      if(typeof render==="function") render();
+    }catch(_err){}
+  }
+
+  let activeMode=modeNow();
+
+  function activateMode(mode){
+    if(mode!=="own" && mode!=="flip") return;
+    const restored=restoreModeSnapshot(mode);
+    if(!restored) initializeModeDefaults(mode);
+    syncCurrentDomToExistingStorageAndRender();
+    saveModeSnapshot(mode);
+    activeMode=mode;
+  }
+
+  // Beim initialen Laden wird ein bereits getrennter Stand bevorzugt.
+  // Fehlt er (Migration von älteren Versionen), gehört der aktuell geladene
+  // gemeinsame Altbestand ausschließlich zum gerade aktiven Modus.
+  if(activeMode){
+    if(readModeSnapshot(activeMode)){
+      setTimeout(()=>activateMode(activeMode),0);
+    }else{
+      saveModeSnapshot(activeMode);
+    }
+  }
+
+  // Capture-Phase: alten Modus sichern, bevor die bestehende setDealType-Logik
+  // die gemeinsamen DOM-Felder für den neuen Modus anpasst.
+  document.addEventListener("change",event=>{
+    const el=event.target;
+    if(!el || el.name!=="dealType") return;
+    if(activeMode) saveModeSnapshot(activeMode);
+    const requested=el.value==="own" || el.value==="flip" ? el.value : modeNow();
+    setTimeout(()=>{
+      const target=requested || modeNow();
+      if(target) activateMode(target);
+    },0);
+  },true);
+
+  function queueSnapshot(){
+    const mode=activeMode || modeNow();
+    if(!mode) return;
+    queueMicrotask(()=>saveModeSnapshot(mode));
+  }
+
+  // Jede Benutzereingabe aktualisiert nur den Snapshot des aktiven Modus.
+  document.addEventListener("input",event=>{
+    const root=document.getElementById("dealCalculatorContent");
+    if(!root || !root.contains(event.target) || event.target.name==="dealType") return;
+    queueSnapshot();
+  });
+  document.addEventListener("change",event=>{
+    const root=document.getElementById("dealCalculatorContent");
+    if(!root || !root.contains(event.target) || event.target.name==="dealType") return;
+    queueSnapshot();
+  });
+
+  // Auch programmatische Änderungen über Plus-/Aktionsbuttons und ein bestätigter
+  // Reset werden nach Abschluss in den aktuell aktiven Modus zurückgeschrieben.
+  document.addEventListener("click",event=>{
+    const root=document.getElementById("dealCalculatorContent");
+    if(!root || !root.contains(event.target)) return;
+    setTimeout(()=>{
+      const mode=activeMode || modeNow();
+      if(mode) saveModeSnapshot(mode);
+    },0);
+  });
+})();
+</script>
+'''
+
+if SNAPSHOT_VERSION not in s:
+    if "</body>" not in s:
+        raise SystemExit("V8.237 body anchor not found")
+    s=s.replace("</body>",deal_mode_storage_js+"\n</body>",1)
+
+required_v8237_tokens = [
+    'ff_mode_snapshot_"+SNAPSHOT_VERSION+"_',
+    'function saveModeSnapshot(mode)',
+    'function restoreModeSnapshot(mode)',
+    'function initializeModeDefaults(mode)',
+    'if(typeof applyOwnUseStandardValues==="function") applyOwnUseStandardValues();',
+    'if(typeof applyFlipStandardValues==="function") applyFlipStandardValues();',
+    'document.addEventListener("change",event=>{',
+    'if(activeMode) saveModeSnapshot(activeMode);',
+    'setTimeout(()=>{',
+    'activateMode(target);',
+    'if(typeof save==="function") save();',
+    'if(typeof render==="function") render();'
+]
+missing_v8237_tokens=[token for token in required_v8237_tokens if token not in s]
+if missing_v8237_tokens:
+    raise SystemExit("V8.237 separated mode storage verification failed: "+", ".join(missing_v8237_tokens))
+
+
 path.write_text(s, encoding="utf-8")
 print("V8.236 interest and repayment patch applied")
