@@ -406,6 +406,7 @@ jobs:
           python scripts/patch_market_value_v8243.py
           python scripts/patch_market_value_hint_v8244.py
           python scripts/patch_own_sections_v8245.py
+          python scripts/patch_additional_financing_v8246.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -430,13 +431,17 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.245": "V8.245" in index,
-              "service-worker registration V8.245": 'service-worker.js?v=8.245' in index,
-              "service-worker cache version V8.245": "neustart-immocheck-v8.245" in sw,
-              "own market heading": 'h.textContent="2. Kaufpreis-Check";' in index,
-              "own financing heading": '"3. Finanzierung und Nebenkosten"' in index,
-              "own finance card": 'financeCard.className="card own-finance-card";' in index,
-              "flip financing restored": 'dealCard.insertBefore(financeDetails,goals);' in index,
+              "visible/PDF version V8.246": "V8.246" in index,
+              "service-worker registration V8.246": 'service-worker.js?v=8.246' in index,
+              "service-worker cache version V8.246": "neustart-immocheck-v8.246" in sw,
+              "own financing subtitle": 'Trage hier die Bedingungen deiner Finanzierung ein.' in index,
+              "additional financing heading": 'Weitere Finanzierung berücksichtigen' in index,
+              "additional loan amount id": 'id="ownAdditionalLoanAmount"' in index,
+              "additional loan interest id": 'id="ownAdditionalLoanInterest"' in index,
+              "additional loan repayment id": 'id="ownAdditionalLoanRepayment"' in index,
+              "additional financing calculation": 'const monthlyInterest=amount*interestRate/12;' in index,
+              "household includes additional finance": 'renderOwnHouseholdBudget=function(m)' in index,
+              "PDF includes additional finance": 'Weitere Finanzierung - Monatsrate' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
