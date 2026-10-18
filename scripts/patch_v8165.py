@@ -2230,11 +2230,18 @@ if not term_candidates:
         for _m in _re.findall(r"<label[^>]*>.*?</label>", s, flags=_re.I | _re.S)
         if any(_key in _m.lower() for _key in ("finanz", "dauer", "jahr", "monat"))
     ]
+    _term_occ = _label_positions(s, "Laufzeit Finanzierung")
+    _term_snippets = [
+        s[max(0, _p - 220):min(len(s), _p + 420)].replace("\n", " ")
+        for _p in _term_occ[:8]
+    ]
     raise SystemExit(
         "V8.236 layout term field block not found; Laufzeit labels="
         + repr(_laufzeit_labels)
         + "; candidates="
         + repr(_candidate_labels)
+        + "; term snippets="
+        + repr(_term_snippets)
     )
 
 term_start, term_end, term_block, _ = min(term_candidates, key=lambda item: item[3])
