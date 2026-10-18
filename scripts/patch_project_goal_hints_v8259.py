@@ -16,7 +16,7 @@ replace_once(
 )
 
 replace_once(
-'''          <div class="field"><label>Verfügbares Eigenkapital <span class="hint">für das Projekt</span> <button class="info-btn inline-info" type="button" data-info="maxEquityInfo">i</button></label><div class="input-wrap"><input id="maxEquity" inputmode="decimal" value="0"><span class="unit">€</span></div><div class="mini">Harte Liquiditätsgrenze für die Projektlaufzeit.</div></div>''',
+'''          <div class="field"><label>Verfügbares Eigenkapital <span class="hint">für das Projekt</span> <button class="info-btn inline-info" type="button" data-info="maxEquityInfo">i</button></label><div class="input-wrap"><input id="maxEquity" inputmode="decimal" value="0"><span class="unit">€</span></div><div class="mini">Deine harte Liquiditätsgrenze für Finanzierung und Projektlaufzeit.</div></div>''',
 '''          <div class="field"><label>Verfügbares Eigenkapital <button class="info-btn inline-info" type="button" data-info="maxEquityInfo">i</button></label><div class="input-wrap"><input id="maxEquity" inputmode="decimal" value="0"><span class="unit">€</span></div><div class="mini">Harte Liquiditätsgrenze für die Projektlaufzeit.</div></div>''',
 "remove available equity inline hint"
 )
