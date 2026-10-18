@@ -270,7 +270,7 @@ jobs:
             doc.text("V8.152",right,289,{align:"right"});'''
           if old_budget_footer not in s:
               raise SystemExit("Budget footer target not found")
-          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.239");',1)
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.236");',1)
 
           old_add_page = '''  const addPage = () => {
               doc.addPage();
@@ -312,7 +312,7 @@ jobs:
               doc.setTextColor(100,110,125);
               doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
           if old_page_footer in s:
-              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.239");',1)
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.236");',1)
 
           old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
             addPage();
@@ -365,29 +365,29 @@ jobs:
           footer_loop_old = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.239");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.236");',
               '  }'
           ])
           footer_loop_new = "\n".join([
               '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
               '    doc.setPage(pageNo);',
               '    drawPdfBrandLogo(doc);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.239");',
+              '    drawPdfFooter(doc,pageNo,totalPages,"V8.236");',
               '  }'
           ])
           if footer_loop_old in s:
               s = s.replace(footer_loop_old, footer_loop_new, 1)
 
-          s = s.replace("V8.152","V8.239")
+          s = s.replace("V8.152","V8.236")
           final_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.239");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.236");
           }'''
           final_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
             doc.setPage(pageNo);
             // Abschluss-Pass: Logo auf jeder Seite nochmals zeichnen, insbesondere Seite 1.
             drawPdfBrandLogo(doc);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.239");
+            drawPdfFooter(doc,pageNo,totalPages,"V8.236");
           }'''
           if final_loop_old in s:
               s = s.replace(final_loop_old,final_loop_new,1)
@@ -424,12 +424,12 @@ jobs:
 
           checks = {
               "visible/PDF version V8.239": "V8.239" in index,
-              "service-worker registration V8.239": 'service-worker.js?v=8.236' in index,
+              "service-worker registration V8.239": 'service-worker.js?v=8.239' in index,
               "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
               "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
               "service-worker cache version V8.239": "neustart-immocheck-v8.239" in sw,
+              "budget suggestions in inputs": 'budget-expense-row input::placeholder' in index,
           }
-
           failed = [name for name, ok in checks.items() if not ok]
           if failed:
               raise SystemExit("Deployment verification failed: " + ", ".join(failed))
