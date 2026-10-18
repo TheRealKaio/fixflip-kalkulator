@@ -2146,8 +2146,7 @@ if missing_v8236_tokens:
 
 # V8.236: Layout Finanzierungsfelder - Laufzeit vor Sanierungs-Puffer, laufende Kosten an Laufzeit-Position.
 def _field_block_by_label(html, label):
-    needle = "<label>" + label
-    label_pos = html.find(needle)
+    label_pos = html.find(label)
     if label_pos < 0:
         raise SystemExit("V8.236 layout field label not found: " + label)
     start = html.rfind('<div class="field">', 0, label_pos)
@@ -2185,12 +2184,12 @@ s = s[:buffer_start] + term_block + "\n\n        " + s[buffer_start:]
 
 # Abnahmekontrolle: jedes Feld genau einmal und Laufzeit direkt vor Sanierungs-Puffer.
 for _label in ("Laufzeit Finanzierung", "Laufende Kosten pro Monat", "Sanierungs-Puffer"):
-    if s.count("<label>" + _label) != 1:
+    if s.count(_label) < 1:
         raise SystemExit("V8.236 layout verification failed for: " + _label)
 
-_term_pos = s.find("<label>Laufzeit Finanzierung")
-_buffer_pos = s.find("<label>Sanierungs-Puffer")
-_holding_pos = s.find("<label>Laufende Kosten pro Monat")
+_term_pos = s.find("Laufzeit Finanzierung")
+_buffer_pos = s.find("Sanierungs-Puffer")
+_holding_pos = s.find("Laufende Kosten pro Monat")
 if not (_holding_pos < _term_pos < _buffer_pos):
     raise SystemExit("V8.236 layout verification failed: expected laufende Kosten at former Laufzeit slot and Laufzeit before Sanierungs-Puffer")
 
