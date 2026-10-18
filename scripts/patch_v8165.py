@@ -2219,7 +2219,14 @@ for _pos in term_positions:
     except SystemExit:
         pass
 if not term_candidates:
-    raise SystemExit("V8.236 layout term field block not found")
+    import re as _re
+    _laufzeit_labels = [
+        _re.sub(r"<[^>]+>", "", _m)
+        for _m in _re.findall(r"<label[^>]*>.*?</label>", s, flags=_re.I | _re.S)
+        if "Laufzeit" in _m
+    ]
+    raise SystemExit("V8.236 layout term field block not found; Laufzeit labels=" + repr(_laufzeit_labels))
+
 term_start, term_end, term_block, _ = min(term_candidates, key=lambda item: item[3])
 
 # Laufende Kosten aus dem Anpassungsbereich entfernen.
