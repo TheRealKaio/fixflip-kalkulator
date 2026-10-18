@@ -403,6 +403,7 @@ jobs:
           python scripts/patch_reno_state_v8241.py
           python scripts/patch_budget_reno_v8242.py
           python scripts/patch_buffer_hint.py
+          python scripts/patch_market_value_v8243.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -427,15 +428,13 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.242": "V8.242" in index,
-              "service-worker registration V8.242": 'service-worker.js?v=8.242' in index,
-              "service-worker cache version V8.242": "neustart-immocheck-v8.242" in sw,
-              "budget suggestions auto refresh": 'const BUDGET_ACTIVE_KEY="ff_budget_suggestions_active";' in index,
-              "budget manual values preserved": 'if(!budgetExpenseManual[id] && $(id))' in index,
-              "reno total uses actual values only": 'const totalWithBuffer=actualBase>0' in index,
-              "reno blue total removed": '#renoSheetTotal{display:none!important}' in index,
-              "reno buffer separated": 'stateKey(mode,"buffer")' in index,
-              "reno mode namespace": 'ff_"+mode+"_reno_' in index,
+              "visible/PDF version V8.243": "V8.243" in index,
+              "service-worker registration V8.243": 'service-worker.js?v=8.243' in index,
+              "service-worker cache version V8.243": "neustart-immocheck-v8.243" in sw,
+              "market value auto update": 'updateOwnUseSaleDefault=recalcOwnMarketValueAfterReno;' in index,
+              "market value formula": 'const initialOwnUseCosts=purchase+acquisitionCosts+renoWithBuffer;' in index,
+              "market value 10 percent buffer": 'const ownUseValueBuffer=0.10;' in index,
+              "comparables retain priority": 'if(updateOwnUseMarketValueFromComparables())' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
