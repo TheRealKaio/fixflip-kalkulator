@@ -54,7 +54,9 @@ js=r"""
       el.querySelector && el.querySelector("h2") &&
       ["1. Dein Deal","1. Deine Immobilie"].includes(el.querySelector("h2").textContent.trim());
   });
-  if(!dealCard) return;\n  const dealHeading=dealCard.querySelector("h2");\n  if(dealHeading) dealHeading.textContent="1. Deine Immobilie";
+  if(!dealCard) return;
+  const dealHeading=dealCard.querySelector("h2");
+  if(dealHeading) dealHeading.textContent="1. Deine Immobilie";
 
   const financeDetails=Array.from(dealCard.querySelectorAll("details.advanced")).find(function(el){
     const summary=el.querySelector(":scope > summary");
