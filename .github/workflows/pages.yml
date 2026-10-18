@@ -404,6 +404,7 @@ jobs:
           python scripts/patch_budget_reno_v8242.py
           python scripts/patch_buffer_hint.py
           python scripts/patch_market_value_v8243.py
+          python scripts/patch_market_value_hint_v8244.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -428,13 +429,12 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.243": "V8.243" in index,
-              "service-worker registration V8.243": 'service-worker.js?v=8.243' in index,
-              "service-worker cache version V8.243": "neustart-immocheck-v8.243" in sw,
-              "market value auto update": 'updateOwnUseSaleDefault=recalcOwnMarketValueAfterReno;' in index,
-              "market value formula": 'const initialOwnUseCosts=purchase+acquisitionCosts+renoWithBuffer;' in index,
-              "market value 10 percent buffer": 'const ownUseValueBuffer=0.10;' in index,
-              "comparables retain priority": 'if(updateOwnUseMarketValueFromComparables())' in index,
+              "visible/PDF version V8.244": "V8.244" in index,
+              "service-worker registration V8.244": 'service-worker.js?v=8.244' in index,
+              "service-worker cache version V8.244": "neustart-immocheck-v8.244" in sw,
+              "dynamic market source helper": 'function hasValidMarketComparables()' in index,
+              "market source cost formula": 'Kalkulatorischer Wert (Kaufpreis, NK, Sanierung)' in index,
+              "market source comparables": 'Kalkulatorischer Wert (Vergleichseingaben)' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
