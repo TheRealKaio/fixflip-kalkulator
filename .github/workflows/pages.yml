@@ -423,6 +423,7 @@ jobs:
           python scripts/patch_liquidity_hint_v8260.py
           python scripts/patch_roi_zero_equity_v8261.py
           python scripts/patch_full_equity_roi_v8262.py
+          python scripts/patch_sale_expectation_v8263.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -447,15 +448,17 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.262": "V8.262" in index,
-              "service-worker registration V8.262": 'service-worker.js?v=8.262' in index,
-              "service-worker cache version V8.262": "neustart-immocheck-v8.262" in sw,
-              "full equity is ROI base": ': Math.max(0, ownEquityInput);' in index and 'const roi = equity ? profit/equity : 0;' in index,
-              "no remaining liquidity model": 'equityRemaining:0,' in index,
-              "no rest liquidity label": 'Restliquidität' not in index,
-              "equity KPI says 100 percent used": '100 % des verfügbaren Eigenkapitals eingesetzt' in index,
-              "ROI info text updated": 'Gewinn vor Steuer geteilt durch dein tatsächlich im Projekt eingesetztes eigenes Geld.' in index,
-              "PDF equity in project": 'page2Line("Eigenkapital im Projekt", pdfMoney(m.ownEquityInput));' in index,
+              "visible/PDF version V8.263": "V8.263" in index,
+              "service-worker registration V8.263": 'service-worker.js?v=8.263' in index,
+              "service-worker cache version V8.263": "neustart-immocheck-v8.263" in sw,
+              "sale field is market expectation": 'deine Markterwartung · editierbar' in index,
+              "three sale benchmarks below purchase": 'id="flipSaleBenchmarks"' in index and 'id="saleExpectedBenchmark"' in index and 'id="saleBreakEvenBenchmark"' in index and 'id="saleGoalBenchmark"' in index,
+              "initial sale is break-even": 'return nonBrokerCosts / breakEvenDenominator;' in index,
+              "goal sale separate": 'saleForTargetProfit,saleForTargetMargin,goalSale' in index,
+              "detailed profit miss": 'Ziel-Gewinn verfehlt um ' in index,
+              "detailed margin miss": 'Ziel-Marge verfehlt um ' in index,
+              "required goal sale shown": 'Für Gewinn und Marge wäre ein Verkaufspreis von mindestens ' in index,
+              "manual sale preserved": 'Der erwartete Verkaufspreis ist eine Nutzereinschätzung und bleibt bestehen.' in index and 'if(!hadSavedValue) recalcAndStore();' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
