@@ -427,6 +427,7 @@ jobs:
           python scripts/patch_sale_benchmark_layout_v8264.py
           python scripts/patch_dynamic_target_margin_v8265.py
           python scripts/patch_goal_cost_reduction_hint_v8266.py
+          python scripts/patch_maxbuy_position_hint_v8267.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -451,11 +452,12 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.266": "V8.266" in index,
-              "service-worker registration V8.266": 'service-worker.js?v=8.266' in index,
-              "service-worker cache version V8.266": "neustart-immocheck-v8.266" in sw,
-              "cost reduction alternative in hint": 'Alternativ müssen die Projektkosten um mindestens ' in index,
-              "cost reduction gap calculated": 'const saleGap=Math.max(0,m.goalSale-m.s);' in index,
+              "visible/PDF version V8.267": "V8.267" in index,
+              "service-worker registration V8.267": 'service-worker.js?v=8.267' in index,
+              "service-worker cache version V8.267": "neustart-immocheck-v8.267" in sw,
+              "max buy under hint": '"Du liegst drunter"' in index,
+              "max buy over hint": '"Du liegst drüber"' in index,
+              "max buy exact hint": '"Du liegst genau drauf"' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
