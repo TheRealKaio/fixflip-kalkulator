@@ -33,8 +33,8 @@ replace_once(
 )
 
 # ROI explizit auf das vollständig eingesetzte eigene Geld beziehen.
-old_roi='''  const roi = equity>0 ? profit/equity : 0;'''
-new_roi='''  const roi = equity>0 ? profit/equity : 0;'''
+old_roi='''  const roi = equity ? profit/equity : 0;'''
+new_roi='''  const roi = equity ? profit/equity : 0;'''
 if old_roi not in s:
     # tolerate whitespace variants but require the current formula to exist
     if 'profit/equity' not in s:
@@ -99,7 +99,7 @@ required=[
     '100 % des verfügbaren Eigenkapitals eingesetzt',
     'Gewinn vor Steuer geteilt durch dein tatsächlich im Projekt eingesetztes eigenes Geld.',
     'page2Line("Eigenkapital im Projekt", pdfMoney(m.ownEquityInput));',
-    'const roi = equity>0 ? profit/equity : 0;',
+    'const roi = equity ? profit/equity : 0;',
     'V8.262',
     'service-worker.js?v=8.262'
 ]
