@@ -410,6 +410,7 @@ jobs:
           python scripts/patch_own_visuals_v8247.py
           python scripts/patch_own_pdf_v8248.py
           python scripts/patch_own_pdf_totals_v8249.py
+          python scripts/patch_flip_sections_v8250.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -434,16 +435,16 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.249": "V8.249" in index,
-              "service-worker registration V8.249": 'service-worker.js?v=8.249' in index,
-              "service-worker cache version V8.249": "neustart-immocheck-v8.249" in sw,
-              "PDF explicit additional financing": 'const pdfAdditionalLoan = isOwnUse' in index,
-              "PDF combined credit rate": 'value:pdfMoney(pdfMonthlyCreditTotal)' in index,
-              "PDF combined total burden": 'line("Monatliche Gesamtbelastung", pdfMoney(pdfMonthlyTotalBurden), true);' in index,
-              "PDF combined interest costs": 'const interestCosts = isOwnUse ? pdfInterestCostsTotal : m.interest;' in index,
-              "PDF combined repayment costs": 'const repaymentCosts = isOwnUse ? pdfRepaymentCostsTotal : m.repayment;' in index,
-              "PDF additional monthly interest line": 'Monatliche Zinsbelastung (Weitere Finanzierung)' in index,
-              "PDF additional monthly repayment line": 'Monatliche Tilgung (Weitere Finanzierung)' in index,
+              "visible/PDF version V8.250": "V8.250" in index,
+              "service-worker registration V8.250": 'service-worker.js?v=8.250' in index,
+              "service-worker cache version V8.250": "neustart-immocheck-v8.250" in sw,
+              "flip finance own card": 'flipFinanceCard.className="card flip-section-card";' in index,
+              "flip goals own card": 'flipGoalsCard.className="card flip-section-card";' in index,
+              "flip finance heading": '"2. Finanzierung und Nebenkosten"' in index,
+              "flip goals heading": '"3. Projektziele & Steuer"' in index,
+              "flip finance subtitle": 'Trage hier die Bedingungen deiner Finanzierung ein.' in index,
+              "flip goals subtitle": 'Trage hier die Bedingungen deiner Finanzziele ein.' in index,
+              "flip goals visible": 'goals.classList.remove("mode-hidden");' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
