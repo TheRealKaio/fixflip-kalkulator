@@ -110,6 +110,24 @@ js=r"""
     queueFormulaRefresh(event.target);
   });
 
+  // Rechner-Reset: eigenes Speicherfeld ebenfalls vollständig zurücksetzen.
+  if(typeof resetDealCalculatorToDefaults==="function"){
+    const baseResetDealV8254=resetDealCalculatorToDefaults;
+    resetDealCalculatorToDefaults=function(){
+      const mode=currentDealType();
+      if(mode==="flip") localStorage.removeItem(STORAGE_KEY);
+      const result=baseResetDealV8254.apply(this,arguments);
+      if(mode==="flip"){
+        setTimeout(function(){
+          if(currentDealType()!=="flip") return;
+          recalcAndStore();
+          try{ render(); }catch(_err){}
+        },0);
+      }
+      return result;
+    };
+  }
+
   // Programmgesteuerte Änderungen der Sanierung ebenfalls synchronisieren.
   ["applyTradeSuggestions","saveTrades","resetTrades"].forEach(function(id){
     const btn=document.getElementById(id);
@@ -154,6 +172,7 @@ required=[
   'target.classList.contains("trade-amount")',
   'target.classList.contains("trade-area")',
   'recalcAndStore();',
+  'localStorage.removeItem(STORAGE_KEY);',
   'V8.254',
   'service-worker.js?v=8.254'
 ]
