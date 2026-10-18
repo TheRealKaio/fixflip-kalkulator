@@ -433,7 +433,7 @@ jobs:
               "budget suggestion total": 'id="budgetSuggestionTotal"' in index,
               "renovation suggestion total": 'id="renoSuggestionTotal"' in index,
               "suggestion applied blue": 'classList.toggle("applied",applied)' in index,
-          }          failed = [name for name, ok in checks.items() if not ok]
+          }\n\n          failed = [name for name, ok in checks.items() if not ok]
           if failed:
               raise SystemExit("Deployment verification failed: " + ", ".join(failed))
 
