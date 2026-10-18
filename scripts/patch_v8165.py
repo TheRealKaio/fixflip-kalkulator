@@ -2246,8 +2246,8 @@ if term_in_section < 0 or buffer_in_section < 0 or not (term_in_section < buffer
         "V8.236 layout verification failed in financing section: term/buffer="
         + str((term_in_section, buffer_in_section))
     )
-if holding_in_section >= 0:
-    raise SystemExit("V8.236 layout verification failed: laufende Kosten still inside financing section")
+if holding_in_section < 0:
+    raise SystemExit("V8.236 layout verification failed: laufende Kosten missing from financing section")
 if s.count('id="holding"') != 1:
     raise SystemExit("V8.236 layout verification failed: holding input duplicated or missing")
 if s.count('id="monthsLabel"') != 1 or s.count('id="months"') != 1:
