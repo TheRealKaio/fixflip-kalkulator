@@ -400,6 +400,7 @@ jobs:
           python scripts/patch_reno_suggestions.py
           python scripts/patch_budget_placeholders_v8239.py
           python scripts/patch_suggestion_totals_v8240.py
+          python scripts/patch_reno_state_v8241.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -424,15 +425,19 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.240": "V8.240" in index,
-              "service-worker registration V8.240": 'service-worker.js?v=8.240' in index,
+              "visible/PDF version V8.241": "V8.241" in index,
+              "service-worker registration V8.241": 'service-worker.js?v=8.241' in index,
               "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
               "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
-              "service-worker cache version V8.240": "neustart-immocheck-v8.240" in sw,
+              "service-worker cache version V8.241": "neustart-immocheck-v8.241" in sw,
               "budget suggestions in inputs": 'if(!budgetExpenseManual[key] && Math.abs(budgetVal(key))<0.005)' in index,
               "budget suggestion total": 'id="budgetSuggestionTotal"' in index,
               "renovation suggestion total": 'id="renoSuggestionTotal"' in index,
-              "suggestion applied blue": 'classList.toggle("applied",applied)' in index,
+              "reno mode namespace": 'ff_"+mode+"_reno_' in index,
+              "reno buffer separated": 'stateKey(mode,"buffer")' in index,
+              "reno area auto sync": 'syncAutoTrades=function()' in index,
+              "manual renovation override": 'if(manualTrades.has(t.key)) return;' in index,
+              "reno incl buffer": 'const totalWithBuffer=Math.round(base*(1+pct("buffer")));' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
