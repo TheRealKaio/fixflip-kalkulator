@@ -429,6 +429,7 @@ jobs:
           python scripts/patch_goal_cost_reduction_hint_v8266.py
           python scripts/patch_maxbuy_position_hint_v8267.py
           python scripts/patch_financing_equity_shortfall_v8268.py
+          python scripts/patch_own_equity_shortfall_v8269.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -453,13 +454,14 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.268": "V8.268" in index,
-              "service-worker registration V8.268": 'service-worker.js?v=8.268' in index,
-              "service-worker cache version V8.268": "neustart-immocheck-v8.268" in sw,
-              "equity shortfall warning markup": 'id="equityShortfallWarning"' in index,
-              "partial financing trigger": 'const financingBelowFull = Math.max(0,pct("ltv")) < 0.999999;' in index,
-              "acquisition finance trigger": '(!financeAcquisitionChecked || financingBelowFull)' in index,
-              "red shortfall text": 'Eigenkapital erhöhen – Fehlbetrag: ' in index,
+              "visible/PDF version V8.269": "V8.269" in index,
+              "service-worker registration V8.269": 'service-worker.js?v=8.269' in index,
+              "service-worker cache version V8.269": "neustart-immocheck-v8.269" in sw,
+              "own equity warning markup": 'id="ownEquityShortfallWarning"' in index,
+              "own required equity formula": 'const ownRequiredEquity = Math.max(0,(m.initialOwnUseCosts||0)-(m.grossDebt||0));' in index,
+              "own shortfall formula": 'const ownEquityShortfall = Math.max(0,ownRequiredEquity-Math.max(0,m.ownEquityInput||0));' in index,
+              "own partial financing trigger": '(!ownFinanceAcquisitionChecked || ownFinancingBelowFull)' in index,
+              "own red shortfall text": 'Eigenkapital erhöhen – Fehlbetrag: ' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
