@@ -420,6 +420,7 @@ jobs:
           python scripts/patch_equity_liquidity_v8257.py
           python scripts/patch_equity_waterfall_v8258.py
           python scripts/patch_project_goal_hints_v8259.py
+          python scripts/patch_liquidity_hint_v8260.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -444,14 +445,11 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.259": "V8.259" in index,
-              "service-worker registration V8.259": 'service-worker.js?v=8.259' in index,
-              "service-worker cache version V8.259": "neustart-immocheck-v8.259" in sw,
-              "target profit hint below input": '<div class="mini">vor Steuer</div>' in index,
-              "available equity inline hint removed": 'Verfügbares Eigenkapital <span class="hint">für das Projekt</span>' not in index,
-              "available equity description below input": 'Deine harte Liquiditätsgrenze für Finanzierung und Projektlaufzeit.' in index,
-              "ROI hint below input": '<div class="mini">auf eigenes Geld</div>' in index,
-              "tax hint below input": '<div class="mini">auf positiven Projektgewinn</div>' in index,
+              "visible/PDF version V8.260": "V8.260" in index,
+              "service-worker registration V8.260": 'service-worker.js?v=8.260' in index,
+              "service-worker cache version V8.260": "neustart-immocheck-v8.260" in sw,
+              "liquidity hint renamed": 'Harte Liquiditätsgrenze für die Projektlaufzeit.' in index,
+              "old liquidity hint removed": 'Deine harte Liquiditätsgrenze für Finanzierung und Projektlaufzeit.' not in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
