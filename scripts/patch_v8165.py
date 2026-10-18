@@ -2207,44 +2207,16 @@ buffer_start, buffer_end, buffer_block = _field_block_at_label(
     s, "Sanierungs-Puffer", buffer_positions[0]
 )
 
-# Laufzeit-Feld des gleichen Rechnerbereichs über die räumliche Nähe zum Menüpunkt bestimmen.
-term_positions = _label_positions(s, "Laufzeit Finanzierung")
-if not term_positions:
-    raise SystemExit("V8.236 layout term field not found")
-term_candidates = []
-for _pos in term_positions:
-    try:
-        _start, _end, _block = _field_block_at_label(s, "Laufzeit Finanzierung", _pos)
-        term_candidates.append((_start, _end, _block, abs(_pos - menu_pos)))
-    except SystemExit:
-        pass
-if not term_candidates:
-    import re as _re
-    _laufzeit_labels = [
-        _re.sub(r"<[^>]+>", "", _m)
-        for _m in _re.findall(r"<label[^>]*>.*?</label>", s, flags=_re.I | _re.S)
-        if "Laufzeit" in _m
-    ]
-    _candidate_labels = [
-        _re.sub(r"<[^>]+>", "", _m).strip()
-        for _m in _re.findall(r"<label[^>]*>.*?</label>", s, flags=_re.I | _re.S)
-        if any(_key in _m.lower() for _key in ("finanz", "dauer", "jahr", "monat"))
-    ]
-    _term_occ = _label_positions(s, "Laufzeit Finanzierung")
-    _term_snippets = [
-        s[max(0, _p - 220):min(len(s), _p + 420)].replace("\n", " ")
-        for _p in _term_occ[:8]
-    ]
-    raise SystemExit(
-        "V8.236 layout term field block not found; Laufzeit labels="
-        + repr(_laufzeit_labels)
-        + "; candidates="
-        + repr(_candidate_labels)
-        + "; term snippets="
-        + repr(_term_snippets)
-    )
-
-term_start, term_end, term_block, _ = min(term_candidates, key=lambda item: item[3])
+# Das gemeinsame Laufzeit-Feld wird im Eigennutzungsmodus per JavaScript von
+# "Sanierungsdauer" auf "Laufzeit Finanzierung" umbenannt. Deshalb stabil über
+# die eindeutige DOM-ID des Labels auswählen.
+term_marker = 'id="monthsLabel"'
+term_positions = _label_positions(s, term_marker)
+if len(term_positions) != 1:
+    raise SystemExit("V8.236 layout monthsLabel not unique: " + repr(term_positions))
+term_start, term_end, term_block = _field_block_at_label(
+    s, term_marker, term_positions[0]
+)
 
 # Laufende Kosten aus dem Anpassungsbereich entfernen.
 s = s[:holding_start] + s[holding_end:]
@@ -2266,7 +2238,7 @@ s = s[:buffer_start] + term_block + "\n\n        " + s[buffer_start:]
 # Abnahmekontrolle nur im gemeinten Formularbereich.
 _, section_start, section_end = _target_financing_section(s)
 section_html = s[section_start:section_end]
-term_in_section = section_html.find("Laufzeit Finanzierung")
+term_in_section = section_html.find('id="monthsLabel"')
 buffer_in_section = section_html.find("Sanierungs-Puffer")
 holding_in_section = section_html.find("Laufende Kosten pro Monat")
 if term_in_section < 0 or buffer_in_section < 0 or not (term_in_section < buffer_in_section):
@@ -2278,6 +2250,8 @@ if holding_in_section >= 0:
     raise SystemExit("V8.236 layout verification failed: laufende Kosten still inside financing section")
 if s.count('id="holding"') != 1:
     raise SystemExit("V8.236 layout verification failed: holding input duplicated or missing")
+if s.count('id="monthsLabel"') != 1 or s.count('id="months"') != 1:
+    raise SystemExit("V8.236 layout verification failed: duration field duplicated or missing")
 
 path.write_text(s, encoding="utf-8")
 print("V8.236 interest and repayment patch applied")
