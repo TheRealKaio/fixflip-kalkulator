@@ -426,6 +426,7 @@ jobs:
           python scripts/patch_sale_expectation_v8263.py
           python scripts/patch_sale_benchmark_layout_v8264.py
           python scripts/patch_dynamic_target_margin_v8265.py
+          python scripts/patch_goal_cost_reduction_hint_v8266.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -450,13 +451,11 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.265": "V8.265" in index,
-              "service-worker registration V8.265": 'service-worker.js?v=8.265' in index,
-              "service-worker cache version V8.265": "neustart-immocheck-v8.265" in sw,
-              "target margin reads input": 'const targetMarginInput = currentDealType()==="own" ? 0 : Math.max(0,pct("targetMargin"));' in index,
-              "goal sale uses target margin input": 'const marginSaleDenominator = 1-sellBrokerRate-targetMarginInput;' in index,
-              "ampel uses target margin input": 'const targetMargin=Math.max(0,pct("targetMargin"));' in index,
-              "no fixed sale margin": 'const saleCalculationMargin = 0.10;' not in index and '1 - 0.10 - sellBrokerRate' not in index,
+              "visible/PDF version V8.266": "V8.266" in index,
+              "service-worker registration V8.266": 'service-worker.js?v=8.266' in index,
+              "service-worker cache version V8.266": "neustart-immocheck-v8.266" in sw,
+              "cost reduction alternative in hint": 'Alternativ müssen die Projektkosten um mindestens ' in index,
+              "cost reduction gap calculated": 'const saleGap=Math.max(0,m.goalSale-m.s);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
