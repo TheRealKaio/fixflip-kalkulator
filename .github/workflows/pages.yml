@@ -407,6 +407,7 @@ jobs:
           python scripts/patch_market_value_hint_v8244.py
           python scripts/patch_own_sections_v8245.py
           python scripts/patch_additional_financing_v8246.py
+          python scripts/patch_own_visuals_v8247.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -431,17 +432,15 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.246": "V8.246" in index,
-              "service-worker registration V8.246": 'service-worker.js?v=8.246' in index,
-              "service-worker cache version V8.246": "neustart-immocheck-v8.246" in sw,
-              "own financing subtitle": 'Trage hier die Bedingungen deiner Finanzierung ein.' in index,
-              "additional financing heading": 'Weitere Finanzierung berücksichtigen' in index,
-              "additional loan amount id": 'id="ownAdditionalLoanAmount"' in index,
-              "additional loan interest id": 'id="ownAdditionalLoanInterest"' in index,
-              "additional loan repayment id": 'id="ownAdditionalLoanRepayment"' in index,
-              "additional financing calculation": 'const monthlyInterest=amount*interestRate/12;' in index,
-              "household includes additional finance": 'renderOwnHouseholdBudget=function(m)' in index,
-              "PDF includes additional finance": 'Weitere Finanzierung - Monatsrate' in index,
+              "visible/PDF version V8.247": "V8.247" in index,
+              "service-worker registration V8.247": 'service-worker.js?v=8.247' in index,
+              "service-worker cache version V8.247": "neustart-immocheck-v8.247" in sw,
+              "additional loan annuity projection": 'const projection=annuityProjection(amount,interestRate,repaymentRate,months);' in index,
+              "additional interest added to model": 'm.interest=(Number(m.interest)||0)+extra.totalInterest;' in index,
+              "additional repayment added to model": 'm.repayment=(Number(m.repayment)||0)+extra.totalRepayment;' in index,
+              "numbered own-use heading class": '.own-numbered-heading' in index,
+              "finance toggle matches market check": 'border:1.5px solid #c7d8ff;' in index and 'background:#edf3ff;' in index,
+              "additional finance PDF": 'Weitere Finanzierung - Monatsrate' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
