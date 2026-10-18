@@ -416,6 +416,7 @@ jobs:
           python scripts/patch_project_goals_subtitle_v8253.py
           python scripts/patch_flip_sale_persistence_v8254.py
           python scripts/patch_decouple_target_margin_v8255.py
+          python scripts/patch_goal_aware_sale_v8256.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -440,14 +441,17 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.255": "V8.255" in index,
-              "service-worker registration V8.255": 'service-worker.js?v=8.255' in index,
-              "service-worker cache version V8.255": "neustart-immocheck-v8.255" in sw,
-              "sale calculation uses independent margin": 'const saleCalculationMargin = 0.10;' in index,
-              "target margin no longer drives sale calculation": 'const denominator = 1 - saleCalculationMargin - sellBrokerRate;' in index,
-              "target margin no longer triggers sale refresh": '"holding","otherSaleCosts","targetMargin","sellBroker"' not in index,
-              "target margin still controls margin light": 'const missMargin = !isOwnUse && m.margin < targetMargin;' in index,
-              "max buy still follows sale and target profit": 'const numerator = s*(1-pct("sellBroker"))-targetProfit-fixed-renoContribution;' in index,
+              "visible/PDF version V8.256": "V8.256" in index,
+              "service-worker registration V8.256": 'service-worker.js?v=8.256' in index,
+              "service-worker cache version V8.256": "neustart-immocheck-v8.256" in sw,
+              "target margin used in sale formula": 'const targetMargin = Math.max(0, pct("targetMargin"));' in index,
+              "target profit used in sale formula": 'const targetProfit = Math.max(0, val("targetProfit"));' in index,
+              "sale satisfies margin goal": 'const saleForTargetMargin = nonBrokerCosts / marginDenominator;' in index,
+              "sale satisfies profit goal": 'const saleForTargetProfit = (nonBrokerCosts + targetProfit) / profitDenominator;' in index,
+              "binding goal chooses higher sale": 'return Math.max(saleForTargetMargin, saleForTargetProfit);' in index,
+              "margin and profit trigger sale refresh": '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' in index,
+              "sale rounds upward": 'String(Math.ceil(value))' in index,
+              "ampel numerical tolerance": 'const moneyTolerance = 1;' in index and 'const rateTolerance = 0.00005;' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
