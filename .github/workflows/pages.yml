@@ -450,7 +450,7 @@ jobs:
               "visible/PDF version V8.262": "V8.262" in index,
               "service-worker registration V8.262": 'service-worker.js?v=8.262' in index,
               "service-worker cache version V8.262": "neustart-immocheck-v8.262" in sw,
-              "full equity is ROI base": ': Math.max(0, ownEquityInput);' in index and 'const roi = equity>0 ? profit/equity : 0;' in index,
+              "full equity is ROI base": ': Math.max(0, ownEquityInput);' in index and 'const roi = equity ? profit/equity : 0;' in index,
               "no remaining liquidity model": 'equityRemaining:0,' in index,
               "no rest liquidity label": 'Restliquidität' not in index,
               "equity KPI says 100 percent used": '100 % des verfügbaren Eigenkapitals eingesetzt' in index,
