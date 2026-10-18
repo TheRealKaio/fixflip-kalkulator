@@ -417,6 +417,7 @@ jobs:
           python scripts/patch_flip_sale_persistence_v8254.py
           python scripts/patch_decouple_target_margin_v8255.py
           python scripts/patch_goal_aware_sale_v8256.py
+          python scripts/patch_equity_liquidity_v8257.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -441,17 +442,17 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.256": "V8.256" in index,
-              "service-worker registration V8.256": 'service-worker.js?v=8.256' in index,
-              "service-worker cache version V8.256": "neustart-immocheck-v8.256" in sw,
-              "target margin used in sale formula": 'const targetMargin = Math.max(0, pct("targetMargin"));' in index,
-              "target profit used in sale formula": 'const targetProfit = Math.max(0, val("targetProfit"));' in index,
-              "sale satisfies margin goal": 'const saleForTargetMargin = nonBrokerCosts / marginDenominator;' in index,
-              "sale satisfies profit goal": 'const saleForTargetProfit = (nonBrokerCosts + targetProfit) / profitDenominator;' in index,
-              "binding goal chooses higher sale": 'return Math.max(saleForTargetMargin, saleForTargetProfit);' in index,
-              "margin and profit trigger sale refresh": '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' in index,
-              "sale rounds upward": 'String(Math.ceil(value))' in index,
-              "ampel numerical tolerance": 'const moneyTolerance = 1;' in index and 'const rateTolerance = 0.00005;' in index,
+              "visible/PDF version V8.257": "V8.257" in index,
+              "service-worker registration V8.257": 'service-worker.js?v=8.257' in index,
+              "service-worker cache version V8.257": "neustart-immocheck-v8.257" in sw,
+              "available equity label": 'Verfügbares Eigenkapital <span class="hint">für das Projekt</span>' in index,
+              "equity allocation cap": 'function syncEquityAllocationToAvailable(){' in index and 'input.max=String(cap);' in index,
+              "equity reserve breakdown": 'verbleibende Reserve:' in index and 'Fehlbetrag:' in index,
+              "hard red equity KPI": '.kpi.goal-stop{' in index and '$("kpiEquity").classList.add("goal-stop")' in index,
+              "hard red equity decision": 'title="Eigenkapital reicht nicht aus"' in index,
+              "zero available equity is a real limit": 'm.equity > Math.max(0,maxEquity) + moneyTolerance' in index,
+              "PDF available equity": 'page2Line("Verfügbares Eigenkapital"' in index,
+              "PDF liquidity reserve": 'page2Line("Verbleibende Liquiditätsreserve"' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
