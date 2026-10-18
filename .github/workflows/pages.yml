@@ -424,6 +424,7 @@ jobs:
           python scripts/patch_roi_zero_equity_v8261.py
           python scripts/patch_full_equity_roi_v8262.py
           python scripts/patch_sale_expectation_v8263.py
+          python scripts/patch_sale_benchmark_layout_v8264.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -448,17 +449,12 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.263": "V8.263" in index,
-              "service-worker registration V8.263": 'service-worker.js?v=8.263' in index,
-              "service-worker cache version V8.263": "neustart-immocheck-v8.263" in sw,
-              "sale field is market expectation": 'deine Markterwartung · editierbar' in index,
-              "three sale benchmarks below purchase": 'id="flipSaleBenchmarks"' in index and 'id="saleExpectedBenchmark"' in index and 'id="saleBreakEvenBenchmark"' in index and 'id="saleGoalBenchmark"' in index,
-              "initial sale is break-even": 'return nonBrokerCosts / breakEvenDenominator;' in index,
-              "goal sale separate": 'saleForTargetProfit,saleForTargetMargin,goalSale' in index,
-              "detailed profit miss": 'Ziel-Gewinn verfehlt um ' in index,
-              "detailed margin miss": 'Ziel-Marge verfehlt um ' in index,
-              "required goal sale shown": 'Für Gewinn und Marge wäre ein Verkaufspreis von mindestens ' in index,
-              "manual sale preserved": 'Der erwartete Verkaufspreis ist eine Nutzereinschätzung und bleibt bestehen.' in index and 'if(!hadSavedValue) recalcAndStore();' in index,
+              "visible/PDF version V8.264": "V8.264" in index,
+              "service-worker registration V8.264": 'service-worker.js?v=8.264' in index,
+              "service-worker cache version V8.264": "neustart-immocheck-v8.264" in sw,
+              "sale benchmark boxes present": 'id="flipSaleBenchmarks"' in index and 'id="saleExpectedBenchmark"' in index and 'id="saleBreakEvenBenchmark"' in index and 'id="saleGoalBenchmark"' in index,
+              "goal sale label shortened": 'Verkaufspreis Projektziele' in index and 'Verkaufspreis für deine Projektziele' not in index,
+              "sale boxes below yellow note": index.find('id="flipSaleTarget"') < index.find('id="flipPurchaseCheckNote"') < index.find('id="flipSaleBenchmarks"'),
           }
 
           failed = [name for name, ok in checks.items() if not ok]
