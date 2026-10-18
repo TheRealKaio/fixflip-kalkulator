@@ -52,7 +52,7 @@ js=r"""
   const dealCard=Array.from(root.children).find(function(el){
     return el.matches && el.matches("section.card") &&
       el.querySelector && el.querySelector("h2") &&
-      el.querySelector("h2").textContent.trim()==="1. Deine Immobilie";
+      ["1. Dein Deal","1. Deine Immobilie"].includes(el.querySelector("h2").textContent.trim());
   });
   if(!dealCard) return;\n  const dealHeading=dealCard.querySelector("h2");\n  if(dealHeading) dealHeading.textContent="1. Deine Immobilie";
 
