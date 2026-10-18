@@ -92,18 +92,45 @@ js=r"""
     const amount=Math.max(0,val("ownAdditionalLoanAmount"));
     const interestRate=Math.max(0,pct("ownAdditionalLoanInterest"));
     const repaymentRate=Math.max(0,pct("ownAdditionalLoanRepayment"));
-    const monthlyInterest=amount*interestRate/12;
-    const monthlyRepayment=amount*repaymentRate/12;
+    const months=Math.max(0,val("months"));
+    const projection=annuityProjection(amount,interestRate,repaymentRate,months);
     return {
       amount,
       interestRate,
       repaymentRate,
-      monthlyInterest,
-      monthlyRepayment,
-      total:monthlyInterest+monthlyRepayment
+      months,
+      monthlyInterest:projection.initialInterest,
+      monthlyRepayment:projection.initialRepayment,
+      total:projection.monthlyAnnuity,
+      totalInterest:projection.totalInterest,
+      totalRepayment:projection.totalRepayment,
+      remainingDebt:projection.remainingDebt
     };
   }
   window.ownAdditionalLoanMetrics=ownAdditionalLoanMetrics;
+
+  // Die weitere Finanzierung wird im Eigennutzungsmodell als zusätzliche
+  // Zins- und Tilgungsbelastung geführt. Die Immobilien-Kreditsumme selbst
+  // bleibt bewusst unverändert.
+  const baseModelAdditionalFinance=model;
+  model=function(overrides={}){
+    const m=baseModelAdditionalFinance(overrides);
+    if(currentDealType()!=="own") return m;
+    const extra=ownAdditionalLoanMetrics();
+    m.monthlyPayment=(Number(m.monthlyPayment)||0)+extra.monthlyInterest;
+    m.monthlyRepayment=(Number(m.monthlyRepayment)||0)+extra.monthlyRepayment;
+    m.interest=(Number(m.interest)||0)+extra.totalInterest;
+    m.repayment=(Number(m.repayment)||0)+extra.totalRepayment;
+    m.total=(Number(m.total)||0)+extra.totalInterest;
+    m.ownUseTotalInvestment=(Number(m.ownUseTotalInvestment)||0)+extra.totalInterest;
+    m.additionalLoanAmount=extra.amount;
+    m.additionalLoanMonthlyInterest=extra.monthlyInterest;
+    m.additionalLoanMonthlyRepayment=extra.monthlyRepayment;
+    m.additionalLoanInterest=extra.totalInterest;
+    m.additionalLoanRepayment=extra.totalRepayment;
+    m.additionalLoanRemainingDebt=extra.remainingDebt;
+    return m;
+  };
 
   function saveAdditionalLoan(){
     if(!$("ownAdditionalLoanAmount")) return;
@@ -141,9 +168,7 @@ js=r"""
   function updateAdditionalLoanOutputs(m){
     if(currentDealType()!=="own") return;
     const modelNow=m || model();
-    const extra=ownAdditionalLoanMetrics();
-    const mainCredit=(Number(modelNow.monthlyPayment)||0)+(Number(modelNow.monthlyRepayment)||0);
-    const totalCredit=mainCredit+extra.total;
+    const totalCredit=(Number(modelNow.monthlyPayment)||0)+(Number(modelNow.monthlyRepayment)||0);
     const totalMonthly=totalCredit+Math.max(0,val("holding"));
 
     if($("ownKpiMonthlyCredit")) $("ownKpiMonthlyCredit").textContent=eur(totalCredit);
@@ -161,27 +186,8 @@ js=r"""
     }
   }
 
-  // Haushaltsbudget um die zusätzliche monatliche Finanzierung erweitern.
-  if(typeof renderOwnHouseholdBudget==="function"){
-    const baseRenderOwnHouseholdBudget=renderOwnHouseholdBudget;
-    renderOwnHouseholdBudget=function(m){
-      baseRenderOwnHouseholdBudget(m);
-      if(currentDealType()!=="own" || !$("ownHouseholdIncome")) return;
-      const imported=ownImportedBudgetValues();
-      const extra=ownAdditionalLoanMetrics();
-      const propertyCost=Math.max(
-        0,
-        (Number(m.monthlyPayment)||0)
-        +(Number(m.monthlyRepayment)||0)
-        +Math.max(0,val("holding"))
-        +extra.total
-      );
-      const remaining=imported.hasValues ? imported.income-imported.expenses-propertyCost : null;
-      $("ownHouseholdPropertyCost").textContent=eur(propertyCost);
-      $("ownHouseholdRemaining").textContent=remaining===null ? "–" : eur(remaining);
-      $("ownHouseholdRemaining").style.color=remaining!==null && remaining<0 ? "#b91c1c" : "";
-    };
-  }
+  // renderOwnHouseholdBudget erhält durch das erweiterte model() bereits
+  // die kombinierte monatliche Zins- und Tilgungsbelastung.
 
   // Nach jedem normalen Render die kombinierten Werte ausweisen.
   if(typeof render==="function"){
@@ -243,7 +249,7 @@ s=s.replace("</body>",js+"\n</body>",1)
 
 # PDF: kombinierte Monatsrate anzeigen.
 old_overview='{title:"Monatliche Kreditrate (Zins + Tilgung)", value:pdfMoney(m.monthlyPayment + m.monthlyRepayment), note:"pro Monat", tone:"neutral"},'
-new_overview='{title:"Monatliche Kreditrate (Zins + Tilgung)", value:pdfMoney(m.monthlyPayment + m.monthlyRepayment + ownAdditionalLoanMetrics().total), note:"inkl. weiterer Finanzierung", tone:"neutral"},'
+new_overview='{title:"Monatliche Kreditrate (Zins + Tilgung)", value:pdfMoney(m.monthlyPayment + m.monthlyRepayment), note:"inkl. weiterer Finanzierung", tone:"neutral"},'
 if old_overview not in s:
     raise SystemExit("V8.246 PDF overview monthly credit anchor missing")
 s=s.replace(old_overview,new_overview,1)
@@ -269,7 +275,7 @@ new_own_finance='''    line("Eigenkapital", pdfMoney(m.ownEquityInput), true);
     line("Weitere Finanzierung - Zins p.a.", pdfPercent(val("ownAdditionalLoanInterest")));
     line("Weitere Finanzierung - Tilgung p.a.", pdfPercent(val("ownAdditionalLoanRepayment")));
     line("Weitere Finanzierung - Monatsrate", pdfMoney(additionalLoanPdf.total), true);
-    line("Monatliche Gesamtbelastung", pdfMoney(m.monthlyPayment + m.monthlyRepayment + val("holding") + additionalLoanPdf.total), true);'''
+    line("Monatliche Gesamtbelastung", pdfMoney(m.monthlyPayment + m.monthlyRepayment + val("holding")), true);'''
 if old_own_finance not in s:
     raise SystemExit("V8.246 PDF own finance detail anchor missing")
 s=s.replace(old_own_finance,new_own_finance,1)
@@ -284,8 +290,9 @@ required=[
   'id="ownAdditionalLoanAmount"',
   'id="ownAdditionalLoanInterest"',
   'id="ownAdditionalLoanRepayment"',
-  'const monthlyInterest=amount*interestRate/12;',
-  'const monthlyRepayment=amount*repaymentRate/12;',
+  'const projection=annuityProjection(amount,interestRate,repaymentRate,months);',
+  'm.interest=(Number(m.interest)||0)+extra.totalInterest;',
+  'm.repayment=(Number(m.repayment)||0)+extra.totalRepayment;',
   'renderOwnHouseholdBudget=function(m)',
   'Weitere Finanzierung - Monatsrate',
   'Monatliche Gesamtbelastung',
