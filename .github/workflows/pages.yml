@@ -411,6 +411,7 @@ jobs:
           python scripts/patch_own_pdf_v8248.py
           python scripts/patch_own_pdf_totals_v8249.py
           python scripts/patch_flip_sections_v8250.py
+          python scripts/patch_visible_subtitles_v8251.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -435,16 +436,14 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.250": "V8.250" in index,
-              "service-worker registration V8.250": 'service-worker.js?v=8.250' in index,
-              "service-worker cache version V8.250": "neustart-immocheck-v8.250" in sw,
-              "flip finance own card": 'flipFinanceCard.className="card flip-section-card";' in index,
-              "flip goals own card": 'flipGoalsCard.className="card flip-section-card";' in index,
-              "flip finance heading": '"2. Finanzierung und Nebenkosten"' in index,
-              "flip goals heading": '"3. Projektziele & Steuer"' in index,
-              "flip finance subtitle": 'Trage hier die Bedingungen deiner Finanzierung ein.' in index,
-              "flip goals subtitle": 'Trage hier die Bedingungen deiner Finanzziele ein.' in index,
-              "flip goals visible": 'goals.classList.remove("mode-hidden");' in index,
+              "visible/PDF version V8.251": "V8.251" in index,
+              "service-worker registration V8.251": 'service-worker.js?v=8.251' in index,
+              "service-worker cache version V8.251": "neustart-immocheck-v8.251" in sw,
+              "summary subtitle copy wrapper": 'className="section-summary-copy"' in index,
+              "own finance subtitle visible in summary": '"3. Finanzierung und Nebenkosten"' in index and '"Trage hier die Bedingungen deiner Finanzierung ein."' in index,
+              "flip finance subtitle visible in summary": '"2. Finanzierung und Nebenkosten"' in index,
+              "flip goals subtitle visible in summary": '"3. Projektziele & Steuer"' in index and '"Trage hier die Bedingungen deiner Finanzziele ein."' in index,
+              "legacy hidden subtitles suppressed": '#flipGoalsSubtitle' in index and 'display:none!important;' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
