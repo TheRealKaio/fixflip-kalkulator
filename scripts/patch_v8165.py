@@ -2144,5 +2144,55 @@ missing_v8236_tokens=[token for token in required_v8236_tokens if token not in s
 if missing_v8236_tokens:
     raise SystemExit("V8.236 financing header verification failed: "+", ".join(missing_v8236_tokens))
 
+# V8.236: Layout Finanzierungsfelder - Laufzeit vor Sanierungs-Puffer, laufende Kosten an Laufzeit-Position.
+def _field_block_by_label(html, label):
+    needle = "<label>" + label
+    label_pos = html.find(needle)
+    if label_pos < 0:
+        raise SystemExit("V8.236 layout field label not found: " + label)
+    start = html.rfind('<div class="field">', 0, label_pos)
+    if start < 0:
+        raise SystemExit("V8.236 layout field start not found: " + label)
+    pos = start
+    depth = 0
+    while True:
+        next_open = html.find("<div", pos)
+        next_close = html.find("</div>", pos)
+        if next_close < 0:
+            raise SystemExit("V8.236 layout field end not found: " + label)
+        if next_open >= 0 and next_open < next_close:
+            depth += 1
+            pos = next_open + 4
+        else:
+            depth -= 1
+            pos = next_close + len("</div>")
+            if depth == 0:
+                return start, pos, html[start:pos]
+
+term_start, term_end, term_block = _field_block_by_label(s, "Laufzeit Finanzierung")
+holding_start, holding_end, holding_block = _field_block_by_label(s, "Laufende Kosten pro Monat")
+
+# Laufende Kosten aus der bisherigen Position entfernen.
+s = s[:holding_start] + s[holding_end:]
+
+# Den frei gewordenen Platz der Laufzeit mit den laufenden Kosten belegen.
+term_start, term_end, _ = _field_block_by_label(s, "Laufzeit Finanzierung")
+s = s[:term_start] + holding_block + s[term_end:]
+
+# Laufzeit Finanzierung unmittelbar vor den Sanierungs-Puffer verschieben.
+buffer_start, _, _ = _field_block_by_label(s, "Sanierungs-Puffer")
+s = s[:buffer_start] + term_block + "\n\n        " + s[buffer_start:]
+
+# Abnahmekontrolle: jedes Feld genau einmal und Laufzeit direkt vor Sanierungs-Puffer.
+for _label in ("Laufzeit Finanzierung", "Laufende Kosten pro Monat", "Sanierungs-Puffer"):
+    if s.count("<label>" + _label) != 1:
+        raise SystemExit("V8.236 layout verification failed for: " + _label)
+
+_term_pos = s.find("<label>Laufzeit Finanzierung")
+_buffer_pos = s.find("<label>Sanierungs-Puffer")
+_holding_pos = s.find("<label>Laufende Kosten pro Monat")
+if not (_holding_pos < _term_pos < _buffer_pos):
+    raise SystemExit("V8.236 layout verification failed: expected laufende Kosten at former Laufzeit slot and Laufzeit before Sanierungs-Puffer")
+
 path.write_text(s, encoding="utf-8")
 print("V8.236 interest and repayment patch applied")
