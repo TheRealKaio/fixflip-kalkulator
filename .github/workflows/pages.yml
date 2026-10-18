@@ -399,6 +399,7 @@ jobs:
           python scripts/patch_v8165.py _site/index.html
           python scripts/patch_reno_suggestions.py
           python scripts/patch_budget_placeholders_v8239.py
+          python scripts/patch_suggestion_totals_v8240.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -423,14 +424,16 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.239": "V8.239" in index,
-              "service-worker registration V8.239": 'service-worker.js?v=8.239' in index,
+              "visible/PDF version V8.240": "V8.240" in index,
+              "service-worker registration V8.240": 'service-worker.js?v=8.240' in index,
               "renovation input 45px column": "grid-template-columns:minmax(0,1fr) 45px" in index,
               "plus button right aligned": ".reno-input-row .plus-btn{justify-self:end}" in index,
-              "service-worker cache version V8.239": "neustart-immocheck-v8.239" in sw,
-              "budget suggestions in inputs": 'budget-expense-row input::placeholder' in index,
-          }
-          failed = [name for name, ok in checks.items() if not ok]
+              "service-worker cache version V8.240": "neustart-immocheck-v8.240" in sw,
+              "budget suggestions in inputs": 'if(!budgetExpenseManual[key] && Math.abs(budgetVal(key))<0.005)' in index,
+              "budget suggestion total": 'id="budgetSuggestionTotal"' in index,
+              "renovation suggestion total": 'id="renoSuggestionTotal"' in index,
+              "suggestion applied blue": 'classList.toggle("applied",applied)' in index,
+          }          failed = [name for name, ok in checks.items() if not ok]
           if failed:
               raise SystemExit("Deployment verification failed: " + ", ".join(failed))
 
