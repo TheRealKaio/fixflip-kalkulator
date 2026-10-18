@@ -93,7 +93,7 @@ js=r"""
       decorate(
         flipGoals,
         "3. Projektziele & Steuer",
-        "Trage hier die Bedingungen deiner Finanzziele ein."
+        "Trage hier die Bedingungen deiner Finanzziele ein. Sie steuern auch die Farbampel der Ergebnisse."
       );
     }
   }
@@ -125,7 +125,7 @@ required=[
   '"2. Finanzierung und Nebenkosten"',
   '"3. Projektziele & Steuer"',
   '"Trage hier die Bedingungen deiner Finanzierung ein."',
-  '"Trage hier die Bedingungen deiner Finanzziele ein."',
+  '"Trage hier die Bedingungen deiner Finanzziele ein. Sie steuern auch die Farbampel der Ergebnisse."',
   'setTimeout(syncVisibleSectionSubtitles,10);',
   'V8.251',
   'service-worker.js?v=8.251'
