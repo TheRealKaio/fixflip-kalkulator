@@ -414,6 +414,7 @@ jobs:
           python scripts/patch_visible_subtitles_v8251.py
           python scripts/patch_subtitle_style_v8252.py
           python scripts/patch_project_goals_subtitle_v8253.py
+          python scripts/patch_flip_sale_persistence_v8254.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -438,12 +439,17 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.253": "V8.253" in index,
-              "service-worker registration V8.253": 'service-worker.js?v=8.253' in index,
-              "service-worker cache version V8.253": "neustart-immocheck-v8.253" in sw,
-              "project goals subtitle updated": 'Trage hier die Bedingungen deiner Finanzziele ein. Sie steuern auch die Farbampel der Ergebnisse.' in index,
-              "subtitle uses purchase-check muted color": 'color:var(--muted)!important;' in index,
-              "subtitle uses purchase-check size": 'font-size:13px!important;' in index,
+              "visible/PDF version V8.254": "V8.254" in index,
+              "service-worker registration V8.254": 'service-worker.js?v=8.254' in index,
+              "service-worker cache version V8.254": "neustart-immocheck-v8.254" in sw,
+              "project goals subtitle not duplicated": 'Sie steuern auch die Farbampel der Ergebnisse. Sie steuern auch die Farbampel der Ergebnisse.' not in index,
+              "flip sale has unique id": 'id="flipSaleTarget"' in index,
+              "flip sale dedicated storage": 'const STORAGE_KEY="ff_flip_sale_after_reno_value";' in index,
+              "flip sale stores real value": 'localStorage.setItem(STORAGE_KEY,String(el.value||"0"));' in index,
+              "flip sale recalculates from formula": 'const value=Math.max(0,calculateFlipTargetSale());' in index,
+              "flip sale reacts to formula inputs": '"purchase","months","buffer","state","notary","buyBroker"' in index,
+              "flip sale reacts to renovation values": 'target.classList.contains("trade-amount")' in index and 'target.classList.contains("trade-area")' in index,
+              "flip sale storage reset": 'localStorage.removeItem(STORAGE_KEY);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
