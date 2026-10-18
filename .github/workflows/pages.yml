@@ -402,6 +402,7 @@ jobs:
           python scripts/patch_suggestion_totals_v8240.py
           python scripts/patch_reno_state_v8241.py
           python scripts/patch_budget_reno_v8242.py
+          python scripts/patch_buffer_hint.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
