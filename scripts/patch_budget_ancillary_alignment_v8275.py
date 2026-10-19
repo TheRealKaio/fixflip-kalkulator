@@ -12,7 +12,7 @@ def replace_once(old,new,label):
 # 1) Kurzer statischer Hinweis unter Kaufnebenkosten gesamt.
 replace_once(
 '''            <div class="mini" id="budgetAncillaryNote">Grunderwerbsteuer + Notar/Grundbuch + Makler beim Kauf</div>''',
-'''            <div class="mini" id="budgetAncillaryNote">Notar, Grundbuch, Makler.</div>''',
+'''            <div class="mini" id="budgetAncillaryNote">Notar, Grund-, Eintragung, Makler.</div>''',
 "budget ancillary short note markup"
 )
 
@@ -28,7 +28,7 @@ old_render='''  if($("budgetAncillaryNote")){
       +" % gesamt";
   }'''
 new_render='''  if($("budgetAncillaryNote")){
-    $("budgetAncillaryNote").textContent="Notar, Grundbuch, Makler.";
+    $("budgetAncillaryNote").textContent="Notar, Grund-, Eintragung, Makler.";
   }'''
 replace_once(old_render,new_render,"budget ancillary short note render")
 
@@ -50,8 +50,8 @@ s=s.replace("V8.274","V8.275")
 s=s.replace("service-worker.js?v=8.274","service-worker.js?v=8.275")
 
 required=[
-    'id="budgetAncillaryNote">Notar, Grundbuch, Makler.</div>',
-    '$("budgetAncillaryNote").textContent="Notar, Grundbuch, Makler.";',
+    'id="budgetAncillaryNote">Notar, Grund-, Eintragung, Makler.</div>',
+    '$("budgetAncillaryNote").textContent="Notar, Grund-, Eintragung, Makler.";',
     '#budgetAssumptionsBody .budget-grid.three>.field:not(.budget-state-field)>label{display:flex;align-items:flex-end;min-height:34px;line-height:1.25}',
     'V8.275',
     'service-worker.js?v=8.275'
