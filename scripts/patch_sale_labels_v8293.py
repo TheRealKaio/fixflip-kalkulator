@@ -34,7 +34,8 @@ replace_once(
 )
 
 s = s.replace("V8.292", "V8.293")
-s = s.replace("service-worker.js?v=8.292", "service-worker.js?v=8.293")
+import re
+s = re.sub(r'service-worker\\.js\\?v=8\\.\\d+', 'service-worker.js?v=8.293', s)
 
 required = [
     '<span>VK Projektziel</span>',
