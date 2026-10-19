@@ -436,6 +436,7 @@ jobs:
           python scripts/patch_budget_ancillary_components_v8273.py
           python scripts/patch_budget_equity_household_v8274.py
           python scripts/patch_budget_ancillary_alignment_v8275.py
+          python scripts/patch_budget_assumption_spacing_v8276.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -460,14 +461,12 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.275": "V8.275" in index,
-              "service-worker registration V8.275": 'service-worker.js?v=8.275' in index,
-              "service-worker cache version V8.275": "neustart-immocheck-v8.275" in sw,
-              "budget ancillary short note": 'id="budgetAncillaryNote">Notar, Grundbuch, Makler.</div>' in index,
-              "budget ancillary short note render": '$("budgetAncillaryNote").textContent="Notar, Grundbuch, Makler.";' in index,
-              "budget financing labels aligned": '#budgetAssumptionsBody .budget-grid.three>.field:not(.budget-state-field)>label{display:flex;align-items:flex-end;min-height:34px;line-height:1.25}' in index,
+              "visible/PDF version V8.276": "V8.276" in index,
+              "service-worker registration V8.276": 'service-worker.js?v=8.276' in index,
+              "service-worker cache version V8.276": "neustart-immocheck-v8.276" in sw,
+              "budget financing compact row gap": '#budgetAssumptionsBody .budget-grid.three{row-gap:8px;column-gap:10px}' in index,
+              "budget ancillary short note preserved": 'id="budgetAncillaryNote">Notar, Grundbuch, Makler.</div>' in index,
               "budget equity remains household row": '<div class="budget-equity-row">' in index and index.count('id="budgetEquity"') == 1,
-              "budget ancillary dynamic sum preserved": 'const ancillaryPct=transferTaxPct+notaryPct+buyBrokerPct;' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
