@@ -104,23 +104,14 @@ render_new='''  if($("budgetAdditionalBuffer")) $("budgetAdditionalBuffer").text
 replace_once(render_anchor,render_new,"budget state render notes")
 
 # 6) Initialisierung vor dem Laden gespeicherter Budgetwerte.
-load_call='''loadBudget();
-renderBudget();'''
-if load_call in s:
-    s=s.replace(load_call,'''initBudgetState();
+load_call='''load();
 loadBudget();
-renderBudget();''',1)
-else:
-    # Fallback: direkt vor der ersten loadBudget-Funktion nicht nötig; init beim Ende.
-    body_end='''syncBudgetSuggestions();
-syncRenoTotal();
-})();'''
-    if body_end not in s:
-        raise SystemExit("budget init call anchor missing")
-    s=s.replace(body_end,'''initBudgetState();
-syncBudgetSuggestions();
-syncRenoTotal();
-})();''',1)
+initializeTrades(false);'''
+load_new='''load();
+initBudgetState();
+loadBudget();
+initializeTrades(false);'''
+replace_once(load_call,load_new,"budget init call")
 
 # Sicherstellen, dass loadBudget ohne gespeicherten Wert Hamburg behält.
 load_end='''  syncBudgetSuggestions();
