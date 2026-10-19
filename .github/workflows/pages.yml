@@ -442,6 +442,7 @@ jobs:
           python scripts/patch_budget_financing_reserve_card_v8279.py
           python scripts/patch_budget_financing_reserve_layout_v8280.py
           python scripts/patch_budget_ancillary_wording_v8281.py
+          python scripts/patch_reno_inline_panel_v8282.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -466,14 +467,18 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.281": "V8.281" in index,
-              "service-worker registration V8.281": 'service-worker.js?v=8.281' in index,
-              "service-worker cache version V8.281": "neustart-immocheck-v8.281" in sw,
-              "ancillary note wording": 'Notar, Grund-, Eintragung, Makler.' in index,
-              "reserve title outside box": '<label class="budget-calculated-title">Finanzierungsreserve</label>' in index,
-              "reserve subtitle below box": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>' in index,
-              "reserve input-sized box": '.budget-calculated-card{display:flex;align-items:center;width:100%;height:50px;min-height:50px;' in index,
-              "reserve value normal weight": '.budget-calculated-value{font-size:17px;font-weight:650;' in index,
+              "visible/PDF version V8.282": "V8.282" in index,
+              "service-worker registration V8.282": 'service-worker.js?v=8.282' in index,
+              "service-worker cache version V8.282": "neustart-immocheck-v8.282" in sw,
+              "renovation inline panel": 'class="reno-inline-panel" id="renoBackdrop"' in index,
+              "renovation inline panel spans row": '.reno-inline-panel{display:none;grid-column:1/-1;width:100%;margin-top:2px}' in index,
+              "renovation modal removed": '<div class="sheet-backdrop" id="renoBackdrop">' not in index,
+              "renovation toggle aria": 'aria-controls="renoBackdrop"' in index and 'aria-expanded="false"' in index,
+              "renovation toggle logic": 'const opening=!renoBackdrop.classList.contains("show");' in index,
+              "renovation plus minus": '$("openReno").textContent=opening ? "−" : "+";' in index,
+              "renovation save collapses inline": '$("openReno").setAttribute("aria-expanded","false");' in index,
+              "reserve V8.280 layout preserved": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>' in index,
+              "ancillary V8.281 wording preserved": 'Notar, Grund-, Eintragung, Makler.' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
