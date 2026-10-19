@@ -467,7 +467,7 @@ jobs:
               "service-worker registration V8.278": 'service-worker.js?v=8.278' in index,
               "service-worker cache version V8.278": "neustart-immocheck-v8.278" in sw,
               "budget assumptions natural label height": '#budgetAssumptionsBody .budget-grid.three>.field:not(.budget-state-field)>label{line-height:1.25}' in index,
-              "artificial 34px label height removed": 'min-height:34px' not in index,
+              "artificial financing label height removed": '#budgetAssumptionsBody .budget-grid.three>.field:not(.budget-state-field)>label{display:flex;align-items:flex-end;min-height:34px;line-height:1.25}' not in index,
               "budget household spacing preserved": '#budgetHouseholdSection .budget-grid>.field,#budgetHouseholdSection .budget-equity-row .field{margin:8px 0}' in index,
               "budget assumptions spacing preserved": '#budgetAssumptionsBody .budget-grid>.field{margin:8px 0}' in index,
           }
