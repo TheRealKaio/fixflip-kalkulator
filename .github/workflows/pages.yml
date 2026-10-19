@@ -438,6 +438,7 @@ jobs:
           python scripts/patch_budget_ancillary_alignment_v8275.py
           python scripts/patch_budget_assumption_spacing_v8276.py
           python scripts/patch_budget_field_spacing_v8277.py
+          python scripts/patch_budget_remove_label_height_v8278.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -462,13 +463,13 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.277": "V8.277" in index,
-              "service-worker registration V8.277": 'service-worker.js?v=8.277' in index,
-              "service-worker cache version V8.277": "neustart-immocheck-v8.277" in sw,
-              "budget household section id": 'id="budgetHouseholdSection"' in index,
-              "budget household field spacing": '#budgetHouseholdSection .budget-grid>.field,#budgetHouseholdSection .budget-equity-row .field{margin:8px 0}' in index,
-              "budget equity extra top margin removed": '.budget-equity-row{display:grid;grid-template-columns:1fr;margin-top:0;width:100%}' in index,
-              "budget assumptions field spacing": '#budgetAssumptionsBody .budget-grid>.field{margin:8px 0}' in index,
+              "visible/PDF version V8.278": "V8.278" in index,
+              "service-worker registration V8.278": 'service-worker.js?v=8.278' in index,
+              "service-worker cache version V8.278": "neustart-immocheck-v8.278" in sw,
+              "budget assumptions natural label height": '#budgetAssumptionsBody .budget-grid.three>.field:not(.budget-state-field)>label{line-height:1.25}' in index,
+              "artificial 34px label height removed": 'min-height:34px' not in index,
+              "budget household spacing preserved": '#budgetHouseholdSection .budget-grid>.field,#budgetHouseholdSection .budget-equity-row .field{margin:8px 0}' in index,
+              "budget assumptions spacing preserved": '#budgetAssumptionsBody .budget-grid>.field{margin:8px 0}' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
