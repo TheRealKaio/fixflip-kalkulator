@@ -434,6 +434,7 @@ jobs:
           python scripts/patch_reset_interest_cleanup_v8271.py
           python scripts/patch_budget_location_v8272.py
           python scripts/patch_budget_ancillary_components_v8273.py
+          python scripts/patch_budget_equity_household_v8274.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -458,15 +459,13 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.273": "V8.273" in index,
-              "service-worker registration V8.273": 'service-worker.js?v=8.273' in index,
-              "service-worker cache version V8.273": "neustart-immocheck-v8.273" in sw,
-              "budget state own row": 'class="field budget-state-field"' in index and '#budgetAssumptionsBody .budget-state-field{grid-column:1/-1}' in index,
-              "budget notary field": 'id="budgetNotaryPct"' in index and 'value="2.00"' in index,
-              "budget broker field": 'id="budgetBuyBrokerPct"' in index and 'value="0.00"' in index,
-              "budget ancillary readonly total": 'id="budgetAncillaryPct" inputmode="decimal" value="7.50" readonly' in index,
-              "budget ancillary dynamic sum": 'const ancillaryPct=transferTaxPct+notaryPct+buyBrokerPct;' in index,
-              "old 12 percent default removed": 'if($("budgetAncillaryPct")) $("budgetAncillaryPct").value="12.00";' not in index,
+              "visible/PDF version V8.274": "V8.274" in index,
+              "service-worker registration V8.274": 'service-worker.js?v=8.274' in index,
+              "service-worker cache version V8.274": "neustart-immocheck-v8.274" in sw,
+              "budget equity household row": '<div class="budget-equity-row">' in index,
+              "budget equity single input": index.count('id="budgetEquity"') == 1,
+              "budget equity full width": '.budget-equity-row{display:grid;grid-template-columns:1fr;margin-top:12px;width:100%}' in index,
+              "budget ancillary dynamic sum preserved": 'const ancillaryPct=transferTaxPct+notaryPct+buyBrokerPct;' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
