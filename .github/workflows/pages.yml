@@ -455,6 +455,7 @@ jobs:
           python scripts/patch_separate_expected_sale_v8292.py
           python scripts/patch_sale_labels_v8293.py
           python scripts/patch_budget_mobile_family_order_v8294.py
+          python scripts/patch_budget_mobile_family_order_v8295.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -479,9 +480,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.294": "V8.294" in index,
-              "service-worker registration V8.294": 'service-worker.js?v=8.294' in index,
-              "service-worker cache version V8.294": "neustart-immocheck-v8.294" in sw,
+              "visible/PDF version V8.295": "V8.295" in index,
+              "service-worker registration V8.295": 'service-worker.js?v=8.294' in index,
+              "service-worker cache version V8.295": "neustart-immocheck-v8.295" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -492,10 +493,11 @@ jobs:
               "short sale label break-even": "<span>VK Break-even</span>" in index,
               "short sale label post-renovation": "<span>VK nach Sanierung</span>" in index,
               "short sale field label": '<label>VK nach Sanierung <span class="hint">automatisch kalkuliert · editierbar</span></label>' in index,
-              "mobile family-order patch": 'id="budget-mobile-family-order-v8294"' in index,
+              "mobile family-order patch": 'id="budget-mobile-family-order-v8295"' in index,
               "mobile breakpoint family-order logic": 'window.matchMedia("(max-width: 720px)")' in index,
-              "family status placed after expanded income": 'lastDetail.insertAdjacentElement("afterend", family);' in index,
+              "family status anchored in original parent": 'originalParent.insertBefore(family, anchor.nextSibling);' in index,
               "desktop order restoration": 'restoreFamily();' in index,
+              "no nested family move": 'lastDetail.insertAdjacentElement("afterend", family);' not in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
