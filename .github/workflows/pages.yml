@@ -433,6 +433,7 @@ jobs:
           python scripts/patch_budget_mobile_expense_width_v8270.py
           python scripts/patch_reset_interest_cleanup_v8271.py
           python scripts/patch_budget_location_v8272.py
+          python scripts/patch_budget_ancillary_components_v8273.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -457,15 +458,15 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.272": "V8.272" in index,
-              "service-worker registration V8.272": 'service-worker.js?v=8.272' in index,
-              "service-worker cache version V8.272": "neustart-immocheck-v8.272" in sw,
-              "budget state field": 'id="budgetState"' in index,
-              "budget state persisted": '"budgetState","budgetAncillaryPct"' in index,
-              "Hamburg budget default": 'el.value=(saved && states[saved]!==undefined) ? saved : "Hamburg";' in index,
-              "transfer tax added to ancillary": 'const ancillaryPct=ancillaryBasePct+transferTaxPct;' in index,
-              "budget PDF location": 'line("Ort des Objekts",m.budgetStateName);' in index,
-              "budget PDF total ancillary": 'Kaufnebenkosten gesamt' in index,
+              "visible/PDF version V8.273": "V8.273" in index,
+              "service-worker registration V8.273": 'service-worker.js?v=8.273' in index,
+              "service-worker cache version V8.273": "neustart-immocheck-v8.273" in sw,
+              "budget state own row": 'class="field budget-state-field"' in index and '#budgetAssumptionsBody .budget-state-field{grid-column:1/-1}' in index,
+              "budget notary field": 'id="budgetNotaryPct"' in index and 'value="2.00"' in index,
+              "budget broker field": 'id="budgetBuyBrokerPct"' in index and 'value="0.00"' in index,
+              "budget ancillary readonly total": 'id="budgetAncillaryPct" inputmode="decimal" value="7.50" readonly' in index,
+              "budget ancillary dynamic sum": 'const ancillaryPct=transferTaxPct+notaryPct+buyBrokerPct;' in index,
+              "old 12 percent default removed": 'if($("budgetAncillaryPct")) $("budgetAncillaryPct").value="12.00";' not in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
