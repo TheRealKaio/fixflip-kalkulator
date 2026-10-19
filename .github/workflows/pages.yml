@@ -482,7 +482,7 @@ jobs:
 
           checks = {
               "visible/PDF version V8.296": "V8.296" in index,
-              "service-worker registration V8.296": 'service-worker.js?v=8.295' in index,
+              "service-worker registration V8.296": 'service-worker.js?v=8.296' in index,
               "service-worker cache version V8.296": "neustart-immocheck-v8.296" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
