@@ -431,6 +431,7 @@ jobs:
           python scripts/patch_financing_equity_shortfall_v8268.py
           python scripts/patch_own_equity_shortfall_v8269.py
           python scripts/patch_budget_mobile_expense_width_v8270.py
+          python scripts/patch_reset_interest_cleanup_v8271.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -455,12 +456,12 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.270": "V8.270" in index,
-              "service-worker registration V8.270": 'service-worker.js?v=8.270' in index,
-              "service-worker cache version V8.270": "neustart-immocheck-v8.270" in sw,
-              "mobile expense single column": '.budget-expense-row{grid-template-columns:1fr;gap:7px}' in index,
-              "mobile expense wrap full width": '.budget-expense-row .input-wrap{grid-column:1;width:100%;min-width:0}' in index,
-              "mobile expense input full width": '.budget-expense-row .input-wrap input{width:100%;min-width:0}' in index,
+              "visible/PDF version V8.271": "V8.271" in index,
+              "service-worker registration V8.271": 'service-worker.js?v=8.271' in index,
+              "service-worker cache version V8.271": "neustart-immocheck-v8.271" in sw,
+              "interest storage cleared on reset": '"ff_interest",' in index and '"ff_interest_manual",' in index,
+              "reference interest metadata cleared": '"ff_reference_interest_source",' in index and '"ff_reference_interest_updated",' in index,
+              "visible interest reset before reload": 'if($("interest")) $("interest").value=Number(REFERENCE_INTEREST_FALLBACK).toFixed(2);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
