@@ -34,8 +34,8 @@ replace_once(
 )
 
 s = s.replace("V8.292", "V8.293")
-import re
-s = re.sub(r'service-worker\.js\?v=8\.\d+', 'service-worker.js?v=8.293', s)
+for old_version in ("8.236","8.290","8.291","8.292"):
+    s = s.replace(f"service-worker.js?v={old_version}", "service-worker.js?v=8.293")
 
 required = [
     '<span>VK Projektziel</span>',
