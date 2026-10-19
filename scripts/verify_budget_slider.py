@@ -47,7 +47,7 @@ required_implementation = {
     "warning exact-minimum branch": '}else if(minimumBufferReached){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
     "financing reserve zero markup": 'id="budgetSafetyReserve" inputmode="decimal" value="0" readonly aria-readonly="true"',
-    "safety buffer auto label": '<div class="budget-calculated-subtitle">Automatisch berechnet</div>',
+    "safety buffer auto label": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>',
     "terminology financing reserve": 'Finanzierungsreserve',
     "terminology remaining monthly surplus": 'Verbleibender Monatsüberschuss',
     "financing reserve summary row": '<span>- Finanzierungsreserve</span><strong id="budgetFinancingReserveResult">–</strong>',
