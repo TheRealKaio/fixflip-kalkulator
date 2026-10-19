@@ -445,6 +445,7 @@ jobs:
           python scripts/patch_reno_inline_panel_v8282.py
           python scripts/patch_reno_inline_mobile_width_v8283.py
           python scripts/patch_deal_reset_reno_zero_v8284.py
+          python scripts/patch_fixflip_interest_default_v8285.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -469,15 +470,14 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.284": "V8.284" in index,
-              "service-worker registration V8.284": 'service-worker.js?v=8.284' in index,
-              "service-worker cache version V8.284": "neustart-immocheck-v8.284" in sw,
-              "deal reset zeros renovation values": 'tradeValues[t.key]=0;' in index,
-              "deal reset persists zero renovation values": 'localStorage.setItem("ff_trade_"+t.key,"0");' in index,
-              "deal reset prevents auto refill": 'localStorage.setItem("ff_trade_manual_"+t.key,"1");' in index,
-              "deal reset syncs renovation total": 'syncRenoTotal();' in index,
-              "inline renovation panel preserved": 'class="reno-inline-panel" id="renoBackdrop"' in index,
-              "mobile width fix preserved": '.reno-inline-panel .trade-top{flex-wrap:wrap}' in index,
+              "visible/PDF version V8.285": "V8.285" in index,
+              "service-worker registration V8.285": 'service-worker.js?v=8.285' in index,
+              "service-worker cache version V8.285": "neustart-immocheck-v8.285" in sw,
+              "Fix-&-Flip interest markup default 4.00": '<input id="interest" inputmode="decimal" value="4.00">' in index,
+              "legacy 7.5 interest default removed": '<input id="interest" inputmode="decimal" value="7.5">' not in index,
+              "reference interest fallback remains 4.0": 'const REFERENCE_INTEREST_FALLBACK = 4.0;' in index,
+              "renovation reset V8.284 preserved": 'tradeValues[t.key]=0;' in index,
+              "mobile renovation width fix preserved": '.reno-inline-panel .trade-top{flex-wrap:wrap}' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
