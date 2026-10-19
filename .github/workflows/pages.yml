@@ -447,6 +447,7 @@ jobs:
           python scripts/patch_deal_reset_reno_zero_v8284.py
           python scripts/patch_fixflip_interest_default_v8285.py
           python scripts/patch_deal_reset_clear_snapshot_v8286.py
+          python scripts/patch_reno_apply_handler_v8287.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -471,14 +472,15 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.286": "V8.286" in index,
-              "service-worker registration V8.286": 'service-worker.js?v=8.286' in index,
-              "service-worker cache version V8.286": "neustart-immocheck-v8.286" in sw,
-              "reset clears active mode snapshot": 'localStorage.removeItem(modeSnapshotPrefix+mode);' in index,
-              "reset rebuilds fresh mode snapshot": 'localStorage.setItem(modeSnapshotPrefix+mode,JSON.stringify(payload));' in index,
-              "snapshot version preserved": 'version:"v8237"' in index,
-              "legacy 7.5 interest default removed": '<input id="interest" inputmode="decimal" value="7.5">' not in index,
-              "renovation reset preserved": 'tradeValues[t.key]=0;' in index,
+              "visible/PDF version V8.287": "V8.287" in index,
+              "service-worker registration V8.287": 'service-worker.js?v=8.287' in index,
+              "service-worker cache version V8.287": "neustart-immocheck-v8.287" in sw,
+              "single renovation apply handler": '$("saveTrades").addEventListener("click",()=>{' not in index,
+              "renovation apply prevents duplicate handling": 'event.stopImmediatePropagation();' in index,
+              "renovation apply stores namespaced state": 'storeCurrentRenoState();' in index,
+              "renovation apply closes inline panel": 'panel.classList.remove("show");' in index,
+              "renovation apply resets toggle": 'toggle.setAttribute("aria-expanded","false");' in index,
+              "reset persistence V8.286 preserved": 'localStorage.removeItem(modeSnapshotPrefix+mode);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
