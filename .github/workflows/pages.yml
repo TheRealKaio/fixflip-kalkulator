@@ -432,6 +432,7 @@ jobs:
           python scripts/patch_own_equity_shortfall_v8269.py
           python scripts/patch_budget_mobile_expense_width_v8270.py
           python scripts/patch_reset_interest_cleanup_v8271.py
+          python scripts/patch_budget_location_v8272.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -456,12 +457,15 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.271": "V8.271" in index,
-              "service-worker registration V8.271": 'service-worker.js?v=8.271' in index,
-              "service-worker cache version V8.271": "neustart-immocheck-v8.271" in sw,
-              "interest storage cleared on reset": '"ff_interest",' in index and '"ff_interest_manual",' in index,
-              "reference interest metadata cleared": '"ff_reference_interest_source",' in index and '"ff_reference_interest_updated",' in index,
-              "visible interest reset before reload": 'if($("interest")) $("interest").value=Number(REFERENCE_INTEREST_FALLBACK).toFixed(2);' in index,
+              "visible/PDF version V8.272": "V8.272" in index,
+              "service-worker registration V8.272": 'service-worker.js?v=8.272' in index,
+              "service-worker cache version V8.272": "neustart-immocheck-v8.272" in sw,
+              "budget state field": 'id="budgetState"' in index,
+              "budget state persisted": '"budgetState","budgetAncillaryPct"' in index,
+              "Hamburg budget default": 'el.value=(saved && states[saved]!==undefined) ? saved : "Hamburg";' in index,
+              "transfer tax added to ancillary": 'const ancillaryPct=ancillaryBasePct+transferTaxPct;' in index,
+              "budget PDF location": 'line("Ort des Objekts",m.budgetStateName);' in index,
+              "budget PDF total ancillary": 'Kaufnebenkosten gesamt' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
