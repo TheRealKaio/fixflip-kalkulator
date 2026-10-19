@@ -451,6 +451,7 @@ jobs:
           python scripts/patch_reno_mobile_fullwidth_rows_v8288.py
           python scripts/patch_reno_mobile_group_layout_v8289.py
           python scripts/patch_reno_active_layout_and_apply_v8290.py
+          python scripts/patch_flip_expected_sale_auto_v8291.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -475,16 +476,17 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.290": "V8.290" in index,
-              "service-worker registration V8.290": 'service-worker.js?v=8.290' in index,
-              "service-worker cache version V8.290": "neustart-immocheck-v8.290" in sw,
-              "active sqm rows classified": index.count('class="trade-row trade-row-sqm"') >= 2,
-              "active fixed rows classified": index.count('class="trade-row trade-row-fixed"') >= 2,
-              "legacy proposal apply listener removed": 'btn.addEventListener("click",applyTradeSuggestions);' not in index,
-              "authoritative proposal apply remains": 'applyCurrentSuggestions();' in index,
-              "proposal handler no longer blocks updates": 'event.stopImmediatePropagation();\n      applyCurrentSuggestions();' not in index,
-              "mobile sqm full-width rule preserved": '.trade-row-sqm .trade-top>.input-wrap{' in index,
-              "mobile fixed row rule preserved": '.trade-row-fixed .trade-inputs-inline{' in index and 'flex-direction:row;' in index,
+              "visible/PDF version V8.291": "V8.291" in index,
+              "service-worker registration V8.291": 'service-worker.js?v=8.291' in index,
+              "service-worker cache version V8.291": "neustart-immocheck-v8.291" in sw,
+              "sale hint automatic": 'automatisch kalkuliert · editierbar' in index,
+              "sale recalc on formula changes": 'if(recalcAndStore()){' in index,
+              "equity triggers sale recalc": '"financeAcquisition","ltv","ownEquityInput","maxEquity","interest","repayment"' in index,
+              "sale dedicated persistence": 'localStorage.setItem(STORAGE_KEY,value);' in index,
+              "sale generic persistence": 'localStorage.setItem("ff_flipSaleTarget",value);' in index,
+              "sale refresh on mode switch": 'loadValue();\n          recalcAndStore();' in index,
+              "sale refresh after renovation actions": 'recalcAndStore();\n        try{ render(); }catch(_err){}' in index,
+              "renovation V8.290 preserved": 'manualTrades.delete(t.key);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
