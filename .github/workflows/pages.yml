@@ -440,6 +440,7 @@ jobs:
           python scripts/patch_budget_field_spacing_v8277.py
           python scripts/patch_budget_remove_label_height_v8278.py
           python scripts/patch_budget_financing_reserve_card_v8279.py
+          python scripts/patch_budget_financing_reserve_layout_v8280.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -464,15 +465,14 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.279": "V8.279" in index,
-              "service-worker registration V8.279": 'service-worker.js?v=8.279' in index,
-              "service-worker cache version V8.279": "neustart-immocheck-v8.279" in sw,
-              "financing reserve display card": 'class="field budget-calculated-field"' in index,
-              "financing reserve subtitle": '<div class="budget-calculated-subtitle">Automatisch berechnet</div>' in index,
-              "financing reserve value display": 'id="budgetSafetyReserveDisplay"' in index,
-              "financing reserve hidden storage input": 'class="input-wrap budget-calculated-storage" aria-hidden="true"' in index,
-              "financing reserve render": '$("budgetSafetyReserveDisplay").textContent=eur(m.minimumReserve);' in index,
-              "financing reserve blue background": '.budget-calculated-card{background:#eef6ff;' in index,
+              "visible/PDF version V8.280": "V8.280" in index,
+              "service-worker registration V8.280": 'service-worker.js?v=8.280' in index,
+              "service-worker cache version V8.280": "neustart-immocheck-v8.280" in sw,
+              "reserve title outside box": '<label class="budget-calculated-title">Finanzierungsreserve</label>' in index,
+              "reserve subtitle below box": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>' in index,
+              "reserve input-sized box": '.budget-calculated-card{display:flex;align-items:center;width:100%;height:50px;min-height:50px;' in index,
+              "reserve value normal weight": '.budget-calculated-value{font-size:17px;font-weight:650;' in index,
+              "reserve display render preserved": '$("budgetSafetyReserveDisplay").textContent=eur(m.minimumReserve);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
