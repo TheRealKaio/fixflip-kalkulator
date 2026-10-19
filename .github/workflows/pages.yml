@@ -448,6 +448,7 @@ jobs:
           python scripts/patch_fixflip_interest_default_v8285.py
           python scripts/patch_deal_reset_clear_snapshot_v8286.py
           python scripts/patch_reno_apply_handler_v8287.py
+          python scripts/patch_reno_mobile_fullwidth_rows_v8288.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -472,15 +473,14 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.287": "V8.287" in index,
-              "service-worker registration V8.287": 'service-worker.js?v=8.287' in index,
-              "service-worker cache version V8.287": "neustart-immocheck-v8.287" in sw,
-              "single renovation apply handler": '$("saveTrades").addEventListener("click",()=>{' not in index,
-              "renovation apply prevents duplicate handling": 'event.stopImmediatePropagation();' in index,
-              "renovation apply stores namespaced state": 'storeCurrentRenoState();' in index,
-              "renovation apply closes inline panel": 'panel.classList.remove("show");' in index,
-              "renovation apply resets toggle": 'toggle.setAttribute("aria-expanded","false");' in index,
-              "reset persistence V8.286 preserved": 'localStorage.removeItem(modeSnapshotPrefix+mode);' in index,
+              "visible/PDF version V8.288": "V8.288" in index,
+              "service-worker registration V8.288": 'service-worker.js?v=8.288' in index,
+              "service-worker cache version V8.288": "neustart-immocheck-v8.288" in sw,
+              "mobile renovation inputs stacked": '.reno-inline-panel .trade-inputs-inline{\n    flex-direction:column;' in index,
+              "mobile renovation inputs stretch": 'align-items:stretch;' in index,
+              "mobile area input full width": '.reno-inline-panel .trade-area-input,\n  .reno-inline-panel .trade-money-input{\n    flex:0 0 auto;\n    width:100%;' in index,
+              "desktop renovation sizing preserved": '.trade-area-input{width:104px;min-width:104px;max-width:104px' in index,
+              "renovation apply V8.287 preserved": 'event.stopImmediatePropagation();' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
