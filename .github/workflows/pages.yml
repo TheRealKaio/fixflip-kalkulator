@@ -443,6 +443,7 @@ jobs:
           python scripts/patch_budget_financing_reserve_layout_v8280.py
           python scripts/patch_budget_ancillary_wording_v8281.py
           python scripts/patch_reno_inline_panel_v8282.py
+          python scripts/patch_reno_inline_mobile_width_v8283.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -467,18 +468,15 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.282": "V8.282" in index,
-              "service-worker registration V8.282": 'service-worker.js?v=8.282' in index,
-              "service-worker cache version V8.282": "neustart-immocheck-v8.282" in sw,
-              "renovation inline panel": 'class="reno-inline-panel" id="renoBackdrop"' in index,
-              "renovation inline panel spans row": '.reno-inline-panel{display:none;grid-column:1/-1;width:100%;margin-top:2px}' in index,
-              "renovation modal removed": '<div class="sheet-backdrop" id="renoBackdrop">' not in index,
-              "renovation toggle aria": 'aria-controls="renoBackdrop"' in index and 'aria-expanded="false"' in index,
-              "renovation toggle logic": 'const opening=!renoBackdrop.classList.contains("show");' in index,
-              "renovation plus minus": '$("openReno").textContent=opening ? "−" : "+";' in index,
-              "renovation save collapses inline": '$("openReno").setAttribute("aria-expanded","false");' in index,
-              "reserve V8.280 layout preserved": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>' in index,
-              "ancillary V8.281 wording preserved": 'Notar, Grund-, Eintragung, Makler.' in index,
+              "visible/PDF version V8.283": "V8.283" in index,
+              "service-worker registration V8.283": 'service-worker.js?v=8.283' in index,
+              "service-worker cache version V8.283": "neustart-immocheck-v8.283" in sw,
+              "renovation inline panel preserved": 'class="reno-inline-panel" id="renoBackdrop"' in index,
+              "mobile panel uses border box": '.reno-inline-panel .reno-sheet{width:100%;max-width:100%;min-width:0;padding:12px;box-sizing:border-box}' in index,
+              "mobile trade rows can wrap": '.reno-inline-panel .trade-top{flex-wrap:wrap}' in index,
+              "mobile trade inputs flexible": '.reno-inline-panel .trade-inputs-inline{display:flex;flex:1 1 100%;width:100%;min-width:0;max-width:100%;justify-content:stretch}' in index,
+              "mobile trade input widths constrained": '.reno-inline-panel .trade-money-input{flex:1 1 0;width:auto;min-width:0;max-width:100%}' in index,
+              "desktop renovation CSS preserved": '.trade-money-input{width:124px;min-width:124px;max-width:124px}' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
