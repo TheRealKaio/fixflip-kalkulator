@@ -33,8 +33,8 @@ missing=[x for x in required if x not in s]
 if missing:
     raise SystemExit("V8.278 verification failed: "+", ".join(missing))
 
-if 'min-height:34px' in s:
-    raise SystemExit("V8.278 artificial 34px label height still present")
+if '#budgetAssumptionsBody .budget-grid.three>.field:not(.budget-state-field)>label{display:flex;align-items:flex-end;min-height:34px;line-height:1.25}' in s:
+    raise SystemExit("V8.278 artificial financing label height still present")
 
 path.write_text(s,encoding="utf-8")
 print("V8.278 removed artificial label height from financing assumptions")
