@@ -437,6 +437,7 @@ jobs:
           python scripts/patch_budget_equity_household_v8274.py
           python scripts/patch_budget_ancillary_alignment_v8275.py
           python scripts/patch_budget_assumption_spacing_v8276.py
+          python scripts/patch_budget_field_spacing_v8277.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -461,12 +462,13 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.276": "V8.276" in index,
-              "service-worker registration V8.276": 'service-worker.js?v=8.276' in index,
-              "service-worker cache version V8.276": "neustart-immocheck-v8.276" in sw,
-              "budget financing compact row gap": '#budgetAssumptionsBody .budget-grid.three{row-gap:8px;column-gap:10px}' in index,
-              "budget ancillary short note preserved": 'id="budgetAncillaryNote">Notar, Grundbuch, Makler.</div>' in index,
-              "budget equity remains household row": '<div class="budget-equity-row">' in index and index.count('id="budgetEquity"') == 1,
+              "visible/PDF version V8.277": "V8.277" in index,
+              "service-worker registration V8.277": 'service-worker.js?v=8.277' in index,
+              "service-worker cache version V8.277": "neustart-immocheck-v8.277" in sw,
+              "budget household section id": 'id="budgetHouseholdSection"' in index,
+              "budget household field spacing": '#budgetHouseholdSection .budget-grid>.field,#budgetHouseholdSection .budget-equity-row .field{margin:8px 0}' in index,
+              "budget equity extra top margin removed": '.budget-equity-row{display:grid;grid-template-columns:1fr;margin-top:0;width:100%}' in index,
+              "budget assumptions field spacing": '#budgetAssumptionsBody .budget-grid>.field{margin:8px 0}' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
