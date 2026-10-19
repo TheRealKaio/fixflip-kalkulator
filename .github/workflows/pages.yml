@@ -454,6 +454,7 @@ jobs:
           python scripts/patch_flip_expected_sale_auto_v8291.py
           python scripts/patch_separate_expected_sale_v8292.py
           python scripts/patch_sale_labels_v8293.py
+          python scripts/patch_budget_mobile_family_before_adults_v8294.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -478,9 +479,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.293": "V8.293" in index,
-              "service-worker registration V8.293": 'service-worker.js?v=8.293' in index,
-              "service-worker cache version V8.293": "neustart-immocheck-v8.293" in sw,
+              "visible/PDF version V8.294": "V8.294" in index,
+              "service-worker registration V8.294": 'service-worker.js?v=8.293' in index,
+              "service-worker cache version V8.294": "neustart-immocheck-v8.294" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -491,6 +492,10 @@ jobs:
               "short sale label break-even": "<span>VK Break-even</span>" in index,
               "short sale label post-renovation": "<span>VK nach Sanierung</span>" in index,
               "short sale field label": '<label>VK nach Sanierung <span class="hint">automatisch kalkuliert · editierbar</span></label>' in index,
+              "mobile family-before-adults patch": 'id="budget-mobile-family-before-adults-v8294"' in index,
+              "mobile family targets exact fields": 'getField("budgetFamilyStatus")' in index and 'getField("budgetAdults")' in index,
+              "mobile family inserted before adults": 'adultsParent.insertBefore(family, adults);' in index,
+              "desktop family position restored": 'restoreDesktopPosition();' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
