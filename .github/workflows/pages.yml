@@ -450,6 +450,7 @@ jobs:
           python scripts/patch_reno_apply_handler_v8287.py
           python scripts/patch_reno_mobile_fullwidth_rows_v8288.py
           python scripts/patch_reno_mobile_group_layout_v8289.py
+          python scripts/patch_reno_active_layout_and_apply_v8290.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -474,15 +475,16 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.289": "V8.289" in index,
-              "service-worker registration V8.289": 'service-worker.js?v=8.289' in index,
-              "service-worker cache version V8.289": "neustart-immocheck-v8.289" in sw,
-              "sqm renovation rows classified": 'class="trade-row trade-row-sqm"' in index,
-              "fixed renovation rows classified": 'class="trade-row trade-row-fixed"' in index,
-              "sqm amount wraps full width": '.trade-row-sqm .trade-top>.input-wrap{' in index and 'margin-top:8px;' in index,
-              "fixed inputs remain one row": '.trade-row-fixed .trade-inputs-inline{' in index and 'flex-direction:row;' in index,
-              "fixed area and amount share row": '.trade-row-fixed .trade-area-input,' in index and 'width:0;' in index,
-              "renovation apply V8.287 preserved": 'event.stopImmediatePropagation();' in index,
+              "visible/PDF version V8.290": "V8.290" in index,
+              "service-worker registration V8.290": 'service-worker.js?v=8.290' in index,
+              "service-worker cache version V8.290": "neustart-immocheck-v8.290" in sw,
+              "active sqm rows classified": index.count('class="trade-row trade-row-sqm"') >= 2,
+              "active fixed rows classified": index.count('class="trade-row trade-row-fixed"') >= 2,
+              "legacy proposal apply listener removed": 'btn.addEventListener("click",applyTradeSuggestions);' not in index,
+              "authoritative proposal apply remains": 'applyCurrentSuggestions();' in index,
+              "proposal handler no longer blocks updates": 'event.stopImmediatePropagation();\n      applyCurrentSuggestions();' not in index,
+              "mobile sqm full-width rule preserved": '.trade-row-sqm .trade-top>.input-wrap{' in index,
+              "mobile fixed row rule preserved": '.trade-row-fixed .trade-inputs-inline{' in index and 'flex-direction:row;' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
