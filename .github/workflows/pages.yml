@@ -452,6 +452,7 @@ jobs:
           python scripts/patch_reno_mobile_group_layout_v8289.py
           python scripts/patch_reno_active_layout_and_apply_v8290.py
           python scripts/patch_flip_expected_sale_auto_v8291.py
+          python scripts/patch_separate_expected_sale_v8292.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -476,17 +477,15 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.291": "V8.291" in index,
-              "service-worker registration V8.291": 'service-worker.js?v=8.291' in index,
-              "service-worker cache version V8.291": "neustart-immocheck-v8.291" in sw,
-              "sale hint automatic": 'automatisch kalkuliert · editierbar' in index,
-              "sale recalc on formula changes": 'if(recalcAndStore()){' in index,
-              "equity triggers sale recalc": '"financeAcquisition","ltv","ownEquityInput","maxEquity","interest","repayment"' in index,
-              "sale dedicated persistence": 'localStorage.setItem(STORAGE_KEY,value);' in index,
-              "sale generic persistence": 'localStorage.setItem("ff_flipSaleTarget",value);' in index,
-              "sale refresh on mode switch": 'loadValue();\n          recalcAndStore();' in index,
-              "sale refresh after renovation actions": 'recalcAndStore();\n        try{ render(); }catch(_err){}' in index,
-              "renovation V8.290 preserved": 'manualTrades.delete(t.key);' in index,
+              "visible/PDF version V8.292": "V8.292" in index,
+              "service-worker registration V8.292": 'service-worker.js?v=8.292' in index,
+              "service-worker cache version V8.292": "neustart-immocheck-v8.292" in sw,
+              "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
+              "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
+              "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
+              "goal fields render only": '["targetMargin","targetProfit"].forEach(function(id){' in index,
+              "separation note present": 'Änderungen an Ziel-Gewinn oder Ziel-Marge verändern dieses Feld nicht.' in index,
+              "V8.291 sale persistence preserved": 'localStorage.setItem("ff_flipSaleTarget",value);' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
