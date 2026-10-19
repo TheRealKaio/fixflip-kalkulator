@@ -25,7 +25,7 @@ replace_once(
 
 # 3) Dritten Vergleichswert klar vom Erwartungswert trennen.
 replace_once(
-'''          <span>Verkaufspreis für deine Projektziele</span>''',
+'''          <span>Verkaufspreis Projektziele</span>''',
 '''          <span>Verkaufspreis nach Sanierung</span>''',
 "third sale benchmark label"
 )
