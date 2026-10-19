@@ -80,7 +80,7 @@ required_implementation = {
     "warning at exact minimum": 'Finanzierungsreserve erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "financing assumptions included": 'const budgetFinancingAssumptionIds=new Set([',
-    "financing assumption fields": '"budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"',
+    "financing assumption fields": '"budgetInterest","budgetRepayment","budgetEquity","budgetState","budgetNotaryPct","budgetBuyBrokerPct","budgetExtraCostsPct"',
     "income expense assumptions share recalc": 'const budgetRateRecalcIds=new Set([...budgetRateIncomeIds,...budgetRateExpenseIds,...budgetFinancingAssumptionIds]);',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
     "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
@@ -533,10 +533,10 @@ if adjusted_rate != 900:
 
 # 43) All relevant financing assumption fields are part of the central recalculation set.
 financing_assumption_ids = {
-    "budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"
+    "budgetInterest","budgetRepayment","budgetEquity","budgetState","budgetNotaryPct","budgetBuyBrokerPct","budgetExtraCostsPct"
 }
 expected_financing_assumption_ids = {
-    "budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"
+    "budgetInterest","budgetRepayment","budgetEquity","budgetState","budgetNotaryPct","budgetBuyBrokerPct","budgetExtraCostsPct"
 }
 if financing_assumption_ids != expected_financing_assumption_ids:
     raise SystemExit("Slider acceptance failed - financing assumption IDs covered")
