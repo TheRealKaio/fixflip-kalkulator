@@ -28,9 +28,9 @@ replace_once(
 "budget state full row"
 )
 
-css_anchor='.budget-assumptions-body{padding-top:14px}'
+css_anchor='.budget-grid.three{grid-template-columns:repeat(3,1fr)}'
 if css_anchor not in s:
-    raise SystemExit("budget assumptions CSS anchor missing")
+    raise SystemExit("budget grid CSS anchor missing")
 s=s.replace(
     css_anchor,
     css_anchor+'\n#budgetAssumptionsBody .budget-state-field{grid-column:1/-1}',
