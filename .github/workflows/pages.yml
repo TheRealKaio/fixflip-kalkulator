@@ -500,7 +500,7 @@ jobs:
               "VK breakeven transfer source": 'data-vk-source="breakeven"' in index,
               "VK postreno transfer source": 'data-vk-source="postreno"' in index,
               "VK transfer confirmation": 'Möchtest du "+eur(rounded)+" aus „"+label+"“ als VK nach Sanierung übernehmen?' in index,
-              "VK transfer arrow": 'class="vk-transfer-icon" aria-hidden="true">↘</b>' in index,
+              "VK transfer arrow": 'class="vk-transfer-mark" aria-hidden="true">↘</span>' in index,
               "VK visual text color": '.flip-sale-benchmark strong{\n  color:var(--ink) !important;' in index,
               "VK visual label color": '.flip-sale-benchmark span{\n  color:var(--muted) !important;' in index,
               "VK inline arrow": 'class="vk-transfer-mark" aria-hidden="true">↘</span>' in index and 'position:static !important;' in index,
