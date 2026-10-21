@@ -240,7 +240,7 @@ replace_once(
     "max loan highlight"
 )
 
-# V8.236: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
+# V8.237: Kaufpreis-Check in Budget und Eigennutzung standardmaessig geschlossen.
 # The first two matching market-check cards are collapsed; toggle behavior stays unchanged.
 for _ in range(2):
     if 'class="card market-check-card"' in s:
@@ -595,7 +595,7 @@ s=s.replace(
 s=s.replace('  |  Erwachsene: ', '  ·  Erwachsene: ', 1)
 s=s.replace('  |  Kinder: ', '  ·  Kinder: ', 1)
 
-# V8.236: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
+# V8.237: Two-decimal interest/repayment display and compact 5-line Budget recommendation box.
 s=s.replace(
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(n) + " %";\n}',
     'function pdfPercent(n){\n  return new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n) + " %";\n}',
@@ -718,7 +718,7 @@ s=s.replace(
 s=s.replace('  const recommendationH=29;','  const recommendationH=26;',1)
 s=s.replace('  y += recommendationH + 5;','  y += recommendationH + 10;',1)
 
-# V8.236: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
+# V8.237: Budget-PDF Abschnittsueberschriften wie in den anderen Berichten:
 # dunkler Hintergrund, weisse Schrift. Vor "Haushalt" zusaetzlich ca. 5 px Abstand.
 section_start = s.find("  function section(")
 if section_start < 0:
@@ -816,7 +816,7 @@ new_budget_pdf_flow = '''
   line("Zusaetzlicher Monats-Puffer",pdfMoney(m.additionalBuffer));
   line("Maximal tragbare Kreditrate",pdfMoney(m.monthlyRate),true);
 
-  // V8.236: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
+  // V8.237: Neuer Seitenumbruch direkt vor der Einzelaufstellung der festen Ausgaben.
   doc.addPage();
   drawPdfBrandHeader(
     doc,
@@ -842,10 +842,10 @@ new_budget_pdf_flow = '''
 
 replace_once(old_budget_pdf_flow, new_budget_pdf_flow, "budget PDF expense page")
 
-# V8.236 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
+# V8.237 Layout-Ziel: Seite 1 Überblick/Haushalt, Seite 2 Ausgaben+Finanzierung, Seite 3 Empfehlungen; maximal 3 Seiten.
 
 old_budget_pdf_footer = '''  drawPdfBrandLogo(doc);
-  drawPdfFooter(doc,1,1,"V8.236");
+  drawPdfFooter(doc,1,1,"V8.237");
   return doc;'''
 new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   doc.addPage();
@@ -931,13 +931,13 @@ new_budget_pdf_footer = '''  // Abschlussseite: Unsere wichtigsten Empfehlungen.
   for(let pageNo=1; pageNo<=budgetPdfPages; pageNo++){
     doc.setPage(pageNo);
     drawPdfBrandLogo(doc);
-    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.236");
+    drawPdfFooter(doc,pageNo,budgetPdfPages,"V8.237");
   }
   return doc;'''
 replace_once(old_budget_pdf_footer, new_budget_pdf_footer, "budget PDF two-page footer")
 
 
-# V8.236: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
+# V8.237: Eigennutzung-Kaufpreis-Check initial geschlossen und Recalc-Buttons als bestaetigte Reset-Buttons.
 s=s.replace(
     '<section class="card market-check-card mode-hidden" id="ownMarketCheckSection">',
     '<section class="card market-check-card mode-hidden collapsed" id="ownMarketCheckSection">',
@@ -1099,10 +1099,10 @@ $("recalc").addEventListener("click",()=>{
   }
 });'''
 
-replace_once(old_recalc_handler, new_recalc_handler, "V8.236 recalc reset handler")
+replace_once(old_recalc_handler, new_recalc_handler, "V8.237 recalc reset handler")
 
 
-# V8.236: Eigennutzung - feste Initial-/Reset-Standardwerte.
+# V8.237: Eigennutzung - feste Initial-/Reset-Standardwerte.
 own_defaults_helper = '''function applyOwnUseStandardValues(){
   const ownDefaults={
     purchase:"0",
@@ -1134,7 +1134,7 @@ own_defaults_helper = '''function applyOwnUseStandardValues(){
 if own_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.236 own defaults reset anchor not found")
+        raise SystemExit("V8.237 own defaults reset anchor not found")
     s = s.replace(target, own_defaults_helper + '\n\n' + target, 1)
 
 own_switch_old = '''      zeroOwnUseGoals();
@@ -1148,7 +1148,7 @@ own_switch_new = '''      zeroOwnUseGoals();
         localStorage.setItem("ff_own_defaults_v8197","1");
       }'''
 if own_switch_old not in s:
-    raise SystemExit("V8.236 own setDealType anchor not found")
+    raise SystemExit("V8.237 own setDealType anchor not found")
 s = s.replace(own_switch_old, own_switch_new, 1)
 
 own_reset_old = '''  stateEl.value="Hamburg";
@@ -1161,11 +1161,11 @@ own_reset_new = '''  if(mode==="own"){
   stateEl.value="Hamburg";
   comp1ManualOverride=false;'''
 if own_reset_old not in s:
-    raise SystemExit("V8.236 own reset injection anchor not found")
+    raise SystemExit("V8.237 own reset injection anchor not found")
 s = s.replace(own_reset_old, own_reset_new, 1)
 
 
-# V8.236: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
+# V8.237: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
 flip_defaults_helper = '''function applyFlipStandardValues(){
   const flipDefaults={
     purchase:"0",
@@ -1198,7 +1198,7 @@ flip_defaults_helper = '''function applyFlipStandardValues(){
 if flip_defaults_helper not in s:
     target = 'function resetDealCalculatorToDefaults(){'
     if target not in s:
-        raise SystemExit("V8.236 flip defaults reset anchor not found")
+        raise SystemExit("V8.237 flip defaults reset anchor not found")
     s = s.replace(target, flip_defaults_helper + '\n\n' + target, 1)
 
 flip_switch_old = '''    } else {
@@ -1216,7 +1216,7 @@ flip_switch_new = '''    } else {
       }
     }'''
 if flip_switch_old not in s:
-    raise SystemExit("V8.236 flip setDealType anchor not found")
+    raise SystemExit("V8.237 flip setDealType anchor not found")
 s = s.replace(flip_switch_old, flip_switch_new, 1)
 
 flip_reset_old = '''  if(mode==="own"){
@@ -1235,7 +1235,7 @@ flip_reset_new = '''  if(mode==="own"){
 
   stateEl.value="Hamburg";'''
 if flip_reset_old not in s:
-    raise SystemExit("V8.236 flip reset injection anchor not found")
+    raise SystemExit("V8.237 flip reset injection anchor not found")
 s = s.replace(flip_reset_old, flip_reset_new, 1)
 
 # Build-time guards: fail deployment if the requested Fix-&-Flip reset values are missing.
@@ -1258,10 +1258,10 @@ required_flip_reset_tokens = [
 ]
 missing_flip_reset_tokens = [token for token in required_flip_reset_tokens if token not in s]
 if missing_flip_reset_tokens:
-    raise SystemExit("V8.236 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
+    raise SystemExit("V8.237 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
 
 
-# V8.236: Dynamischer Kreditraten-Regler.
+# V8.237: Dynamischer Kreditraten-Regler.
 # Der Regler arbeitet prozentual zum Netto-Haushaltseinkommen.
 # Links endet er bei 0 EUR Kreditrate. Rechts endet er dort, wo zuerst
 # entweder 45 % vom Netto oder 300 EUR Mindest-Sicherheitspuffer erreicht sind.
@@ -1282,7 +1282,7 @@ slider_css = '''
 css_anchor = '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}'
 if slider_css.strip() not in s:
     if css_anchor not in s:
-        raise SystemExit("V8.236 slider CSS anchor not found")
+        raise SystemExit("V8.237 slider CSS anchor not found")
     s=s.replace(css_anchor,css_anchor+slider_css,1)
 
 slider_markup = '''          <div class="budget-rate-slider-wrap">
@@ -1298,7 +1298,7 @@ slider_markup = '''          <div class="budget-rate-slider-wrap">
 guidance_anchor = '          <div class="budget-rate-guidance" id="budgetRateGuidance">Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten. Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung.</div>'
 if slider_markup.strip() not in s:
     if guidance_anchor not in s:
-        raise SystemExit("V8.236 slider markup anchor not found")
+        raise SystemExit("V8.237 slider markup anchor not found")
     s=s.replace(guidance_anchor,slider_markup+guidance_anchor,1)
 
 state_anchor='let budgetIncomeAutoUpdating = false;'
@@ -1309,7 +1309,7 @@ let budgetRateNeedsInitialValue=localStorage.getItem("ff_budget_rateNeedsInitial
 let budgetRateManualSelection=localStorage.getItem("ff_budget_rateManualSelection")==="1";'''
 if toast_state_block not in s:
     if state_anchor not in s:
-        raise SystemExit("V8.236 slider state anchor not found")
+        raise SystemExit("V8.237 slider state anchor not found")
     s=s.replace(state_anchor,state_anchor+'\n'+toast_state_block,1)
 
 old_budget_model='''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
@@ -1337,7 +1337,7 @@ new_budget_model='''  const freeBudget=income-expenses;
   // Die Kreditraten-/Pufferlogik oben bleibt unverändert; der Puffer wird nicht doppelt abgezogen.
   const available=freeBudget-minimumReserve;'''
 if old_budget_model not in s:
-    raise SystemExit("V8.236 budget model anchor not found")
+    raise SystemExit("V8.237 budget model anchor not found")
 s=s.replace(old_budget_model,new_budget_model,1)
 
 old_return='''    net,childBenefit,income,expenses,reserve,available,rateCap,monthlyRate,
@@ -1346,7 +1346,7 @@ new_return='''    net,childBenefit,income,expenses,reserve,rawReserve,minimumRes
     maxMonthlyRate:rateCap,maxRatePct,selectedRatePct,
     additionalBuffer:reserve,'''
 if old_return not in s:
-    raise SystemExit("V8.236 budget model return anchor not found")
+    raise SystemExit("V8.237 budget model return anchor not found")
 s=s.replace(old_return,new_return,1)
 
 old_rate_line='  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);'
@@ -1396,13 +1396,13 @@ new_rate_line='''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthly
     }
   }'''
 if old_rate_line not in s:
-    raise SystemExit("V8.236 rate render anchor not found")
+    raise SystemExit("V8.237 rate render anchor not found")
 s=s.replace(old_rate_line,new_rate_line,1)
 
 # Der Status neben der Rate folgt der aktuell gewählten, dynamischen Kreditrate.
 old_ratio='const budgetRatePct = m.net > 0 ? (m.monthlyRate / m.net) * 100 : 0;'
 if old_ratio not in s:
-    raise SystemExit("V8.236 rate ratio anchor not found")
+    raise SystemExit("V8.237 rate ratio anchor not found")
 
 # Manuelle Änderung des Sicherheitspuffers setzt die Regler-Auswahl auf den daraus
 # neu berechneten Startwert zurück.
@@ -1416,7 +1416,7 @@ new_reserve_listener='''  if(el.id==="budgetSafetyReserve" && !budgetAutoUpdatin
     localStorage.removeItem("ff_budget_rateSliderPct");
   }'''
 if old_reserve_listener not in s:
-    raise SystemExit("V8.236 reserve listener anchor not found")
+    raise SystemExit("V8.237 reserve listener anchor not found")
 s=s.replace(old_reserve_listener,new_reserve_listener,1)
 
 slider_handler = '''if($("budgetRateSlider")){
@@ -1448,13 +1448,13 @@ slider_handler = '''if($("budgetRateSlider")){
 handler_anchor='if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){'
 if slider_handler not in s:
     if handler_anchor not in s:
-        raise SystemExit("V8.236 slider handler anchor not found")
+        raise SystemExit("V8.237 slider handler anchor not found")
     s=s.replace(handler_anchor,slider_handler+handler_anchor,1)
 
 # Alte V8.200-Speicherung nicht weiter verwenden.
 s=s.replace('localStorage.removeItem("ff_budget_rateSliderExtra");','localStorage.removeItem("ff_budget_rateSliderPct");',1)
 
-# V8.236: Einnahmen, Ausgaben und Finanzierungsannahmen nach den bestehenden
+# V8.237: Einnahmen, Ausgaben und Finanzierungsannahmen nach den bestehenden
 # Feld-Synchronisierungen neu bewerten. Die bestehende Berechnungslogik bleibt unveraendert.
 budget_recalc_listener = '''const budgetRateIncomeIds=new Set([
   "budgetNetIncome",
@@ -1514,10 +1514,10 @@ document.addEventListener("input",(event)=>{
   budgetInputValueBeforeRecalc=newInput;
 });
 
-// V8.236: Nur nach einem bestätigten Budget-Reset wird beim ersten abgeschlossenen
+// V8.237: Nur nach einem bestätigten Budget-Reset wird beim ersten abgeschlossenen
 // Einkommenseintrag einmalig eine sinnvolle Start-Kreditrate gesetzt.
 // Während des Tippens bleibt die Rate 0; so wird z. B. "4000" nicht schon bei "4"
-// oder "40" initialisiert. Danach bleibt die bestehende V8.236-Logik unverändert.
+// oder "40" initialisiert. Danach bleibt die bestehende V8.237-Logik unverändert.
 document.addEventListener("focusout",(event)=>{
   const el=event.target;
   if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;
@@ -1538,16 +1538,16 @@ document.addEventListener("focusout",(event)=>{
 recalc_anchor='if($("budgetAssumptionsToggle") && $("budgetAssumptionsSection")){'
 if budget_recalc_listener not in s:
     if recalc_anchor not in s:
-        raise SystemExit("V8.236 budget recalc listener anchor not found")
+        raise SystemExit("V8.237 budget recalc listener anchor not found")
     s=s.replace(recalc_anchor,budget_recalc_listener+"\n"+recalc_anchor,1)
 
-# V8.236: Den Kreditraten-Regler aus dem globalen Input-Listener ausschliessen.
+# V8.237: Den Kreditraten-Regler aus dem globalen Input-Listener ausschliessen.
 # Sonst rendert der globale Listener zuerst und setzt den Slider zurueck,
 # bevor sein eigener input-Handler den neuen Wert lesen kann.
 generic_input_selector = "document.querySelectorAll('input:not(.trade-amount):not([name=\"dealType\"]),select')"
 generic_input_selector_fixed = "document.querySelectorAll('input:not(.trade-amount):not([name=\"dealType\"]):not(#budgetRateSlider),select')"
 if generic_input_selector not in s:
-    raise SystemExit("V8.236 global input selector anchor not found")
+    raise SystemExit("V8.237 global input selector anchor not found")
 s=s.replace(generic_input_selector,generic_input_selector_fixed,1)
 
 required_v8203_tokens = [
@@ -1605,10 +1605,10 @@ required_v8203_tokens = [
 ]
 missing_v8203_tokens=[token for token in required_v8203_tokens if token not in s]
 if missing_v8203_tokens:
-    raise SystemExit("V8.236 slider verification failed: "+", ".join(missing_v8203_tokens))
+    raise SystemExit("V8.237 slider verification failed: "+", ".join(missing_v8203_tokens))
 
 
-# V8.236: Monatliche Belastung & Restschuld strukturell vom Tragfaehigkeits-Slider entkoppeln.
+# V8.237: Monatliche Belastung & Restschuld strukturell vom Tragfaehigkeits-Slider entkoppeln.
 # Grundlage ist ausschließlich das bereits berechnete Max. Darlehen sowie Zins + Tilgung.
 old_budget_loan_burden = '''  const interestPart=loan*interestPct/12;
   const repaymentPart=Math.max(0,monthlyRate-interestPart);
@@ -1634,7 +1634,7 @@ new_budget_loan_burden = '''  const loanMonthlyRate=loan*debtServicePct/12;
     return Math.max(0,loan*factor-loanMonthlyRate*((factor-1)/r));
   }'''
 if old_budget_loan_burden not in s:
-    raise SystemExit("V8.236 loan burden calculation anchor not found")
+    raise SystemExit("V8.237 loan burden calculation anchor not found")
 s=s.replace(old_budget_loan_burden,new_budget_loan_burden,1)
 
 old_budget_return_tail='''    interestPct,repaymentPct,loan,equity,ancillaryPct,extraCostsPct,allIn,propertyPrice,ancillaryAmount,extraCostsAmount,
@@ -1642,11 +1642,11 @@ old_budget_return_tail='''    interestPct,repaymentPct,loan,equity,ancillaryPct,
 new_budget_return_tail='''    interestPct,repaymentPct,loan,loanMonthlyRate,equity,ancillaryPct,extraCostsPct,allIn,propertyPrice,ancillaryAmount,extraCostsAmount,
     interestPart,repaymentPart,debt10:remainingDebt(10),debt20:remainingDebt(20),debt30:remainingDebt(30)'''
 if old_budget_return_tail not in s:
-    raise SystemExit("V8.236 budget return tail anchor not found")
+    raise SystemExit("V8.237 budget return tail anchor not found")
 s=s.replace(old_budget_return_tail,new_budget_return_tail,1)
 
 if '<div class="budget-summary-row total"><span>Monatliche Rate</span><strong id="budgetMonthlyRateResult">–</strong></div>' not in s:
-    raise SystemExit("V8.236 monthly rate label anchor not found")
+    raise SystemExit("V8.237 monthly rate label anchor not found")
 s=s.replace(
     '<div class="budget-summary-row total"><span>Monatliche Rate</span><strong id="budgetMonthlyRateResult">–</strong></div>',
     '<div class="budget-summary-row total"><span>Monatliche Rate (Max. Darlehen)</span><strong id="budgetMonthlyRateResult">–</strong></div>',
@@ -1654,7 +1654,7 @@ s=s.replace(
 )
 
 if 'if($("budgetMonthlyRateResult")) $("budgetMonthlyRateResult").textContent=eur(m.monthlyRate);' not in s:
-    raise SystemExit("V8.236 monthly rate render anchor not found")
+    raise SystemExit("V8.237 monthly rate render anchor not found")
 s=s.replace(
     'if($("budgetMonthlyRateResult")) $("budgetMonthlyRateResult").textContent=eur(m.monthlyRate);',
     'if($("budgetMonthlyRateResult")) $("budgetMonthlyRateResult").textContent=eur(m.loanMonthlyRate);',
@@ -1662,14 +1662,14 @@ s=s.replace(
 )
 
 if 'line("Monatliche Rate",pdfMoney(m.monthlyRate),true);' not in s:
-    raise SystemExit("V8.236 budget PDF monthly rate anchor not found")
+    raise SystemExit("V8.237 budget PDF monthly rate anchor not found")
 s=s.replace(
     'line("Monatliche Rate",pdfMoney(m.monthlyRate),true);',
     'line("Monatliche Rate (Max. Darlehen)",pdfMoney(m.loanMonthlyRate),true);',
     1
 )
 
-# V8.236: Freies Budget darf negativ sein; Kreditrate bleibt bei Defizit 0.
+# V8.237: Freies Budget darf negativ sein; Kreditrate bleibt bei Defizit 0.
 required_v8223_tokens = [
     'const freeBudget=income-expenses;',
     'const ratePool=Math.max(0,freeBudget);',
@@ -1684,9 +1684,9 @@ required_v8223_tokens = [
 ]
 missing_v8223_tokens=[token for token in required_v8223_tokens if token not in s]
 if missing_v8223_tokens:
-    raise SystemExit("V8.236 free-budget verification failed: "+", ".join(missing_v8223_tokens))
+    raise SystemExit("V8.237 free-budget verification failed: "+", ".join(missing_v8223_tokens))
 
-# V8.236: Kreditrate ist immer zwischen 0 und freiem Monatsbudget gedeckelt.
+# V8.237: Kreditrate ist immer zwischen 0 und freiem Monatsbudget gedeckelt.
 required_v8224_tokens = [
     'const requestedMonthlyRate=net>0 ? net*(Math.max(0,requestedRatePct)/100) : 0;',
     'const monthlyRate=Math.max(0,Math.min(Math.max(0,freeBudget),requestedMonthlyRate));',
@@ -1694,9 +1694,9 @@ required_v8224_tokens = [
 ]
 missing_v8224_tokens=[token for token in required_v8224_tokens if token not in s]
 if missing_v8224_tokens:
-    raise SystemExit("V8.236 credit-rate cap verification failed: "+", ".join(missing_v8224_tokens))
+    raise SystemExit("V8.237 credit-rate cap verification failed: "+", ".join(missing_v8224_tokens))
 
-# V8.236: Jede nachtraegliche Ausgabenaenderung setzt die Rate auf die neu sichere Maximalrate.
+# V8.237: Jede nachtraegliche Ausgabenaenderung setzt die Rate auf die neu sichere Maximalrate.
 required_v8225_tokens = [
     'const automaticRate=Math.min(Math.max(0,recalculated.net*0.35),Math.max(0,recalculated.rateCap||0));',
     'const adjustedRate=budgetRateManualSelection',
@@ -1706,9 +1706,9 @@ required_v8225_tokens = [
 ]
 missing_v8225_tokens=[token for token in required_v8225_tokens if token not in s]
 if missing_v8225_tokens:
-    raise SystemExit("V8.236 expense recalculation verification failed: "+", ".join(missing_v8225_tokens))
+    raise SystemExit("V8.237 expense recalculation verification failed: "+", ".join(missing_v8225_tokens))
 
-# V8.236: Jede nachtraegliche Ausgabenaenderung setzt die Rate auf die neu sichere Maximalrate.
+# V8.237: Jede nachtraegliche Ausgabenaenderung setzt die Rate auf die neu sichere Maximalrate.
 required_v8226_tokens = [
     'const automaticRate=Math.min(Math.max(0,recalculated.net*0.35),Math.max(0,recalculated.rateCap||0));',
     'const adjustedRate=budgetRateManualSelection',
@@ -1718,9 +1718,9 @@ required_v8226_tokens = [
 ]
 missing_v8226_tokens=[token for token in required_v8226_tokens if token not in s]
 if missing_v8226_tokens:
-    raise SystemExit("V8.236 expense full recalculation verification failed: "+", ".join(missing_v8226_tokens))
+    raise SystemExit("V8.237 expense full recalculation verification failed: "+", ".join(missing_v8226_tokens))
 
-# V8.236: Warnung wird nur fuer < oder = Mindestpuffer angezeigt.
+# V8.237: Warnung wird nur fuer < oder = Mindestpuffer angezeigt.
 required_v8227_tokens = [
     'const minimumBufferAbove=bufferDeviation>0.005;',
     '$("budgetRateSliderWarning").hidden=minimumBufferAbove;',
@@ -1730,9 +1730,9 @@ required_v8227_tokens = [
 ]
 missing_v8227_tokens=[token for token in required_v8227_tokens if token not in s]
 if missing_v8227_tokens:
-    raise SystemExit("V8.236 warning display verification failed: "+", ".join(missing_v8227_tokens))
+    raise SystemExit("V8.237 warning display verification failed: "+", ".join(missing_v8227_tokens))
 
-# V8.236: Automatik startet bei 35 %, manuelle Reglerwahl uebernimmt danach.
+# V8.237: Automatik startet bei 35 %, manuelle Reglerwahl uebernimmt danach.
 required_v8228_tokens = [
     'let budgetRateManualSelection=localStorage.getItem("ff_budget_rateManualSelection")==="1";',
     'budgetRateManualSelection=true;',
@@ -1745,9 +1745,9 @@ required_v8228_tokens = [
 ]
 missing_v8228_tokens=[token for token in required_v8228_tokens if token not in s]
 if missing_v8228_tokens:
-    raise SystemExit("V8.236 35-percent initialization verification failed: "+", ".join(missing_v8228_tokens))
+    raise SystemExit("V8.237 35-percent initialization verification failed: "+", ".join(missing_v8228_tokens))
 
-# V8.236: Alle Budget-Eingabekategorien loesen dieselbe Neuberechnung aus.
+# V8.237: Alle Budget-Eingabekategorien loesen dieselbe Neuberechnung aus.
 required_v8229_tokens = [
     'const budgetFinancingAssumptionIds=new Set([',
     '"budgetInterest","budgetRepayment","budgetEquity","budgetAncillaryPct","budgetExtraCostsPct"',
@@ -1755,9 +1755,9 @@ required_v8229_tokens = [
 ]
 missing_v8229_tokens=[token for token in required_v8229_tokens if token not in s]
 if missing_v8229_tokens:
-    raise SystemExit("V8.236 full-input recalculation verification failed: "+", ".join(missing_v8229_tokens))
+    raise SystemExit("V8.237 full-input recalculation verification failed: "+", ".join(missing_v8229_tokens))
 
-# V8.236: Frei verfuegbares Monatsbudget wird nach Mindestpuffer angezeigt.
+# V8.237: Frei verfuegbares Monatsbudget wird nach Mindestpuffer angezeigt.
 required_v8230_tokens = [
     'const freeBudget=income-expenses;',
     'const minimumReserve=Math.max(300,freeBudget*0.10);',
@@ -1767,9 +1767,9 @@ required_v8230_tokens = [
 ]
 missing_v8230_tokens=[token for token in required_v8230_tokens if token not in s]
 if missing_v8230_tokens:
-    raise SystemExit("V8.236 available-budget verification failed: "+", ".join(missing_v8230_tokens))
+    raise SystemExit("V8.237 available-budget verification failed: "+", ".join(missing_v8230_tokens))
 
-# V8.236: Begriffe klar trennen:
+# V8.237: Begriffe klar trennen:
 # - Finanzierungsreserve = vorgesehene Mindestreserve
 # - Aktueller Sicherheitspuffer = tatsaechlich verbleibender Betrag nach Kreditrate
 s=s.replace("Mindest-Sicherheitspuffer","Finanzierungsreserve")
@@ -1786,21 +1786,21 @@ required_v8231_tokens = [
 ]
 missing_v8231_tokens=[token for token in required_v8231_tokens if token not in s]
 if missing_v8231_tokens:
-    raise SystemExit("V8.236 terminology verification failed: "+", ".join(missing_v8231_tokens))
+    raise SystemExit("V8.237 terminology verification failed: "+", ".join(missing_v8231_tokens))
 if "Mindest-Sicherheitspuffer" in s or "Mindestpuffer unterschritten" in s or "Mindestpuffer erreicht" in s:
-    raise SystemExit("V8.236 terminology verification failed: legacy minimum-buffer wording remains")
+    raise SystemExit("V8.237 terminology verification failed: legacy minimum-buffer wording remains")
 
-# V8.236: Finanzierungsreserve im monatlich verfuegbaren Budget direkt unter Feste Ausgaben ausweisen.
+# V8.237: Finanzierungsreserve im monatlich verfuegbaren Budget direkt unter Feste Ausgaben ausweisen.
 budget_summary_expenses_row = '<div class="budget-summary-row"><span>- Feste Ausgaben</span><strong id="budgetExpensesResult">–</strong></div>'
 budget_summary_financing_reserve_row = budget_summary_expenses_row + '\n          <div class="budget-summary-row"><span>- Finanzierungsreserve</span><strong id="budgetFinancingReserveResult">–</strong></div>'
 if budget_summary_expenses_row not in s:
-    raise SystemExit("V8.236 budget summary expenses row anchor not found")
+    raise SystemExit("V8.237 budget summary expenses row anchor not found")
 s=s.replace(budget_summary_expenses_row,budget_summary_financing_reserve_row,1)
 
 budget_summary_render_anchor = 'if($("budgetExpensesResult")) $("budgetExpensesResult").textContent=eur(m.expenses);'
 budget_summary_render_new = budget_summary_render_anchor + '\n  if($("budgetFinancingReserveResult")) $("budgetFinancingReserveResult").textContent=eur(m.minimumReserve);'
 if budget_summary_render_anchor not in s:
-    raise SystemExit("V8.236 budget summary render anchor not found")
+    raise SystemExit("V8.237 budget summary render anchor not found")
 s=s.replace(budget_summary_render_anchor,budget_summary_render_new,1)
 
 required_v8232_tokens = [
@@ -1810,9 +1810,9 @@ required_v8232_tokens = [
 ]
 missing_v8232_tokens=[token for token in required_v8232_tokens if token not in s]
 if missing_v8232_tokens:
-    raise SystemExit("V8.236 financing-reserve summary verification failed: "+", ".join(missing_v8232_tokens))
+    raise SystemExit("V8.237 financing-reserve summary verification failed: "+", ".join(missing_v8232_tokens))
 
-# V8.236: Budget startet mit 0 EUR Ausgaben und 0 EUR Finanzierungsreserve.
+# V8.237: Budget startet mit 0 EUR Ausgaben und 0 EUR Finanzierungsreserve.
 # Vorschlaege werden nur noch angezeigt und erst ueber "Vorschlaege uebernehmen" in die Felder geschrieben.
 expense_zero_ids = [
     "budgetFood","budgetMobility","budgetInsurance","budgetTelecom",
@@ -1822,12 +1822,12 @@ for expense_id in expense_zero_ids:
     pattern = re.compile(r'(<input[^>]*id="' + re.escape(expense_id) + r'"[^>]*value=")[^"]*(")')
     s, count = pattern.subn(r'\g<1>0\2', s, count=1)
     if count != 1:
-        raise SystemExit("V8.236 expense default anchor not found: " + expense_id)
+        raise SystemExit("V8.237 expense default anchor not found: " + expense_id)
 
 reserve_pattern = re.compile(r'(<input[^>]*id="budgetSafetyReserve"[^>]*value=")[^"]*(")')
 s, reserve_count = reserve_pattern.subn(r'\g<1>0\2', s, count=1)
 if reserve_count != 1:
-    raise SystemExit("V8.236 financing reserve default anchor not found")
+    raise SystemExit("V8.237 financing reserve default anchor not found")
 
 old_sync_suggestions = '''function syncBudgetSuggestions(){
   const s=getBudgetSuggestions();
@@ -1846,7 +1846,7 @@ new_sync_suggestions = '''function syncBudgetSuggestions(){
   renderBudgetSuggestions();
 }'''
 if old_sync_suggestions not in s:
-    raise SystemExit("V8.236 suggestion sync anchor not found")
+    raise SystemExit("V8.237 suggestion sync anchor not found")
 s=s.replace(old_sync_suggestions,new_sync_suggestions,1)
 
 # Finanzierungsreserve erst berechnen, sobald ein positives Haushaltsnettoeinkommen vorliegt.
@@ -1857,13 +1857,13 @@ new_sync_reserve = '''  const freeBudget=income-expenses;
   const minimumReserve=net>0 ? Math.max(300,freeBudget*0.10) : 0;
   budgetAutoUpdating=true;'''
 if old_sync_reserve not in s:
-    raise SystemExit("V8.236 reserve sync anchor not found")
+    raise SystemExit("V8.237 reserve sync anchor not found")
 s=s.replace(old_sync_reserve,new_sync_reserve,1)
 
 old_model_reserve = '  const minimumReserve=Math.max(300,freeBudget*0.10);'
 new_model_reserve = '  const minimumReserve=net>0 ? Math.max(300,freeBudget*0.10) : 0;'
 if old_model_reserve not in s:
-    raise SystemExit("V8.236 budget model reserve anchor not found")
+    raise SystemExit("V8.237 budget model reserve anchor not found")
 s=s.replace(old_model_reserve,new_model_reserve,1)
 
 # Reset erzwingt 0 EUR fuer alle festen Ausgaben und fuer die Finanzierungsreserve.
@@ -1875,7 +1875,7 @@ reset_new = reset_anchor + '''
   });
   if($("budgetSafetyReserve")) $("budgetSafetyReserve").value="0";'''
 if reset_anchor not in s:
-    raise SystemExit("V8.236 budget reset anchor not found")
+    raise SystemExit("V8.237 budget reset anchor not found")
 s=s.replace(reset_anchor,reset_new,1)
 
 required_v8233_tokens = [
@@ -1888,15 +1888,15 @@ required_v8233_tokens = [
 ]
 missing_v8233_tokens=[token for token in required_v8233_tokens if token not in s]
 if missing_v8233_tokens:
-    raise SystemExit("V8.236 zero-default verification failed: "+", ".join(missing_v8233_tokens))
+    raise SystemExit("V8.237 zero-default verification failed: "+", ".join(missing_v8233_tokens))
 
 for expense_id in expense_zero_ids:
     if not re.search(r'<input[^>]*id="' + re.escape(expense_id) + r'"[^>]*value="0"', s):
-        raise SystemExit("V8.236 expense zero default verification failed: " + expense_id)
+        raise SystemExit("V8.237 expense zero default verification failed: " + expense_id)
 if not re.search(r'<input[^>]*id="budgetSafetyReserve"[^>]*value="0"', s):
-    raise SystemExit("V8.236 reserve zero default verification failed")
+    raise SystemExit("V8.237 reserve zero default verification failed")
 
-# V8.236: "Aktueller Sicherheitspuffer" wird zum verbleibenden Monatsueberschuss
+# V8.237: "Aktueller Sicherheitspuffer" wird zum verbleibenden Monatsueberschuss
 # nach separatem Abzug der Finanzierungsreserve.
 model_anchor = '''  const rawReserve=freeBudget-monthlyRate;
   const reserve=Math.max(0,rawReserve);'''
@@ -1904,17 +1904,17 @@ model_new = '''  const rawReserve=freeBudget-monthlyRate;
   const reserve=Math.max(0,rawReserve);
   const remainingMonthlySurplus=rawReserve-minimumReserve;'''
 if model_anchor not in s:
-    raise SystemExit("V8.236 remaining surplus model anchor not found")
+    raise SystemExit("V8.237 remaining surplus model anchor not found")
 s=s.replace(model_anchor,model_new,1)
 
 return_anchor = 'net,childBenefit,income,expenses,reserve,rawReserve,minimumReserve,ratePool,available,rateCap,monthlyRate,'
 return_new = 'net,childBenefit,income,expenses,reserve,rawReserve,remainingMonthlySurplus,minimumReserve,ratePool,available,rateCap,monthlyRate,'
 if return_anchor not in s:
-    raise SystemExit("V8.236 remaining surplus return anchor not found")
+    raise SystemExit("V8.237 remaining surplus return anchor not found")
 s=s.replace(return_anchor,return_new,1)
 
 if 'additionalBuffer:reserve,' not in s:
-    raise SystemExit("V8.236 PDF surplus value anchor not found")
+    raise SystemExit("V8.237 PDF surplus value anchor not found")
 s=s.replace('additionalBuffer:reserve,','additionalBuffer:remainingMonthlySurplus,',1)
 
 s=s.replace(
@@ -1953,11 +1953,11 @@ required_v8234_tokens = [
 ]
 missing_v8234_tokens=[token for token in required_v8234_tokens if token not in s]
 if missing_v8234_tokens:
-    raise SystemExit("V8.236 remaining surplus verification failed: "+", ".join(missing_v8234_tokens))
+    raise SystemExit("V8.237 remaining surplus verification failed: "+", ".join(missing_v8234_tokens))
 if '<span>- Aktueller Sicherheitspuffer</span><strong id="budgetReserveResult">–</strong>' in s:
-    raise SystemExit("V8.236 legacy current safety buffer label remains")
+    raise SystemExit("V8.237 legacy current safety buffer label remains")
 
-# V8.236: Budgetwerte aus dem Budget-Rechner in Eigennutzung uebernehmen.
+# V8.237: Budgetwerte aus dem Budget-Rechner in Eigennutzung uebernehmen.
 own_budget_css = '''
 .own-budget-transfer{grid-column:1/-1;background:#f8fafc;border-color:#cbd5e1}
 .own-budget-transfer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -1975,7 +1975,7 @@ own_budget_css = '''
 '''
 if '.own-budget-transfer{' not in s:
     if '</style>' not in s:
-        raise SystemExit("V8.236 style anchor not found")
+        raise SystemExit("V8.237 style anchor not found")
     s=s.replace('</style>',own_budget_css+'\n</style>',1)
 
 own_monthly_kpi = '''        <div class="kpi">
@@ -2001,13 +2001,13 @@ own_budget_card = own_monthly_kpi + '''
           </div>
         </div>'''
 if own_monthly_kpi not in s:
-    raise SystemExit("V8.236 own monthly KPI anchor not found")
+    raise SystemExit("V8.237 own monthly KPI anchor not found")
 s=s.replace(own_monthly_kpi,own_budget_card,1)
 
 own_render_anchor = '  if($("ownKpiMonthlyTotal")) $("ownKpiMonthlyTotal").textContent = eur(m.monthlyPayment + m.monthlyRepayment + val("holding"));'
 own_render_new = own_render_anchor + '\n  renderOwnHouseholdBudget(m);'
 if own_render_anchor not in s:
-    raise SystemExit("V8.236 own render anchor not found")
+    raise SystemExit("V8.237 own render anchor not found")
 s=s.replace(own_render_anchor,own_render_new,1)
 
 own_budget_js = '''const OWN_BUDGET_INCOME_KEY="ff_own_budget_income";
@@ -2067,7 +2067,7 @@ if($("ownImportBudgetValues")){
 '''
 reset_fn_anchor='function resetControlToMarkupDefault(el){'
 if reset_fn_anchor not in s:
-    raise SystemExit("V8.236 reset function anchor not found")
+    raise SystemExit("V8.237 reset function anchor not found")
 s=s.replace(reset_fn_anchor,own_budget_js+reset_fn_anchor,1)
 
 own_reset_anchor='''  if(mode==="own"){
@@ -2082,7 +2082,7 @@ own_reset_new='''  if(mode==="own"){
     localStorage.removeItem("ff_own_budget_imported_at");
   }else{'''
 if own_reset_anchor not in s:
-    raise SystemExit("V8.236 own reset storage anchor not found")
+    raise SystemExit("V8.237 own reset storage anchor not found")
 s=s.replace(own_reset_anchor,own_reset_new,1)
 
 required_v8235_tokens = [
@@ -2102,11 +2102,11 @@ required_v8235_tokens = [
 ]
 missing_v8235_tokens=[token for token in required_v8235_tokens if token not in s]
 if missing_v8235_tokens:
-    raise SystemExit("V8.236 own budget transfer verification failed: "+", ".join(missing_v8235_tokens))
+    raise SystemExit("V8.237 own budget transfer verification failed: "+", ".join(missing_v8235_tokens))
 if "LOKALTEST" in s:
-    raise SystemExit("V8.236 local-test marker must not be deployed")
+    raise SystemExit("V8.237 local-test marker must not be deployed")
 
-# V8.236: Header fuer "Deine mögliche Finanzierung" analog zum Eigennutzungs-Header.
+# V8.237: Header fuer "Deine mögliche Finanzierung" analog zum Eigennutzungs-Header.
 old_budget_financing_header = '''      <section class="card">
         <h2>Deine mögliche Finanzierung</h2>
         <div class="budget-result-grid">'''
@@ -2120,13 +2120,13 @@ new_budget_financing_header = '''      <section class="card">
         </div>
         <div class="budget-result-grid">'''
 if old_budget_financing_header not in s:
-    raise SystemExit("V8.236 budget financing header anchor not found")
+    raise SystemExit("V8.237 budget financing header anchor not found")
 s=s.replace(old_budget_financing_header,new_budget_financing_header,1)
 
 # Etwas Abstand zwischen Header und Ergebnis-Kacheln, analog zum Eigennutzungs-Ergebnisbereich.
 if '.budget-financing-decision{' not in s:
     if '</style>' not in s:
-        raise SystemExit("V8.236 style anchor not found")
+        raise SystemExit("V8.237 style anchor not found")
     s=s.replace(
         '</style>',
         '.budget-financing-decision{margin-bottom:14px}\n</style>',
@@ -2142,20 +2142,20 @@ required_v8236_tokens = [
 ]
 missing_v8236_tokens=[token for token in required_v8236_tokens if token not in s]
 if missing_v8236_tokens:
-    raise SystemExit("V8.236 financing header verification failed: "+", ".join(missing_v8236_tokens))
+    raise SystemExit("V8.237 financing header verification failed: "+", ".join(missing_v8236_tokens))
 
-# V8.236: Layout Finanzierungsfelder - Laufzeit vor Sanierungs-Puffer, laufende Kosten an Laufzeit-Position.
+# V8.237: Layout Finanzierungsfelder - Laufzeit vor Sanierungs-Puffer, laufende Kosten an Laufzeit-Position.
 def _field_block_at_label(html, label, label_pos):
     start = html.rfind('<div class="field">', 0, label_pos)
     if start < 0:
-        raise SystemExit("V8.236 layout field start not found: " + label)
+        raise SystemExit("V8.237 layout field start not found: " + label)
     pos = start
     depth = 0
     while True:
         next_open = html.find("<div", pos)
         next_close = html.find("</div>", pos)
         if next_close < 0:
-            raise SystemExit("V8.236 layout field end not found: " + label)
+            raise SystemExit("V8.237 layout field end not found: " + label)
         if next_open >= 0 and next_open < next_close:
             depth += 1
             pos = next_open + 4
@@ -2165,7 +2165,7 @@ def _field_block_at_label(html, label, label_pos):
             if depth == 0:
                 block = html[start:pos]
                 if not (start <= label_pos < pos) or label not in block:
-                    raise SystemExit("V8.236 label occurrence is not inside selected field: " + label)
+                    raise SystemExit("V8.237 label occurrence is not inside selected field: " + label)
                 return start, pos, block
 
 def _label_positions(html, label, start=0, end=None):
@@ -2183,11 +2183,11 @@ def _label_positions(html, label, start=0, end=None):
 def _target_financing_section(html):
     menu_pos = html.find("Finanzierung & Nebenkosten anpassen")
     if menu_pos < 0:
-        raise SystemExit("V8.236 layout section heading not found")
+        raise SystemExit("V8.237 layout section heading not found")
     section_start = html.rfind("<section", 0, menu_pos)
     section_end = html.find("</section>", menu_pos)
     if section_start < 0 or section_end < 0:
-        raise SystemExit("V8.236 layout section bounds not found")
+        raise SystemExit("V8.237 layout section bounds not found")
     return menu_pos, section_start, section_end + len("</section>")
 
 menu_pos, section_start, section_end = _target_financing_section(s)
@@ -2197,7 +2197,7 @@ holding_positions = _label_positions(s, "Laufende Kosten pro Monat", section_sta
 buffer_positions = _label_positions(s, "Sanierungs-Puffer", section_start, section_end)
 if len(holding_positions) != 1 or len(buffer_positions) != 1:
     raise SystemExit(
-        "V8.236 layout target fields not unique in financing section: holding="
+        "V8.237 layout target fields not unique in financing section: holding="
         + str(holding_positions) + ", buffer=" + str(buffer_positions)
     )
 holding_start, holding_end, holding_block = _field_block_at_label(
@@ -2213,7 +2213,7 @@ buffer_start, buffer_end, buffer_block = _field_block_at_label(
 term_marker = 'id="monthsLabel"'
 term_positions = _label_positions(s, term_marker)
 if len(term_positions) != 1:
-    raise SystemExit("V8.236 layout monthsLabel not unique: " + repr(term_positions))
+    raise SystemExit("V8.237 layout monthsLabel not unique: " + repr(term_positions))
 term_start, term_end, term_block = _field_block_at_label(
     s, term_marker, term_positions[0]
 )
@@ -2224,14 +2224,14 @@ s = s[:holding_start] + s[holding_end:]
 # Am bisherigen Laufzeit-Platz die laufenden Kosten einsetzen.
 term_now = s.find(term_block)
 if term_now < 0:
-    raise SystemExit("V8.236 layout term block disappeared before replacement")
+    raise SystemExit("V8.237 layout term block disappeared before replacement")
 s = s[:term_now] + holding_block + s[term_now + len(term_block):]
 
 # Laufzeit Finanzierung im Anpassungsbereich direkt vor den Sanierungs-Puffer setzen.
 _, section_start, section_end = _target_financing_section(s)
 buffer_positions = _label_positions(s, "Sanierungs-Puffer", section_start, section_end)
 if len(buffer_positions) != 1:
-    raise SystemExit("V8.236 layout buffer field not unique after replacement")
+    raise SystemExit("V8.237 layout buffer field not unique after replacement")
 buffer_start, _, _ = _field_block_at_label(s, "Sanierungs-Puffer", buffer_positions[0])
 s = s[:buffer_start] + term_block + "\n\n        " + s[buffer_start:]
 
@@ -2243,15 +2243,15 @@ buffer_in_section = section_html.find("Sanierungs-Puffer")
 holding_in_section = section_html.find("Laufende Kosten pro Monat")
 if term_in_section < 0 or buffer_in_section < 0 or not (term_in_section < buffer_in_section):
     raise SystemExit(
-        "V8.236 layout verification failed in financing section: term/buffer="
+        "V8.237 layout verification failed in financing section: term/buffer="
         + str((term_in_section, buffer_in_section))
     )
 if holding_in_section < 0:
-    raise SystemExit("V8.236 layout verification failed: laufende Kosten missing from financing section")
+    raise SystemExit("V8.237 layout verification failed: laufende Kosten missing from financing section")
 if s.count('id="holding"') != 1:
-    raise SystemExit("V8.236 layout verification failed: holding input duplicated or missing")
+    raise SystemExit("V8.237 layout verification failed: holding input duplicated or missing")
 if s.count('id="monthsLabel"') != 1 or s.count('id="months"') != 1:
-    raise SystemExit("V8.236 layout verification failed: duration field duplicated or missing")
+    raise SystemExit("V8.237 layout verification failed: duration field duplicated or missing")
 
 
 # V8.237: Eigennutzung und Fix & Flip erhalten vollständig getrennte Eingabestände.
@@ -2463,5 +2463,146 @@ if missing_v8237_tokens:
     raise SystemExit("V8.237 separated mode storage verification failed: "+", ".join(missing_v8237_tokens))
 
 
+# V8.237: Drei VK-Schnellwerte koennen nach Bestaetigung in "VK nach Sanierung" uebernommen werden.
+# Der bestehende Projektziel-Wert bleibt unveraendert; zusaetzlich werden Ziel-Gewinn und Break-even angeboten.
+s=s.replace(
+    '<label>Verkaufspreis nach Sanierung <span class="hint">kalkulatorisch vorbelegt · editierbar</span></label>',
+    '<label>Verkaufspreis nach Sanierung <span class="hint">VK Projektziel • editierbar</span></label>',
+    1
+)
+
+vk_field_anchor = '''          <div class="input-wrap"><input id="flipSaleTarget" inputmode="decimal"><span class="unit">€</span></div>
+          <div class="sale-change-note" id="saleChangeNote">geändert (bitte prüfen)</div>'''
+vk_field_new = '''          <div class="input-wrap"><input id="flipSaleTarget" inputmode="decimal"><span class="unit">€</span></div>
+          <div class="vk-transfer-grid" id="vkTransferGrid">
+            <button type="button" class="vk-transfer-btn" data-vk-source="project"><span>VK Projektziel</span><strong id="vkProjectTargetValue">–</strong><b aria-hidden="true">↘</b></button>
+            <button type="button" class="vk-transfer-btn" data-vk-source="profit"><span>VK Ziel-Gewinn</span><strong id="vkProfitTargetValue">–</strong><b aria-hidden="true">↘</b></button>
+            <button type="button" class="vk-transfer-btn" data-vk-source="breakeven"><span>VK Break-even</span><strong id="vkBreakEvenValue">–</strong><b aria-hidden="true">↘</b></button>
+          </div>
+          <div class="sale-change-note" id="saleChangeNote">geändert (bitte prüfen)</div>'''
+if vk_field_anchor not in s:
+    raise SystemExit("V8.237 VK field anchor not found")
+s=s.replace(vk_field_anchor,vk_field_new,1)
+
+vk_css = '''
+.vk-transfer-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}
+.vk-transfer-btn{display:grid;grid-template-columns:1fr auto;grid-template-areas:"label icon" "value icon";align-items:center;gap:1px 6px;width:100%;padding:8px 9px;border:1px solid #d7dee8;border-radius:10px;background:#f8fafc;color:#475569;text-align:left;cursor:pointer}
+.vk-transfer-btn span{grid-area:label;font-size:9px;line-height:1.2;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vk-transfer-btn strong{grid-area:value;font-size:11.5px;line-height:1.25;color:#172033;white-space:nowrap}
+.vk-transfer-btn b{grid-area:icon;font-size:16px;line-height:1;color:#64748b;font-weight:700}
+.vk-transfer-btn:hover{background:#f1f5f9;border-color:#b9c5d4}
+@media(max-width:520px){.vk-transfer-grid{grid-template-columns:1fr}.vk-transfer-btn{grid-template-columns:1fr auto;grid-template-areas:"label icon" "value icon"}}
+'''
+if '.vk-transfer-grid{' not in s:
+    if '</style>' not in s:
+        raise SystemExit("V8.237 VK CSS anchor not found")
+    s=s.replace('</style>',vk_css+'\n</style>',1)
+
+profit_sale_helper = '''function calculateFlipTargetProfitSale(){
+  const p=Math.max(0,val("purchase"));
+  const renoBase=Math.max(0,totalTrades());
+  const months=Math.max(0,val("months"));
+  const reno=renoBase*(1+pct("buffer"));
+  const tax=p*(states[stateEl.value]/100);
+  const notary=p*pct("notary");
+  const buyBroker=p*pct("buyBroker");
+  const acquisitionCosts=tax+notary+buyBroker;
+  const financeAcquisition=$("financeAcquisition") ? $("financeAcquisition").checked : false;
+  const financingBase=p+reno+(financeAcquisition ? acquisitionCosts : 0);
+  const grossDebt=financingBase*pct("ltv");
+  const equityInput=$("ownEquityInput") ? Math.max(0,val("ownEquityInput")) : 0;
+  const debt=Math.max(0,grossDebt-equityInput);
+  const financingProjection=annuityProjection(
+    debt,
+    Math.max(0,pct("interest")),
+    Math.max(0,pct("repayment")),
+    months
+  );
+  const interest=financingProjection.totalInterest;
+  const holding=Math.max(0,val("holding"))*months;
+  const otherSaleCosts=Math.max(0,val("otherSaleCosts"));
+  const nonBrokerCosts=p+tax+notary+buyBroker+reno+interest+holding+otherSaleCosts;
+  const targetProfit=Math.max(0,val("targetProfit"));
+  const sellBrokerRate=Math.max(0,pct("sellBroker"));
+  const denominator=1-sellBrokerRate;
+  return denominator>0 ? (nonBrokerCosts+targetProfit)/denominator : 0;
+}
+
+function updateVkTransferButtons(){
+  if(currentDealType()!=="flip") return;
+  const projectTarget=Math.max(0,calculateFlipTargetSale()||0);
+  const profitTarget=Math.max(0,calculateFlipTargetProfitSale()||0);
+  const breakEven=Math.max(0,(model().breakEven)||0);
+  if($("vkProjectTargetValue")) $("vkProjectTargetValue").textContent=projectTarget>0 ? eur(Math.round(projectTarget)) : "–";
+  if($("vkProfitTargetValue")) $("vkProfitTargetValue").textContent=profitTarget>0 ? eur(Math.round(profitTarget)) : "–";
+  if($("vkBreakEvenValue")) $("vkBreakEvenValue").textContent=breakEven>0 ? eur(Math.round(breakEven)) : "–";
+}
+
+function vkTransferValue(source){
+  if(source==="project") return Math.max(0,calculateFlipTargetSale()||0);
+  if(source==="profit") return Math.max(0,calculateFlipTargetProfitSale()||0);
+  if(source==="breakeven") return Math.max(0,(model().breakEven)||0);
+  return 0;
+}
+
+function confirmAndApplyVkTransfer(source){
+  if(!$("flipSaleTarget")) return;
+  const value=vkTransferValue(source);
+  if(!(value>0)) return;
+  const labels={
+    project:"VK Projektziel",
+    profit:"VK Ziel-Gewinn",
+    breakeven:"VK Break-even"
+  };
+  const label=labels[source] || "diesen Wert";
+  const rounded=Math.round(value);
+  const ok=confirm("Möchtest du "+eur(rounded)+" aus „"+label+"“ als VK nach Sanierung übernehmen?");
+  if(!ok) return;
+  $("flipSaleTarget").value=String(rounded);
+  flipSaleManualOverride=true;
+  localStorage.setItem(FLIP_SALE_OVERRIDE_KEY,"1");
+  localStorage.setItem("ff_flipSaleTarget",String(rounded));
+  setSaleRecalculatedState(false);
+  render();
+}
+
+document.querySelectorAll(".vk-transfer-btn").forEach(btn=>{
+  btn.setAttribute("aria-label","Als VK nach Sanierung übernehmen");
+  btn.addEventListener("click",()=>confirmAndApplyVkTransfer(btn.dataset.vkSource));
+});
+
+'''
+profit_helper_anchor='function calculateFlipTargetSale(){'
+if profit_helper_anchor not in s:
+    raise SystemExit("V8.237 target sale helper anchor not found")
+s=s.replace(profit_helper_anchor,profit_sale_helper+profit_helper_anchor,1)
+
+render_anchor='''  if(currentDealType()==="flip" && $("flipSaleTarget")){
+    updateFlipSalePlaceholder();
+  }'''
+render_new='''  if(currentDealType()==="flip" && $("flipSaleTarget")){
+    updateFlipSalePlaceholder();
+    updateVkTransferButtons();
+  }'''
+if render_anchor not in s:
+    raise SystemExit("V8.237 render VK anchor not found")
+s=s.replace(render_anchor,render_new,1)
+
+required_v8237_tokens = [
+    'VK Projektziel • editierbar',
+    'class="vk-transfer-btn" data-vk-source="project"',
+    'class="vk-transfer-btn" data-vk-source="profit"',
+    'class="vk-transfer-btn" data-vk-source="breakeven"',
+    '<b aria-hidden="true">↘</b>',
+    'function calculateFlipTargetProfitSale(){',
+    'function confirmAndApplyVkTransfer(source){',
+    'confirm("Möchtest du "+eur(rounded)+" aus „"+label+"“ als VK nach Sanierung übernehmen?")',
+    'localStorage.setItem("ff_flipSaleTarget",String(rounded));',
+    'updateVkTransferButtons();'
+]
+missing_v8237_tokens=[token for token in required_v8237_tokens if token not in s]
+if missing_v8237_tokens:
+    raise SystemExit("V8.237 VK transfer verification failed: "+", ".join(missing_v8237_tokens))
+
 path.write_text(s, encoding="utf-8")
-print("V8.236 interest and repayment patch applied")
+print("V8.237 interest and repayment patch applied")
