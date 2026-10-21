@@ -86,6 +86,21 @@ script = r'''
     breakeven:"VK Break-even",
     postreno:"VK nach Sanierung"
   };
+  const subtitleSourceKey="ff_flip_sale_after_reno_source";
+
+  function updateSaleSubtitle(source){
+    const field=document.getElementById("flipSaleTarget");
+    const wrapper=field ? field.closest(".field") : null;
+    const hint=wrapper ? wrapper.querySelector("label .hint") : null;
+    if(!hint) return;
+    const label=labels[source] || "VK Projektziel";
+    hint.textContent=label+" • editierbar";
+  }
+
+  const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);
+  if(savedSubtitleSource && labels[savedSubtitleSource]){
+    updateSaleSubtitle(savedSubtitleSource);
+  }
 
   document.querySelectorAll(".flip-sale-benchmark[data-vk-source]").forEach(function(button){
     button.addEventListener("click",function(){
@@ -115,6 +130,8 @@ script = r'''
 
       localStorage.setItem("ff_flipSaleTarget",String(rounded));
       localStorage.setItem("ff_flip_sale_after_reno_value",String(rounded));
+      localStorage.setItem(subtitleSourceKey,source);
+      updateSaleSubtitle(source);
 
       try{ render(); }catch(_err){}
     });
@@ -139,6 +156,10 @@ required = [
     'field.value=String(rounded);',
     'field.dispatchEvent(new Event("input",{bubbles:true}));',
     'localStorage.setItem("ff_flip_sale_after_reno_value",String(rounded));',
+    'const subtitleSourceKey="ff_flip_sale_after_reno_source";',
+    'hint.textContent=label+" • editierbar";',
+    'localStorage.setItem(subtitleSourceKey,source);',
+    'updateSaleSubtitle(source);',
     'V8.295',
     'service-worker.js?v=8.295'
 ]
