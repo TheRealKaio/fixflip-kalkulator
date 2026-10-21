@@ -72,16 +72,15 @@ required_implementation = {
     "budget financing info text": 'Aus deinem Budget, Eigenkapital und den Finanzierungsannahmen ergibt sich hier deine mögliche Finanzierung.',
     "budget financing spacing": '.budget-financing-decision{margin-bottom:14px}',
     "VK transfer subtitle": 'VK Projektziel • editierbar',
-    "VK project button": 'class="vk-transfer-btn" data-vk-source="project"',
-    "VK profit button": 'class="vk-transfer-btn" data-vk-source="profit"',
-    "VK breakeven button": 'class="vk-transfer-btn" data-vk-source="breakeven"',
-    "VK transfer arrow": '<b aria-hidden="true">↘</b>',
-    "VK target profit helper": 'function calculateFlipTargetProfitSale(){',
+    "VK project button": 'class="flip-sale-benchmark" data-vk-source="project"',
+    "VK breakeven button": 'class="flip-sale-benchmark" data-vk-source="breakeven"',
+    "VK postreno button": 'class="flip-sale-benchmark" data-vk-source="postreno"',
+    "VK transfer arrow": 'class="vk-transfer-icon" aria-hidden="true">↘</b>',
     "VK confirm before apply": 'const ok=confirm("Möchtest du "+eur(rounded)+" aus „"+label+"“ als VK nach Sanierung übernehmen?");',
-    "VK target input update": '$("flipSaleTarget").value=String(rounded);',
-    "VK manual override": 'localStorage.setItem(FLIP_SALE_OVERRIDE_KEY,"1");',
-    "VK persisted": 'localStorage.setItem("ff_flipSaleTarget",String(rounded));',
-    "VK buttons update": 'updateVkTransferButtons();',
+    "VK target input update": 'field.value=String(rounded);',
+    "VK persisted primary": 'localStorage.setItem("ff_flipSaleTarget",String(rounded));',
+    "VK persisted dedicated": 'localStorage.setItem("ff_flip_sale_after_reno_value",String(rounded));',
+    "VK input event": 'field.dispatchEvent(new Event("input",{bubbles:true}));',
     "suggestions do not auto-fill": 'function syncBudgetSuggestions(){\n  // Vorschlaege nur aktualisieren; die Eingabefelder bleiben unveraendert,',
     "suggestions still apply by button": 'function applyBudgetSuggestions(){',
     "reset expenses to zero": 'budgetExpenseIds.forEach(id=>{\n    if($(id)) $(id).value="0";',
@@ -654,14 +653,14 @@ if remaining == household_income - household_expenses - property_cost - financin
 
 # 55) VK transfer confirmation must occur before the target input is overwritten.
 confirm_token = 'const ok=confirm("Möchtest du "+eur(rounded)+" aus „"+label+"“ als VK nach Sanierung übernehmen?");'
-input_token = '$("flipSaleTarget").value=String(rounded);'
+input_token = 'field.value=String(rounded);'
 confirm_pos = html.find(confirm_token)
 input_pos = html.find(input_token)
 if confirm_pos < 0 or input_pos < 0 or confirm_pos >= input_pos:
     raise SystemExit("Slider acceptance failed - VK transfer confirmation precedes input update")
 
-# 56) Three distinct VK sources are available.
-for source in ("project","profit","breakeven"):
+# 56) Exactly the three existing VK benchmark boxes are transferable.
+for source in ("project","breakeven","postreno"):
     token = f'data-vk-source="{source}"'
     if html.count(token) != 1:
         raise SystemExit("Slider acceptance failed - expected exactly one VK transfer source: " + source)
