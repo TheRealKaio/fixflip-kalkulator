@@ -75,7 +75,7 @@ required_implementation = {
     "VK project button": 'class="flip-sale-benchmark" data-vk-source="project"',
     "VK breakeven button": 'class="flip-sale-benchmark" data-vk-source="breakeven"',
     "VK postreno button": 'class="flip-sale-benchmark" data-vk-source="postreno"',
-    "VK transfer arrow": 'class="vk-transfer-icon" aria-hidden="true">↘</b>',
+    "VK transfer arrow": 'class="vk-transfer-mark" aria-hidden="true">↘</span>',
     "VK confirm before apply": 'const ok=confirm("Möchtest du "+eur(rounded)+" aus „"+label+"“ als VK nach Sanierung übernehmen?");',
     "VK target input update": 'field.value=String(rounded);',
     "VK persisted primary": 'localStorage.setItem("ff_flipSaleTarget",String(rounded));',
