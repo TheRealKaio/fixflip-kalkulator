@@ -459,6 +459,7 @@ jobs:
           python scripts/patch_sale_benchmark_visual_v8296.py
           python scripts/patch_sale_subtitle_source_v8297.py
           python scripts/patch_sale_inline_arrow_v8298.py
+          python scripts/patch_rental_calculator_v8299.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -473,6 +474,7 @@ jobs:
 
           # Product acceptance: test the generated site against the actual slider requirement.
           python scripts/verify_budget_slider.py _site/index.html
+          python scripts/verify_rental_calculator.py _site/index.html
 
           # Deployment gate: fail the build unless the generated site actually contains
           # the version and UI changes expected for this release.
@@ -483,9 +485,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.298": "V8.298" in index,
-              "service-worker registration V8.298": 'service-worker.js?v=8.298' in index,
-              "service-worker cache version V8.298": "neustart-immocheck-v8.298" in sw,
+              "visible/PDF version V8.299": "V8.299" in index,
+              "service-worker registration V8.299": 'service-worker.js?v=8.299' in index,
+              "service-worker cache version V8.299": "neustart-immocheck-v8.299" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -504,6 +506,13 @@ jobs:
               "VK visual text color": '.flip-sale-benchmark strong{\n  color:var(--ink) !important;' in index,
               "VK visual label color": '.flip-sale-benchmark span{\n  color:var(--muted) !important;' in index,
               "VK inline arrow": 'class="vk-transfer-mark" aria-hidden="true">↘</span>' in index and 'position:static !important;' in index,
+              "rental tab": 'id="dealTypeRent"' in index and '<strong>Vermietung</strong>' in index,
+              "rental isolated storage": 'const PREFIX="ff_rent_";' in index,
+              "rental cashflow": 'id="rentCashflowResult"' in index,
+              "rental net yield": 'id="rentNetYieldResult"' in index,
+              "rental cash on cash": 'id="rentCashOnCashResult"' in index,
+              "rental factor": 'id="rentFactorResult"' in index,
+              "rental break even": 'id="rentBreakEvenRentResult"' in index,
               "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
               "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
               "VK subtitle source restore": 'const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);' in index,
