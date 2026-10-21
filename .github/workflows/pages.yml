@@ -457,6 +457,7 @@ jobs:
           python scripts/patch_budget_mobile_family_before_adults_v8294.py
           python scripts/patch_sale_benchmark_apply_v8295.py
           python scripts/patch_sale_benchmark_visual_v8296.py
+          python scripts/patch_sale_subtitle_source_v8297.py
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -481,9 +482,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.296": "V8.296" in index,
-              "service-worker registration V8.296": 'service-worker.js?v=8.296' in index,
-              "service-worker cache version V8.296": "neustart-immocheck-v8.296" in sw,
+              "visible/PDF version V8.297": "V8.297" in index,
+              "service-worker registration V8.297": 'service-worker.js?v=8.297' in index,
+              "service-worker cache version V8.297": "neustart-immocheck-v8.297" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -502,6 +503,9 @@ jobs:
               "VK visual text color": '.flip-sale-benchmark strong{\n  color:var(--ink) !important;' in index,
               "VK visual label color": '.flip-sale-benchmark span{\n  color:var(--muted) !important;' in index,
               "VK visual arrow": '.flip-sale-benchmark[data-vk-source]::after{' in index and 'content:"↘";' in index,
+              "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
+              "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
+              "VK subtitle source restore": 'const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);' in index,
               "mobile family-before-adults patch": 'id="budget-mobile-family-before-adults-v8294"' in index,
               "mobile family targets exact fields": 'getField("budgetFamilyStatus")' in index and 'getField("budgetAdults")' in index,
               "mobile family inserted before adults": 'adultsParent.insertBefore(family, adults);' in index,
