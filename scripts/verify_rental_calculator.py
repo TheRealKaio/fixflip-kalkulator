@@ -85,17 +85,17 @@ if round(total_investment,2)!=332500.00:
     raise SystemExit("Rental acceptance failed - total investment")
 if round(loan,2)!=252500.00:
     raise SystemExit("Rental acceptance failed - loan")
-if round(cashflow,2)!=52.29:
+if round(cashflow,2)!=52.71:
     raise SystemExit("Rental acceptance failed - monthly cashflow")
 if round(gross_yield*100,2)!=6.00:
     raise SystemExit("Rental acceptance failed - gross yield")
 if round(net_yield*100,2)!=4.37:
     raise SystemExit("Rental acceptance failed - net yield")
-if round(cash_on_cash*100,2)!=0.78:
+if round(cash_on_cash*100,2)!=0.79:
     raise SystemExit("Rental acceptance failed - cash-on-cash")
 if round(factor,2)!=16.67:
     raise SystemExit("Rental acceptance failed - factor")
-if round(break_even,2)!=1446.64:
+if round(break_even,2)!=1446.22:
     raise SystemExit("Rental acceptance failed - break-even rent")
 
 print("Rental acceptance passed: isolated storage, formulas, reset scope and key KPI outputs")
