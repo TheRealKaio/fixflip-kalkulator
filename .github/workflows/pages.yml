@@ -502,7 +502,7 @@ jobs:
               "VK transfer arrow": 'class="vk-transfer-icon" aria-hidden="true">↘</b>' in index,
               "VK visual text color": '.flip-sale-benchmark strong{\n  color:var(--ink) !important;' in index,
               "VK visual label color": '.flip-sale-benchmark span{\n  color:var(--muted) !important;' in index,
-              "VK visual arrow": '.flip-sale-benchmark[data-vk-source]::after{' in index and 'content:"↘";' in index,
+              "VK visual arrow": '.flip-sale-benchmark .vk-transfer-icon{' in index and 'color:#64748b !important;' in index,
               "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
               "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
               "VK subtitle source restore": 'const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);' in index,
