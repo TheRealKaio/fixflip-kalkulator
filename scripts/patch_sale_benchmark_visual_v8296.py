@@ -23,20 +23,20 @@ style = '''
   font-weight:800 !important;
   z-index:2;
 }
-.flip-sale-benchmark[data-vk-source]::after{
-  content:"↘";
-  position:absolute;
-  right:9px;
-  top:50%;
-  transform:translateY(-50%);
-  color:#64748b;
-  font-size:17px;
-  font-weight:800;
-  line-height:1;
+ .flip-sale-benchmark .vk-transfer-icon{
+  position:absolute !important;
+  right:9px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  color:#64748b !important;
+  font-size:17px !important;
+  line-height:1 !important;
+  font-weight:800 !important;
   pointer-events:none;
-}
-.flip-sale-benchmark .vk-transfer-icon{
-  color:transparent !important;
+  z-index:2;
 }
 </style>
 '''
@@ -53,8 +53,8 @@ required = [
     '.flip-sale-benchmark{\n  color:var(--ink) !important;',
     '.flip-sale-benchmark span{\n  color:var(--muted) !important;',
     '.flip-sale-benchmark strong{\n  color:var(--ink) !important;',
-    '.flip-sale-benchmark[data-vk-source]::after{',
-    'content:"↘";',
+    '.flip-sale-benchmark .vk-transfer-icon{',
+    'color:#64748b !important;',
     'V8.296',
     'service-worker.js?v=8.296'
 ]
