@@ -154,10 +154,40 @@ pdf_helper=r'''
           }
 
 '''
-anchor='''          function drawPdfFooter(doc, pageNo, totalPages, version){'''
+anchor='function drawPdfFooter(doc, pageNo, totalPages, version){'
 if anchor not in s:
     raise SystemExit("PDF helper anchor missing")
 s=s.replace(anchor,pdf_helper+anchor,1)
+
+# Auf der letzten PDF-Seite den rechtlichen Footer ergänzen.
+footer_old='''function drawPdfFooter(doc, pageNo, totalPages, version){
+            doc.setFont("helvetica","normal");
+            doc.setFontSize(7.5);
+            doc.setTextColor(100,110,125);
+            doc.text(BRAND_DOMAIN,16,289);
+            if(version) doc.text(version,105,289,{align:"center"});
+            if(pageNo && totalPages) doc.text("Seite " + pageNo + " von " + totalPages,194,289,{align:"right"});
+            doc.setTextColor(23,32,51);
+          }'''
+footer_new='''function drawPdfFooter(doc, pageNo, totalPages, version){
+            doc.setFont("helvetica","normal");
+            doc.setFontSize(7.5);
+            doc.setTextColor(100,110,125);
+            doc.text(BRAND_DOMAIN,16,289);
+            if(version) doc.text(version,105,289,{align:"center"});
+            if(pageNo && totalPages){
+              if(pageNo===totalPages){
+                doc.setFontSize(6.7);
+                doc.text("Datenschutz · Haftungsausschluss",194,286,{align:"right"});
+              }
+              doc.setFontSize(7.5);
+              doc.text("Seite " + pageNo + " von " + totalPages,194,289,{align:"right"});
+            }
+            doc.setTextColor(23,32,51);
+          }'''
+if footer_old not in s:
+    raise SystemExit("PDF footer function anchor missing")
+s=s.replace(footer_old,footer_new,1)
 
 pdf_count=s.count("const totalPages=doc.getNumberOfPages();")
 if pdf_count < 3:
