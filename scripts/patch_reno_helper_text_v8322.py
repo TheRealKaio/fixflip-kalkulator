@@ -40,5 +40,11 @@ if short in s:
 if s.count(new_note) < 2:
     raise SystemExit("V8.322 unified renovation note missing in both functions")
 
+# Remove the obsolete subtitle below "Sanierung aufteilen".
+obsolete="Richtwerte werden aus der Wohnfläche berechnet. Die Summe oben enthält den Sanierungs-Puffer."
+s=re.sub(r'<p\b[^>]*>\s*'+re.escape(obsolete)+r'\s*</p>', '', s)
+if obsolete in s:
+    raise SystemExit("Obsolete renovation subtitle still present")
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
