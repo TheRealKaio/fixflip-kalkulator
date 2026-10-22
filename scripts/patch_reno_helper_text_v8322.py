@@ -44,5 +44,7 @@ s=re.sub(r'<p\b[^>]*>\s*'+re.escape(obsolete)+r'\s*</p>', '', s)
 if obsolete in s:
     raise SystemExit("Obsolete renovation subtitle still present")
 
+s=s.replace("<label>Sanierung (inkl. Puffer)</label>", "<label>Modernisierung</label>")
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
