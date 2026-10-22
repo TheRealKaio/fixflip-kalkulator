@@ -39,9 +39,9 @@ css=r'''
 <style id="rental-kpi-traffic-v8308">
 .rent-kpi-name{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px}
 .rent-kpi-info{margin-left:auto!important;flex:0 0 18px!important}
-.rent-kpi-value-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
+.rent-kpi-value-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
 .rent-kpi-value-row .value{min-width:0}
-.rent-kpi-rating{font-size:12px;font-weight:700;line-height:1.25;text-align:right;max-width:48%;padding:4px 7px;border-radius:999px;white-space:normal}
+.rent-kpi-rating{font-size:12px;font-weight:700;line-height:1.25;text-align:right;max-width:none;flex-shrink:0;padding:4px 7px;border-radius:999px;white-space:nowrap}
 #rentCashflowKpi,#rentFactorKpi{transition:border-color .18s ease,background .18s ease}
 .rent-grade-green{border-color:#86efac!important;background:#f0fdf4!important}
 .rent-grade-lime{border-color:#bef264!important;background:#f7fee7!important}
@@ -56,8 +56,8 @@ css=r'''
 .rent-grade-orange .rent-kpi-rating{background:#ffedd5}
 .rent-grade-red .rent-kpi-rating{background:#fee2e2}
 @media(max-width:520px){
-  .rent-kpi-value-row{align-items:flex-start}
-  .rent-kpi-rating{font-size:11px;max-width:46%}
+  .rent-kpi-value-row{align-items:center}
+  .rent-kpi-rating{font-size:11px;max-width:none}
 }
 </style>
 '''
