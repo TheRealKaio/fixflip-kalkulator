@@ -465,6 +465,7 @@ jobs:
           python scripts/patch_fixflip_subtitle_v8302.py _site/index.html
           python scripts/patch_layout_v8303.py _site/index.html
           python scripts/patch_rental_details_v8304.py _site/index.html
+          python scripts/patch_rental_hints_v8305.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -490,9 +491,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.304": "V8.304" in index,
-              "service-worker registration V8.304": 'service-worker.js?v=8.304' in index,
-              "service-worker cache version V8.304": "neustart-immocheck-v8.304" in sw,
+              "visible/PDF version V8.305": "V8.305" in index,
+              "service-worker registration V8.305": 'service-worker.js?v=8.305' in index,
+              "service-worker cache version V8.305": "neustart-immocheck-v8.305" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -532,7 +533,9 @@ jobs:
               "rental reference interest": 'if(!rentalManual && $("rentInterest")) $("rentInterest").value=value;' in index,
               "rental interest manual tracking": '["rentInterest","ff_rent_interest_manual"]' in index,
               "rental housegeld examples": "z. B. Wasser, Heizung, Müllentsorgung" in index,
-              "rental nonalloc examples": "z. B. Verwalterkosten, Instandhaltung/Instandsetzung und Zuführung zur Erhaltungsrücklage" in index,
+              "rental nonalloc examples below field": "z. B. Verwalterkosten, Instandhaltung/Instandsetzung, Erhaltungsrücklage" in index,
+              "rental maintenance suggestion": 'id="rentMaintenanceSuggestion"' in index and "1,00 €/m²" in index,
+              "rental V8.305 script": 'id="rental-ui-script-v8305"' in index,
               "content width 640px": '.app{max-width:640px}' in index,
               "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
               "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
