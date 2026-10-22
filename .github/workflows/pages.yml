@@ -4,6 +4,11 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
+  # Fallback for API/App commits that may not emit a normal push-triggered run.
+  # The scheduled run always builds the current main branch and is protected
+  # by the same verifier/deployment gates as every other run.
+  schedule:
+    - cron: "*/5 * * * *"
 
 permissions:
   contents: read
