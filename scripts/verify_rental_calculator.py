@@ -65,6 +65,11 @@ required={
   "PDF summary justified": 'align:"justify"',
   "PDF summary top aligned": 'baseline:"top"',
   "PDF summary tight height": 'tight:true',
+  "PDF summary 9pt": 'const summaryFontSize=9;',
+  "PDF summary 10mm padding": 'const summaryPadding=10;',
+  "PDF summary anthracite": 'textColor:[45,55,70]',
+  "PDF summary line spacing": 'const summaryLineHeightFactor=1.18;',
+  "PDF summary page break": 'ensureSpace(summaryPreviewH+12);',
   "rental overview subtitle size": 'doc.setFontSize(8.2);',
   "content width 640px": '.app{max-width:640px}',
   "footer legal links": 'class="footer-legal-links"',
@@ -79,7 +84,7 @@ required={
   "rental negative cashflow -10": 'etwa -5 bis -10 % der Nettokaltmiete',
   "rental negative cashflow critical": 'Mehr als -10 % der Nettokaltmiete',
   "rental negative cashflow conditional": 'if(m.cashflow<0)',
-  "rental version": 'V8.318'
+  "rental version": 'V8.319'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
