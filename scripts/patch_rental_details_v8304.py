@@ -57,9 +57,9 @@ rep(
 )
 rep(
 '''<div class="rent-reno-input-row">
-            <div class="input-wrap"><input id="rentRenovation" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>''',
+            <div class="input-wrap"><input id="rentRenovation" class="readonly-input" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>''',
 '''<div class="rent-reno-input-row">
-            <div class="input-wrap"><input id="rentRenovation" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>''',
+            <div class="input-wrap"><input id="rentRenovation" class="readonly-input" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>''',
 "modernization input anchor"
 )
 # Den Infotext direkt nach der Eingabe-/Plus-Zeile ergänzen.
