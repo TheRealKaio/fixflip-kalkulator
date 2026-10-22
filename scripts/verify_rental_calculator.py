@@ -64,7 +64,11 @@ required={
   "PDF summary heading": 'Zusammenfassung',
   "rental overview subtitle size": 'doc.setFontSize(8.2);',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.311'
+  "footer legal links": 'class="footer-legal-links"',
+  "footer impressum placeholder": 'data-legal-placeholder="impressum"',
+  "footer agbs placeholder": 'data-legal-placeholder="agbs"',
+  "footer datenschutz placeholder": 'data-legal-placeholder="datenschutz"',
+  "rental version": 'V8.312'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
