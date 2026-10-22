@@ -1,30 +1,20 @@
 from pathlib import Path
 import sys
+import re
 
 p=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 s=p.read_text(encoding="utf-8")
 
-old='''  function clearRent(){
-    Object.keys(localStorage).forEach(function(key){
-      if(key.startsWith(PREFIX)) localStorage.removeItem(key);
-    });
-    fieldIds.forEach(function(id){
-      const el=document.getElementById(id);
-      if(el) el.value=defaults[id];
-    });
-    localStorage.setItem(PREFIX+"active","1");
-    renderRent();
-  }'''
+pattern=r'(  function clearRent\(\)\{)(.*?)(\n  \}\n\n  function initState\(\)\{)'
+m=re.search(pattern,s,re.S)
+if not m:
+    raise SystemExit("rental clearRent function missing")
 
-new='''  function clearRent(){
-    Object.keys(localStorage).forEach(function(key){
-      if(key.startsWith(PREFIX)) localStorage.removeItem(key);
-    });
-    fieldIds.forEach(function(id){
-      const el=document.getElementById(id);
-      if(el) el.value=defaults[id];
-    });
-    localStorage.removeItem("ff_rent_interest_manual");
+body=m.group(2)
+if 'localStorage.removeItem("ff_rent_interest_manual");' not in body:
+    anchor='''    localStorage.setItem(PREFIX+"active","1");
+    renderRent();'''
+    replacement='''    localStorage.removeItem("ff_rent_interest_manual");
     localStorage.setItem(PREFIX+"active","1");
     renderRent();
 
@@ -36,12 +26,12 @@ new='''  function clearRent(){
     }).catch(function(){
       saveRent();
       renderRent();
-    });
-  }'''
+    });'''
+    if anchor not in body:
+        raise SystemExit("rental clearRent reset anchor missing")
+    body=body.replace(anchor,replacement,1)
 
-if old not in s:
-    raise SystemExit("rental clearRent anchor missing")
-s=s.replace(old,new,1)
+s=s[:m.start()]+m.group(1)+body+m.group(3)+s[m.end():]
 
 s=s.replace("V8.306","V8.307")
 s=s.replace("service-worker.js?v=8.306","service-worker.js?v=8.307")
