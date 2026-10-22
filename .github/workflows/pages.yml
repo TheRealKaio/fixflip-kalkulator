@@ -479,6 +479,7 @@ jobs:
           python scripts/patch_budget_tip_heading_v8317.py _site/index.html
           python scripts/patch_pdf_summary_boxes_v8318.py _site/index.html
           python scripts/patch_pdf_summary_style_v8319.py _site/index.html
+          python scripts/patch_pdf_summary_spacing_v8320.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -504,9 +505,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.319": "V8.319" in index,
-              "service-worker registration V8.319": 'service-worker.js?v=8.319' in index,
-              "service-worker cache version V8.319": "neustart-immocheck-v8.319" in sw,
+              "visible/PDF version V8.320": "V8.320" in index,
+              "service-worker registration V8.320": 'service-worker.js?v=8.320' in index,
+              "service-worker cache version V8.320": "neustart-immocheck-v8.320" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -575,6 +576,8 @@ jobs:
               "PDF summary dark anthracite": "textColor:[45,55,70]" in index and "doc.setTextColor(45,55,70);" in index,
               "PDF summary line spacing": "const summaryLineHeightFactor=1.18;" in index and "const recommendationLineHeightFactor=1.18;" in index,
               "PDF summary page safe": "ensureSpace(summaryPreviewH+12);" in index and "if(y+6+recommendationH>278)" in index,
+              "PDF summary gaps reduced": "y+=4.7;" in index and "y += 2.7;" in index and "y+=2.7;" in index,
+              "rental contribution paragraph break": "selbst.\\n\\nDu musst jeden Monat eigenes Geld zuschießen." in index,
               "budget PDF tip heading": "Unser wichtigster Tipp" in index and "Unsere wichtigsten Empfehlungen" not in index,
               "desktop family position restored": 'restoreDesktopPosition();' in index,
           }
