@@ -34,9 +34,11 @@ required={
   "rental reference interest": 'if(!rentalManual && $("rentInterest")) $("rentInterest").value=value;',
   "rental interest manual tracking": '["rentInterest","ff_rent_interest_manual"]',
   "rental housegeld examples": 'z. B. Wasser, Heizung, Müllentsorgung',
-  "rental nonalloc examples": 'z. B. Verwalterkosten, Instandhaltung/Instandsetzung und Zuführung zur Erhaltungsrücklage',
+  "rental nonalloc examples below field": 'z. B. Verwalterkosten, Instandhaltung/Instandsetzung, Erhaltungsrücklage',
+  "rental maintenance suggestion": 'id="rentMaintenanceSuggestion"',
+  "rental V8.305 script": 'id="rental-ui-script-v8305"',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.304'
+  "rental version": 'V8.305'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
