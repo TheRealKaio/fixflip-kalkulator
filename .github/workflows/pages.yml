@@ -474,6 +474,7 @@ jobs:
           python scripts/patch_pdf_summary_heading_v8311.py _site/index.html
           python scripts/patch_footer_legal_v8312.py _site/index.html
           python scripts/patch_rental_pdf_labels_v8313.py _site/index.html
+          python scripts/patch_legal_disclaimer_v8315.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -499,9 +500,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.314": "V8.314" in index,
-              "service-worker registration V8.314": 'service-worker.js?v=8.314' in index,
-              "service-worker cache version V8.314": "neustart-immocheck-v8.314" in sw,
+              "visible/PDF version V8.315": "V8.315" in index,
+              "service-worker registration V8.315": 'service-worker.js?v=8.315' in index,
+              "service-worker cache version V8.315": "neustart-immocheck-v8.315" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -556,6 +557,10 @@ jobs:
               "mobile family inserted before adults": 'adultsParent.insertBefore(family, adults);' in index,
               "footer legal placeholders": 'class="footer-legal-links"' in index and ">Impressum</a>" in index and ">AGBs</a>" in index and ">Datenschutz</a>" in index,
               "footer placeholder links": 'data-legal-placeholder="impressum"' in index and 'data-legal-placeholder="agbs"' in index and 'data-legal-placeholder="datenschutz"' in index,
+              "footer disclaimer link": 'data-legal-placeholder="haftungsausschluss"' in index and '>Haftungsausschluss</a>' in index,
+              "disclaimer bottom sheet": 'Vollständigen Haftungsausschluss lesen' in index and 'legalDisclaimerSheetCta' in index,
+              "disclaimer full page": 'id="legalDisclaimerPage"' in index and 'Haftungsausschluss / Disclaimer' in index,
+              "PDF disclaimer final page": 'appendPdfDisclaimerPage(doc);' in index and 'align:"justify"' in index,
               "rental PDF subtitle labels": "Nettokaltmiete Mtl.:" in index and "Hausgeld Mtl.:" in index and "Nettokaltmiete pro m²:" in index and "Davon nicht umlagefähig:" in index,
               "desktop family position restored": 'restoreDesktopPosition();' in index,
           }
