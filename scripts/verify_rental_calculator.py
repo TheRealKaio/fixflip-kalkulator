@@ -25,7 +25,9 @@ required={
   "rental renovation panel": 'id="rentRenoPanel"',
   "rental renovation storage": 'ff_rent_reno_',
   "rental info icons": 'rent-info-dot',
-  "rental version": 'V8.300'
+  "rental modernization wording": "Modernisierung (Anfangsinvestition)",
+  "rental housegeld wording": "nicht vollständig als Eigentümerkosten angesetzt",
+  "rental version": 'V8.301'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
