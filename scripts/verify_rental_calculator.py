@@ -25,11 +25,11 @@ required={
   "rental renovation panel": 'id="rentRenoPanel"',
   "rental renovation storage": 'ff_rent_reno_',
   "rental info icons": 'rent-info-dot',
-  "rental modernization wording": "Modernisierung (Anfangsinvestition)",
   "rental housegeld wording": "nicht vollständig als Eigentümerkosten angesetzt",
   "Fix & Flip subtitle": "Kauf, Sanierung und Verkauf prüfen",
   "rental modernization normal suffix": 'Modernisierung <span style="font-weight:400">(Anfangsinvestition)</span>',
-  "rental version": 'V8.301'
+  "content width 640px": '.app{max-width:640px}',
+  "rental version": 'V8.303'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
