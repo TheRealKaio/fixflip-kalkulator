@@ -9,7 +9,7 @@ html=path.read_text(encoding="utf-8")
 # Example: patch_pdf_summary_spacing_v8320.py -> V8.320.
 patch_versions=[]
 for patch in Path("scripts").glob("patch*_v8*.py"):
-    m=re.search(r"_v8(\\d{3})\\.py$", patch.name)
+    m=re.search(r"_v8(\d{3})\.py$", patch.name)
     if m:
         patch_versions.append(int(m.group(1)))
 if not patch_versions:
