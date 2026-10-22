@@ -5,16 +5,13 @@ import re
 path=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 html=path.read_text(encoding="utf-8")
 
-# Single source of truth: derive the active release from the newest patch filename.
-# Example: patch_pdf_summary_spacing_v8320.py -> V8.320.
-patch_versions=[]
-for patch in Path("scripts").glob("patch*_v8*.py"):
-    m=re.search(r"_v8(\d{3})\.py$", patch.name)
-    if m:
-        patch_versions.append(int(m.group(1)))
-if not patch_versions:
-    raise SystemExit("Rental acceptance failed - no release patch version found")
-release_version=f"V8.{max(patch_versions):03d}"
+# Single source of truth: the build writes the active release once.
+release_marker=Path("_site/.release-version")
+if not release_marker.exists():
+    raise SystemExit("Rental acceptance failed - release marker missing")
+release_version=release_marker.read_text(encoding="utf-8").strip()
+if not re.fullmatch(r"V8\.\d{3}", release_version):
+    raise SystemExit("Rental acceptance failed - invalid release marker: "+release_version)
 
 required={
   "rental tab": 'id="dealTypeRent"',
