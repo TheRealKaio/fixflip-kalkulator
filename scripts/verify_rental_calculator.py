@@ -62,6 +62,9 @@ required={
   "rental PDF overview nonalloc": 'Davon nicht umlagefähig',
   "rental PDF equity return": 'Rendite auf dein Eigenkapital',
   "PDF summary heading": 'Zusammenfassung',
+  "PDF summary justified": 'align:"justify"',
+  "PDF summary top aligned": 'baseline:"top"',
+  "PDF summary tight height": 'tight:true',
   "rental overview subtitle size": 'doc.setFontSize(8.2);',
   "content width 640px": '.app{max-width:640px}',
   "footer legal links": 'class="footer-legal-links"',
@@ -76,7 +79,7 @@ required={
   "rental negative cashflow -10": 'etwa -5 bis -10 % der Nettokaltmiete',
   "rental negative cashflow critical": 'Mehr als -10 % der Nettokaltmiete',
   "rental negative cashflow conditional": 'if(m.cashflow<0)',
-  "rental version": 'V8.317'
+  "rental version": 'V8.318'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
