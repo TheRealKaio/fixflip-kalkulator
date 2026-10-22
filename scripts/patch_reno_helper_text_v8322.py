@@ -50,5 +50,13 @@ s=s.replace("Sanierungswerte sind editierbare Orientierungswerte für einen erst
 
 s=s.replace("Laufende Kosten pro Monat", "Lfd. Kosten pro Monat")
 
+
+# Programmatic renovation changes must refresh the rental results immediately.
+old_sync='localStorage.setItem("ff_rent_rentRenovation",String(t));}'
+new_sync='localStorage.setItem("ff_rent_rentRenovation",String(t));$r("rentRenovation").dispatchEvent(new Event("input",{bubbles:true}));}'
+if old_sync not in s:
+    raise SystemExit("Rental renovation sync anchor missing")
+s=s.replace(old_sync,new_sync,1)
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
