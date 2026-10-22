@@ -32,13 +32,13 @@ if missing:
     raise SystemExit("V8.303 missing: "+", ".join(missing))
 
 # Center the renovation amount field and toggle on the same horizontal line.
-css = """<style id="renovation-controls-alignment">
+css = """/* Renovation controls alignment */
 .reno-input-row,.rent-reno-input-row{align-items:center}
 .reno-input-row>.plus-btn,.rent-reno-input-row>.plus-btn{align-self:center}
-</style>"""
-if '</head>' not in s:
-    raise SystemExit("Head anchor missing for renovation control alignment")
-s=s.replace('</head>',css+'\n</head>',1)
+"""
+if '</style>' not in s:
+    raise SystemExit("Style anchor missing for renovation control alignment")
+s=s.replace('</style>',css+'\n</style>',1)
 
 p.write_text(s,encoding="utf-8")
 print("V8.303 content width and rental label styling applied")
