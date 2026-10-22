@@ -76,7 +76,7 @@ required={
   "rental negative cashflow -10": 'etwa -5 bis -10 % der Nettokaltmiete',
   "rental negative cashflow critical": 'Mehr als -10 % der Nettokaltmiete',
   "rental negative cashflow conditional": 'if(m.cashflow<0)',
-  "rental version": 'V8.316'
+  "rental version": 'V8.317'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
