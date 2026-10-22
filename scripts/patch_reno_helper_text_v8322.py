@@ -48,5 +48,7 @@ s=s.replace("<label>Sanierung (inkl. Puffer)</label>", "<label>Modernisierung</l
 
 s=s.replace("Sanierungswerte sind editierbare Orientierungswerte für einen ersten Deal-Check. ", "")
 
+s=s.replace("Laufende Kosten pro Monat", "Lfd. Kosten pro Monat")
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
