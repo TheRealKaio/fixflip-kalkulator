@@ -41,7 +41,8 @@ css=r'''
 .rent-kpi-info{margin-left:auto!important;flex:0 0 18px!important}
 .rent-kpi-value-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
 .rent-kpi-value-row .value{min-width:0}
-.rent-kpi-rating{font-size:12px;font-weight:700;line-height:1.25;text-align:right;max-width:none;flex-shrink:0;padding:4px 7px;border-radius:999px;white-space:nowrap}
+#rentFactorResult{display:inline-flex;align-items:center;column-gap:3px;white-space:nowrap}
+.rent-kpi-rating{font-size:12px;font-weight:700;line-height:1.25;text-align:right;max-width:none;flex-shrink:0;padding:3px;border-radius:999px;white-space:nowrap}
 #rentCashflowKpi,#rentFactorKpi{transition:border-color .18s ease,background .18s ease}
 .rent-grade-green{border-color:#86efac!important;background:#f0fdf4!important}
 .rent-grade-lime{border-color:#bef264!important;background:#f7fee7!important}
@@ -136,6 +137,9 @@ required=[
 missing=[x for x in required if x not in s]
 if missing:
     raise SystemExit("V8.308 missing: "+", ".join(missing))
+
+
+rep("    setText(\"rentFactorResult\",m.factor===null ? \"–\" : new Intl.NumberFormat(\"de-DE\",{minimumFractionDigits:1,maximumFractionDigits:1}).format(m.factor)+\" ×\");","    const factorValue=document.getElementById(\"rentFactorResult\");\n    if(factorValue) factorValue.innerHTML=m.factor===null ? \"–\" : '<span>'+new Intl.NumberFormat(\"de-DE\",{minimumFractionDigits:1,maximumFractionDigits:1}).format(m.factor)+'</span><span class=\"rent-factor-times\">×</span>';",'factor multiplier spacing')
 
 p.write_text(s,encoding="utf-8")
 print("V8.308 purchase-factor and cashflow traffic lights applied")
