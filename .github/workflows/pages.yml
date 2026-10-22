@@ -470,6 +470,7 @@ jobs:
           python scripts/patch_rental_interest_reset_v8307.py _site/index.html
           python scripts/patch_rental_kpi_traffic_v8308.py _site/index.html
           python scripts/patch_unified_info_ui_v8309.py _site/index.html
+          python scripts/patch_rental_pdf_v8310.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -495,9 +496,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.309": "V8.309" in index,
-              "service-worker registration V8.309": 'service-worker.js?v=8.309' in index,
-              "service-worker cache version V8.309": "neustart-immocheck-v8.309" in sw,
+              "visible/PDF version V8.310": "V8.310" in index,
+              "service-worker registration V8.310": 'service-worker.js?v=8.310' in index,
+              "service-worker cache version V8.310": "neustart-immocheck-v8.310" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -542,7 +543,7 @@ jobs:
               "rental maintenance changed status": "pro Monat · geänderter Vorschlag" in index,
               "rental maintenance 1.50 info": "1,50 € pro m² Wohnfläche und Monat" in index,
               "rental maintenance auto formula": "sqm*1.5" in index,
-              "rental V8.309 script": 'id="rental-ui-script-v8306"' in index,
+              "rental V8.310 script": 'id="rental-ui-script-v8306"' in index,
               "content width 640px": '.app{max-width:640px}' in index,
               "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
               "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
