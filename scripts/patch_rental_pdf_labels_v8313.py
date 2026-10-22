@@ -6,8 +6,8 @@ s=p.read_text(encoding="utf-8")
 
 old1="'Nettokaltmiete mtl.: '+money(m.coldRent)"
 new1="'Nettokaltmiete Mtl.: '+money(m.coldRent)"
-old2="'+\'  ·  Hausgeld gesamt pro Monat: \'+money(housegeld)'"
-new2="'+\'  ·  Hausgeld Mtl.: \'+money(housegeld)'"
+old2="Hausgeld gesamt pro Monat:"
+new2="Hausgeld Mtl.:"
 
 if old1 not in s:
     raise SystemExit("cold rent subtitle label missing")
@@ -21,7 +21,7 @@ s=s.replace("V8.312","V8.314")
 s=s.replace("service-worker.js?v=8.312","service-worker.js?v=8.314")
 
 required=[
-    "Nettokaltmiete Mtl..:",
+    "Nettokaltmiete Mtl.:",
     "Hausgeld Mtl.:",
     "Nettokaltmiete pro m²:",
     "Davon nicht umlagefähig:",
