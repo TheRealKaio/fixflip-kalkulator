@@ -55,19 +55,16 @@ rep(
 '''<label>Modernisierung</label>''',
 "modernization label"
 )
-rep(
-'''<div class="rent-reno-input-row">
-            <div class="input-wrap"><input id="rentRenovation" class="readonly-input" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>''',
-'''<div class="rent-reno-input-row">
-            <div class="input-wrap"><input id="rentRenovation" class="readonly-input" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>''',
-"modernization input anchor"
-)
-# Den Infotext direkt nach der Eingabe-/Plus-Zeile ergänzen.
-reno_close='''          </div>
-          <div class="reno-inline-panel rent-reno-inline-panel" id="rentRenoPanel">'''
-reno_new='''          </div>
-          <div class="mini rental-modernization-sub">Anfangsinvestition inklusive Puffer</div>
-          <div class="reno-inline-panel rent-reno-inline-panel" id="rentRenoPanel">'''
+# Den Infotext direkt innerhalb des eindeutigen Modernisierungsfeldes ergänzen.
+if 'id="rentRenovation"' not in s:
+    raise SystemExit("modernization input anchor missing")
+reno_close='''              <button class="plus-btn" id="rentOpenReno" type="button" aria-label="Sanierungsgewerke öffnen" aria-expanded="false" aria-controls="rentRenoPanel">+</button>
+            </div>
+          </div>'''
+reno_new='''              <button class="plus-btn" id="rentOpenReno" type="button" aria-label="Sanierungsgewerke öffnen" aria-expanded="false" aria-controls="rentRenoPanel">+</button>
+            </div>
+            <div class="mini rental-modernization-sub">Anfangsinvestition inklusive Puffer</div>
+          </div>'''
 rep(reno_close,reno_new,"modernization subtitle")
 
 # 3) Vermietungszins in dieselbe Bundesbank-Referenzzinslogik wie Budget/Fix & Flip aufnehmen.
