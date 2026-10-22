@@ -267,5 +267,7 @@ new_paragraph_text='''      if(justify){
       }else doc.text(lines,L+padding,y+bodyTop);'''
 financing_replace(old_paragraph_text,new_paragraph_text,'rental summary paragraph rendering')
 
+s=s.replace("Sanierung inkl. Puffer", "Modernisierung")
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
