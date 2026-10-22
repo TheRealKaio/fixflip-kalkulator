@@ -42,8 +42,16 @@ required={
   "rental V8.306 script": 'id="rental-ui-script-v8306"',
   "rental reset reloads reference interest": 'Promise.resolve(initializeReferenceInterest())',
   "rental reset clears manual interest": 'localStorage.removeItem("ff_rent_interest_manual");',
+  "rental factor traffic": 'id="rentFactorRating"',
+  "rental cashflow traffic": 'id="rentCashflowRating"',
+  "rental factor very good": 'Sehr gut / Schnäppchen',
+  "rental factor very expensive": 'Schlecht / Sehr teuer',
+  "rental cashflow ratio": 'const ratio=m.monthlyCashflow/m.coldRent;',
+  "rental AfA info": 'Eine mögliche AfA',
+  "rental appreciation info": 'Eine mögliche Wertsteigerung',
+  "rental V8.308 traffic style": 'id="rental-kpi-traffic-v8308"',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.307'
+  "rental version": 'V8.308'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
