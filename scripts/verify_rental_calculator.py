@@ -70,7 +70,13 @@ required={
   "footer datenschutz placeholder": 'data-legal-placeholder="datenschutz"',
   "rental PDF subtitle cold rent label": 'Nettokaltmiete Mtl.:',
   "rental PDF subtitle housegeld label": 'Hausgeld Mtl.:',
-  "rental version": 'V8.315'
+  "rental negative cashflow summary": 'Ein negativer Cashflow bei Vermietung ist nicht automatisch ein Ausschlusskriterium',
+  "rental negative cashflow own contribution": 'Du musst jeden Monat eigenes Geld zuschießen.',
+  "rental negative cashflow -5": 'bis etwa -5 % der Nettokaltmiete',
+  "rental negative cashflow -10": 'etwa -5 bis -10 % der Nettokaltmiete',
+  "rental negative cashflow critical": 'Mehr als -10 % der Nettokaltmiete',
+  "rental negative cashflow conditional": 'if(m.cashflow<0)',
+  "rental version": 'V8.316'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
