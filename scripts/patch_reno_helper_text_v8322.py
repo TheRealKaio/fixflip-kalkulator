@@ -129,5 +129,52 @@ financing_replace("    line('Eigenkapital',money(m.equityUsed));",'''    line('E
     line('Finanzierungsbasis',money(m.financingBase));
     if(m.fundingGap>=0.005) line('Zusätzlich benötigte Eigenmittel',money(m.fundingGap),true);''','PDF financing')
 
+# Match the financing card to the owner-use reference layout.
+financing_replace('    rentLtv:"100.00",','    rentLtv:"100.00",\n    rentMonths:"120",','term default')
+financing_replace('<label>Kreditsumme <span class="hint">automatisch berechnet</span></label>','<label>Finanzierte Summe <span class="hint">automatisch berechnet</span></label>','financed label')
+financing_replace('<label for="rentEquity">Eigenkapital</label>','<label for="rentEquity">Eigenkapital <span class="hint">Vermietung</span></label>','equity hint')
+financing_replace('    const fundingGap=Math.max(0,totalInvestment-loan-equityUsed);','''    const fundingGap=Math.max(0,totalInvestment-loan-equityUsed);
+    const financingMonths=Math.max(0,Math.round(numberValue("rentMonths")));
+    const financingProjection=annuityProjection(loan,interest,repayment,financingMonths);
+    const remainingDebt=financingProjection.remainingDebt;''','term calculation')
+financing_replace('      financingShare,financeAcquisition,financingBase,fundingGap,totalInvestment,','      financingMonths,remainingDebt,financingShare,financeAcquisition,financingBase,fundingGap,totalInvestment,','term result')
+financing_replace("    line('Finanzierungsbasis',money(m.financingBase));",'''    line('Finanzierungsbasis',money(m.financingBase));
+    line('Laufzeit Finanzierung',String(m.financingMonths)+' Monate');
+    line('Restschuld nach dieser Laufzeit',money(m.remainingDebt));''','PDF term')
+
+summary_start=s.index('<div class="budget-summary rent-finance-summary">')
+summary_end=s.index('<p class="mini" id="rentFundingGap"',summary_start)
+s=s[:summary_start]+s[summary_end:]
+heading=s.index('<h2>3. Finanzierung und Nebenkosten</h2>',s.index('id="rentSection"'))
+card_start=s.rfind('<section',0,heading)
+card_end=s.index('</section>',heading)+len('</section>')
+body_start=s.index('</p>',heading)+len('</p>')
+body=s[body_start:card_end-len('</section>')]
+body=body.replace('<label>Notar &amp; Grundbuch</label>','<label>Notar + Grundbuch</label>').replace('<label>Notar & Grundbuch</label>','<label>Notar + Grundbuch</label>')
+body+='''<div class="field"><label for="rentMonths">Laufzeit Finanzierung</label><div class="input-wrap"><input id="rentMonths" inputmode="numeric" value="120"><span class="unit">Mon.</span></div></div>'''
+card='''<section class="card" id="rentFinanceCard">
+<div class="rent-finance-head"><div><h2>3. Finanzierung und Nebenkosten</h2><p class="sub">Trage hier die Bedingungen deiner Finanzierung ein.</p></div><button type="button" class="plus-btn" id="rentFinanceToggle" aria-label="Finanzierung und Nebenkosten schließen" aria-controls="rentFinanceBody" aria-expanded="true">−</button></div>
+<div id="rentFinanceBody">'''+body+'''</div></section>'''
+s=s[:card_start]+card+s[card_end:]
+css='''
+/* Same financing rows on mobile and desktop as owner-use. */
+#rentFinanceCard .finance-rate-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#rentFinanceCard .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#rentFinanceCard .finance-acq-row{grid-template-columns:2fr 1fr;min-width:0}
+#rentFinanceCard .field{min-width:0}
+#rentFinanceCard .rent-finance-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+#rentFinanceCard .rent-finance-head>div{min-width:0;flex:1}
+#rentFinanceToggle{flex-shrink:0}
+#rentFinanceCard .rent-finance-head .sub{margin-bottom:12px}
+'''
+s=s.replace('</style>',css+'\n</style>',1)
+js='''<script id="rental-finance-toggle">
+(function(){const button=document.getElementById('rentFinanceToggle'),body=document.getElementById('rentFinanceBody');
+if(!button||!body)return;
+button.addEventListener('click',function(){const open=button.getAttribute('aria-expanded')!=='true';body.hidden=!open;button.textContent=open?'−':'+';button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label','Finanzierung und Nebenkosten '+(open?'schließen':'öffnen'));});
+const months=document.getElementById('rentMonths');if(months)months.addEventListener('change',function(){months.value=String(Math.max(0,Math.round(Number(months.value)||0)));months.dispatchEvent(new Event('input',{bubbles:true}));});
+})();</script>'''
+s=s.replace('</body>',js+'\n</body>',1)
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
