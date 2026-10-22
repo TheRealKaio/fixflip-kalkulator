@@ -35,10 +35,13 @@ required={
   "rental interest manual tracking": '["rentInterest","ff_rent_interest_manual"]',
   "rental housegeld examples": 'z. B. Wasser, Heizung, Müllentsorgung',
   "rental nonalloc examples below field": 'z. B. Verwalterkosten, Instandhaltung/Instandsetzung, Erhaltungsrücklage',
-  "rental maintenance suggestion": 'id="rentMaintenanceSuggestion"',
-  "rental V8.305 script": 'id="rental-ui-script-v8305"',
+  "rental maintenance calculated status": 'id="rentMaintenanceStatus"',
+  "rental maintenance changed status": 'pro Monat · geänderter Vorschlag',
+  "rental maintenance 1.50 info": '1,50 € pro m² Wohnfläche und Monat',
+  "rental maintenance auto formula": 'sqm*1.5',
+  "rental V8.306 script": 'id="rental-ui-script-v8306"',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.305'
+  "rental version": 'V8.306'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
