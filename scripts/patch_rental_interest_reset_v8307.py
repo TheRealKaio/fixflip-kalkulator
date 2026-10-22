@@ -11,12 +11,10 @@ if not m:
     raise SystemExit("rental clearRent function missing")
 
 body=m.group(2)
-if 'localStorage.removeItem("ff_rent_interest_manual");' not in body:
-    anchor='''    localStorage.setItem(PREFIX+"active","1");
-    renderRent();'''
-    replacement='''    localStorage.removeItem("ff_rent_interest_manual");
-    localStorage.setItem(PREFIX+"active","1");
-    renderRent();
+if 'Promise.resolve(initializeReferenceInterest())' not in body:
+    body += '''
+
+    localStorage.removeItem("ff_rent_interest_manual");
 
     // Nach einem Reset den aktuellen Referenzzins erneut laden.
     // Der feste Defaultwert 4,00 % dient nur bis die Referenz geladen ist.
@@ -27,9 +25,6 @@ if 'localStorage.removeItem("ff_rent_interest_manual");' not in body:
       saveRent();
       renderRent();
     });'''
-    if anchor not in body:
-        raise SystemExit("rental clearRent reset anchor missing")
-    body=body.replace(anchor,replacement,1)
 
 s=s[:m.start()]+m.group(1)+body+m.group(3)+s[m.end():]
 
