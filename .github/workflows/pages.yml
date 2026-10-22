@@ -462,6 +462,7 @@ jobs:
           python scripts/patch_rental_calculator_v8299.py
           python scripts/patch_rental_ui_v8300.py _site/index.html
           python scripts/patch_rental_ui_v8301.py _site/index.html
+          python scripts/patch_fixflip_subtitle_v8302.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -487,9 +488,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.301": "V8.301" in index,
-              "service-worker registration V8.301": 'service-worker.js?v=8.301' in index,
-              "service-worker cache version V8.301": "neustart-immocheck-v8.301" in sw,
+              "visible/PDF version V8.302": "V8.302" in index,
+              "service-worker registration V8.302": 'service-worker.js?v=8.302' in index,
+              "service-worker cache version V8.302": "neustart-immocheck-v8.302" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -515,13 +516,14 @@ jobs:
               "rental cash on cash": 'id="rentCashOnCashResult"' in index,
               "rental factor": 'id="rentFactorResult"' in index,
               "rental break even": 'id="rentBreakEvenRentResult"' in index,
-              "rental V8.301 UI patch": 'id="rental-ui-v8300"' in index,
+              "rental V8.302 UI patch": 'id="rental-ui-v8300"' in index,
               "rental renovation panel": 'id="rentRenoPanel"' in index and 'ff_rent_reno_' in index,
               "rental PDF report": "Vermietung - Deal Report" in index,
               "rental info icons": 'rent-info-dot' in index,
-              "rental V8.301 alignment": 'id="rental-ui-v8301"' in index,
+              "rental V8.302 alignment": 'id="rental-ui-v8301"' in index,
               "rental modernization wording": "Modernisierung (Anfangsinvestition)" in index,
               "rental housegeld wording": "nicht vollständig als Eigentümerkosten angesetzt" in index and "zur Orientierung · nicht vollständig als Eigentümerkosten angesetzt" not in index,
+              "Fix & Flip subtitle": "Kauf, Sanierung und Verkauf prüfen" in index,
               "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
               "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
               "VK subtitle source restore": 'const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);' in index,
