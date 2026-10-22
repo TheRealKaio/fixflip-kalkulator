@@ -179,10 +179,24 @@ footer_wrapper=r'''function drawPdfFooter(doc, pageNo, totalPages, version){
           function drawPdfFooterBase(doc, pageNo, totalPages, version){'''
 s=s.replace(footer_anchor,footer_wrapper,1)
 
-pdf_count=s.count("const totalPages=doc.getNumberOfPages();")
-if pdf_count < 3:
-    raise SystemExit(f"Expected at least 3 PDF totalPages anchors, found {pdf_count}")
-s=s.replace("const totalPages=doc.getNumberOfPages();","appendPdfDisclaimerPage(doc);\n    const totalPages=doc.getNumberOfPages();")
+# Disclaimer-Seite gezielt an alle drei PDF-Generatoren anhängen.
+pdf_anchors=[
+    ('  const budgetPdfPages=doc.getNumberOfPages();',
+     '  appendPdfDisclaimerPage(doc);\n  const budgetPdfPages=doc.getNumberOfPages();',
+     'budget PDF'),
+    ('  const totalPages = doc.getNumberOfPages();',
+     '  appendPdfDisclaimerPage(doc);\n  const totalPages = doc.getNumberOfPages();',
+     'Fix & Flip / Eigennutzung PDF'),
+    ('    const totalPages=doc.getNumberOfPages();',
+     '    appendPdfDisclaimerPage(doc);\n    const totalPages=doc.getNumberOfPages();',
+     'rental PDF')
+]
+pdf_count=0
+for old_anchor,new_anchor,label in pdf_anchors:
+    if old_anchor not in s:
+        raise SystemExit(label+" totalPages anchor missing")
+    s=s.replace(old_anchor,new_anchor,1)
+    pdf_count+=1
 
 # Footer click opens existing unified bottom sheet; CTA opens dedicated page.
 js=r'''
