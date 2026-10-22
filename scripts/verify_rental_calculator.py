@@ -61,8 +61,10 @@ required={
   "rental PDF overview housegeld": 'Hausgeld gesamt pro Monat',
   "rental PDF overview nonalloc": 'Davon nicht umlagefähig',
   "rental PDF equity return": 'Rendite auf dein Eigenkapital',
+  "PDF summary heading": 'Zusammenfassung',
+  "rental overview subtitle size": 'doc.setFontSize(8.2);',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.310'
+  "rental version": 'V8.311'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
