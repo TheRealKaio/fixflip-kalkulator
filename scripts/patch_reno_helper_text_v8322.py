@@ -176,5 +176,33 @@ const months=document.getElementById('rentMonths');if(months)months.addEventList
 })();</script>'''
 s=s.replace('</body>',js+'\n</body>',1)
 
+# Both optional rental sections start closed.
+financing_replace('id="rentFinanceToggle" aria-label="Finanzierung und Nebenkosten schließen" aria-controls="rentFinanceBody" aria-expanded="true">−','id="rentFinanceToggle" aria-label="Finanzierung und Nebenkosten öffnen" aria-controls="rentFinanceBody" aria-expanded="false">+','closed financing toggle')
+financing_replace('<div id="rentFinanceBody">','<div id="rentFinanceBody" hidden>','closed financing body')
+heading=s.index('<h2>2. Laufende Vermietung</h2>',s.index('id="rentSection"'))
+card_start=s.rfind('<section',0,heading)
+card_end=s.index('</section>',heading)+len('</section>')
+subtitle_start=s.index('<p class="sub">',heading)
+body_start=s.index('</p>',subtitle_start)+len('</p>')
+subtitle=s[subtitle_start:body_start]
+body=s[body_start:card_end-len('</section>')]
+card='''<section class="card" id="rentRunningCard">
+<div class="rent-running-head"><div><h2>2. Laufende Vermietung</h2>'''+subtitle+'''</div><button type="button" class="plus-btn" id="rentRunningToggle" aria-label="Laufende Vermietung öffnen" aria-controls="rentRunningBody" aria-expanded="false">+</button></div>
+<div id="rentRunningBody" hidden>'''+body+'''</div></section>'''
+s=s[:card_start]+card+s[card_end:]
+css='''
+#rentRunningCard .rent-running-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+#rentRunningCard .rent-running-head>div{min-width:0;flex:1}
+#rentRunningToggle{flex-shrink:0}
+#rentRunningBody[hidden],#rentFinanceBody[hidden]{display:none!important}
+'''
+s=s.replace('</style>',css+'\n</style>',1)
+js='''<script id="rental-running-toggle">
+(function(){const button=document.getElementById('rentRunningToggle'),body=document.getElementById('rentRunningBody');
+if(!button||!body)return;
+button.addEventListener('click',function(){const open=button.getAttribute('aria-expanded')!=='true';body.hidden=!open;button.textContent=open?'−':'+';button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label','Laufende Vermietung '+(open?'schließen':'öffnen'));});
+})();</script>'''
+s=s.replace('</body>',js+'\n</body>',1)
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
