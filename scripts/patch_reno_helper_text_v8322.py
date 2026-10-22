@@ -70,12 +70,40 @@ financing_replace('el.value=saved!==null ? saved : defaults[id];','if(el.type===
 financing_replace('if(el) el.value=defaults[id];','if(el){if(el.type==="checkbox") el.checked=defaults[id]==="1";else el.value=defaults[id];}','reset checkbox')
 
 controls='''<div class="quick-grid" id="rentFinancingControls">
-  <div class="field"><label for="rentLtv">Finanziert <button type="button" class="rent-info-dot" data-info="Anteil der Finanzierungsbasis vor Abzug deines eingetragenen Eigenkapitals. Die Basis enthält Kaufpreis und Modernisierung sowie bei aktivem Häkchen die Kaufnebenkosten. 100 % entspricht der gesamten Basis; dies ist keine Auszahlungsquote bzw. kein Disagio.">i</button></label><div class="input-wrap"><input id="rentLtv" inputmode="decimal" value="100.00"><span class="unit">%</span></div></div>
-  <div class="field"><label for="rentFinanceAcquisition">Mitfinanzieren <button type="button" class="rent-info-dot" data-info="Wenn aktiviert, gehören die Kaufnebenkosten zur Finanzierungsbasis. Andernfalls müssen sie zusätzlich aus eigenen Mitteln bezahlt werden.">i</button></label><div style="min-height:50px;display:flex;align-items:center;justify-content:center"><input id="rentFinanceAcquisition" type="checkbox" checked style="width:32px;height:32px;min-height:32px;padding:0;accent-color:#2563eb"></div></div>
+  <div class="finance-acq-row">
+    <div class="field finance-acq-total">
+      <label class="label-split"><span class="label-left">Kaufnebenkosten gesamt <button class="info-btn inline-info rent-info-dot" type="button" data-info="Summe aus Grunderwerbsteuer, Notar- und Grundbuchkosten sowie Maklerkosten beim Kauf.">i</button></span></label>
+      <div class="metric-box"><div class="metric-value" id="rentAcquisitionDisplay">–</div></div>
+    </div>
+    <div class="field finance-acq-option">
+      <label class="finance-check-label" for="rentFinanceAcquisition"><span>Mitfinanzieren</span><button class="info-btn inline-info rent-info-dot" type="button" data-info="Wenn aktiviert, gehören die Kaufnebenkosten zur Finanzierungsbasis. Andernfalls müssen sie zusätzlich aus eigenen Mitteln bezahlt werden.">i</button></label>
+      <div class="finance-check-box"><input id="rentFinanceAcquisition" type="checkbox" checked aria-label="Kaufnebenkosten in die Finanzierungsbasis einbeziehen"></div>
+    </div>
+  </div>
 </div>
 '''
 anchor='<div class="budget-summary rent-finance-summary">'
 financing_replace(anchor,controls+anchor,'controls')
+
+# Reuse the same metric, rate-grid, checkbox and badge classes as owner-use.
+finance_start=s.index('<div class="finance-rate-grid">',s.index('id="rentSection"'))
+finance_end=s.index('<div class="quick-grid">',finance_start)
+finance_fields='''<div class="field"><label>Kreditsumme <span class="hint">automatisch berechnet</span></label><div class="metric-box"><div class="metric-value" id="rentCreditAmount">–</div></div></div>
+<div class="field"><label for="rentEquity">Eigenkapital</label><div class="input-wrap"><input id="rentEquity" inputmode="decimal" value="0"><span class="unit">€</span></div></div>
+<div class="finance-rate-grid">
+  <div class="field"><label for="rentInterest">Zins p.a. <button class="info-btn inline-info rent-info-dot" type="button" data-info="Jährlicher Sollzins des Darlehens. Zusammen mit der Tilgung bestimmt er die anfängliche Monatsrate.">i</button></label><div class="input-wrap"><input id="rentInterest" inputmode="decimal" value="4.00"><span class="unit">%</span></div></div>
+  <div class="field"><label for="rentRepayment">Tilgung p.a. <button class="info-btn inline-info rent-info-dot" type="button" data-info="Anfänglicher jährlicher Tilgungsanteil bezogen auf die Kreditsumme. Er reduziert die Restschuld.">i</button></label><div class="input-wrap"><input id="rentRepayment" inputmode="decimal" value="1.50"><span class="unit">%</span></div></div>
+  <div class="field"><label for="rentLtv">Finanziert <button class="info-btn inline-info rent-info-dot" type="button" data-info="Anteil der Finanzierungsbasis vor Abzug des eingetragenen Eigenkapitals. Die Basis enthält Kaufpreis und Modernisierung sowie bei aktivem Häkchen die Kaufnebenkosten.">i</button></label><div class="input-wrap"><input id="rentLtv" inputmode="decimal" value="100.00"><span class="unit">%</span></div></div>
+</div>
+'''
+s=s[:finance_start]+finance_fields+s[finance_end:]
+# Place acquisition total and checkbox together before notary/broker inputs.
+s=s.replace(controls,'',1)
+finance_end=s.index('<div class="quick-grid">',finance_start)
+s=s[:finance_end]+controls+s[finance_end:]
+financing_replace('    setText("rentAcquisitionCostsResult",euro(m.acquisitionCosts));','    setText("rentAcquisitionCostsResult",euro(m.acquisitionCosts));\n    setText("rentAcquisitionDisplay",euro(m.acquisitionCosts));','acquisition display')
+financing_replace('    setText("rentTotalInvestmentResult",euro(m.totalInvestment));','    setText("rentTotalInvestmentResult",euro(m.totalInvestment));\n    setText("rentCreditAmount",euro(m.loan));','credit display')
+
 financing_replace('        </div>\n      </section>\n\n      <section class="card result-card">','        </div>\n        <p class="mini" id="rentFundingGap" role="status" hidden></p>\n      </section>\n\n      <section class="card result-card">','funding status')
 financing_replace('    const loan=Math.max(0,totalInvestment-equityUsed);','''    const financingShare=Math.max(0,pctValue("rentLtv"));
     const financeAcquisition=!!document.getElementById("rentFinanceAcquisition")?.checked;
