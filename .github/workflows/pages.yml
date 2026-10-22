@@ -477,6 +477,7 @@ jobs:
           python scripts/patch_legal_disclaimer_v8315.py _site/index.html
           python scripts/patch_rental_negative_cashflow_summary_v8316.py _site/index.html
           python scripts/patch_budget_tip_heading_v8317.py _site/index.html
+          python scripts/patch_pdf_summary_boxes_v8318.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -502,9 +503,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.317": "V8.317" in index,
-              "service-worker registration V8.317": 'service-worker.js?v=8.317' in index,
-              "service-worker cache version V8.317": "neustart-immocheck-v8.317" in sw,
+              "visible/PDF version V8.318": "V8.318" in index,
+              "service-worker registration V8.318": 'service-worker.js?v=8.318' in index,
+              "service-worker cache version V8.318": "neustart-immocheck-v8.318" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
