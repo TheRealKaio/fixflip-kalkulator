@@ -564,7 +564,7 @@ jobs:
               "disclaimer full page": 'id="legalDisclaimerPage"' in index and 'Haftungsausschluss / Disclaimer' in index,
               "PDF disclaimer final page": 'appendPdfDisclaimerPage(doc);' in index and 'align:"justify"' in index,
               "rental PDF subtitle labels": "Nettokaltmiete Mtl.:" in index and "Hausgeld Mtl.:" in index and "Nettokaltmiete pro m²:" in index and "Davon nicht umlagefähig:" in index,
-              "budget PDF tip heading": "Unser wichtigster Tipp" in index and "Unsere wichtigsten Empfehlungen" not in index,
+              "budget PDF tip heading": "Unser wichtigster Tipp" in index,
               "rental negative cashflow summary": "Ein negativer Cashflow bei Vermietung ist nicht automatisch ein Ausschlusskriterium" in index,
               "rental negative cashflow thresholds": "bis etwa -5 % der Nettokaltmiete" in index and "etwa -5 bis -10 % der Nettokaltmiete" in index and "Mehr als -10 % der Nettokaltmiete" in index,
               "rental negative cashflow conditional": "if(m.cashflow<0)" in index and "m.cashflow<0?64:34" in index,
