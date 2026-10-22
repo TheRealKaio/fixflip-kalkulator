@@ -4,8 +4,8 @@ import sys
 p=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 s=p.read_text(encoding="utf-8")
 
-old='"Unsere wichtigsten Empfehlungen"'
-new='"Unser wichtigster Tipp"'
+old="Unsere wichtigsten Empfehlungen"
+new="Unser wichtigster Tipp"
 
 if old not in s:
     raise SystemExit("budget PDF tip heading missing")
