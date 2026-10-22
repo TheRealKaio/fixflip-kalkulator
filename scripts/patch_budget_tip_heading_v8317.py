@@ -9,7 +9,7 @@ new='"Unser wichtigster Tipp"'
 
 if old not in s:
     raise SystemExit("budget PDF tip heading missing")
-s=s.replace(old,new,1)
+s=s.replace(old,new)
 
 s=s.replace("V8.316","V8.317")
 s=s.replace("service-worker.js?v=8.316","service-worker.js?v=8.317")
