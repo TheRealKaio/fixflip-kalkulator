@@ -26,10 +26,8 @@ patterns=[
     r'<strong>So funktioniert es:</strong> Alle Sanierungspositionen starten rechnerisch bei 0 €\. Graue Werte im Eingabefeld sind unverbindliche Richtwerte\. Du kannst sie gesammelt übernehmen oder jeden Betrag direkt selbst eintragen und später jederzeit ändern\.',
     r'<strong>So funktioniert es:</strong> Alle Sanierungspositionen starten rechnerisch bei 0 €\. Graue Werte sind unverbindliche Richtwerte\. Du kannst sie gesammelt übernehmen oder jeden Betrag selbst eintragen\.'
 ]
-replaced=0
-for pattern in patterns:
-    s,n=re.subn(pattern,new_note,s)
-    replaced+=n
+# Apply both source variants in one pass so replacement text is never matched again.
+s,replaced=re.subn("|".join("(?:"+pattern+")" for pattern in patterns),new_note,s)
 
 if replaced < 2:
     raise SystemExit(f"V8.322 expected at least 2 renovation note replacements, got {replaced}")
