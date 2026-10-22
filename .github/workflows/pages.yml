@@ -485,6 +485,7 @@ jobs:
           python scripts/patch_pdf_summary_boxes_v8318.py _site/index.html
           python scripts/patch_pdf_summary_style_v8319.py _site/index.html
           python scripts/patch_pdf_summary_spacing_v8320.py _site/index.html
+          python scripts/patch_top_footer_layout_v8321.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
@@ -587,6 +588,8 @@ jobs:
               "rental contribution paragraph break": "selbst.\\n\\nDu musst jeden Monat eigenes Geld zuschießen." in index,
               "budget PDF tip heading": "Unser wichtigster Tipp" in index and "Unsere wichtigsten Empfehlungen" not in index,
               "desktop family position restored": 'restoreDesktopPosition();' in index,
+              "V8.321 top card full-width descriptions": 'id="top-footer-layout-v8321"' in index and 'grid-column:1 / -1!important;' in index and 'text-align:justify!important;' in index,
+              "V8.321 footer note own row": '.footer-note{' in index and 'flex-direction:column!important;' in index and 'justify-content:space-between!important;' in index,
           }
 
           failed = [name for name, ok in checks.items() if not ok]
