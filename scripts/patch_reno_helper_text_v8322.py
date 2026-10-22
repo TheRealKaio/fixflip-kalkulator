@@ -204,5 +204,68 @@ button.addEventListener('click',function(){const open=button.getAttribute('aria-
 })();</script>'''
 s=s.replace('</body>',js+'\n</body>',1)
 
+# Plain-language rental interpretation based on calculated results.
+start=s.index('    const recommendation=(()=>{',s.index('  function buildRentalPdf(){'))
+end=s.index('    })();',start)+len('    })();')
+s=s[:start]+'    const recommendation=interpretRentalInvestment(m);'+s[end:]
+interpretation_js=r'''<script id="rental-investment-interpretation">
+function interpretRentalInvestment(m){
+  if(!(m.purchase>0&&m.coldRent>0&&m.totalInvestment>0)) return 'Für eine verständliche Einordnung fehlen noch Kaufpreis oder Nettokaltmiete. Ergänze außerdem Eigentümerkosten und Finanzierung.';
+  const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+  const pct=n=>new Intl.NumberFormat('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n*100)+' %';
+  const net=m.netYield, financed=m.loan>0.005, cash=m.cashflow;
+  const paragraphs=[];
+  paragraphs.push(financed&&net<m.interest
+    ? 'Für Vermögensaufbau mit wenig Eigenkapital ist die laufende Rechnung derzeit schwach: Nach Eigentümerkosten erwirtschaftet die Immobilie '+pct(net)+', der Kredit kostet '+pct(m.interest)+' Zinsen. Mehr Fremdkapital verschlechtert unter diesen Annahmen den laufenden Ertrag.'
+    : financed ? 'Die Immobilie erwirtschaftet nach Eigentümerkosten '+pct(net)+' vor Finanzierung; der Kreditzins liegt bei '+pct(m.interest)+'. Der Ertrag deckt den Zinssatz rechnerisch ab. Das allein belegt noch keine ausreichende Reserve.'
+    : 'Ohne Darlehen erwirtschaftet die Immobilie nach Eigentümerkosten '+pct(net)+' auf die Gesamtinvestition. Für die Bewertung zählt, ob dieser Ertrag Kapitalbindung und Immobilienrisiken für dich rechtfertigt.');
+  if(m.factor!=null&&m.factor<20) paragraphs.push('Der niedrige Kaufpreisfaktor ist nur ein erster Hinweis: Er lässt Kaufnebenkosten und laufende Eigentümerkosten außer Acht und ist allein kein Kaufargument.');
+  paragraphs.push(cash<0
+    ? 'Du musst nach Zins und Tilgung '+euro(-cash)+' monatlich aus anderem Einkommen zuschießen ('+euro(-cash*12)+' pro Jahr). Die Wohnung liefert aktuell keine zusätzliche monatliche Rente.'
+    : 'Nach Zins und Tilgung bleiben '+euro(cash)+' monatlich vor persönlicher Steuer. Dieser Betrag ist dein rechnerischer Überschuss; ungeplante Ausgaben können ihn aufzehren.');
+  const principal=m.principal||0, ownContribution=Math.max(0,-cash*12);
+  paragraphs.push('Du bindest '+euro(m.equityUsed)+' eigenes Kapital'+(m.fundingGap>0.005?' und benötigst zusätzlich '+euro(m.fundingGap)+' noch ungedeckte Eigenmittel':'')+'. Anfangs sinken die Schulden durch Tilgung auf ein Jahr hochgerechnet um '+euro(principal)+'. '+(ownContribution>0 ? 'Davon stehen '+euro(ownContribution)+' eigene jährliche Zuschüsse gegenüber; Tilgung ist deshalb nicht vollständig selbst erwirtschafteter Gewinn.' : 'Die Tilgung baut schuldenfreies Vermögen auf und ist kein zusätzlich verfügbarer Geldbetrag.'));
+  if(financed) paragraphs.push('Nach '+m.financingMonths+' Monaten verbleiben rechnerisch '+euro(m.remainingDebt)+' Schulden, wenn Zins und Rate unverändert bleiben. Diese Laufzeit ist nicht automatisch dein Rentenbeginn; eine nötige Anschlussfinanzierung kann anders ausfallen.');
+  if(financed&&net<m.interest&&m.noi>0){
+    const acquisitionRate=m.acquisition/m.purchase;
+    const target=(m.noi/m.interest-m.renovation)/(1+acquisitionRate);
+    if(target>0&&target<m.purchase){
+      const discount=1-target/m.purchase;
+      paragraphs.push('Bei unverändertem Nettoertrag müsste der Kaufpreis auf etwa '+euro(target)+' sinken ('+pct(discount)+' Abschlag), damit die Nettorendite den Kreditzins erreicht - noch ohne Risikopuffer. Ob das verhandelbar ist, lässt sich ohne Vergleichspreise und Objektprüfung nicht beurteilen.');
+    }else paragraphs.push('Ein niedrigerer Kaufpreis allein reicht bei den angesetzten Kosten möglicherweise nicht aus. Prüfe nachhaltige Mieterträge, Modernisierung und Finanzierung gemeinsam.');
+  }else if(m.fundingGap>0.005){
+    paragraphs.push('Kläre zuerst die Finanzierungslücke. Eine niedrigere Kreditquote senkt zwar die Rate, verlangt aber weitere eigene Mittel.');
+  }else paragraphs.push('Prüfe als Nächstes, ob der monatliche Überschuss auch bei Leerstand, Reparaturen und einer teureren Anschlussfinanzierung ausreicht. Weniger Tilgung verbessert die Liquidität, verlangsamt aber die Entschuldung.');
+  paragraphs.push('Eine verfügbare Liquiditätsreserve, dein Rentenbeginn und Steuerdaten fehlen. AfA und Einkommensteuer sind nicht eingerechnet; Steuerentlastungen und Wertsteigerungen werden nicht vorausgesetzt. Eine langfristige Gesamtrendite oder sichere Zusatzrente ist daraus noch nicht ableitbar.');
+  return paragraphs.join('\n\n');
+}
+</script>'''
+s=s.replace('</body>',interpretation_js+'\n</body>',1)
+
+# Render justified paragraphs line by line; empty lines must never emit infinite spacing.
+old_paragraph_text='''      doc.text(lines,L+padding,y+bodyTop,justify?{
+        align:"justify",
+        maxWidth:W-padding*2,
+        baseline:"top",
+        lineHeightFactor:lineHeightFactor
+      }:undefined);'''
+new_paragraph_text='''      if(justify){
+        lines.forEach(function(line,index){
+          if(!String(line).trim()) return;
+          const next=lines[index+1];
+          const paragraphEnd=index===lines.length-1 || !String(next||"").trim();
+          const words=String(line).trim().split(/\\s+/);
+          doc.setCharSpace(0);
+          const top=y+bodyTop+index*lineH;
+          if(!paragraphEnd && words.length>1){
+            const wordWidth=words.reduce((sum,word)=>sum+doc.getTextWidth(word),0);
+            const spacing=Math.max(0,(W-padding*2-wordWidth)/(words.length-1));
+            let x=L+padding;
+            words.forEach(function(word){doc.text(word,x,top,{baseline:"top"});x+=doc.getTextWidth(word)+spacing;});
+          }else doc.text(line,L+padding,top,{baseline:"top"});
+        });
+      }else doc.text(lines,L+padding,y+bodyTop);'''
+financing_replace(old_paragraph_text,new_paragraph_text,'rental summary paragraph rendering')
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")

@@ -81,7 +81,7 @@ required={
   "PDF summary budget gap": 'y+=4.7;',
   "PDF summary main gap": 'y += 2.7;',
   "PDF summary rental gap": 'y+=2.7;',
-  "rental own contribution paragraph break": 'selbst.\\n\\nDu musst jeden Monat eigenes Geld zuschießen.',
+  "rental own contribution paragraph break": "paragraphs.join(" ,
   "rental overview subtitle size": 'doc.setFontSize(8.2);',
   "content width 640px": '.app{max-width:640px}',
   "footer legal links": 'class="footer-legal-links"',
@@ -90,12 +90,12 @@ required={
   "footer datenschutz placeholder": 'data-legal-placeholder="datenschutz"',
   "rental PDF subtitle cold rent label": 'Nettokaltmiete Mtl.:',
   "rental PDF subtitle housegeld label": 'Hausgeld Mtl.:',
-  "rental negative cashflow summary": 'Ein negativer Cashflow bei Vermietung ist nicht automatisch ein Ausschlusskriterium',
-  "rental negative cashflow own contribution": 'Du musst jeden Monat eigenes Geld zuschießen.',
-  "rental negative cashflow -5": 'bis etwa -5 % der Nettokaltmiete',
-  "rental negative cashflow -10": 'etwa -5 bis -10 % der Nettokaltmiete',
-  "rental negative cashflow critical": 'Mehr als -10 % der Nettokaltmiete',
-  "rental negative cashflow conditional": 'if(m.cashflow<0)',
+  'rental negative cashflow summary': 'interpretRentalInvestment(m)',
+  'rental negative cashflow own contribution': 'Du musst nach Zins und Tilgung',
+  'rental negative cashflow -5': 'Mehr Fremdkapital verschlechtert',
+  'rental negative cashflow -10': 'noch ohne Risikopuffer',
+  'rental negative cashflow critical': 'AfA und Einkommensteuer sind nicht eingerechnet',
+  'rental negative cashflow conditional': 'cash<0',
   "rental version": release_version
 }
 missing=[name for name,token in required.items() if token not in html]

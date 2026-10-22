@@ -506,6 +506,7 @@ jobs:
           # Product acceptance: test the generated site against the actual slider requirement.
           python scripts/verify_budget_slider.py _site/index.html
           python scripts/verify_rental_calculator.py _site/index.html
+          node scripts/verify_rental_interpretation.js _site/index.html
 
           # Release contract first: detected patch version, generated marker,
           # visible/PDF version and Service Worker/cache version must all agree.
@@ -578,16 +579,16 @@ jobs:
               "PDF disclaimer final page": 'appendPdfDisclaimerPage(doc);' in index and 'align:"justify"' in index,
               "rental PDF subtitle labels": "Nettokaltmiete Mtl.:" in index and "Hausgeld Mtl.:" in index and "Nettokaltmiete pro m²:" in index and "Davon nicht umlagefähig:" in index,
               "budget PDF tip heading": "Unser wichtigster Tipp" in index,
-              "rental negative cashflow summary": "Ein negativer Cashflow bei Vermietung ist nicht automatisch ein Ausschlusskriterium" in index,
-              "rental negative cashflow thresholds": "bis etwa -5 % der Nettokaltmiete" in index and "etwa -5 bis -10 % der Nettokaltmiete" in index and "Mehr als -10 % der Nettokaltmiete" in index,
-              "rental negative cashflow conditional": "if(m.cashflow<0)" in index,
+              'rental negative cashflow summary': 'interpretRentalInvestment(m)' in index,
+              "rental interpretation action": "Ob das verhandelbar ist" in index and "noch ohne Risikopuffer" in index,
+              'rental negative cashflow conditional': 'cash<0' in index,
               "PDF summary 9pt": "const summaryFontSize=9;" in index and "const recommendationFontSize=9;" in index,
               "PDF summary 10mm padding": "const summaryPadding=10;" in index and "const recommendationPadding=10;" in index,
               "PDF summary dark anthracite": "textColor:[45,55,70]" in index and "doc.setTextColor(45,55,70);" in index,
               "PDF summary line spacing": "const summaryLineHeightFactor=1.18;" in index and "const recommendationLineHeightFactor=1.18;" in index,
               "PDF summary page safe": "ensureSpace(summaryPreviewH+12);" in index and "if(y+6+recommendationH>278)" in index,
               "PDF summary gaps reduced": "y+=4.7;" in index and "y += 2.7;" in index and "y+=2.7;" in index,
-              "rental contribution paragraph break": "selbst.\\n\\nDu musst jeden Monat eigenes Geld zuschießen." in index,
+              'rental contribution paragraph break': 'paragraphs.join(' in index,
               "budget PDF tip heading": "Unser wichtigster Tipp" in index and "Unsere wichtigsten Empfehlungen" not in index,
               "desktop family position restored": 'restoreDesktopPosition();' in index,
               "V8.321 top card full-width descriptions": 'id="top-footer-layout-v8321"' in index and 'grid-column:1 / -1!important;' in index and 'text-align:justify!important;' in index,

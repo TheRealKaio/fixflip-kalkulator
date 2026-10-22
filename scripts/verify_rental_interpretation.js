@@ -1,0 +1,9 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');const html=fs.readFileSync(process.argv[2]||'_site/index.html','utf8');const helper=html.match(/<script id="rental-investment-interpretation">([\s\S]*?)<\/script>/)[1];
+const m={purchase:129000,area:42,coldRent:571,renovation:0,vacancy:.02,nonAlloc:80,management:0,maintenance:63,other:0,equity:55000,equityUsed:55000,interest:.046,repayment:.015,acquisition:9030,totalInvestment:138030,loan:83030,financingMonths:120,remainingDebt:67254,financeAcquisition:true,financingBase:138030,financingShare:1,fundingGap:0,transferTax:6450};
+m.owner=143;m.effective=m.coldRent*(1-m.vacancy);m.noi=(m.effective-m.owner)*12;m.debt=m.loan*(m.interest+m.repayment)/12;m.cashflow=m.effective-m.owner-m.debt;m.principal=m.loan*m.repayment;m.factor=m.purchase/(m.coldRent*12);m.grossYield=m.coldRent*12/m.purchase;m.netYield=m.noi/m.totalInvestment;m.cashOnCash=m.cashflow*12/m.equityUsed;m.breakEven=(m.owner+m.debt)/(1-m.vacancy);
+const ctx={Intl,Math,Number};vm.createContext(ctx);vm.runInContext(helper,ctx);const text=ctx.interpretRentalInvestment(m);assert(text.includes('3,62 %'));assert(text.includes('4,60 %'));assert(text.includes('5,49'));assert(text.includes('55.000,00'));assert(text.includes('noch ohne Risikopuffer'));assert(text.includes('Steuerdaten fehlen'));assert(!text.includes('wirkt auf Basis deiner Eingaben solide'));
+assert(ctx.interpretRentalInvestment({...m,purchase:0}).includes('fehlen'));
+assert(ctx.interpretRentalInvestment({...m,loan:0}).includes('Ohne Darlehen'));
+assert(ctx.interpretRentalInvestment({...m,netYield:.08,cashflow:300}).includes('300,00'));
+assert(ctx.interpretRentalInvestment({...m,fundingGap:10000,netYield:.08}).includes('Finanzierungslücke'));
+console.log('Rental interpretation passed: figures, negative financing leverage, action target, missing inputs, no debt, positive cashflow, funding gap and tax limitations.');
