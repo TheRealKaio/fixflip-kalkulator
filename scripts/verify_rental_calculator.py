@@ -50,8 +50,11 @@ required={
   "rental AfA info": 'Eine mögliche AfA',
   "rental appreciation info": 'Eine mögliche Wertsteigerung',
   "rental V8.308 traffic style": 'id="rental-kpi-traffic-v8308"',
+  "unified info badge style": 'id="unified-info-ui-v8309"',
+  "rental shared info sheet": 'id="unified-rental-info-sheet-v8309"',
+  "shared sheet open": 'backdrop.classList.add("show");',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.308'
+  "rental version": 'V8.309'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
