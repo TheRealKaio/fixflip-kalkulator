@@ -472,6 +472,7 @@ jobs:
           python scripts/patch_unified_info_ui_v8309.py _site/index.html
           python scripts/patch_rental_pdf_v8310.py _site/index.html
           python scripts/patch_pdf_summary_heading_v8311.py _site/index.html
+          python scripts/patch_footer_legal_v8312.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
@@ -497,9 +498,9 @@ jobs:
           sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
 
           checks = {
-              "visible/PDF version V8.311": "V8.311" in index,
-              "service-worker registration V8.311": 'service-worker.js?v=8.311' in index,
-              "service-worker cache version V8.311": "neustart-immocheck-v8.311" in sw,
+              "visible/PDF version V8.312": "V8.312" in index,
+              "service-worker registration V8.312": 'service-worker.js?v=8.312' in index,
+              "service-worker cache version V8.312": "neustart-immocheck-v8.312" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
@@ -544,7 +545,7 @@ jobs:
               "rental maintenance changed status": "pro Monat · geänderter Vorschlag" in index,
               "rental maintenance 1.50 info": "1,50 € pro m² Wohnfläche und Monat" in index,
               "rental maintenance auto formula": "sqm*1.5" in index,
-              "rental V8.311 script": 'id="rental-ui-script-v8306"' in index,
+              "rental V8.312 script": 'id="rental-ui-script-v8306"' in index,
               "content width 640px": '.app{max-width:640px}' in index,
               "VK dynamic subtitle": 'hint.textContent=label+" • editierbar";' in index,
               "VK subtitle source persistence": 'localStorage.setItem(subtitleSourceKey,source);' in index,
@@ -552,6 +553,8 @@ jobs:
               "mobile family-before-adults patch": 'id="budget-mobile-family-before-adults-v8294"' in index,
               "mobile family targets exact fields": 'getField("budgetFamilyStatus")' in index and 'getField("budgetAdults")' in index,
               "mobile family inserted before adults": 'adultsParent.insertBefore(family, adults);' in index,
+              "footer legal placeholders": 'class="footer-legal-links"' in index and ">Impressum</a>" in index and ">AGBs</a>" in index and ">Datenschutz</a>" in index,
+              "footer placeholder links": 'data-legal-placeholder="impressum"' in index and 'data-legal-placeholder="agbs"' in index and 'data-legal-placeholder="datenschutz"' in index,
               "desktop family position restored": 'restoreDesktopPosition();' in index,
           }
 
