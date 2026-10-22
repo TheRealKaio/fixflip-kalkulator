@@ -477,7 +477,6 @@ jobs:
           python scripts/patch_legal_disclaimer_v8315.py _site/index.html
           python scripts/patch_rental_negative_cashflow_summary_v8316.py _site/index.html
           python scripts/patch_budget_tip_heading_v8317.py _site/index.html
-          python scripts/patch_budget_tip_heading_v8317.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
