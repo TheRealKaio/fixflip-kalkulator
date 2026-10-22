@@ -46,5 +46,7 @@ if obsolete in s:
 
 s=s.replace("<label>Sanierung (inkl. Puffer)</label>", "<label>Modernisierung</label>")
 
+s=s.replace("Sanierungswerte sind editierbare Orientierungswerte für einen ersten Deal-Check. ", "")
+
 p.write_text(s,encoding="utf-8")
 print("V8.322 renovation helper texts unified")
