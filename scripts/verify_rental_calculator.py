@@ -68,9 +68,9 @@ required={
   "footer impressum placeholder": 'data-legal-placeholder="impressum"',
   "footer agbs placeholder": 'data-legal-placeholder="agbs"',
   "footer datenschutz placeholder": 'data-legal-placeholder="datenschutz"',
-  "rental PDF subtitle cold rent label": 'Nettokaltmiete Mtl..:',
+  "rental PDF subtitle cold rent label": 'Nettokaltmiete Mtl.:',
   "rental PDF subtitle housegeld label": 'Hausgeld Mtl.:',
-  "rental version": 'V8.313'
+  "rental version": 'V8.314'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
