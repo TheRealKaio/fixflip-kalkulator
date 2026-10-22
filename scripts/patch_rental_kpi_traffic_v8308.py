@@ -29,7 +29,7 @@ old_factor='''          <div class="kpi">
             <div class="note">Kaufpreis ÷ Jahresnettokaltmiete</div>
           </div>'''
 new_factor='''          <div class="kpi" id="rentFactorKpi">
-            <div class="name rent-kpi-name"><span>Kaufpreisfaktor</span><button type="button" class="info-dot rent-info-dot rent-kpi-info" aria-label="Info zu Kaufpreisfaktor" data-info="Kaufpreisfaktor = Kaufpreis ÷ Jahresnettokaltmiete. Unter 20: sehr gut / Schnäppchen, meist über 5,0 % Bruttomietrendite. 20 bis 25: gut bis solide, etwa 4,0–5,0 %. Über 25 bis 30: mäßig / teuer, etwa 3,3–3,9 %. Über 30: schlecht / sehr teuer, meist unter 3,3 %. Ein niedriger Faktor spricht für höhere laufende Mietrendite. Lage, Zustand, Mietpotenzial, Finanzierung und Wertentwicklung müssen trotzdem separat geprüft werden.">i</button></div>
+            <div class="name rent-kpi-name"><span>Kaufpreisfaktor</span><button type="button" class="info-dot rent-info-dot rent-kpi-info" aria-label="Info zu Kaufpreisfaktor" data-info="Kaufpreisfaktor = Kaufpreis ÷ Jahresnettokaltmiete. Unter 20: sehr gut, meist über 5,0 % Bruttomietrendite. 20 bis 25: gut bis solide, etwa 4,0–5,0 %. Über 25 bis 30: mäßig / teuer, etwa 3,3–3,9 %. Über 30: sehr teuer, meist unter 3,3 %. Ein niedriger Faktor spricht für höhere laufende Mietrendite. Lage, Zustand, Mietpotenzial, Finanzierung und Wertentwicklung müssen trotzdem separat geprüft werden.">i</button></div>
             <div class="rent-kpi-value-row"><div class="value" id="rentFactorResult">–</div><span class="rent-kpi-rating" id="rentFactorRating">–</span></div>
             <div class="note">Kaufpreis ÷ Jahresnettokaltmiete</div>
           </div>'''
@@ -77,13 +77,13 @@ helper=r'''
     if(m.factor===null || !Number.isFinite(m.factor)){
       applyRentGrade("rentFactorKpi","rentFactorRating","","–");
     }else if(m.factor<20){
-      applyRentGrade("rentFactorKpi","rentFactorRating","green","Sehr gut / Schnäppchen");
+      applyRentGrade("rentFactorKpi","rentFactorRating","green","Sehr gut");
     }else if(m.factor<=25){
       applyRentGrade("rentFactorKpi","rentFactorRating","lime","Gut bis solide");
     }else if(m.factor<=30){
       applyRentGrade("rentFactorKpi","rentFactorRating","orange","Mäßig / Teuer");
     }else{
-      applyRentGrade("rentFactorKpi","rentFactorRating","red","Schlecht / Sehr teuer");
+      applyRentGrade("rentFactorKpi","rentFactorRating","red","Sehr teuer");
     }
 
     if(!(m.coldRent>0) || !Number.isFinite(m.monthlyCashflow)){
@@ -124,8 +124,8 @@ required=[
   'id="rentCashflowRating"',
   'id="rentFactorRating"',
   'id="rental-kpi-traffic-v8308"',
-  'Sehr gut / Schnäppchen',
-  'Schlecht / Sehr teuer',
+  'Sehr gut',
+  'Sehr teuer',
   'Eine mögliche AfA',
   'Eine mögliche Wertsteigerung',
   'const ratio=m.monthlyCashflow/m.coldRent;',
