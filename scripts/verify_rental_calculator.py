@@ -53,8 +53,16 @@ required={
   "unified info badge style": 'id="unified-info-ui-v8309"',
   "rental shared info sheet": 'id="unified-rental-info-sheet-v8309"',
   "shared sheet open": 'backdrop.classList.add("show");',
+  "rental PDF recommendation": 'Erstellt aus der Vermietungs-Kalkulation',
+  "rental PDF overview title": 'Wichtigste Ergebnisse auf einen Blick',
+  "rental PDF monthly interest": 'Monatliche Zinsbelastung',
+  "rental PDF monthly repayment": 'Monatliche Tilgung',
+  "rental PDF overview cold rent sqm": 'Nettokaltmiete pro m²',
+  "rental PDF overview housegeld": 'Hausgeld gesamt pro Monat',
+  "rental PDF overview nonalloc": 'Davon nicht umlagefähig',
+  "rental PDF equity return": 'Rendite auf dein Eigenkapital',
   "content width 640px": '.app{max-width:640px}',
-  "rental version": 'V8.309'
+  "rental version": 'V8.310'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
