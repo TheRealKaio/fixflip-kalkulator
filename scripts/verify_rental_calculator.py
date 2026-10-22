@@ -70,7 +70,7 @@ required={
   "footer datenschutz placeholder": 'data-legal-placeholder="datenschutz"',
   "rental PDF subtitle cold rent label": 'Nettokaltmiete Mtl.:',
   "rental PDF subtitle housegeld label": 'Hausgeld Mtl.:',
-  "rental version": 'V8.314'
+  "rental version": 'V8.315'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
