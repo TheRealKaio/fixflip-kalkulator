@@ -487,38 +487,8 @@ jobs:
           python scripts/patch_pdf_summary_spacing_v8320.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
-          # Derive the active release once from the newest patch file and normalize
-          # every user-visible/cache version marker to that release.
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          versions=[]
-          for patch in Path("scripts").glob("patch*_v8*.py"):
-              m=re.search(r"_v8(\d{3})\.py$", patch.name)
-              if m:
-                  versions.append(int(m.group(1)))
-          if not versions:
-              raise SystemExit("No release patch version found")
-
-          build=max(versions)
-          plain=f"8.{build:03d}"
-          display=f"V{plain}"
-
-          index_path=Path("_site/index.html")
-          sw_path=Path("_site/service-worker.js")
-          index=index_path.read_text(encoding="utf-8")
-          sw=sw_path.read_text(encoding="utf-8")
-
-          index=re.sub(r"V8\.\d{3}", display, index)
-          index=re.sub(r"service-worker\.js\?v=8\.\d{3}", f"service-worker.js?v={plain}", index)
-          sw=re.sub(r"neustart-immocheck-v8\.\d{3}", f"neustart-immocheck-v{plain}", sw)
-
-          index_path.write_text(index,encoding="utf-8")
-          sw_path.write_text(sw,encoding="utf-8")
-          Path("_site/.release-version").write_text(display,encoding="utf-8")
-          print(f"Release version normalized to {display}")
-          PY
+          # One release source for HTML, PDFs, Service Worker and all verifiers.
+          python scripts/release_contract.py normalize _site
 
           # Fail the deployment when an inline JavaScript syntax error slips into the generated HTML.
           python - <<'PY'
@@ -534,20 +504,17 @@ jobs:
           python scripts/verify_budget_slider.py _site/index.html
           python scripts/verify_rental_calculator.py _site/index.html
 
-          # Deployment gate: fail the build unless the generated site actually contains
-          # the automatically detected release version and all expected UI changes.
+          # Release contract first: detected patch version, generated marker,
+          # visible/PDF version and Service Worker/cache version must all agree.
+          python scripts/release_contract.py verify _site
+
+          # Product deployment gate for release-independent behavior/UI requirements.
           python - <<'PY'
           from pathlib import Path
 
           index = Path("_site/index.html").read_text(encoding="utf-8")
-          sw = Path("_site/service-worker.js").read_text(encoding="utf-8")
-          release = Path("_site/.release-version").read_text(encoding="utf-8").strip()
-          plain = release.removeprefix("V")
 
           checks = {
-              f"visible/PDF version {release}": release in index,
-              f"service-worker registration {release}": f"service-worker.js?v={plain}" in index,
-              f"service-worker cache version {release}": f"neustart-immocheck-v{plain}" in sw,
               "goal triggers removed from stored sale": '"holding","otherSaleCosts","sellBroker"' in index and '"holding","otherSaleCosts","targetMargin","targetProfit","sellBroker"' not in index,
               "expected sale uses goal sale": 'if($("saleExpectedBenchmark")) $("saleExpectedBenchmark").textContent=eur(m.goalSale);' in index,
               "post-renovation sale benchmark uses stored sale": 'if($("saleGoalBenchmark")) $("saleGoalBenchmark").textContent=eur(m.s);' in index,
