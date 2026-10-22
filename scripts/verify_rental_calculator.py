@@ -73,7 +73,7 @@ required={
   "PDF summary budget gap": 'y+=4.7;',
   "PDF summary main gap": 'y += 2.7;',
   "PDF summary rental gap": 'y+=2.7;',
-  "rental own contribution paragraph break": 'selbst.\\\\n\\\\nDu musst jeden Monat eigenes Geld zuschießen.',
+  "rental own contribution paragraph break": 'selbst.\\n\\nDu musst jeden Monat eigenes Geld zuschießen.',
   "rental overview subtitle size": 'doc.setFontSize(8.2);',
   "content width 640px": '.app{max-width:640px}',
   "footer legal links": 'class="footer-legal-links"',
