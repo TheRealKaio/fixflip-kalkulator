@@ -36,6 +36,7 @@ jobs:
           base64 -d /tmp/index.b64 > /tmp/index.html.gz
           gunzip -c /tmp/index.html.gz > _site/index.html
           cp service-worker.js _site/service-worker.js
+          printf 'www.neustart-immocheck.de\n' > _site/CNAME
 
           python - <<'PY'
           from pathlib import Path
