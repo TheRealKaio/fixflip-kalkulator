@@ -5,6 +5,17 @@ import re
 path=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 html=path.read_text(encoding="utf-8")
 
+# Single source of truth: derive the active release from the newest patch filename.
+# Example: patch_pdf_summary_spacing_v8320.py -> V8.320.
+patch_versions=[]
+for patch in Path("scripts").glob("patch*_v8*.py"):
+    m=re.search(r"_v8(\\d{3})\\.py$", patch.name)
+    if m:
+        patch_versions.append(int(m.group(1)))
+if not patch_versions:
+    raise SystemExit("Rental acceptance failed - no release patch version found")
+release_version=f"V8.{max(patch_versions):03d}"
+
 required={
   "rental tab": 'id="dealTypeRent"',
   "rental section": 'id="rentSection"',
@@ -88,7 +99,7 @@ required={
   "rental negative cashflow -10": 'etwa -5 bis -10 % der Nettokaltmiete',
   "rental negative cashflow critical": 'Mehr als -10 % der Nettokaltmiete',
   "rental negative cashflow conditional": 'if(m.cashflow<0)',
-  "rental version": 'V8.320'
+  "rental version": release_version
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
