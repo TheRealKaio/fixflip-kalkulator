@@ -21,8 +21,11 @@ required={
   "rental factor": 'const factor=annualGrossRent>0 ? purchase/annualGrossRent : null;',
   "rental break even": 'const breakEvenRent=(1-vacancy)>0 ? (ownerMonthlyCosts+debtService)/(1-vacancy) : null;',
   "rental reset isolation": 'if(key.startsWith(PREFIX)) localStorage.removeItem(key);',
-  "rental PDF hidden": 'if(sharePdf) sharePdf.style.display="none";',
-  "rental version": 'V8.299'
+  "rental PDF report": "Vermietung - Deal Report",
+  "rental renovation panel": 'id="rentRenoPanel"',
+  "rental renovation storage": 'ff_rent_reno_',
+  "rental info icons": 'rent-info-dot',
+  "rental version": 'V8.300'
 }
 missing=[name for name,token in required.items() if token not in html]
 if missing:
