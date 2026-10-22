@@ -162,7 +162,7 @@ css='''
 #rentFinanceCard .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 #rentFinanceCard .finance-acq-row{grid-template-columns:2fr 1fr;min-width:0}
 #rentFinanceCard .field{min-width:0}
-#rentFinanceCard .rent-finance-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+#rentFinanceCard .rent-finance-head{display:flex;align-items:center;gap:12px;justify-content:space-between}
 #rentFinanceCard .rent-finance-head>div{min-width:0;flex:1}
 #rentFinanceToggle{flex-shrink:0}
 #rentFinanceCard .rent-finance-head .sub{margin-bottom:12px}
@@ -191,7 +191,7 @@ card='''<section class="card" id="rentRunningCard">
 <div id="rentRunningBody" hidden>'''+body+'''</div></section>'''
 s=s[:card_start]+card+s[card_end:]
 css='''
-#rentRunningCard .rent-running-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+#rentRunningCard .rent-running-head{display:flex;align-items:center;gap:12px;justify-content:space-between}
 #rentRunningCard .rent-running-head>div{min-width:0;flex:1}
 #rentRunningToggle{flex-shrink:0}
 #rentRunningBody[hidden],#rentFinanceBody[hidden]{display:none!important}
