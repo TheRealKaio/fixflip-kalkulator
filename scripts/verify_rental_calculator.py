@@ -27,6 +27,7 @@ required={
   "rental info icons": 'rent-info-dot',
   "rental modernization wording": "Modernisierung (Anfangsinvestition)",
   "rental housegeld wording": "nicht vollständig als Eigentümerkosten angesetzt",
+  "Fix & Flip subtitle": "Kauf, Sanierung und Verkauf prüfen",
   "rental version": 'V8.301'
 }
 missing=[name for name,token in required.items() if token not in html]
