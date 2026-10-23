@@ -14,10 +14,20 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    (() => {
+      const request = event.request;
+      const url = new URL(request.url);
+      // A network-first service worker still uses the browser HTTP cache unless
+      // it explicitly bypasses it. Fresh HTML must reference the current assets.
+      const fresh = request.method === "GET" && url.origin === self.location.origin
+        && (request.mode === "navigate" || ["document", "script", "style"].includes(request.destination));
+      return fetch(request, fresh ? {cache:"no-store"} : undefined)
+        .catch(() => caches.match(request));
+    })()
   );
 });
 // V8.198 fresh deploy trigger
 // V8.198 fresh deploy trigger 2
 // V8.198 fresh deploy trigger 3
 // V8.319 deployment trigger
+

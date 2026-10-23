@@ -493,6 +493,7 @@ jobs:
           python scripts/patch_admin_settings_v8325.py _site/index.html
           python scripts/patch_statistics_v8326.py _site/index.html
           python scripts/patch_cookie_notice_v8327.py _site/index.html
+          python scripts/patch_asset_refresh_v8328.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
@@ -619,6 +620,8 @@ jobs:
           node --check _site/statistics-admin.js
           node scripts/verify_statistics.js _site
           node scripts/verify_statistics_reporting.js _site
+          python scripts/fingerprint_assets.py _site
+          node scripts/verify_asset_refresh.js _site
           touch _site/.nojekyll
 
       - name: Setup Pages
