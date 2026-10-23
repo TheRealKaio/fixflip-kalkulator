@@ -21,7 +21,7 @@
   function validFavicon(v){return typeof v==='string' && v.length<=400000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)?v:'';}
   function normalize(raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1)throw new Error('Ungültiges Konfigurationsformat (Version 1 erforderlich).');
-    const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),meta:{}};
+    const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),meta:{},reporting:{}};
     companyFields.forEach(([k])=>s.company[k]=text(raw.company?.[k]));
     for(const [k,v] of Object.entries(layoutDefaults)){
       const x=raw.layout?.[k];
@@ -30,7 +30,9 @@
       else s.layout[k]=/^#[0-9a-f]{6}$/i.test(x)?x.toUpperCase():v;
     }
     portals.forEach(([k])=>s.social[k]=httpUrl(raw.social?.[k]));
-    pages.forEach(([k])=>s.meta[k]={title:text(raw.meta?.[k]?.title,200),description:text(raw.meta?.[k]?.description,500)});
+    pages.forEach(([k])=>{const tag=text(raw.meta?.[k]?.googleTag,40).toUpperCase();s.meta[k]={title:text(raw.meta?.[k]?.title,200),description:text(raw.meta?.[k]?.description,500),googleTag:/^(G|GT)-[A-Z0-9]{4,30}$/.test(tag)?tag:''};});
+    const propertyId=text(raw.reporting?.propertyId,20),clientId=text(raw.reporting?.clientId,200);
+    s.reporting={propertyId:/^[0-9]{1,20}$/.test(propertyId)?propertyId:'',clientId:/^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)?clientId:''};
     return s;
   }
   function pageMeta(s,key){const m=s.meta[key]||{};return {title:m.title||s.meta.website.title||'Neustart ImmoCheck',description:m.description||s.meta.website.description||''};}

@@ -5,11 +5,39 @@
   "social": {},
   "favicon": "",
   "meta": {
-    "website": {"title":"Neustart ImmoCheck – Immobilien verstehen und kalkulieren","description":"Berechne dein Immobilienbudget und prüfe Eigennutzung, Vermietung sowie Fix & Flip mit den vier Immobilien-Kalkulatoren von Neustart ImmoCheck."},
-    "company": {"title":"Über Neustart ImmoCheck","description":"Informationen zum Anbieter von Neustart ImmoCheck und Kontaktmöglichkeiten."},
-    "budget": {"title":"Immobilienbudget berechnen | Neustart ImmoCheck","description":"Ermittle deinen finanziellen Spielraum für den Immobilienkauf. Berechne Budget, mögliche Kreditrate und Kaufnebenkosten."},
-    "own": {"title":"Eigentumswohnung zur Eigennutzung prüfen | Neustart ImmoCheck","description":"Prüfe Kaufkosten, Modernisierung und Finanzierung deiner Eigentumswohnung und schätze deine monatliche Belastung ein."},
-    "rent": {"title":"Vermietung: Cashflow und Rendite berechnen | Neustart ImmoCheck","description":"Prüfe deine Mietwohnung als Kapitalanlage. Berechne Cashflow, Mietrendite, Finanzierung und Break-even-Miete."},
-    "flip": {"title":"Fix & Flip kalkulieren | Neustart ImmoCheck","description":"Kalkuliere Kauf, Modernisierung, Finanzierung und Verkauf deines Immobilienprojekts. Schätze Gewinn und Marge vor dem Kauf ein."}
+    "website": {
+      "title": "Neustart ImmoCheck – Immobilien verstehen und kalkulieren",
+      "description": "Berechne dein Immobilienbudget und prüfe Eigennutzung, Vermietung sowie Fix & Flip mit den vier Immobilien-Kalkulatoren von Neustart ImmoCheck.",
+      "googleTag": ""
+    },
+    "company": {
+      "title": "Über Neustart ImmoCheck",
+      "description": "Informationen zum Anbieter von Neustart ImmoCheck und Kontaktmöglichkeiten.",
+      "googleTag": ""
+    },
+    "budget": {
+      "title": "Immobilienbudget berechnen | Neustart ImmoCheck",
+      "description": "Ermittle deinen finanziellen Spielraum für den Immobilienkauf. Berechne Budget, mögliche Kreditrate und Kaufnebenkosten.",
+      "googleTag": ""
+    },
+    "own": {
+      "title": "Eigentumswohnung zur Eigennutzung prüfen | Neustart ImmoCheck",
+      "description": "Prüfe Kaufkosten, Modernisierung und Finanzierung deiner Eigentumswohnung und schätze deine monatliche Belastung ein.",
+      "googleTag": ""
+    },
+    "rent": {
+      "title": "Vermietung: Cashflow und Rendite berechnen | Neustart ImmoCheck",
+      "description": "Prüfe deine Mietwohnung als Kapitalanlage. Berechne Cashflow, Mietrendite, Finanzierung und Break-even-Miete.",
+      "googleTag": ""
+    },
+    "flip": {
+      "title": "Fix & Flip kalkulieren | Neustart ImmoCheck",
+      "description": "Kalkuliere Kauf, Modernisierung, Finanzierung und Verkauf deines Immobilienprojekts. Schätze Gewinn und Marge vor dem Kauf ein.",
+      "googleTag": ""
+    }
+  },
+  "reporting": {
+    "propertyId": "",
+    "clientId": ""
   }
 }
