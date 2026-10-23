@@ -499,6 +499,7 @@ jobs:
           python scripts/patch_budget_expenses_toggle_v8331.py _site/index.html
           python scripts/patch_calculator_button_names_v8332.py _site/index.html
           python scripts/patch_calculator_button_width_v8333.py _site/index.html
+          python scripts/patch_report_names_v8334.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
