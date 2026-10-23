@@ -266,7 +266,104 @@ jobs:
             budgetPdfCard(left+wideW+gap,y,wideW,24,"Frei verfügbares Monatsbudget",freeBudget);
 
             doc.addPage();
-            drawPdfBrandH…1383 tokens truncated…     ])
+            drawPdfBrandHeader(doc,"Budget - Immobilien-Report","Finanzierungsdetails",new Date().toLocaleDateString("de-DE"));
+            y=43;'''
+          if old_budget_title not in s:
+              raise SystemExit("Budget header target not found")
+          s = s.replace(old_budget_title,new_budget_title,1)
+
+          old_budget_footer = '''  doc.setFont("helvetica","normal"); doc.setFontSize(8);
+            doc.text("V8.152",right,289,{align:"right"});'''
+          if old_budget_footer not in s:
+              raise SystemExit("Budget footer target not found")
+          s = s.replace(old_budget_footer,'  drawPdfBrandLogo(doc);' + chr(10) + '  drawPdfFooter(doc,1,1,"V8.236");',1)
+
+          old_add_page = '''  const addPage = () => {
+              doc.addPage();
+              y = 18;
+            };'''
+          new_add_page = '''  const addPage = (reportTitle=null, subtitle=null) => {
+              doc.addPage();
+              drawPdfBrandHeader(
+                doc,
+                reportTitle || (isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report"),
+                subtitle || (isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation"),
+                new Date().toLocaleDateString("de-DE")
+              );
+              y = 43;
+            };'''
+          if old_add_page not in s:
+              raise SystemExit("addPage target not found")
+          s = s.replace(old_add_page,new_add_page,1)
+
+          old_deal_header = '''  doc.setFillColor(15,23,42);
+            doc.rect(0,0,210,34,"F");
+            doc.setTextColor(255,255,255);
+            doc.setFont("helvetica","bold");
+            doc.setFontSize(20);
+            doc.text(isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", left, 16);
+            doc.setFont("helvetica","normal");
+            doc.setFontSize(9);
+            doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", left, 23);
+            doc.text(new Date().toLocaleDateString("de-DE"), right, 23, {align:"right"});
+            doc.setTextColor(23,32,51);
+            y = 43;'''
+          new_deal_header = '''  drawPdfBrandHeader(doc, isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation", new Date().toLocaleDateString("de-DE"));
+            y = 43;'''
+          if old_deal_header in s:
+              s = s.replace(old_deal_header,new_deal_header,1)
+
+          old_page_footer = '''    doc.setFont("helvetica","normal");
+              doc.setFontSize(8);
+              doc.setTextColor(100,110,125);
+              doc.text("Seite " + pageNo + " von " + totalPages, right, 289, {align:"right"});'''
+          if old_page_footer in s:
+              s = s.replace(old_page_footer,'    drawPdfFooter(doc,pageNo,totalPages,"V8.236");',1)
+
+          old_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
+            addPage();
+
+            doc.setFillColor(15,23,42);
+            doc.rect(0,0,210,34,"F");
+            doc.setTextColor(255,255,255);
+            doc.setFont("helvetica","bold");
+            doc.setFontSize(18);
+            doc.text("Checkliste vor dem Immobilienkauf", left, 16);
+            doc.setFont("helvetica","normal");
+            doc.setFontSize(9);
+            doc.text("Wichtige Kostentreiber vor Kauf und Sanierung pruefen", left, 23);
+            doc.setTextColor(23,32,51);
+            y = 43;'''
+          new_checklist_header = '''  // Abschlussseite: Checkliste zu den wichtigsten Kostentreibern.
+            // Eigene Ueberschrift, aber dieselbe Marken-Kopfzeile mit Logo wie auf allen anderen Seiten.
+            addPage("Checkliste vor dem Immobilienkauf", "Wichtige Kostentreiber vor Kauf und Sanierung pruefen");'''
+          if old_checklist_header in s:
+              s = s.replace(old_checklist_header,new_checklist_header,1)
+
+          # Robust patch for the first page of Fix & Flip / Eigennutzung.
+          first_page_header_old = "\n".join([
+              '  doc.setFillColor(15,23,42);',
+              '  doc.rect(0,0,210,34,"F");',
+              '  doc.setTextColor(255,255,255);',
+              '  doc.setFont("helvetica","bold");',
+              '  doc.setFontSize(20);',
+              '  doc.text(isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", left, 16);',
+              '  doc.setFont("helvetica","normal");',
+              '  doc.setFontSize(9);',
+              '  doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", left, 23);',
+              '  doc.text(new Date().toLocaleDateString("de-DE"), right, 23, {align:"right"});',
+              '  doc.setTextColor(23,32,51);',
+              '  y = 43;'
+          ])
+          first_page_header_new = "\n".join([
+              '  drawPdfBrandHeader(',
+              '    doc,',
+              '    isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report",',
+              '    isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation",',
+              '    new Date().toLocaleDateString("de-DE")',
+              '  );',
+              '  y = 43;'
+          ])
           if first_page_header_old in s:
               s = s.replace(first_page_header_old, first_page_header_new, 1)
 
