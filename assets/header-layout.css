@@ -1,0 +1,33 @@
+/* Descriptions use the entire content width, including below header controls. */
+.hero>h1{display:block;width:100%;max-width:none;min-width:0;overflow-wrap:break-word}
+.hero>p,.card>.sub,.section-summary-subtitle{
+  display:block;width:100%;max-width:none!important;min-width:0;
+  text-align:justify;text-align-last:left;hyphens:auto;overflow-wrap:break-word;
+}
+.hero>p{box-sizing:border-box}
+/* Put a collapse control beside the title and the description on its own row. */
+#rentFinanceCard .rent-finance-head,#rentRunningCard .rent-running-head,#ownMarketCheckSection .market-check-head{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 34px;column-gap:12px;row-gap:4px;align-items:start;
+}
+#rentFinanceCard .rent-finance-head>div,#rentRunningCard .rent-running-head>div,#ownMarketCheckSection .market-check-head>div{display:contents!important}
+:is(.rent-finance-head,.rent-running-head,#ownMarketCheckSection .market-check-head) h2{grid-column:1;grid-row:1;min-width:0;margin:0!important;overflow-wrap:break-word}
+:is(.rent-finance-head,.rent-running-head,#ownMarketCheckSection .market-check-head)>.plus-btn,#ownMarketCheckSection .market-check-head>.market-check-toggle{grid-column:2;grid-row:1;justify-self:end}
+:is(.rent-finance-head,.rent-running-head,#ownMarketCheckSection .market-check-head) .sub{
+  grid-column:1/-1;grid-row:2;display:block;width:100%;max-width:none!important;min-width:0;
+  text-align:justify;text-align-last:left;hyphens:auto;overflow-wrap:break-word;margin:0!important;
+}
+.own-finance-card .advanced>summary,.flip-section-card .advanced>summary{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 34px;column-gap:12px;row-gap:4px;align-items:start;
+}
+.section-summary-copy{display:contents!important}
+.section-summary-title{grid-column:1;grid-row:1;min-width:0;overflow-wrap:break-word}
+.section-summary-subtitle{grid-column:1/-1;grid-row:2}
+.own-finance-card .advanced>summary::after,.flip-section-card .advanced>summary::after{grid-column:2;grid-row:1;justify-self:end}
+.budget-section-title{display:block!important}
+.budget-section-title>div{width:100%;min-width:0}
+.budget-section-title .sub{display:block;width:100%;max-width:none!important;text-align:justify;text-align-last:left;hyphens:auto;overflow-wrap:break-word}
+.budget-section-title>.budget-apply-btn{margin-top:10px}
+@media(max-width:420px){
+  #rentFinanceCard .rent-finance-head,#rentRunningCard .rent-running-head,#ownMarketCheckSection .market-check-head,
+  .own-finance-card .advanced>summary,.flip-section-card .advanced>summary{column-gap:8px}
+}
