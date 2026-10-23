@@ -489,6 +489,7 @@ jobs:
           python scripts/patch_top_footer_layout_v8321.py _site/index.html
           python scripts/patch_reno_helper_text_v8322.py _site/index.html
           python scripts/patch_own_heading_v8323.py _site/index.html
+          python scripts/patch_rental_equity_shortfall_v8324.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
@@ -618,3 +619,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
