@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const S=window.NICSettings;if(!S)return;
-const labels={impressum:'Impressum',datenschutz:'Datenschutz',agbs:'AGBs',haftungsausschluss:'Haftungsausschluss'};
+const labels=S.legalLabels||{impressum:'Impressum',datenschutz:'Datenschutz',agbs:'AGBs',haftungsausschluss:'Haftungsausschluss'};
 const hero=document.querySelector('.app > .hero'),title=document.getElementById('heroTitle'),text=document.getElementById('heroText');
 if(!hero||!title){if(/\/impressum\/?$/.test(location.pathname))location.replace(new URL('#impressum',S.ROOT).href);return;}
 let active=null,panel=null,article=null,snapshot=null,opener=null;
@@ -10,7 +10,9 @@ function node(tag,value,parent){const el=document.createElement(tag);if(value!==
 function operator(){const s=S.current;if(!s)return;const box=node('section',undefined,article);box.className='nic-legal-operator';node('h2',active==='datenschutz'?'Verantwortlicher':'Anbieter',box);const wanted=['Anbieter','Vertreten durch','Anschrift','Kontakt'];const parts=S.imprint(s).filter(x=>wanted.includes(x.label));if(!parts.length){node('p','Die Betreiberangaben wurden noch nicht veröffentlicht.',box);return;}for(const item of parts){const p=node('p',item.value,box);p.dataset.companyGroup=item.label;}}
 function render(){
  if(!article||!active)return;article.replaceChildren();
- if(active==='impressum'){
+ if(S.current?.legal?.[active]){article.append(S.legalFragment(S.current.legal[active],S.current));}
+ else if(active==='cookie-hinweis'){article.append(S.legalFragment(S.legalSource(S.current,active),S.current));}
+ else if(active==='impressum'){
   const parts=S.current?S.imprint(S.current):[];
   if(!parts.length)node('p','Die Betreiberangaben wurden noch nicht veröffentlicht.',article);
   for(const {label,value} of parts){node('h2',label,article);node('p',value,article);}
@@ -22,6 +24,7 @@ function render(){
   node('h2','Inhalt noch nicht hinterlegt',article);
   node('p',active==='datenschutz'?'Die vollständige Datenschutzerklärung wird noch erstellt. Die hier angezeigten Betreiberangaben ersetzen keine vollständige Datenschutzerklärung.':'Ein vollständiger AGB-Text wurde noch nicht hinterlegt. Die hier angezeigten Anbieterangaben stellen keine Allgemeinen Geschäftsbedingungen dar.',article);
  }
+ if(active==='cookie-hinweis'){const button=node('button','Cookie-Einstellungen ändern',article);button.type='button';button.addEventListener('click',()=>window.NICAnalytics?.openConsent());}
 }
 function close(){if(!active)return;active=null;document.body.classList.remove('nic-legal-open');panel.hidden=true;title.innerHTML=snapshot.title;text.textContent=snapshot.text;document.title=snapshot.documentTitle;}
 function open(next){

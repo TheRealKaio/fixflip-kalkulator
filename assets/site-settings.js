@@ -11,6 +11,38 @@
     ['capital','Stamm-/Grundkapital und ausstehende Einlagen (falls angegeben)'],['liquidation','Abwicklung / Liquidation (falls zutreffend)'],['mediaState','Sitzland (bei audiovisuellen Mediendiensten)'],['mediaAuthority','Medienaufsicht (falls zutreffend)'],
     ['editorialResponsible','Redaktionell verantwortlich (falls erforderlich)'],['editorialAddress','Anschrift der redaktionell verantwortlichen Person'],['disputeResolution','Angaben zur Verbraucherstreitbeilegung (falls zutreffend)'],['additional','Weitere Angaben']
   ];
+  const imprintGroups=[
+      [['name','legalForm'],'Anbieter'],[['representative'],'Vertreten durch'],[['street','postalCode','city','country'],'Anschrift'],[['email','website','phone','fax'],'Kontakt'],
+      [['registerType','registerCourt','registerNumber'],'Register'],[['vatId'],'Umsatzsteuer-ID'],[['businessId'],'Wirtschafts-ID'],[['authority'],'Aufsichtsbehörde'],[['profession','professionalCountry','chamber','professionalRules'],'Berufsrechtliche Angaben'],[['capital'],'Kapitalangaben'],[['liquidation'],'Abwicklung / Liquidation'],[['mediaState','mediaAuthority'],'Audiovisuelle Mediendienste'],[['editorialResponsible','editorialAddress'],'Redaktionell verantwortlich'],[['disputeResolution'],'Verbraucherstreitbeilegung'],[['additional'],'Weitere Angaben']
+    ];
+  const legalLabels={impressum:'Impressum',agbs:'AGBs',datenschutz:'Datenschutz',haftungsausschluss:'Haftungsausschluss','cookie-hinweis':'Cookie-Hinweis'};
+  const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function legalSource(s,key,disclaimer=''){
+    if(s.legal?.[key])return s.legal[key];
+    function operatorTemplate(all){
+      const parts=[];for(const [keys,label]of imprintGroups){if(!all&&!['Anbieter','Vertreten durch','Anschrift','Kontakt'].includes(label))continue;const token=k=>s.company[k]?'{{company.'+k+'}}':'';const values=label==='Anschrift'?[token('street'),['postalCode','city'].map(token).filter(Boolean).join(' '),token('country')]:keys.map(token);const value=values.filter(Boolean).join('\n');if(value)parts.push((all?'<h2>'+escapeHTML(label)+'</h2>':'')+'<p>'+value+'</p>');}
+      return parts.join('\n')||'<p>Die Betreiberangaben wurden noch nicht veröffentlicht.</p>';
+    }
+    if(key==='impressum')return operatorTemplate(true);
+    if(key==='haftungsausschluss')return disclaimer;
+    if(key==='cookie-hinweis')return '<p>Du hast die Wahl: Unsere Kalkulatoren funktionieren auch ohne optionale Cookies. Mit „Zustimmen“ erlaubst du Cookies und ähnliche Speichertechniken für unsere freiwillige Nutzungsstatistik. Damit sehen wir, welche Seiten, Kalkulatoren und PDF-Funktionen genutzt werden. Erfasst werden Aufrufe, Berechnungen, PDF-Downloads und Teilen-Aktionen sowie Geräteart, Betriebssystem und erkennbare Herkunft.</p>\n<p>Sofern Google Analytics eingerichtet ist, werden diese Nutzungsdaten nach deiner Zustimmung auch von Google verarbeitet. Dabei können Online-Kennungen und Länderinformationen verarbeitet und Daten in die USA übermittelt werden. Deine eingegebenen Finanz- und Objektdaten werden nicht an Google übermittelt.</p>\n<p>Mit „Ablehnen“ bleiben die optionale Statistik und Google Analytics ausgeschaltet. Deine Auswahl merken wir bis zu 180 Tage. Du kannst deine Einwilligung jederzeit unten über „Cookie-Hinweis“ mit Wirkung für die Zukunft widerrufen oder ändern.</p>';
+    const heading=key==='datenschutz'?'Verantwortlicher':'Anbieter';
+    return '<h2>'+heading+'</h2>\n'+operatorTemplate(false)+'\n<h2>Inhalt noch nicht hinterlegt</h2>\n<p>'+(key==='datenschutz'?'Die vollständige Datenschutzerklärung wird noch erstellt. Die hier angezeigten Betreiberangaben ersetzen keine vollständige Datenschutzerklärung.':'Ein vollständiger AGB-Text wurde noch nicht hinterlegt. Die hier angezeigten Anbieterangaben stellen keine Allgemeinen Geschäftsbedingungen dar.')+'</p>';
+  }
+  function legalIssues(html,s){const issues=new Set();for(const m of html.matchAll(/{{\s*([^{}]+?)\s*}}/g)){const token=m[1].trim(),field=token.startsWith('company.')?token.slice(8):'';if(!companyFields.some(([k])=>k===field))issues.add('Unbekannter Platzhalter: '+token);else if(!s.company[field])issues.add('Kein Wert hinterlegt: '+companyFields.find(([k])=>k===field)[1]);}return [...issues];}
+  function legalFragment(html,s){
+    const tpl=document.createElement('template');tpl.innerHTML=html;
+    const allowed=new Set(['H1','H2','H3','H4','H5','H6','P','BR','STRONG','B','EM','I','U','S','UL','OL','LI','A','BLOCKQUOTE','HR','DIV','SPAN','TABLE','THEAD','TBODY','TR','TH','TD']);
+    for(const el of [...tpl.content.querySelectorAll('*')]){
+      if(!allowed.has(el.tagName)){el.remove();continue;}
+      const href=el.getAttribute('href'),align=el.style.textAlign||el.getAttribute('align');
+      for(const attr of [...el.attributes])el.removeAttribute(attr.name);
+      if(['left','right','center','justify'].includes(align))el.style.textAlign=align;
+      if(el.tagName==='A'&&href){let value=href.replace(/{{\s*company\.(\w+)\s*}}/g,(_,k)=>s.company[k]||'');try{const u=new URL(value,ROOT);if(['https:','http:','mailto:','tel:'].includes(u.protocol)){el.setAttribute('href',u.href);el.setAttribute('rel','noopener noreferrer');}}catch(_){}}
+    }
+    const walker=document.createTreeWalker(tpl.content,4);let node;while((node=walker.nextNode()))node.textContent=node.textContent.replace(/{{\s*company\.(\w+)\s*}}/g,(token,k)=>Object.hasOwn(s.company,k)?s.company[k]:token);
+    return tpl.content;
+  }
   const imageAltDefaults={websiteLogo:'Neustart ImmoCheck – Immobilien-Kalkulatoren',favicon:'Haus-Symbol von Neustart ImmoCheck',appleTouchIcon:'Neustart ImmoCheck – Haus-Symbol',sharing:'Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden.'};
   const portals=[['instagram','Instagram'],['facebook','Facebook'],['youtube','YouTube'],['linkedin','LinkedIn'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X'],['threads','Threads'],['xing','XING'],['whatsapp','WhatsApp']];
   const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/']];
@@ -38,6 +70,7 @@
     pages.forEach(([k])=>{const tag=text(raw.meta?.[k]?.googleTag,40).toUpperCase();s.meta[k]={title:text(raw.meta?.[k]?.title,200),description:text(raw.meta?.[k]?.description,500),googleTag:/^(G|GT)-[A-Z0-9]{4,30}$/.test(tag)?tag:''};});
     const propertyId=text(raw.reporting?.propertyId,20),clientId=text(raw.reporting?.clientId,200);
     s.reporting={propertyId:/^[0-9]{1,20}$/.test(propertyId)?propertyId:'',clientId:/^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)?clientId:''};
+    s.legal={};for(const key of Object.keys(legalLabels)){const value=raw.legal?.[key];if(value!==undefined&&typeof value!=='string')throw new Error('Ungültiger HTML-Text: '+legalLabels[key]);if(value?.length>100000)throw new Error('HTML-Text zu lang (maximal 100.000 Zeichen): '+legalLabels[key]);s.legal[key]=value||'';}
     return s;
   }
   function pageMeta(s,key){const m=s.meta[key]||{};return {title:m.title||s.meta.website.title||'Neustart ImmoCheck',description:m.description||s.meta.website.description||''};}
@@ -90,10 +123,7 @@
   function save(s){const safe=normalize(s);localStorage.setItem(KEY,JSON.stringify(safe));current=safe;return safe;}
   function discard(){localStorage.removeItem(KEY);current=published;return published;}
   function imprint(s){const c=s.company,lines=[];
-    for(const [keys,label] of [
-      [['name','legalForm'],'Anbieter'],[['representative'],'Vertreten durch'],[['street','postalCode','city','country'],'Anschrift'],[['email','website','phone','fax'],'Kontakt'],
-      [['registerType','registerCourt','registerNumber'],'Register'],[['vatId'],'Umsatzsteuer-ID'],[['businessId'],'Wirtschafts-ID'],[['authority'],'Aufsichtsbehörde'],[['profession','professionalCountry','chamber','professionalRules'],'Berufsrechtliche Angaben'],[['capital'],'Kapitalangaben'],[['liquidation'],'Abwicklung / Liquidation'],[['mediaState','mediaAuthority'],'Audiovisuelle Mediendienste'],[['editorialResponsible','editorialAddress'],'Redaktionell verantwortlich'],[['disputeResolution'],'Verbraucherstreitbeilegung'],[['additional'],'Weitere Angaben']
-    ]){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
+    for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
 })();

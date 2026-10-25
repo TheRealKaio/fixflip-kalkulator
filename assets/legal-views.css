@@ -13,3 +13,5 @@ body.nic-legal-open .app > :not(.hero):not(#nicLegalPanel):not(.footer-note){dis
 /* The heading receives focus for screen readers; it is not an interactive control. */
 body.nic-legal-open #heroTitle[tabindex="-1"]:focus{outline:none;box-shadow:none}
 body.nic-legal-open #heroTitle{-webkit-tap-highlight-color:transparent}
+
+.nic-legal-card{overflow:auto}.nic-legal-card table{border-collapse:collapse;max-width:100%}.nic-legal-card :is(td,th){padding:6px;border:1px solid #cbd5e1}@media(max-width:600px){.nic-legal-card [style*="text-align: justify"]{text-align:left!important}}
