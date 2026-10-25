@@ -16,7 +16,7 @@ const handlers={},calls=[];const context={URL,self:{location:{origin:'https://ex
 async function request(url,destination,mode='cors',method='GET'){let promise;handlers.fetch({request:{url,destination,mode,method},respondWith:p=>promise=p});return await promise;}
 (async()=>{
  await request('https://example.org/','document','navigate');assert.equal(calls.at(-1).options.cache,'no-store');
- for(const destination of ['script','style']){await request('https://example.org/asset',destination);assert.equal(calls.at(-1).options.cache,'no-store');}
+ for(const destination of ['script','style','iframe','frame']){await request('https://example.org/asset',destination);assert.equal(calls.at(-1).options.cache,'no-store');}
  await request('https://www.googletagmanager.com/gtag/js','script');assert.equal(calls.at(-1).options,undefined);
  await request('https://example.org/api','', 'cors','POST');assert.equal(calls.at(-1).options,undefined);
  context.fetch=async()=>{throw Error('offline');};assert.equal((await request('https://example.org/','document','navigate')).offline,true);

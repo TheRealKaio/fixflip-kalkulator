@@ -504,6 +504,7 @@ jobs:
           python scripts/patch_logo_admin_v8336.py _site/index.html
           python scripts/patch_social_preview_v8337.py _site/index.html
           python scripts/patch_admin_address_version_v8338.py _site/index.html
+          python scripts/patch_admin_social_alt_v8339.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.

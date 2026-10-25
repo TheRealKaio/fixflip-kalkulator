@@ -30,6 +30,7 @@ def normalize(site_dir=Path("_site"), repo_root=Path(".")):
     sw = sw_path.read_text(encoding="utf-8")
 
     index = VISIBLE_RE.sub(display, index)
+    index = index.replace('<html lang="de"', f'<html lang="de" data-nic-release="{plain}"', 1)
     index = SW_QUERY_RE.sub(f"service-worker.js?v={plain}", index)
     sw = SW_CACHE_RE.sub(f"neustart-immocheck-v{plain}", sw)
 
@@ -37,7 +38,9 @@ def normalize(site_dir=Path("_site"), repo_root=Path(".")):
     sw_path.write_text(sw, encoding="utf-8")
     admin_path=site_dir / "admin.html"
     if admin_path.exists():
-        admin_path.write_text(VISIBLE_RE.sub(display, admin_path.read_text(encoding="utf-8")), encoding="utf-8")
+        admin = VISIBLE_RE.sub(display, admin_path.read_text(encoding="utf-8"))
+        admin = admin.replace('id="adminReleaseBadge"></span>', f'id="adminReleaseBadge">{display}</span>')
+        admin_path.write_text(admin, encoding="utf-8")
     (site_dir / ".release-version").write_text(display, encoding="utf-8")
     print(f"Release contract normalized to {display}")
 

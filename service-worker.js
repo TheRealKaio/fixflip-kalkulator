@@ -20,7 +20,7 @@ self.addEventListener("fetch", event => {
       // A network-first service worker still uses the browser HTTP cache unless
       // it explicitly bypasses it. Fresh HTML must reference the current assets.
       const fresh = request.method === "GET" && url.origin === self.location.origin
-        && (request.mode === "navigate" || ["document", "script", "style"].includes(request.destination));
+        && (request.mode === "navigate" || ["document", "iframe", "frame", "script", "style"].includes(request.destination));
       return fetch(request, fresh ? {cache:"no-store"} : undefined)
         .catch(() => caches.match(request));
     })()

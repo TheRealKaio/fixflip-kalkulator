@@ -38,18 +38,18 @@ def metadata(key,path):
     title=html.escape(str(m.get('title') or fallback.get('title') or 'Neustart ImmoCheck'),quote=True)
     description=html.escape(str(m.get('description') or fallback.get('description') or ''),quote=True)
     url=html.escape(base+path,quote=True)
-    share_alt=html.escape(str(config.get('sharing',{}).get('text','Neustart ImmoCheck')),quote=True)
-    return f'<title>{title}</title>\n<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="Neustart ImmoCheck">\n<meta property="og:image" content="{share_url}">\n<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="{share_alt}">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:image" content="{share_url}">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
+    share_alt=html.escape(str(config.get('imageAlts',{}).get('sharing','Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden.')),quote=True)
+    return f'<title>{title}</title>\n<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="Neustart ImmoCheck">\n<meta property="og:image" content="{share_url}">\n<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="{share_alt}">\n<meta name="twitter:image:alt" content="{share_alt}">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:image" content="{share_url}">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
 
 def customize(s,key,path):
-    s=s.replace('<html lang="de">',f'<html lang="de" data-nic-page="{key}">',1)
+    s=re.sub(r'<html lang="de"([^>]*)>',lambda m:f'<html lang="de"{m[1]} data-nic-page="{key}">',s,count=1)
     s=re.sub(r'<title>.*?</title>',metadata(key,path),s,count=1,flags=re.S)
     icon=config.get('favicon','')
     if isinstance(icon,str) and len(icon)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',icon):
         s=s.replace('</head>',f'<link rel="icon" href="{html.escape(icon,quote=True)}"></head>',1)
     logo=config.get('websiteLogo','')
     if isinstance(logo,str) and len(logo)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',logo):
-        s=re.sub(r'(<div class="brand-logo-wrap">).*?</svg>',lambda m:m[1]+'<img class="brand-logo" alt="Neustart ImmoCheck" style="max-height:72px;object-fit:contain" src="'+html.escape(logo,quote=True)+'">',s,count=1,flags=re.S)
+        s=re.sub(r'(<div class="brand-logo-wrap">).*?</svg>',lambda m:m[1]+'<img class="brand-logo" alt="'+html.escape(str(config.get('imageAlts',{}).get('websiteLogo','Neustart ImmoCheck – Immobilien-Kalkulatoren')),quote=True)+'" style="max-height:72px;object-fit:contain" src="'+html.escape(logo,quote=True)+'">',s,count=1,flags=re.S)
     s=re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', s, flags=re.I)
     s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1)
     return s
@@ -62,7 +62,7 @@ company=config.get('company',{})
 groups=[('Anbieter',['name','legalForm']),('Vertreten durch',['representative']),('Anschrift',['street','postalCode','city','country']),('Kontakt',['email','phone','fax']),('Register',['registerType','registerCourt','registerNumber']),('Umsatzsteuer-ID',['vatId']),('Wirtschafts-ID',['businessId']),('Aufsichtsbehörde',['authority']),('Berufsrechtliche Angaben',['profession','professionalCountry','chamber','professionalRules']),('Kapitalangaben',['capital']),('Abwicklung / Liquidation',['liquidation']),('Audiovisuelle Mediendienste',['mediaState','mediaAuthority']),('Redaktionell verantwortlich',['editorialResponsible','editorialAddress']),('Verbraucherstreitbeilegung',['disputeResolution']),('Weitere Angaben',['additional'])]
 parts=[]
 for label,keys in groups:
-    raw_values=([company.get('street'), ' '.join(str(company.get(k,'')) for k in ['postalCode','city'] if company.get(k)), company.get('country')] if label=='Anschrift' else [company.get(k) for k in keys])
+    raw_values=([company.get('street'), ' '.join(' '.join(str(company.get(k,'')).split()) for k in ['postalCode','city'] if company.get(k)), company.get('country')] if label=='Anschrift' else [company.get(k) for k in keys])
     values=[html.escape(str(value)) for value in raw_values if value]
     if values:parts.append('<h2>'+label+'</h2><p>'+'\n'.join(values)+'</p>')
 content=''.join(parts) or '<p>Die Anbieterangaben wurden noch nicht hinterlegt.</p>'

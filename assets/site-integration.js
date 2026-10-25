@@ -25,7 +25,7 @@ function setAdmin(open){
    adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
    const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);setAdmin(false);});
    adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
-   const section=location.hash.slice(7);adminFrame.src=new URL('admin.html?embedded=1'+(['company','layout','social','meta','stats'].includes(section)?'#'+section:''),S.ROOT).href;
+   const section=location.hash.slice(7);adminFrame.src=new URL('admin.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current')+(['company','layout','social','meta','stats'].includes(section)?'#'+section:''),S.ROOT).href;
    adminPanel.append(close,adminFrame);hero.after(adminPanel);
   }
   adminOpen=true;document.body.classList.add('nic-admin-open');adminPanel.hidden=false;
@@ -44,7 +44,7 @@ if(account&&hero){
  window.addEventListener('hashchange',()=>setAdmin(/^#admin(?:-|$)/.test(location.hash)));
  window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==adminFrame?.contentWindow)return;
   if(e.data?.type==='nic-admin-height'&&Number.isFinite(e.data.height))adminFrame.style.height=Math.min(50000,Math.max(300,e.data.height))+'px';
-  if(adminOpen&&e.data?.type==='nic-logo-preview')S.applyLogo(e.data.value);
+  if(adminOpen&&e.data?.type==='nic-logo-preview')S.applyLogo(e.data.value,e.data.alt);
  });
 }
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#admin(?:-|$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));

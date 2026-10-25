@@ -94,5 +94,11 @@
   "sharing": {
     "text": "Immobilien verstehen. Sicherer entscheiden.",
     "image": ""
+  },
+  "imageAlts": {
+    "websiteLogo": "Neustart ImmoCheck – Immobilien-Kalkulatoren",
+    "favicon": "Haus-Symbol von Neustart ImmoCheck",
+    "appleTouchIcon": "Neustart ImmoCheck – Haus-Symbol",
+    "sharing": "Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden."
   }
 }
