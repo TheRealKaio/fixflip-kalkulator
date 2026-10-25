@@ -5,7 +5,7 @@ const data=document.getElementById('nic-header-variants');
 if(!hero||!data)return;
 const variants=JSON.parse(data.textContent);
 hero.classList.add('nic-responsive-header');
-let queued=false,lastWidth=0;
+let queued=false,lastWidth=0,lastSignature='',largestForLayout=0;
 function measure(){
  queued=false;
  const width=hero.getBoundingClientRect().width;if(width<=0)return;
@@ -19,7 +19,17 @@ function measure(){
   let maximum=0;
   const states=[...variants,[hero.querySelector('h1').innerHTML,hero.querySelector('p').textContent]];
   for(const [title,text]of states){heading.innerHTML=title;description.textContent=text;maximum=Math.max(maximum,probe.getBoundingClientRect().height);}
-  const value=Math.ceil(maximum+1)+'px';
+  // Include the actual rendered text, so inherited styles or late font changes
+  // cannot make the live subtitle exceed the measured clone.
+  const box=hero.getBoundingClientRect(),heroStyle=getComputedStyle(hero);
+  const headingStyle=getComputedStyle(hero.querySelector('h1')),descriptionStyle=getComputedStyle(hero.querySelector('p'));
+  const top=hero.querySelector('.hero-top');
+  const signature=[width,heroStyle.padding,headingStyle.font,headingStyle.letterSpacing,descriptionStyle.font,descriptionStyle.letterSpacing,top?.getBoundingClientRect().height].join('|');
+  const contentBottom=Math.max(...Array.from(hero.children).map(el=>el.getBoundingClientRect().bottom));
+  maximum=Math.max(maximum,contentBottom-box.top+parseFloat(heroStyle.paddingBottom||0)+parseFloat(heroStyle.borderBottomWidth||0));
+  if(signature!==lastSignature){largestForLayout=0;lastSignature=signature;}
+  largestForLayout=Math.max(largestForLayout,maximum);
+  const value=Math.ceil(largestForLayout+1)+'px';
   if(hero.style.getPropertyValue('--nic-header-content-height')!==value)hero.style.setProperty('--nic-header-content-height',value);
   if(!hero.classList.contains('nic-fixed-header'))hero.classList.add('nic-fixed-header');
   lastWidth=width;
