@@ -39,7 +39,6 @@ def normalize(site_dir=Path("_site"), repo_root=Path(".")):
     admin_path=site_dir / "admin.html"
     if admin_path.exists():
         admin = VISIBLE_RE.sub(display, admin_path.read_text(encoding="utf-8"))
-        admin = admin.replace('id="adminReleaseBadge"></span>', f'id="adminReleaseBadge">{display}</span>')
         admin_path.write_text(admin, encoding="utf-8")
     (site_dir / ".release-version").write_text(display, encoding="utf-8")
     print(f"Release contract normalized to {display}")
