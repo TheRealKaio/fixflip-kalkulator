@@ -79,6 +79,7 @@
     setMeta('meta[property="og:image:alt"]',{property:'og:image:alt'},current.imageAlts.sharing);
     setMeta('meta[name="twitter:image:alt"]',{name:'twitter:image:alt'},current.imageAlts.sharing);
     if(key)applyMeta(current,key);
+    window.NICHeader?.refresh();
   }
   function readLocal(){try{const raw=localStorage.getItem(KEY);return raw?normalize(JSON.parse(raw)):null;}catch(_){return null;}}
   async function init(){

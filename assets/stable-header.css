@@ -1,0 +1,9 @@
+/* One height per viewport and typography, sized for the largest header variant. */
+.hero.nic-fixed-header{
+  box-sizing:border-box;
+  height:max(30vh,var(--nic-header-content-height));
+  min-height:var(--nic-header-content-height);
+}
+@supports(height:1svh){
+  .hero.nic-fixed-header{height:max(30svh,var(--nic-header-content-height))}
+}
