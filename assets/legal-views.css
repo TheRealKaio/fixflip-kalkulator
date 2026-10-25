@@ -10,3 +10,6 @@ body.nic-legal-open .app > :not(.hero):not(#nicLegalPanel):not(.footer-note){dis
 .nic-logo-link{display:block;color:inherit;text-decoration:none;border-radius:7px}
 .nic-logo-link:focus-visible{outline:3px solid #60a5fa;outline-offset:4px}
 @media(max-width:430px){.nic-legal-card{padding:18px}}
+/* The heading receives focus for screen readers; it is not an interactive control. */
+body.nic-legal-open #heroTitle[tabindex="-1"]:focus{outline:none;box-shadow:none}
+body.nic-legal-open #heroTitle{-webkit-tap-highlight-color:transparent}

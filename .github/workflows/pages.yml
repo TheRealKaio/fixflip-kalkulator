@@ -511,6 +511,7 @@ jobs:
           python scripts/patch_compact_header_v8343.py _site/index.html
           python scripts/patch_header_scrollbar_v8344.py _site/index.html
           python scripts/patch_header_content_guard_v8345.py _site/index.html
+          python scripts/patch_legal_heading_focus_v8346.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
