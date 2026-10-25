@@ -4,7 +4,7 @@
   const KEY='nic_site_settings_v1';
   const companyFields=[
     ['name','Vollständiger Name / Firma'],['legalForm','Rechtsform (falls zutreffend)'],['representative','Vertretungsberechtigte Person(en)'],
-    ['street','Straße und Hausnummer'],['postalCode','Postleitzahl'],['city','Ort'],['country','Land'],['email','E-Mail-Adresse'],['phone','Telefon / direkte Kontaktmöglichkeit'],['fax','Fax (optional)'],
+    ['street','Straße und Hausnummer'],['postalCode','Postleitzahl'],['city','Ort'],['country','Land'],['email','E-Mail-Adresse'],['website','Internetadresse'],['phone','Telefon / direkte Kontaktmöglichkeit'],['fax','Fax (optional)'],
     ['registerType','Registerart (falls eingetragen)'],['registerCourt','Registergericht / registerführende Stelle'],['registerNumber','Registernummer'],
     ['vatId','Umsatzsteuer-Identifikationsnummer (falls vorhanden)'],['businessId','Wirtschafts-Identifikationsnummer (falls vorhanden)'],
     ['authority','Zuständige Aufsichtsbehörde (bei erlaubnispflichtiger Tätigkeit)'],['profession','Gesetzliche Berufsbezeichnung (bei reglementiertem Beruf)'],['professionalCountry','Staat der Verleihung'],['chamber','Zuständige Kammer'],['professionalRules','Berufsrechtliche Regelungen und Fundstelle'],
@@ -19,11 +19,13 @@
   let published=null,current=null;
   const text=(v,max=2000)=>typeof v==='string'?v.trim().slice(0,max):'';
   function httpUrl(v){try{const u=new URL(text(v));return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(_){return '';}}
+  function websiteUrl(v){const value=text(v);return httpUrl(/^[a-z0-9.-]+\.[a-z]{2,}(?:[/?#]|$)/i.test(value)?'https://'+value:value);}
   function validFavicon(v){return typeof v==='string' && v.length<=400000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)?v:'';}
   function normalize(raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1)throw new Error('Ungültiges Konfigurationsformat (Version 1 erforderlich).');
     const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),websiteLogo:validFavicon(raw.websiteLogo),appleTouchIcon:typeof raw.appleTouchIcon==='string' && raw.appleTouchIcon.length<=400000 && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(raw.appleTouchIcon)?raw.appleTouchIcon:'',meta:{},reporting:{},sharing:{text:text(raw.sharing?.text??'Immobilien verstehen. Sicherer entscheiden.',160),image:validFavicon(raw.sharing?.image)}};
     companyFields.forEach(([k])=>s.company[k]=text(raw.company?.[k]));
+    s.company.website=websiteUrl(raw.company?.website);
     for(const key of ['postalCode','city'])s.company[key]=s.company[key].replace(/\s+/g,' ');
     s.imageAlts={};Object.entries(imageAltDefaults).forEach(([k,v])=>s.imageAlts[k]=text(raw.imageAlts?.[k]??v,300).replace(/\s+/g,' '));
     for(const [k,v] of Object.entries(layoutDefaults)){
@@ -51,11 +53,12 @@
     let canonical=document.querySelector('link[rel="canonical"]');if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.append(canonical);}canonical.href=new URL(path,ROOT).href;
     setMeta('meta[property="og:url"]',{property:'og:url'},canonical.href);
   }
-  function applyLogo(value,alt=current?.imageAlts?.websiteLogo??imageAltDefaults.websiteLogo){
+  function applyLogo(value,alt=current?.imageAlts?.websiteLogo??imageAltDefaults.websiteLogo,website=current?.company?.website){
     const src=validFavicon(value)||new URL('neustart-immocheck-logo.svg',ROOT).href;
     document.querySelectorAll('.brand-logo-wrap').forEach(wrap=>{
       let img=wrap.querySelector('img.brand-logo');
       if(!img){img=document.createElement('img');img.className='brand-logo';img.alt='Neustart ImmoCheck';wrap.replaceChildren(img);}
+      let link=wrap.querySelector('a.nic-logo-link');if(!link){link=document.createElement('a');link.className='nic-logo-link';wrap.replaceChildren(link);link.append(img);}link.href=websiteUrl(website)||ROOT.href;link.removeAttribute('target');
       img.alt=alt;img.src=src;img.style.maxHeight='72px';img.style.objectFit='contain';
     });
   }
@@ -87,9 +90,9 @@
   function discard(){localStorage.removeItem(KEY);current=published;return published;}
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of [
-      [['name','legalForm'],'Anbieter'],[['representative'],'Vertreten durch'],[['street','postalCode','city','country'],'Anschrift'],[['email','phone','fax'],'Kontakt'],
+      [['name','legalForm'],'Anbieter'],[['representative'],'Vertreten durch'],[['street','postalCode','city','country'],'Anschrift'],[['email','website','phone','fax'],'Kontakt'],
       [['registerType','registerCourt','registerNumber'],'Register'],[['vatId'],'Umsatzsteuer-ID'],[['businessId'],'Wirtschafts-ID'],[['authority'],'Aufsichtsbehörde'],[['profession','professionalCountry','chamber','professionalRules'],'Berufsrechtliche Angaben'],[['capital'],'Kapitalangaben'],[['liquidation'],'Abwicklung / Liquidation'],[['mediaState','mediaAuthority'],'Audiovisuelle Mediendienste'],[['editorialResponsible','editorialAddress'],'Redaktionell verantwortlich'],[['disputeResolution'],'Verbraucherstreitbeilegung'],[['additional'],'Weitere Angaben']
     ]){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
 })();

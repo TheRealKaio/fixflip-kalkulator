@@ -50,6 +50,12 @@ def customize(s,key,path):
     logo=config.get('websiteLogo','')
     if isinstance(logo,str) and len(logo)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',logo):
         s=re.sub(r'(<div class="brand-logo-wrap">).*?</svg>',lambda m:m[1]+'<img class="brand-logo" alt="'+html.escape(str(config.get('imageAlts',{}).get('websiteLogo','Neustart ImmoCheck – Immobilien-Kalkulatoren')),quote=True)+'" style="max-height:72px;object-fit:contain" src="'+html.escape(logo,quote=True)+'">',s,count=1,flags=re.S)
+    website=str(config.get('company',{}).get('website','')).strip()
+    if website and not urlparse(website).scheme:
+        website='https://'+website
+    parsed=urlparse(website)
+    target=website if parsed.scheme in ('http','https') and parsed.hostname and not parsed.username and not parsed.password else base
+    s=re.sub(r'(<div class="brand-logo-wrap">)(.*?)(</div>)',lambda m:m[1]+'<a class="nic-logo-link" href="'+html.escape(target,quote=True)+'">'+m[2]+'</a>'+m[3],s,count=1,flags=re.S)
     s=re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', s, flags=re.I)
     s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1)
     return s
@@ -59,7 +65,7 @@ for key in ['budget','own','rent','flip']:
     (folder/'index.html').write_text(customize(root,key,path))
 
 company=config.get('company',{})
-groups=[('Anbieter',['name','legalForm']),('Vertreten durch',['representative']),('Anschrift',['street','postalCode','city','country']),('Kontakt',['email','phone','fax']),('Register',['registerType','registerCourt','registerNumber']),('Umsatzsteuer-ID',['vatId']),('Wirtschafts-ID',['businessId']),('Aufsichtsbehörde',['authority']),('Berufsrechtliche Angaben',['profession','professionalCountry','chamber','professionalRules']),('Kapitalangaben',['capital']),('Abwicklung / Liquidation',['liquidation']),('Audiovisuelle Mediendienste',['mediaState','mediaAuthority']),('Redaktionell verantwortlich',['editorialResponsible','editorialAddress']),('Verbraucherstreitbeilegung',['disputeResolution']),('Weitere Angaben',['additional'])]
+groups=[('Anbieter',['name','legalForm']),('Vertreten durch',['representative']),('Anschrift',['street','postalCode','city','country']),('Kontakt',['email','website','phone','fax']),('Register',['registerType','registerCourt','registerNumber']),('Umsatzsteuer-ID',['vatId']),('Wirtschafts-ID',['businessId']),('Aufsichtsbehörde',['authority']),('Berufsrechtliche Angaben',['profession','professionalCountry','chamber','professionalRules']),('Kapitalangaben',['capital']),('Abwicklung / Liquidation',['liquidation']),('Audiovisuelle Mediendienste',['mediaState','mediaAuthority']),('Redaktionell verantwortlich',['editorialResponsible','editorialAddress']),('Verbraucherstreitbeilegung',['disputeResolution']),('Weitere Angaben',['additional'])]
 parts=[]
 for label,keys in groups:
     raw_values=([company.get('street'), ' '.join(' '.join(str(company.get(k,'')).split()) for k in ['postalCode','city'] if company.get(k)), company.get('country')] if label=='Anschrift' else [company.get(k) for k in keys])

@@ -11,7 +11,7 @@ function field(parent,id,label,type='text',hint=''){
 function build(){
  for(const [key,title] of [['websiteLogo','Webseiten-Logo'],['favicon','Favicon'],['appleTouchIcon','Apple Touch Icon'],['sharing','Vorschaubild beim Teilen']]){const target=$(key==='sharing'?'sharingText':key+'File').closest(key==='sharing'?'.form-card':'div');field(target,'alt-'+key,'Alt-Text: '+title,'text',key==='favicon'||key==='appleTouchIcon'?'Bildbeschreibung für die Vorschau. Browser- und Home-Bildschirm-Icons besitzen kein HTML-Alt-Attribut.':'Beschreibe kurz den Bildinhalt für Screenreader und unterstützte Link-Vorschauen.').maxLength=300;}
 
- S.companyFields.forEach(([k,label],i)=>{const type=k==='email'?'email':['additional','disputeResolution','editorialAddress','professionalRules','authority'].includes(k)?'textarea':'text';field($(i<10?'companyCore':'companyExtra'),'company-'+k,label,type);});
+ S.companyFields.forEach(([k,label],i)=>{const type=k==='email'?'email':['additional','disputeResolution','editorialAddress','professionalRules','authority'].includes(k)?'textarea':'text';const input=field($(i<11?'companyCore':'companyExtra'),'company-'+k,label,type,k==='website'?'Domain oder vollständige Internetadresse. Das Header-Logo öffnet diese Adresse. Ohne Eintrag führt es zur Startseite.':'');if(k==='website'){input.placeholder='www.beispiel.de';input.addEventListener('change',()=>{const value=S.websiteUrl(input.value);if(input.value.trim()&&!value)input.setCustomValidity('Bitte eine gültige Internetadresse eintragen.');else input.setCustomValidity('');});input.addEventListener('input',()=>input.setCustomValidity(''));}});
  const fontDiv=document.createElement('div');fontDiv.className='admin-field';const label=document.createElement('label');label.htmlFor='layout-font';label.textContent='Schriftfamilie';const select=document.createElement('select');select.id='layout-font';
  for(const [value,title] of [['system','Systemschrift'],['arial','Arial'],['verdana','Verdana'],['georgia','Georgia'],['trebuchet','Trebuchet MS']]){const o=document.createElement('option');o.value=value;o.textContent=title;select.append(o);}fontDiv.append(label,select);$('typeFields').append(fontDiv);
  for(const [k,title] of [['bodySize','Grundschriftgröße'],['h1','H1 – Hauptüberschrift'],['h2','H2 – Abschnitt'],['h3','H3 – Unterabschnitt'],['h4','H4 – Detailüberschrift']]){const x=field($('typeFields'),'layout-'+k,title+' (px)','number');x.min=10;x.max=72;x.step=1;}
@@ -83,7 +83,7 @@ $('sharingFile').addEventListener('change',async e=>{
  }catch(err){status(err.message,true);}finally{e.target.value='';}
 });
 $('removeSharingImage').addEventListener('click',()=>{sharingImage='';$('sharingFile').value='';updateSharingPreview();markDirty();});
-function notifyLogo(){if(window.parent!==window)window.parent.postMessage({type:'nic-logo-preview',value:websiteLogo,alt:$('alt-websiteLogo').value},location.origin);}
+function notifyLogo(){if(window.parent!==window)window.parent.postMessage({type:'nic-logo-preview',value:websiteLogo,alt:$('alt-websiteLogo').value,website:S.websiteUrl($('company-website').value)},location.origin);}
 $('websiteLogoFile').addEventListener('change',async e=>{
  const file=e.target.files[0];if(!file)return;
  try{

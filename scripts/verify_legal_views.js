@@ -1,0 +1,33 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+class El{
+ constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.attrs={};this.dataset={};this.style={};this.listeners={};this.className='';this._text='';this.innerHTML='';const set=new Set();this.classList={add:x=>set.add(x),remove:x=>set.delete(x),contains:x=>set.has(x)};this.contentWindow={postMessage(){}};}
+ set textContent(v){this._text=v;this.children=[];}get textContent(){return this._text+this.children.map(x=>x.textContent).join('');}
+ append(...els){for(const e of els){if(e.parent)e.parent.children=e.parent.children.filter(x=>x!==e);e.parent=this;this.children.push(e);}}
+ replaceChildren(...els){this.children=[];this._text='';this.append(...els);}
+ after(el){this.parent.append(el);}setAttribute(k,v){this.attrs[k]=v;}removeAttribute(k){delete this.attrs[k];}getAttribute(k){return this.attrs[k];}
+ addEventListener(k,f){(this.listeners[k]??=[]).push(f);}focus(){this.focused=true;}scrollIntoView(){}cloneNode(){const x=new El(this.tagName);x.textContent=this.textContent;return x;}
+ matches(s){if(s[0]==='#')return this.id===s.slice(1);if(s[0]==='.')return this.className.split(' ').includes(s.slice(1));const m=s.match(/^\[data-([\w-]+)(?:="([^"]+)")?\]$/);if(m){const k=m[1].replace(/-([a-z])/g,(_,x)=>x.toUpperCase());return Object.hasOwn(this.dataset,k)&&(m[2]===undefined||this.dataset[k]===m[2]);}return false;}
+ closest(s){return s.split(',').some(x=>this.matches(x))?this:this.parent?.closest(s);}
+ querySelectorAll(s){return this.children.flatMap(x=>[...(x.matches(s)?[x]:[]),...x.querySelectorAll(s)]);}querySelector(s){return this.querySelectorAll(s)[0]||null;}
+}
+class Evt{constructor(type){this.type=type;this.button=0;}preventDefault(){this.prevented=true;}stopImmediatePropagation(){this.stopped=true;}}
+(async()=>{
+const app=new El(),hero=new El(),account=new El('a'),title=new El('h1'),text=new El(),body=new El(),footer=new El(),overlay=new El(),source=new El();app.append(hero,footer);body.append(app);hero.append(account,title,text);account.id='nicAccountLink';title.innerHTML='Kalkulator';title.textContent='Kalkulator';text.textContent='Beschreibung';overlay.id='legalDisclaimerPage';source.className='legal-page-card';const heading=new El('h2'),paragraph=new El('p');heading.textContent='Keine individuelle Beratung';paragraph.textContent='Bestehender vollständiger Haftungstext';source.append(heading,paragraph);overlay.append(source);body.append(overlay);
+const ids={nicAccountLink:account,heroTitle:title,heroText:text,legalDisclaimerPage:overlay};const links={};for(const k of ['impressum','datenschutz','agbs','haftungsausschluss']){const a=new El('a');a.dataset.legalPlaceholder=k;footer.append(a);links[k]=a;}
+const events={},location={origin:'https://example.test',pathname:'/',search:'',hash:''};const current={company:{name:'Testanbieter',postalCode:'20095',city:'Hamburg'},websiteLogo:''};
+const S={ROOT:new URL('https://example.test/'),KEY:'settings',current,init:async()=>current,apply(){},applyLogo(){},portals:[],pages:[],imprint:s=>[{label:'Anbieter',value:s.company.name},{label:'Anschrift',value:s.company.postalCode+' '+s.company.city}]};
+const document={body,title:'Kalkulator',documentElement:{dataset:{nicPage:'website'}},getElementById:id=>ids[id]||body.querySelector('#'+id),querySelector:s=>s==='.app > .hero'?hero:s==='#legalDisclaimerPage .legal-page-card'?source:null,querySelectorAll:s=>body.querySelectorAll(s),createElement:tag=>new El(tag)};
+const context={URL,Event:Evt,console,document,location,NICSettings:S,history:{pushState(_,__,url){location.hash=new URL(url,location.origin).hash;},replaceState(_,__,url){location.hash=new URL(url,location.origin).hash;}},addEventListener(type,fn,capture){(events[type]??=[]).push({fn,capture});},dispatchEvent(e){for(const x of [...(events[e.type]||[])].sort((a,b)=>Number(!!b.capture)-Number(!!a.capture))){x.fn(e);if(e.stopped)break;}}};context.window=context;
+vm.createContext(context);vm.runInContext(fs.readFileSync('assets/site-integration.js','utf8'),context);vm.runInContext(fs.readFileSync('assets/legal-views.js','utf8'),context);await new Promise(setImmediate);
+function click(el){const e=new Evt('click');e.target=el;context.dispatchEvent(e);if(!e.stopped)for(const f of el.listeners.click||[])f(e);}
+for(const k of Object.keys(links)){click(links[k]);assert.equal(title.textContent,{impressum:'Impressum',datenschutz:'Datenschutz',agbs:'AGBs',haftungsausschluss:'Haftungsausschluss'}[k]);assert(body.classList.contains('nic-legal-open'));assert.equal(location.hash,'#'+k);const panel=body.querySelector('#nicLegalPanel');assert(panel);assert(!overlay.classList.contains('show'));if(k==='haftungsausschluss')assert(panel.textContent.includes('Bestehender vollständiger Haftungstext'));else assert(panel.textContent.includes('Testanbieter'));}
+click(links.impressum);click(account);assert.equal(title.textContent,'Admin-Bereich');assert(!body.classList.contains('nic-legal-open'));
+location.hash='#datenschutz';context.dispatchEvent(new Evt('popstate'));assert.equal(title.textContent,'Datenschutz');assert(!body.classList.contains('nic-admin-open'));
+location.hash='#admin';context.dispatchEvent(new Evt('popstate'));assert.equal(title.textContent,'Admin-Bereich');
+location.hash='';context.dispatchEvent(new Evt('popstate'));assert.equal(title.innerHTML,'Kalkulator');
+click(links.impressum);const panel=body.querySelector('#nicLegalPanel');current.company.name='Geänderter Anbieter';context.NICLegal.refresh();assert(panel.textContent.includes('Geänderter Anbieter'));click(panel.children[0]);assert(panel.hidden);assert.equal(title.innerHTML,'Kalkulator');
+// Test the actual logo-link implementation against the same DOM, including unsafe URLs.
+const wrap=new El();wrap.className='brand-logo-wrap';body.append(wrap);document.currentScript={src:'https://example.test/site-settings.js'};document.querySelectorAll=s=>body.querySelectorAll(s);vm.runInContext(fs.readFileSync('assets/site-settings.js','utf8'),context);const real=context.NICSettings;real.applyLogo('','Haus','www.beispiel.de');assert.equal(wrap.querySelector('.nic-logo-link').href,'https://www.beispiel.de/');assert.equal(wrap.querySelector('.brand-logo').alt,'Haus');real.applyLogo('','Haus','javascript:alert(1)');assert.equal(wrap.querySelector('.nic-logo-link').href,'https://example.test/');
+console.log('Legal navigation passed: all four views, existing disclaimer text, shared operator data, legal/admin history transitions, return, updated fields and safe logo URLs.');
+})().catch(e=>{console.error(e);process.exit(1);});
