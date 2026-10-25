@@ -4,6 +4,7 @@ const hero=document.querySelector('.app > .hero');
 const data=document.getElementById('nic-header-variants');
 if(!hero||!data)return;
 const variants=JSON.parse(data.textContent);
+hero.classList.add('nic-responsive-header');
 let queued=false,lastWidth=0;
 function measure(){
  queued=false;

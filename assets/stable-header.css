@@ -1,9 +1,21 @@
-/* One height per viewport and typography, sized for the largest header variant. */
+/* All views share the smallest header that fits their complete content. */
+.hero.nic-responsive-header{padding:calc(16px + env(safe-area-inset-top)) 20px 20px}
+.hero.nic-responsive-header>h1{margin:20px 0 10px}
 .hero.nic-fixed-header{
   box-sizing:border-box;
-  height:max(30vh,var(--nic-header-content-height));
+  height:var(--nic-header-content-height);
   min-height:var(--nic-header-content-height);
 }
-@supports(height:1svh){
-  .hero.nic-fixed-header{height:max(30svh,var(--nic-header-content-height))}
+@media(max-width:600px),(max-height:480px) and (max-width:950px){
+  .hero.nic-responsive-header{padding:calc(14px + env(safe-area-inset-top)) 18px 20px}
+  .hero.nic-responsive-header>h1{
+    font-size:min(var(--nic-header-h1-max,45px),clamp(26px,7.5vw,45px))!important;
+    line-height:1.08;margin:18px 0 10px;
+  }
+  .hero.nic-responsive-header>p{font-size:14px;line-height:1.5}
+  .hero.nic-responsive-header .brand-logo{width:144px;max-width:44vw;max-height:58px!important}
+  .hero.nic-responsive-header .brand-logo-wrap{padding:4px 7px}
+  @supports(height:1svh){
+    .hero.nic-responsive-header>h1{font-size:min(var(--nic-header-h1-max,45px),clamp(26px,min(7.5vw,8svh),45px))!important}
+  }
 }

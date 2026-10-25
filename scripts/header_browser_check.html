@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Header layout regression check</title><style>body{font:15px system-ui;padding:20px}iframe{display:block;border:1px solid #aaa;margin:15px 0}pre{white-space:pre-wrap}</style></head><body><h1>Header layout regression check</h1><pre id="result">Running…</pre><div id="frames"></div><script>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Header layout regression check</title><style>body{font:15px system-ui;padding:20px}iframe{position:fixed;left:0;top:120px;display:block;border:1px solid #aaa;margin:15px 0}pre{white-space:pre-wrap}</style></head><body><h1>Header layout regression check</h1><pre id="result">Running…</pre><div id="frames"></div><script>
 (async()=>{
  const output=document.getElementById('result'),results=[];
  const settle=w=>new Promise(r=>w.requestAnimationFrame(()=>w.requestAnimationFrame(()=>w.requestAnimationFrame(r))));
@@ -6,16 +6,18 @@
   const frame=document.createElement('iframe');frame.width=width;frame.height=height;frame.title=width+' × '+height;frame.src='/budget/';document.getElementById('frames').append(frame);
   await new Promise((r,j)=>{frame.onload=r;frame.onerror=j;});const w=frame.contentWindow,d=w.document;
   const start=Date.now();while(!w.NICHeader||!w.NICSettings?.current||!d.querySelector('.hero.nic-fixed-header')){if(Date.now()-start>20000)throw Error('Initialization timed out');await new Promise(r=>setTimeout(r,50));}
+  const expected=new URLSearchParams(location.search).get('release');if(expected&&d.documentElement.dataset.nicRelease!==expected)throw Error('Unexpected release: '+d.documentElement.dataset.nicRelease);
   for(const font of [45,60]){
    const settings=JSON.parse(JSON.stringify(w.NICSettings.current));settings.layout.h1=font;w.NICSettings.apply(settings);await settle(w);
    const sizes=[];
-   const check=name=>{const hero=d.querySelector('.hero'),h=hero.getBoundingClientRect();sizes.push(h.height);for(const el of [d.querySelector('#heroTitle'),d.querySelector('#heroText')]){if(el.getBoundingClientRect().bottom>h.bottom-10)throw Error('Text overflow: '+width+' '+name);}if(Math.max(...sizes)-Math.min(...sizes)>.5)throw Error('Height changed: '+width+' '+name+' '+sizes.join(','));};
+   const check=name=>{const hero=d.querySelector('.hero'),h=hero.getBoundingClientRect();sizes.push(h.height);if(hero.scrollWidth>Math.ceil(h.width)+1)throw Error('Horizontal overflow: '+width);if(parseFloat(w.getComputedStyle(d.querySelector('#heroText')).fontSize)<14)throw Error('Description too small');if(parseFloat(w.getComputedStyle(d.querySelector('#heroTitle')).fontSize)<26)throw Error('Heading too small');for(const el of [d.querySelector('#heroTitle'),d.querySelector('#heroText')]){if(el.getBoundingClientRect().bottom>h.bottom-10)throw Error('Text overflow: '+width+' '+name);}if(Math.max(...sizes)-Math.min(...sizes)>.5)throw Error('Height changed: '+width+' '+name+' '+sizes.join(','));};
    for(const id of ['dealTypeBudget','dealTypeOwn','dealTypeRent','dealTypeFlip']){d.getElementById(id).click();await settle(w);check(id);}
    d.getElementById('nicAccountLink').click();await settle(w);check('admin');d.querySelector('.nic-admin-back').click();await settle(w);
    for(const key of ['impressum','datenschutz','agbs','haftungsausschluss']){d.querySelector('[data-legal-placeholder="'+key+'"]').click();await settle(w);check(key);}
    d.querySelector('#nicLegalPanel button').click();await settle(w);check('return');results.push(width+' × '+height+', H1 '+font+'px: PASS, '+sizes[0]+'px across all 9 views and return');
    output.textContent=results.join('\n');
   }
+  frame.remove();
  }
  output.textContent='ALL PASSED\n'+results.join('\n');document.title='PASS – Header layout regression check';
 })().catch(e=>{document.getElementById('result').textContent='FAILED: '+e.message;document.title='FAIL – Header layout regression check';});
