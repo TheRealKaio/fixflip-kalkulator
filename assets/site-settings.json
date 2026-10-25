@@ -1,20 +1,21 @@
 {
   "version": 1,
   "company": {
-    "name": "",
+    "name": "Neustart ImmoCheck",
     "legalForm": "",
-    "representative": "",
-    "street": "",
-    "postalCode": "",
-    "city": "",
-    "country": "",
-    "email": "",
-    "phone": "",
+    "representative": "Max Mustermann",
+    "street": "Mustergasse 1",
+    "postalCode": "22457",
+    "city": "Hamburg",
+    "country": "Deutschland",
+    "email": "info@neustart-immocheck.de",
+    "website": "https://www.neustart-immocheck.de/",
+    "phone": "+49 162 123456",
     "fax": "",
     "registerType": "",
     "registerCourt": "",
     "registerNumber": "",
-    "vatId": "",
+    "vatId": "Steuer ID: 0815",
     "businessId": "",
     "authority": "",
     "profession": "",
@@ -55,6 +56,8 @@
     "whatsapp": ""
   },
   "favicon": "",
+  "websiteLogo": "",
+  "appleTouchIcon": "",
   "meta": {
     "website": {
       "title": "Neustart ImmoCheck – Immobilien verstehen und kalkulieren",
@@ -100,5 +103,12 @@
     "favicon": "Haus-Symbol von Neustart ImmoCheck",
     "appleTouchIcon": "Neustart ImmoCheck – Haus-Symbol",
     "sharing": "Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden."
+  },
+  "legal": {
+    "impressum": "",
+    "agbs": "",
+    "datenschutz": "",
+    "haftungsausschluss": "",
+    "cookie-hinweis": ""
   }
 }
