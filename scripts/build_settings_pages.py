@@ -8,12 +8,15 @@ import json
 import re
 import sys
 from urllib.parse import urlparse
+from render_share_image import render_share_image
 
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 config=json.loads((site/'site-settings.json').read_text())
 if config.get('version')!=1:
     raise SystemExit('Unsupported site settings version')
 base='https://www.neustart-immocheck.de/'
+share_name=render_share_image(config,site)
+share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/'}
 # Publish a real PNG so Safari can fetch the icon before JavaScript runs.
 apple=config.get('appleTouchIcon','')
@@ -35,7 +38,8 @@ def metadata(key,path):
     title=html.escape(str(m.get('title') or fallback.get('title') or 'Neustart ImmoCheck'),quote=True)
     description=html.escape(str(m.get('description') or fallback.get('description') or ''),quote=True)
     url=html.escape(base+path,quote=True)
-    return f'<title>{title}</title>\n<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta name="twitter:card" content="summary">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
+    share_alt=html.escape(str(config.get('sharing',{}).get('text','Neustart ImmoCheck')),quote=True)
+    return f'<title>{title}</title>\n<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="Neustart ImmoCheck">\n<meta property="og:image" content="{share_url}">\n<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="{share_alt}">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:image" content="{share_url}">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
 
 def customize(s,key,path):
     s=s.replace('<html lang="de">',f'<html lang="de" data-nic-page="{key}">',1)

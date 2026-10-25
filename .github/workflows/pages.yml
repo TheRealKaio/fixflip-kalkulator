@@ -502,6 +502,7 @@ jobs:
           python scripts/patch_report_names_v8334.py _site/index.html
           python scripts/patch_apple_touch_icon_v8335.py _site/index.html
           python scripts/patch_logo_admin_v8336.py _site/index.html
+          python scripts/patch_social_preview_v8337.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
@@ -618,7 +619,9 @@ jobs:
           print("Deployment verification passed:", ", ".join(checks))
           PY
 
+          python -m pip install Pillow==12.0.0
           python scripts/build_settings_pages.py _site
+          python scripts/verify_share_image.py
           node --check _site/site-settings.js
           node --check _site/site-integration.js
           node --check _site/admin.js

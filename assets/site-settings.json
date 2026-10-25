@@ -90,5 +90,9 @@
   "reporting": {
     "propertyId": "",
     "clientId": ""
+  },
+  "sharing": {
+    "text": "Immobilien verstehen. Sicherer entscheiden.",
+    "image": ""
   }
 }

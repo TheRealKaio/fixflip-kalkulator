@@ -10,3 +10,5 @@
 .nic-admin-embedded .admin-heading{margin-top:24px}
 #websiteLogoPreview{max-width:100%;height:auto;max-height:90px;object-fit:contain}
 .nic-admin-embedded .favicon-card{min-width:0}
+
+#sharingPreview{display:block;width:100%;height:auto;border:1px solid #e2e8f0;border-radius:12px;margin-top:18px}#sharingFile{display:block;max-width:100%;margin:10px 0}
