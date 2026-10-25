@@ -21,7 +21,7 @@
   function validFavicon(v){return typeof v==='string' && v.length<=400000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)?v:'';}
   function normalize(raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1)throw new Error('Ungültiges Konfigurationsformat (Version 1 erforderlich).');
-    const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),meta:{},reporting:{}};
+    const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),appleTouchIcon:typeof raw.appleTouchIcon==='string' && raw.appleTouchIcon.length<=400000 && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(raw.appleTouchIcon)?raw.appleTouchIcon:'',meta:{},reporting:{}};
     companyFields.forEach(([k])=>s.company[k]=text(raw.company?.[k]));
     for(const [k,v] of Object.entries(layoutDefaults)){
       const x=raw.layout?.[k];
@@ -54,7 +54,12 @@
     style.textContent=`:root{--bg:${l.background};--ink:${l.text};--nic-button-bg:${l.buttonBackground};--nic-button-text:${l.buttonText}}body:not(.nic-admin){font-family:${fonts[l.font]};font-size:${l.bodySize}px;color:${l.text};background:${l.background}}body:not(.nic-admin) :is(button,input,select,textarea){font-family:inherit}body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,.btn.primary,.save-reno-btn,.budget-apply-btn){background:${l.buttonBackground}!important;color:${l.buttonText}!important}`;
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
-      for(const rel of ['icon','apple-touch-icon']){let el=document.head.querySelector(`link[rel="${rel}"]`);if(!el){el=document.createElement('link');el.rel=rel;document.head.append(el);}el.href=current.favicon||new URL('icon.svg',ROOT).href;el.type=current.favicon?'image/png':'image/svg+xml';}
+      for(const rel of ['icon','apple-touch-icon']){
+        const links=Array.from(document.head.querySelectorAll(`link[rel="${rel}"]`));let el=links.shift();links.forEach(x=>x.remove());
+        if(!el){el=document.createElement('link');el.rel=rel;document.head.append(el);}
+        if(rel==='apple-touch-icon'){el.href=current.appleTouchIcon||new URL('apple-touch-icon.png',ROOT).href;el.type='image/png';el.setAttribute('sizes','180x180');}
+        else{el.href=current.favicon||new URL('icon.svg',ROOT).href;el.type=current.favicon?'image/png':'image/svg+xml';}
+      }
     }
     if(key)applyMeta(current,key);
   }

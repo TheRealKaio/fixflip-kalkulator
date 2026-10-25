@@ -1,5 +1,8 @@
 """Build crawlable metadata and stable URLs from the published configuration."""
 from pathlib import Path
+import base64
+import struct
+import shutil
 import html
 import json
 import re
@@ -12,6 +15,17 @@ if config.get('version')!=1:
     raise SystemExit('Unsupported site settings version')
 base='https://www.neustart-immocheck.de/'
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/'}
+# Publish a real PNG so Safari can fetch the icon before JavaScript runs.
+apple=config.get('appleTouchIcon','')
+if apple:
+    if not isinstance(apple,str) or len(apple)>400000 or not re.fullmatch(r'data:image/png;base64,[A-Za-z0-9+/=]+',apple):
+        raise SystemExit('Apple Touch Icon must be a PNG data URL')
+    data=base64.b64decode(apple.split(',',1)[1],validate=True)
+    if len(data)<24 or data[:8]!=b'\x89PNG\r\n\x1a\n' or data[12:16]!=b'IHDR' or struct.unpack('>II',data[16:24])!=(180,180):
+        raise SystemExit('Apple Touch Icon must be a 180 x 180 PNG')
+    (site/'apple-touch-icon.png').write_bytes(data)
+else:
+    shutil.copyfile('assets/apple-touch-icon.png',site/'apple-touch-icon.png')
 root=(site/'index.html').read_text()
 # The base keeps calculator assets and the service worker on the root scope.
 root=root.replace('<head>','<head>\n<base href="/">',1)
@@ -29,6 +43,8 @@ def customize(s,key,path):
     icon=config.get('favicon','')
     if isinstance(icon,str) and len(icon)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',icon):
         s=s.replace('</head>',f'<link rel="icon" href="{html.escape(icon,quote=True)}"></head>',1)
+    s=re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', s, flags=re.I)
+    s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1)
     return s
 (site/'index.html').write_text(customize(root,'website',''))
 for key in ['budget','own','rent','flip']:
@@ -52,3 +68,6 @@ for path,title in [('unternehmen/','Unternehmen & Kontakt'),('impressum/','Impre
 urls=[base+p for p in pages.values()]
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
 print('Settings metadata pages built: website, company and four calculators')
+
+admin=site/'admin.html'
+admin.write_text(re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', admin.read_text(), flags=re.I).replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1))
