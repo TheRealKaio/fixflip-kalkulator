@@ -35,6 +35,9 @@ def normalize(site_dir=Path("_site"), repo_root=Path(".")):
 
     index_path.write_text(index, encoding="utf-8")
     sw_path.write_text(sw, encoding="utf-8")
+    admin_path=site_dir / "admin.html"
+    if admin_path.exists():
+        admin_path.write_text(VISIBLE_RE.sub(display, admin_path.read_text(encoding="utf-8")), encoding="utf-8")
     (site_dir / ".release-version").write_text(display, encoding="utf-8")
     print(f"Release contract normalized to {display}")
 
@@ -57,6 +60,7 @@ def verify(site_dir=Path("_site"), repo_root=Path(".")):
 
     checks = {
         "visible version": visible == [expected],
+        "admin version": sorted(set(VISIBLE_RE.findall((site_dir / "admin.html").read_text(encoding="utf-8")))) == [expected],
         "service-worker registration": registrations == [f"service-worker.js?v={plain}"],
         "service-worker cache": caches == [f"neustart-immocheck-v{plain}"],
     }

@@ -84,7 +84,7 @@
     for(const [keys,label] of [
       [['name','legalForm'],'Anbieter'],[['representative'],'Vertreten durch'],[['street','postalCode','city','country'],'Anschrift'],[['email','phone','fax'],'Kontakt'],
       [['registerType','registerCourt','registerNumber'],'Register'],[['vatId'],'Umsatzsteuer-ID'],[['businessId'],'Wirtschafts-ID'],[['authority'],'Aufsichtsbehörde'],[['profession','professionalCountry','chamber','professionalRules'],'Berufsrechtliche Angaben'],[['capital'],'Kapitalangaben'],[['liquidation'],'Abwicklung / Liquidation'],[['mediaState','mediaAuthority'],'Audiovisuelle Mediendienste'],[['editorialResponsible','editorialAddress'],'Redaktionell verantwortlich'],[['disputeResolution'],'Verbraucherstreitbeilegung'],[['additional'],'Weitere Angaben']
-    ]){const value=keys.map(k=>c[k]).filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
+    ]){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
   window.NICSettings={ROOT,KEY,companyFields,portals,pages,fonts,layoutDefaults,normalize,httpUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
 })();
