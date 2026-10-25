@@ -1,3 +1,5 @@
+/* Reserve scrollbar space so short legal views keep the same text width. */
+html:not(.nic-embed){overflow-y:scroll;scrollbar-gutter:stable}
 /* All views share the smallest header that fits their complete content. */
 .hero.nic-responsive-header{padding:calc(16px + env(safe-area-inset-top)) 20px 20px}
 .hero.nic-responsive-header>h1{margin:20px 0 10px}
