@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const S=window.NICSettings,$=id=>document.getElementById(id),form=$('settingsForm');let favicon='',appleTouchIcon='',dirty=false;
+const S=window.NICSettings,$=id=>document.getElementById(id),form=$('settingsForm');let favicon='',appleTouchIcon='',websiteLogo='',dirty=false;
 function status(message,error=false){$('saveStatus').textContent=message;$('saveStatus').classList.toggle('error',error);}
 function markDirty(){dirty=true;$('saveState').textContent='Ungespeicherte Änderungen';status('Noch nicht im Browser gespeichert.');}
 function field(parent,id,label,type='text',hint=''){
@@ -24,8 +24,8 @@ function build(){
   const preview=document.createElement('div');preview.className='search-preview';const title=document.createElement('strong');title.id='search-'+k+'-title';const desc=document.createElement('p');desc.id='search-'+k+'-description';preview.append(title,desc);card.append(preview);$('metaFields').append(card);
  });
 }
-function collect(){const raw={version:1,company:{},layout:{},social:{},meta:{},favicon,appleTouchIcon};S.companyFields.forEach(([k])=>raw.company[k]=$('company-'+k).value);Object.keys(S.layoutDefaults).forEach(k=>raw.layout[k]=$('layout-'+k).value);S.portals.forEach(([k])=>raw.social[k]=$('social-'+k).value);S.pages.forEach(([k])=>raw.meta[k]={title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:$('meta-'+k+'-googleTag').value});raw.reporting={propertyId:$('statsPropertyId').value,clientId:$('statsClientId').value};return S.normalize(raw);}
-function fill(s){S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.forEach(([k])=>['title','description','googleTag'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||''));$('statsPropertyId').value=s.reporting.propertyId;$('statsClientId').value=s.reporting.clientId;appleTouchIcon=s.appleTouchIcon||'';$('appleTouchIconPreview').src=appleTouchIcon||'apple-touch-icon.png';$('appleTouchIconFile').value='';favicon=s.favicon;$('faviconPreview').src=favicon||'icon.svg';$('faviconFile').value='';updatePreview();}
+function collect(){const raw={version:1,company:{},layout:{},social:{},meta:{},favicon,appleTouchIcon,websiteLogo};S.companyFields.forEach(([k])=>raw.company[k]=$('company-'+k).value);Object.keys(S.layoutDefaults).forEach(k=>raw.layout[k]=$('layout-'+k).value);S.portals.forEach(([k])=>raw.social[k]=$('social-'+k).value);S.pages.forEach(([k])=>raw.meta[k]={title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:$('meta-'+k+'-googleTag').value});raw.reporting={propertyId:$('statsPropertyId').value,clientId:$('statsClientId').value};return S.normalize(raw);}
+function fill(s){S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.forEach(([k])=>['title','description','googleTag'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||''));$('statsPropertyId').value=s.reporting.propertyId;$('statsClientId').value=s.reporting.clientId;websiteLogo=s.websiteLogo||'';$('websiteLogoPreview').src=websiteLogo||'neustart-immocheck-logo.svg';$('websiteLogoFile').value='';notifyLogo();appleTouchIcon=s.appleTouchIcon||'';$('appleTouchIconPreview').src=appleTouchIcon||'apple-touch-icon.png';$('appleTouchIconFile').value='';favicon=s.favicon;$('faviconPreview').src=favicon||'icon.svg';$('faviconFile').value='';updatePreview();}
 function luminance(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);}
 function updatePreview(){
  const s=collect(),l=s.layout,preview=$('layoutPreview');preview.style.fontFamily=S.fonts[l.font];preview.style.fontSize=l.bodySize+'px';preview.style.background=l.background;preview.style.color=l.text;['h1','h2','h3','h4'].forEach(k=>preview.querySelector(k).style.fontSize=l[k]+'px');$('previewButton').style.background=l.buttonBackground;$('previewButton').style.color=l.buttonText;
@@ -40,10 +40,33 @@ const tabs=Array.from(document.querySelectorAll('[role=tab]'));tabs.forEach((tab
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
 form.addEventListener('submit',e=>{e.preventDefault();if(!validForm())return;try{const s=S.save(collect());S.apply(s);dirty=false;$('saveState').textContent='Lokal gespeichert';status('Gilt in diesem Browser. Für alle Besucher ist eine Veröffentlichung erforderlich.');}catch(err){status('Speichern fehlgeschlagen. Bitte exportiere deine Einstellungen als Sicherung.',true);}});
 $('exportSettings').addEventListener('click',()=>{if(!validForm())return;const blob=new Blob([JSON.stringify(collect(),null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='site-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Konfiguration exportiert. Die Veröffentlichung ist ein separater Schritt.');});
-$('importSettings').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>1100000)throw new Error('Datei ist zu groß (maximal 1,1 MB).');if(dirty&&!confirm('Ungespeicherte Änderungen durch die importierte Konfiguration ersetzen?'))return;const s=S.normalize(JSON.parse(await file.text()));fill(s);markDirty();status('Importiert. Prüfe die Angaben und speichere den Entwurf lokal.');}catch(err){status('Import fehlgeschlagen: '+err.message,true);}finally{e.target.value='';}});
+$('importSettings').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>1500000)throw new Error('Datei ist zu groß (maximal 1,5 MB).');if(dirty&&!confirm('Ungespeicherte Änderungen durch die importierte Konfiguration ersetzen?'))return;const s=S.normalize(JSON.parse(await file.text()));fill(s);markDirty();status('Importiert. Prüfe die Angaben und speichere den Entwurf lokal.');}catch(err){status('Import fehlgeschlagen: '+err.message,true);}finally{e.target.value='';}});
 $('discardSettings').addEventListener('click',()=>{if(!confirm('Lokale Einstellungen verwerfen und den veröffentlichten Stand laden?'))return;try{fill(S.discard());S.apply(S.published);dirty=false;$('saveState').textContent='Veröffentlichter Stand geladen';status('Der lokale Entwurf wurde entfernt.');}catch(err){status('Zurücksetzen fehlgeschlagen: '+err.message,true);}});
 $('faviconFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>2*1024*1024)throw new Error('Bitte ein Bild bis maximal 2 MB wählen.');if(!['image/png','image/jpeg','image/webp','image/x-icon','image/vnd.microsoft.icon'].includes(file.type)&&!(/\.ico$/i.test(file.name)&&!file.type))throw new Error('Bitte PNG, JPG, WebP oder ICO wählen.');const url=URL.createObjectURL(file);const img=new Image();try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Das Bild konnte nicht gelesen werden.'));img.src=url;});const canvas=document.createElement('canvas');canvas.width=canvas.height=128;const ctx=canvas.getContext('2d');const size=Math.min(img.naturalWidth,img.naturalHeight);ctx.drawImage(img,(img.naturalWidth-size)/2,(img.naturalHeight-size)/2,size,size,0,0,128,128);favicon=canvas.toDataURL('image/png');$('faviconPreview').src=favicon;markDirty();status('Favicon vorbereitet. Mit „Lokal speichern“ übernehmen.');}finally{URL.revokeObjectURL(url);}}catch(err){status(err.message,true);}finally{e.target.value='';}});
 $('removeFavicon').addEventListener('click',()=>{favicon='';$('faviconPreview').src='icon.svg';$('faviconFile').value='';markDirty();});
+function notifyLogo(){if(window.parent!==window)window.parent.postMessage({type:'nic-logo-preview',value:websiteLogo},location.origin);}
+$('websiteLogoFile').addEventListener('change',async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  if(file.size>2*1024*1024)throw new Error('Bitte ein Bild bis maximal 2 MB wählen.');
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Bitte PNG, JPG oder WebP wählen.');
+  const url=URL.createObjectURL(file),img=new Image();
+  try{
+   await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Das Bild konnte nicht gelesen werden.'));img.src=url;});
+   if(!img.naturalWidth||!img.naturalHeight)throw new Error('Das Bild hat keine gültigen Abmessungen.');
+   const canvas=document.createElement('canvas');let scale=Math.min(1,900/img.naturalWidth,340/img.naturalHeight),value;
+   do{canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);value=canvas.toDataURL('image/png');scale*=.8;}while(value.length>400000);
+   websiteLogo=value;$('websiteLogoPreview').src=value;notifyLogo();markDirty();status('Webseiten-Logo als Header-Vorschau vorbereitet. Mit „Lokal speichern“ übernehmen.');
+  }finally{URL.revokeObjectURL(url);}
+ }catch(err){status(err.message,true);}finally{e.target.value='';}
+});
+$('removeWebsiteLogo').addEventListener('click',()=>{websiteLogo='';$('websiteLogoPreview').src='neustart-immocheck-logo.svg';$('websiteLogoFile').value='';notifyLogo();markDirty();});
+if(window.parent!==window){
+ const resize=()=>window.parent.postMessage({type:'nic-admin-height',height:Math.ceil(document.querySelector('.admin-shell').getBoundingClientRect().height)+24},location.origin);
+ new ResizeObserver(resize).observe(document.querySelector('.admin-shell'));
+ window.addEventListener('load',resize);
+ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===window.parent&&e.data?.type==='nic-request-logo')notifyLogo();});
+}
 $('appleTouchIconFile').addEventListener('change',async e=>{
  const file=e.target.files[0];if(!file)return;
  try{

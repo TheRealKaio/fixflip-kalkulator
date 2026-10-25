@@ -21,7 +21,7 @@
   function validFavicon(v){return typeof v==='string' && v.length<=400000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)?v:'';}
   function normalize(raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1)throw new Error('Ungültiges Konfigurationsformat (Version 1 erforderlich).');
-    const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),appleTouchIcon:typeof raw.appleTouchIcon==='string' && raw.appleTouchIcon.length<=400000 && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(raw.appleTouchIcon)?raw.appleTouchIcon:'',meta:{},reporting:{}};
+    const s={version:1,company:{},layout:{},social:{},favicon:validFavicon(raw.favicon),websiteLogo:validFavicon(raw.websiteLogo),appleTouchIcon:typeof raw.appleTouchIcon==='string' && raw.appleTouchIcon.length<=400000 && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(raw.appleTouchIcon)?raw.appleTouchIcon:'',meta:{},reporting:{}};
     companyFields.forEach(([k])=>s.company[k]=text(raw.company?.[k]));
     for(const [k,v] of Object.entries(layoutDefaults)){
       const x=raw.layout?.[k];
@@ -48,6 +48,14 @@
     let canonical=document.querySelector('link[rel="canonical"]');if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.append(canonical);}canonical.href=new URL(path,ROOT).href;
     setMeta('meta[property="og:url"]',{property:'og:url'},canonical.href);
   }
+  function applyLogo(value){
+    const src=validFavicon(value)||new URL('neustart-immocheck-logo.svg',ROOT).href;
+    document.querySelectorAll('.brand-logo-wrap').forEach(wrap=>{
+      let img=wrap.querySelector('img.brand-logo');
+      if(!img){img=document.createElement('img');img.className='brand-logo';img.alt='Neustart ImmoCheck';wrap.replaceChildren(img);}
+      img.src=src;img.style.maxHeight='72px';img.style.objectFit='contain';
+    });
+  }
   function apply(s,key){
     current=normalize(s);const l=current.layout;
     let style=document.getElementById('nic-custom-layout');if(!style){style=document.createElement('style');style.id='nic-custom-layout';document.head.append(style);}
@@ -61,6 +69,7 @@
         else{el.href=current.favicon||new URL('icon.svg',ROOT).href;el.type=current.favicon?'image/png':'image/svg+xml';}
       }
     }
+    applyLogo(current.websiteLogo);
     if(key)applyMeta(current,key);
   }
   function readLocal(){try{const raw=localStorage.getItem(KEY);return raw?normalize(JSON.parse(raw)):null;}catch(_){return null;}}
@@ -77,5 +86,5 @@
       [['registerType','registerCourt','registerNumber'],'Register'],[['vatId'],'Umsatzsteuer-ID'],[['businessId'],'Wirtschafts-ID'],[['authority'],'Aufsichtsbehörde'],[['profession','professionalCountry','chamber','professionalRules'],'Berufsrechtliche Angaben'],[['capital'],'Kapitalangaben'],[['liquidation'],'Abwicklung / Liquidation'],[['mediaState','mediaAuthority'],'Audiovisuelle Mediendienste'],[['editorialResponsible','editorialAddress'],'Redaktionell verantwortlich'],[['disputeResolution'],'Verbraucherstreitbeilegung'],[['additional'],'Weitere Angaben']
     ]){const value=keys.map(k=>c[k]).filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,companyFields,portals,pages,fonts,layoutDefaults,normalize,httpUrl,validFavicon,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,companyFields,portals,pages,fonts,layoutDefaults,normalize,httpUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
 })();

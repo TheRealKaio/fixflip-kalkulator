@@ -501,6 +501,7 @@ jobs:
           python scripts/patch_calculator_button_width_v8333.py _site/index.html
           python scripts/patch_report_names_v8334.py _site/index.html
           python scripts/patch_apple_touch_icon_v8335.py _site/index.html
+          python scripts/patch_logo_admin_v8336.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
@@ -622,6 +623,7 @@ jobs:
           node --check _site/site-integration.js
           node --check _site/admin.js
           node scripts/verify_site_settings.js _site
+          node scripts/verify_embedded_admin.js
           node --check _site/statistics-core.js
           node --check _site/statistics.js
           node --check _site/statistics-admin.js
