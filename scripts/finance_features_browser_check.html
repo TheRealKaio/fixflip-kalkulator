@@ -11,6 +11,8 @@ try{
   f.width=g.width=width;await Promise.all([load(f,'/finanzierungsrechner/','/finanzierungsrechner/'),load(g,'/budget/','/budget/')]);
   const metrics=e=>{const d=e.contentDocument,w=e.contentWindow;return [...d.querySelectorAll('.bottom-actions>button')].map(b=>{const r=b.getBoundingClientRect(),s=w.getComputedStyle(b);return {width:r.width,height:r.height,font:s.font,padding:s.padding,radius:s.borderRadius,background:s.backgroundColor,color:s.color,shadow:s.boxShadow};});};
   const finance=metrics(f),budget=metrics(g);if(JSON.stringify(finance)!==JSON.stringify(budget))throw Error('Footer mismatch '+width+': '+JSON.stringify({finance,budget}));
+  const menuStyle=e=>{const t=e.contentDocument.querySelector('.deal-type-title'),s=e.contentWindow.getComputedStyle(t);return [s.fontSize,s.fontWeight,s.lineHeight,s.letterSpacing,s.margin,s.color].join('|');};
+  if(menuStyle(f)!==menuStyle(g))throw Error('Menu heading typography mismatch '+width);
   const d=f.contentDocument,w=f.contentWindow;for(const [id,value]of Object.entries({loan:300000,interest:4,repay:2,extra:5})){d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
   const fmt=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2});
   for(const [id,value]of [['monthlyInterest',1000],['monthlyRepayment',500],['annualExtraAmount',15000]])if(!d.getElementById(id).textContent.includes(fmt.format(value)))throw Error('Amount incorrect: '+id);

@@ -10,7 +10,7 @@
   const s=JSON.parse(JSON.stringify(w.NICSettings.current));s.websiteLogo=logo;s.company.name='QA ANBIETER';s.company.website='https://example.org';s.legal.haftungsausschluss='<h2>QA Haftung</h2><p>QA_LEGAL_CURRENT {{company.name}}</p>';w.NICSettings.save(s);await w.NICPDF.prepare();
   if(d.querySelector('img.brand-logo')?.src!==logo)throw Error('Finance header does not use saved admin logo');
   d.getElementById('loan').value=300000;d.getElementById('extra').value=5;d.getElementById('extra').dispatchEvent(new w.Event('input',{bubbles:true}));if(!d.getElementById('annualExtraNote').textContent.includes('15.000,00'))throw Error('Annual extra amount missing from basis note');
-  if(d.getElementById('newCalc').textContent!=='Finanzierungs neu kalkulieren')throw Error('Reset label incorrect');
+  if(d.getElementById('newCalc').textContent!=='Finanzierung neu kalkulieren')throw Error('Reset label incorrect');
   const check=(doc,name)=>{const count=doc.getNumberOfPages(),text=p=>(doc.internal.pages[p]||[]).join('\n');if(!text(count).includes('QA_LEGAL_CURRENT')||!text(count).includes('QA ANBIETER'))throw Error('Current disclaimer/operator missing '+name);for(let p=1;p<count;p++)if(text(p).includes('QA_LEGAL_CURRENT'))throw Error('Disclaimer is not on last page '+name);if(!doc.output().includes('/Author (QA ANBIETER)'))throw Error('Stale author '+name);rows.push(name+': current admin logo/data/legal, separate final disclaimer PASS');out.textContent=rows.join('\n');};
   check(w.NICPDF.financeDocument({loan:300000,interest:4,repay:2,extra:5,years:10}),'Finanzierungsrechner');
   await load('/budget/');w=f.contentWindow;d=f.contentDocument;await w.NICPDF.prepare();

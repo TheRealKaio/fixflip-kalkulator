@@ -3,7 +3,7 @@ from pathlib import Path
 import re,sys
 from unify_calculator_header import split
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
-pattern=re.compile(r'\.(?:app|section|card|deal-type-card)(?![\w-])')
+pattern=re.compile(r'\.(?:app|section|card|deal-type-card|deal-type-title)(?![\w-])')
 root=(site/'index.html').read_text();rules=[]
 for css in re.findall(r'<style\b[^>]*>(.*?)</style>',root,re.S|re.I):rules.extend(split(css,pattern)[1])
 # Preserve matching layout rules from the standard external stylesheets too.
@@ -11,7 +11,9 @@ for href in re.findall(r'<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"',root):
  asset=site/Path(href).name
  if asset.is_file():rules.extend(split(asset.read_text(),pattern)[1])
 if not rules:raise SystemExit('Original card layout rules missing')
-(site/'calculator-layout.css').write_text('/* Original shared calculator shell and card layout. */\n'+'\n'.join(rules)+'\n')
+css=re.sub(r'\.deal-type-title\s*\{[^{}]*\}','','\n'.join(rules))
+css+='\n.deal-type-card>.deal-type-title{font-size:var(--nic-menu-title-size,18px)!important;font-weight:700;line-height:1.5;letter-spacing:-.02em;color:var(--ink);margin:0 0 4px}\n'
+(site/'calculator-layout.css').write_text('/* Original shared calculator shell, cards and menu heading. */\n'+css)
 for asset in site.glob('*.css'):
  if asset.name=='calculator-layout.css':continue
  asset.write_text(split(asset.read_text(),pattern)[0])
