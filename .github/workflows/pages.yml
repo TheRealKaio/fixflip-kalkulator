@@ -633,6 +633,7 @@ jobs:
           python scripts/build_settings_pages.py _site
           mkdir -p _site/finanzierungsrechner
           cp assets/financing.html _site/finanzierungsrechner/index.html
+          sed -i "s/VERSION_PLACEHOLDER/$(cat _site/.release-version)/g" _site/finanzierungsrechner/index.html
           node -e "const fs=require('fs'); const html=fs.readFileSync('_site/finanzierungsrechner/index.html','utf8'); fs.writeFileSync('/tmp/nic-finance-inline.js',html.match(/<script>([\\s\\S]*?)<\\/script>/)[1]);"
           node --check /tmp/nic-finance-inline.js
           python scripts/verify_share_image.py
