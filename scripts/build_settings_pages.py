@@ -106,22 +106,24 @@ def write_mortgage_rates():
             i=next((i for i,line in enumerate(lines) if 'TIME_PERIOD' in line and 'OBS_VALUE' in line),None)
             if i is None:
                 raise ValueError('No SDMX CSV header for '+name+': '+raw[:250].replace('\\n',' '))
-            reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])))
+            sample=lines[i]\n            delimiter=';' if sample.count(';')>sample.count(',') else ','\n            reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])),delimiter=delimiter)
             rows={}
             for row in reader:
-                month=row.get('TIME_PERIOD','')
-                value=row.get('OBS_VALUE','')
-                if len(month)==7 and month[4]=='-' and value:
-                    try:rows[month]=float(value)
+                month=str(row.get('TIME_PERIOD','')).strip().strip('"')
+                value=str(row.get('OBS_VALUE','')).strip().strip('"')
+                import re
+                match=re.search(r'(20[0-9]{2}|19[0-9]{2})[-/]([01][0-9])',month)
+                if match and value and value not in ('-','.'):
+                    try:rows[match[1]+'-'+match[2]]=float(value.replace(',','.'))
                     except ValueError:pass
-            if not rows:raise ValueError('No data for '+name)
+            if not rows:raise ValueError('No data for '+name+'; headers='+str(reader.fieldnames)+'; sample='+str(lines[i+1:i+4])[:350])
             values[name]=rows
         keys=sorted(set(values['five'])|set(values['ten']))
         points=[{'month':k,'five':values['five'].get(k),'ten':values['ten'].get(k)} for k in keys[-121:]]
         (site/'mortgage-rates.json').write_text(json.dumps({'source':'Deutsche Bundesbank BBIM1 SUD117 SUD118','series':points,'latest':keys[-1]},ensure_ascii=False))
         print('Bundesbank rate data bundled:',keys[-1],len(points))
     except Exception as err:
-        print('Bundesbank bundled data unavailable; client falls back to live API:',err)
+        raise SystemExit('Bundesbank-Daten konnten nicht eingelesen werden: '+str(err))
 
 write_mortgage_rates()
 
