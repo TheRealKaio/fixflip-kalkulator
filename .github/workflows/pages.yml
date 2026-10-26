@@ -654,11 +654,16 @@ jobs:
           node --check _site/statistics-admin.js
           node scripts/verify_statistics.js _site
           node scripts/verify_statistics_reporting.js _site
+          python scripts/build_pdf_reports.py _site
+          node --check _site/pdf-reports.js
           python scripts/unify_calculator_header.py _site
           python scripts/unify_calculator_actions.py _site
+          python scripts/unify_calculator_layout.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
+          npm install --prefix /tmp/nic-pdf-check jspdf@2.5.1 linkedom@0.18.12 --silent
+          node scripts/verify_pdf_reports.cjs _site /tmp/nic-pdf-check/node_modules
           touch _site/.nojekyll
 
       - name: Setup Pages

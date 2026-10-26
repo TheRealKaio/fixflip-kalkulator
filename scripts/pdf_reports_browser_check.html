@@ -1,0 +1,24 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="robots" content="noindex"><title>PDF reports check</title><h1>PDF reports check</h1><pre id="result">Running…</pre><div id="frames"></div><script>
+(async()=>{
+ const out=document.getElementById('result'),rows=[],key='nic_site_settings_v1',old=localStorage.getItem(key),selection=localStorage.getItem('nic_last_calculator_v1'),f=document.createElement('iframe');f.width=390;f.height=844;f.style.cssText='position:fixed;top:200px;left:0';document.getElementById('frames').append(f);
+ const settle=w=>new Promise(r=>w.requestAnimationFrame(()=>w.requestAnimationFrame(r)));
+ const load=async url=>{const p=new Promise((r,j)=>{f.onload=r;f.onerror=j;});f.src=url;await p;const start=Date.now();while(!f.contentWindow.NICPDF||!f.contentWindow.NICSettings?.current||!f.contentWindow.jspdf){if(Date.now()-start>20000)throw Error('PDF initialization failed');await new Promise(r=>setTimeout(r,50));}await settle(f.contentWindow);};
+ try{
+  await load('/finanzierungsrechner/');let w=f.contentWindow,d=f.contentDocument;
+  const svg=d.querySelector('svg.brand-logo text');if(svg&&parseFloat(w.getComputedStyle(svg).fontSize)<50)throw Error('Logo inherits diagram font');
+  const canvas=document.createElement('canvas');canvas.width=900;canvas.height=340;const c=canvas.getContext('2d');c.fillStyle='#0d9488';c.fillRect(0,0,900,340);c.fillStyle='white';c.font='bold 80px sans-serif';c.fillText('QA Admin Logo',80,210);const logo=canvas.toDataURL('image/png');
+  const s=JSON.parse(JSON.stringify(w.NICSettings.current));s.websiteLogo=logo;s.company.name='QA ANBIETER';s.company.website='https://example.org';s.legal.haftungsausschluss='<h2>QA Haftung</h2><p>QA_LEGAL_CURRENT {{company.name}}</p>';w.NICSettings.save(s);await w.NICPDF.prepare();
+  if(d.querySelector('img.brand-logo')?.src!==logo)throw Error('Finance header does not use saved admin logo');
+  d.getElementById('loan').value=300000;d.getElementById('extra').value=5;d.getElementById('extra').dispatchEvent(new w.Event('input',{bubbles:true}));if(!d.getElementById('annualExtraNote').textContent.includes('15.000,00'))throw Error('Annual extra amount missing from basis note');
+  if(d.getElementById('newCalc').textContent!=='Finanzierungs neu kalkulieren')throw Error('Reset label incorrect');
+  const check=(doc,name)=>{const count=doc.getNumberOfPages(),text=p=>(doc.internal.pages[p]||[]).join('\n');if(!text(count).includes('QA_LEGAL_CURRENT')||!text(count).includes('QA ANBIETER'))throw Error('Current disclaimer/operator missing '+name);for(let p=1;p<count;p++)if(text(p).includes('QA_LEGAL_CURRENT'))throw Error('Disclaimer is not on last page '+name);if(!doc.output().includes('/Author (QA ANBIETER)'))throw Error('Stale author '+name);rows.push(name+': current admin logo/data/legal, separate final disclaimer PASS');out.textContent=rows.join('\n');};
+  check(w.NICPDF.financeDocument({loan:300000,interest:4,repay:2,extra:5,years:10}),'Finanzierungsrechner');
+  await load('/budget/');w=f.contentWindow;d=f.contentDocument;await w.NICPDF.prepare();
+  let resolveSave;const original=w.NICPDF.create;w.NICPDF.create=(...args)=>{const doc=original(...args);doc.save=name=>{resolveSave({doc,name});};return doc;};
+  for(const [id,name]of [['dealTypeBudget','Budget'],['dealTypeOwn','Eigennutzung'],['dealTypeRent','Vermietung'],['dealTypeFlip','Fix und Flip']]){
+   d.getElementById(id).click();await settle(w);const saved=new Promise((r,j)=>{resolveSave=r;setTimeout(()=>j(Error('PDF save timed out '+name)),15000);});d.getElementById('savePdf').click();const {doc,name:file}=await saved;check(doc,name);if(!file.startsWith('Neustart ImmoCheck '+name+' Bericht ')||!file.endsWith('.pdf'))throw Error('File naming mismatch '+file);
+  }
+  out.textContent='ALL PASSED\n'+rows.join('\n');document.title='PASS – All five PDF reports';f.remove();
+ }finally{if(old===null)localStorage.removeItem(key);else localStorage.setItem(key,old);if(selection===null)localStorage.removeItem('nic_last_calculator_v1');else localStorage.setItem('nic_last_calculator_v1',selection);}
+})().catch(e=>document.getElementById('result').textContent='FAILED: '+e.message);
+</script></html>

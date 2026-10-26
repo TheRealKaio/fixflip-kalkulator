@@ -13,7 +13,9 @@ try{
   const finance=metrics(f),budget=metrics(g);if(JSON.stringify(finance)!==JSON.stringify(budget))throw Error('Footer mismatch '+width+': '+JSON.stringify({finance,budget}));
   const d=f.contentDocument,w=f.contentWindow;for(const [id,value]of Object.entries({loan:300000,interest:4,repay:2,extra:5})){d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
   const fmt=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2});
-  for(const [id,value]of [['monthlyInterest',1000],['monthlyRepayment',500],['annualExtraValue',15000]])if(!d.getElementById(id).textContent.includes(fmt.format(value)))throw Error('Amount incorrect: '+id);
+  for(const [id,value]of [['monthlyInterest',1000],['monthlyRepayment',500],['annualExtraAmount',15000]])if(!d.getElementById(id).textContent.includes(fmt.format(value)))throw Error('Amount incorrect: '+id);
+  for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])if(d.getElementById(id).tagName!=='STRONG')throw Error('Amount must be bold: '+id);
+  const reference=g.contentDocument.getElementById('budgetHouseholdSection').getBoundingClientRect(),card=d.querySelector('.section > section.card').getBoundingClientRect();if(Math.abs(reference.width-card.width)>.5||Math.abs(reference.left-card.left)>.5)throw Error('Card width/position mismatch '+width);
   rows.push(width+'px: all 3 footer buttons match Budget exactly; monthly/annual amounts update PASS');out.textContent=rows.join('\n');
  }
  await load(f,'/admin.html?embedded=1#meta','/admin.html');const d=f.contentDocument;
