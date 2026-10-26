@@ -633,6 +633,7 @@ jobs:
           python scripts/build_settings_pages.py _site
           python scripts/extract_finance_footer.py _site
           python scripts/extract_finance_menu.py _site
+          python scripts/extract_finance_header.py _site
           mkdir -p _site/finanzierungsrechner
           cp assets/financing.html _site/finanzierungsrechner/index.html
           sed -i "s/VERSION_PLACEHOLDER/$(cat _site/.release-version)/g" _site/finanzierungsrechner/index.html
