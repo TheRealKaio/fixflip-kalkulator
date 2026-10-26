@@ -1,100 +1,201 @@
 # Neustart ImmoCheck – Projektdokumentation
 
 **Repository:** `TheRealKaio/fixflip-kalkulator`  
-**Stand:** 26.10.2026 · Release V8.348  
+**Stand:** 26.10.2026 · Release V8.349  
 **Produktivadresse:** <https://www.neustart-immocheck.de/>  
 **GitHub-Pages-Adresse:** <https://therealkaio.github.io/fixflip-kalkulator/>
 
-Diese Dokumentation beschreibt den Repository-Stand und die vereinbarten Produktregeln. Die veröffentlichte App wird im GitHub-Actions-Workflow aus der aufgeteilten gzip/Base64-Quelle unter `source/` gebaut und mit ergänzenden Dateien aus `assets/` sowie Verarbeitungsskripten aus `scripts/` vervollständigt. Änderungen an einer Quellkomponente müssen daher in ihrem vorgesehenen Build-Schritt vorgenommen werden.
+Diese Dokumentation beschreibt den Repository-Stand, die Menüpunkte und die tatsächlich verwendeten Rechenregeln. Sie orientiert sich an der Feldreferenz der README-Beispielversion und wurde für die fünf aktuellen Rechner aktualisiert. Eingaben ohne direkten Recheneffekt sind als Informations- oder Vorbereitungseingaben gekennzeichnet.
+
+Die veröffentlichte App wird im GitHub-Actions-Workflow aus der aufgeteilten gzip/Base64-Quelle unter `source/` gebaut und mit Dateien aus `assets/` sowie Verarbeitungsskripten aus `scripts/` ergänzt. Änderungen gehören in die jeweilige Quellkomponente; generierte `_site/`-Dateien werden beim Build neu erstellt.
 
 ## 1. Aktueller Stand
 
-- Statische, responsive Web-App auf GitHub Pages; STRATO-Domain und Pages-Veröffentlichung sind eingerichtet.
-- Rechner: Budget, Eigennutzung, Vermietung, Fix & Flip und Finanzierungsrechner. Die Rechner teilen Navigation, Kopfbereich, Admin-Konfiguration und PDF-Branding.
-- Quellmodell: `source/index.html.gz.b64.part*` enthält die komprimierte Hauptseite. `assets/financing.html` ist die eigenständige Finanzierungsseite. `assets/admin.html`, `assets/admin.js`, `assets/admin.css` und `assets/pdf-reports.js` liefern Admin- und PDF-Bausteine. Der Workflow `.github/workflows/pages.yml` baut, prüft und veröffentlicht die Seiten.
-- Für Änderungen an Seiteninhalten und Layout sind die Quellassets und Build-Skripte maßgeblich; generierte `_site`-Dateien werden beim Build neu erstellt.
-- Die Anschlussfinanzierung zeigt Fällt/Bleibt/Steigt in ganzen Euro; „Bleibt“ ist gelb und „Steigt“ rot. Der Admin-Tab Layout bietet die PDF-Dokumentation als letzte Karte zum Download an.
-- Admin-Einstellungen liegen derzeit lokal im Browser. Die Einstellungsseite weist darauf hin, dass der Bereich nicht angemeldet und nicht geräteübergreifend ist. Eine serverseitige Benutzerverwaltung und Datenbank sind noch nicht eingerichtet.
-- Die Admin-Seite bearbeitet Schriftfamilie, Schriftgrößen, Grund-/Text-/Buttonfarben, Unternehmens- und Metadaten, Profile, rechtliche Inhalte und Statistiken. Die Layoutfarben sind sechstellige HEX-Werte.
-- `assets/site-settings.json` enthält noch Platzhalterangaben für Anbieter- und Impressumsdaten. Vor einer Bestätigung im öffentlichen Impressum müssen die Angaben durch freigegebene Unternehmensdaten ersetzt werden.
-- PDF-Berichte verwenden `assets/pdf-reports.js`: A4, dunkelblauer Kopfbereich, weißes Logo in einer abgerundeten Box, Berichtstitel und Untertitel sowie Fußzeile mit Domain, Versionsnummer und Seitenzahl. Die Einstellungen können Logo, Farben und Unternehmensangaben beeinflussen.
+- Responsive Web-App auf GitHub Pages; die Produktivdomain `www.neustart-immocheck.de` wird mitveröffentlicht.
+- Rechner: Budget, Eigennutzung, Vermietung, Fix und Flip sowie Finanzierungsrechner.
+- Die fünf Rechner haben eigene Routen und teilen die Navigation, den stabilisierten Header, Admin-Einstellungen und PDF-Branding.
+- `source/index.html.gz.b64.part*` enthält die komprimierte Hauptseite. Der Finanzierungsrechner liegt in `assets/financing.html`. Admin- und PDF-Bausteine liegen in `assets/`; der Build und die Versionsverarbeitung liegen in `.github/workflows/pages.yml` und `scripts/`.
+- In der Anschlussfinanzierung heißen die drei Varianten „Zinssatz fällt“, „Zinssatz stabil“ und „Zinssatz steigt“. Die Beträge werden ohne Nachkommastellen angezeigt; „Zinssatz stabil“ ist gelb, „Zinssatz steigt“ rot.
+- Die Projektdokumentation ist unter Admin → Layout als letzte Karte zum Herunterladen vorgesehen. Die PDF nutzt das vorhandene Berichtsbranding.
+- Admin-Einstellungen werden lokal im Browser gespeichert. Eine serverseitige Anmeldung, zentrale Speicherung und Datenbank sind noch nicht eingerichtet.
+- `assets/site-settings.json` enthält noch Platzhalterangaben zu Anbieter- und Impressumsdaten. Vor Bestätigung des öffentlichen Impressums müssen die freigegebenen Unternehmensdaten eingetragen werden.
+- PDF-Berichte nutzen die gemeinsame Implementierung in `assets/pdf-reports.js` für Kopfbereich, Logo, Fußzeile und rechtliche Hinweise.
 
 ## 2. Navigation und Layoutregeln
 
-Die gemeinsame Rechnernavigation enthält die fünf Produktbereiche Budget, Eigennutzung, Vermietung, Fix & Flip und Finanzierung. Der Finanzierungsrechner ist unter `/finanzierungsrechner/` erreichbar. Die Navigation merkt sich den zuletzt verwendeten Rechner und unterstützt direkte Rechner-URLs.
+Die Navigation führt zu den fünf Rechnern Budget, Eigennutzung, Vermietung, Fix und Flip und Finanzierung. Die Rechner sind über eigene Pfade erreichbar. Beim nächsten Aufruf wird der zuletzt verwendete Rechner geöffnet; direkte Rechnerlinks bleiben möglich.
 
-Verbindliche Gestaltungsregeln:
+- Rechner nutzen eine gemeinsame Kopfzeile, Navigation, Aktionsleiste und Footer-Logik. `assets/stable-header.js`, `assets/stable-header.css` und `assets/header-layout.css` stabilisieren den Header.
+- Die Inhaltsbreite des Finanzierungsrechners beträgt höchstens 640 px. Karten, Eingaben und Schaltflächen passen sich schmalen Ansichten an.
+- Die Schaltflächen für fünf und zehn Jahre in der Zinskurve haben gleiche Breite und bleiben auch auf Mobilgeräten lesbar.
+- PDF-Berichte verwenden A4-Hochformat. Der Kopfbereich ist 34 mm hoch. Das Logo sitzt links bei x=16 mm; der Titel steht rechts daneben. Die Fußzeile führt Domain links bei x=16 mm, Version mittig bei x=105 mm und Seitenzahl rechts bei x=194 mm nahe y=289 mm.
+- Ergebniszustände sind zusätzlich zur Farbe beschriftet.
+- Währungswerte im Finanzierungsrechner verwenden die deutsche Locale. Die Oberfläche rundet auf ganze Euro; Zwischenwerte werden ungerundet weiterverarbeitet.
 
-- Rechner nutzen eine gemeinsame Kopfzeile, Navigation, Aktionsleiste und Footer-Logik. Der Header wird über `assets/stable-header.js`, `assets/stable-header.css` und `assets/header-layout.css` stabilisiert.
-- Die gemeinsame Inhaltsbreite beträgt im Finanzierungsrechner maximal 640 px. Karten, Eingaben und Schaltflächen passen sich an schmale Ansichten an.
-- Buttons für fünf und zehn Jahre in der Zinskurve sind gleich breit und auf Mobilgeräten vollständig lesbar.
-- PDF-Berichte teilen sich den Marken-Header und die Footer-Funktion aus `assets/pdf-reports.js`. Kopfbereich: 34 mm hoch; Logo links bei x=16 mm, Titel rechts davon. Fußzeile: Domain bei x=16 mm, Version mittig bei x=105 mm, Seitenzahl rechts bei x=194 mm, jeweils nahe 289 mm.
-- Ergebnisboxen vermitteln ihren Status zusätzlich zur Farbe über die Beschriftung. Gelb kennzeichnet „Bleibt“, Rot kennzeichnet „Steigt“.
-- Währungsangaben im Finanzierungsrechner verwenden die deutsche Locale. Darlehensrate, Restschuld und Anschlussraten werden auf ganze Euro gerundet angezeigt; die zugrunde liegende Berechnung bleibt ungerundet.
+## 3. CSS- und PDF-Regeln
 
-## 3. Anschlussfinanzierung
-
-Die Seite simuliert die Restschuld am Ende der gewählten Bindungsdauer unter dem im Rechner eingestellten Sollzins, der Anfangstilgung und einer optionalen jährlichen Sondertilgung. Die Szenarien verwenden dieselbe Restschuld und dieselbe gewählte Tilgung:
-
-| Szenario | Szenariozins | Monatsrate |
-|---|---:|---:|
-| Fällt | eingestellter Sollzins − 1,5 Prozentpunkte | Restschuld × (Szenariozins + Tilgung p. a.) ÷ 12 |
-| Bleibt | eingestellter Sollzins | Restschuld × (Szenariozins + Tilgung p. a.) ÷ 12 |
-| Steigt | eingestellter Sollzins + 2 Prozentpunkte | Restschuld × (Szenariozins + Tilgung p. a.) ÷ 12 |
-
-Die Anzeige wird mit `Intl.NumberFormat('de-DE', { style:'currency', currency:'EUR', maximumFractionDigits:0 })` auf ganze Euro gerundet. „Bleibt“ hat einen gelben Hintergrund; „Steigt“ einen roten Hintergrund. Das sind Sensitivitätsszenarien, keine Zinsprognosen oder Eintrittswahrscheinlichkeiten.
-
-Berechnungsablauf im Rechner:
-
-1. Monatsrate während der Zinsbindung: `Darlehen × (Sollzins p. a. + Tilgung p. a.) ÷ 1.200`.
-2. Monatliche Zinslast: `Restschuld des Vormonats × Sollzins p. a. ÷ 1.200`.
-3. Monatliche Tilgung: Monatsrate minus monatliche Zinslast; sie wird auf den offenen Darlehensbetrag begrenzt.
-4. Jährliche Sondertilgung: `Darlehen × Sondertilgungssatz p. a. ÷ 100`, am Jahresende von der Restschuld abgezogen.
-5. Anschlussrate: `Restschuld nach der Bindungsdauer × (Szenariozins p. a. + gewählte Tilgung p. a.) ÷ 1.200`.
-
-Im erklärenden Hinweis steht, dass während der Zinsbindung Sollzins und Monatsrate konstant angesetzt werden und Sondertilgungen, Gebühren und Zinsänderungen der Anschlussperiode nicht einbezogen sind.
+- Admin → Layout bearbeitet Schriftfamilie, Grundschriftgröße, H1 bis H4 sowie Hintergrund-, Text-, Button-Hintergrund- und Button-Textfarben. Farben müssen sechsstellige HEX-Werte haben. Ein Kontrastwert wird angezeigt; unter 4,5:1 erscheint ein Hinweis.
+- Rechnerbereiche haben flexible Grid-Layouts. Bei schmalen Ansichten wechseln Ergebnisboxen und Buttons in eine einspaltige Darstellung.
+- Die Finanzierungs-KPI verwenden `.kpi` als Basis. Die zweite Anschlussfinanzierungsbox („Zinssatz stabil“) erhält einen gelben Hintergrund, die dritte („Zinssatz steigt“) einen roten. Beschriftungen bleiben lesbar; Zahlen verwenden tabellarische Ziffern.
+- `assets/pdf-reports.js` stellt gemeinsame Funktionen für Dokumenterstellung, Header, Footer, Logo und Disclaimer bereit. Kopfbereich dunkelblau (#0F172A), Logo auf weißem Feld, Footer mit Domain, Version und Seitenzahl. Neue PDF-Ausgaben sollen diese gemeinsame Implementierung verwenden.
+- Die README-PDF wird im Admin-Tab „Layout“ als letzte Karte mit direktem Downloadlink angeboten. Der Build kopiert sie in den veröffentlichten Dokumentationspfad.
 
 ## 4. Formeln und Berechnungsregeln
 
-### 4.1 Gemeinsame Finanzierungsformeln
+### 4.1 Gemeinsame Formeln
 
-Zinssätze und Tilgungssätze werden in der Oberfläche in Prozent eingegeben. Für Monatsberechnungen gilt:
+In den folgenden Formeln bedeutet \(P\) Kaufpreis, \(K\) Darlehen, \(S\) Verkaufspreis bzw. angenommener Marktwert, \(A\) Wohnfläche und \(M\) Monatszahl. Prozentwerte werden als Dezimalzahl eingesetzt, sofern eine Formel nicht ausdrücklich mit „Prozent ÷ 100“ arbeitet. Geldwerte werden nur für die Anzeige gerundet.
 
-- Annuität: `K × (i + t) ÷ 12`, wenn `i` und `t` als Dezimalwerte vorliegen.
-- Monatszins auf Restschuld `B`: `B × i ÷ 12`.
-- Monatliche Tilgung: `Monatsrate − Monatszins`.
-- Restschuld nach Monatszahlung: `max(0, alte Restschuld − monatliche Tilgung)`.
-- Restschuld wird nicht negativ; letzte Zahlung darf höchstens die offene Restschuld tilgen.
-- Rundung findet bei der Anzeige statt, nicht in den Zwischenberechnungen.
+| Feld / Kennzahl | Erklärung | Formel / Rechenlogik |
+|---|---|---|
+| Preis je m² | Vergleich von Kaufpreis und Fläche | \(P / A\), sofern \(A > 0\). |
+| Grunderwerbsteuer | Abhängig vom gewählten Bundesland | \(P \times Grunderwerbsteuersatz\). |
+| Notar und Grundbuch | Prozentwert auf den Kaufpreis | \(P \times Notar-/Grundbuchsatz\). |
+| Makler beim Kauf | Prozentwert auf den Kaufpreis | \(P \times Käuferprovision\). |
+| Kaufnebenkosten | Summe der Erwerbskosten | Grunderwerbsteuer + Notar/Grundbuch + Makler beim Kauf. |
+| Sanierung inkl. Puffer | Summe der Gewerke mit Reserve | \(Sanierungsbasis \times (1 + Puffer\% / 100)\). |
+| Finanzierungsbasis | Kauf und Sanierung; Nebenkosten abhängig von der Checkbox | \(P + Sanierung\ inkl.\ Puffer + (Kaufnebenkosten,\ falls\ mitfinanziert)\). |
+| Bruttodarlehen | Anteil der Finanzierungsbasis | \(Finanzierungsbasis \times Finanzierungsquote\% / 100\). |
+| Darlehen nach Eigenkapital | Kreditbetrag nach Eigenmitteleinsatz | \(\max(0,\ Bruttodarlehen - eingesetztes\ Eigenkapital)\). |
+| Monatlicher Zins zu Beginn | Prozentualer Monatszins auf den Kreditbetrag | \(K \times Zins\% / 1.200\). |
+| Monatliche Tilgung zu Beginn | Prozentualer Monatsbetrag | \(K \times Tilgung\% / 1.200\). |
+| Vereinfachte Monatsrate | Summe aus anfänglichem Zins und anfänglicher Tilgung | \(K \times (Zins\% + Tilgung\%) / 1.200\). |
+| Laufende Kosten gesamt | Monatliche Kosten über die eingetragene Dauer | Monatskosten \(\times M\). |
+| Laufende Modellzinsen | Fix-und-Flip- und Eigennutzungsmodell | \(K \times Zins\% / 100 \times M / 12\). Die Zinsbasis sinkt im Projektmodell nicht mit der Tilgung. |
+| Tilgung im Projektmodell | Kumulierte Tilgung, begrenzt auf das Darlehen | \(\min(K,\ K \times Tilgung\% / 100 \times M / 12)\). Tilgung reduziert die Restschuld, wird aber nicht als Zins- oder Projektkosten doppelt gezählt. |
+
+Die Bundesländersteuersätze sind im Programm hinterlegt und bestimmen die Grunderwerbsteuer. Prozentwerte, Finanzierungsquoten und Laufzeiten werden auf nichtnegative Werte begrenzt, wo die Rechnerlogik dies vorsieht.
 
 ### 4.2 Budget
 
-Der Budgetrechner leitet aus Haushaltsnettoeinkommen, Ausgaben, Eigenkapital, Kaufnebenkosten und Finanzierungsparametern ein freies Monatsbudget und eine daraus tragbare Darlehensgröße ab. Die monatliche Belastungsquote lautet `Kreditrate ÷ Haushaltsnettoeinkommen × 100`. Die Einordnung ist eine Orientierung und ersetzt keine Finanzierungszusage.
+Der Budgetrechner ermittelt aus Haushaltswerten, laufenden Ausgaben und Finanzierungsannahmen eine tragbare Monatsrate und daraus einen orientierenden Immobilienpreis.
 
-Im Workflow sind als aktuelle neutrale Startwerte für Haushaltsnettoeinkommen, Beschäftigungseinkommen, Kindergeld und Eigenkapital jeweils `0` sowie Familienstatus `Single`, ein Erwachsener und null Kinder festgelegt. Weitere Felder behalten ihre im Rechner definierten Werte. Diese Nullen verhindern, dass persönliche Beispielwerte als tatsächliche Angaben erscheinen.
+| Feld / Kennzahl | Erklärung | Formel / Rechenlogik |
+|---|---|---|
+| Haushaltsnettoeinkommen | Summe aus Beschäftigung, Rente, Unterstützung, Nebeneinkommen, Mieteinnahmen und sonstigem Einkommen | Summe der sechs Einkommensfelder. Ändert sich das Gesamteinkommen, wird das Beschäftigungseinkommen als Differenz zu den übrigen Komponenten angepasst. |
+| Kindergeld | Zusätzliche monatliche Einnahme | Standardmäßig Kinderzahl \(\times 259 €\); manuell geänderter Wert bleibt erhalten. |
+| Gesamte Einnahmen | Einnahmen für die Haushaltsrechnung | Haushaltsnettoeinkommen + Kindergeld. |
+| Lebensmittel | Haushaltsausgabenvorschlag | Erwachsene \(\times 300 €\) + Kinder \(\times 160 €\); manuelle Eingabe kann den Vorschlag ersetzen. |
+| Mobilität | Haushaltsausgabenvorschlag | Erwachsene \(\times 220 €\) + Kinder \(\times 40 €\). |
+| Versicherungen | Haushaltsausgabenvorschlag | Erwachsene \(\times 120 €\) + Kinder \(\times 20 €\). |
+| Telefon und Internet | Haushaltsausgabenvorschlag | \(80 € + \max(0,\ Erwachsene - 1) \times 20 € + Kinder \times 10 €\). |
+| Freizeit | Haushaltsausgabenvorschlag | Erwachsene \(\times 150 €\) + Kinder \(\times 100 €\). |
+| Kinderkosten | Haushaltsausgabenvorschlag | Kinder \(\times 150 €\). |
+| Sonstige Ausgaben | Vorschlagswert | 150 €; kann manuell angepasst werden. |
+| Bestehende Kreditraten | Monatliche Belastung aus anderen Krediten | Direkte Eingabe; wird zu den Ausgaben addiert. |
+| Gesamte feste Ausgaben | Summe der Haushaltsausgaben | Summe Lebensmittel, Mobilität, Versicherungen, Telefon/Internet, Freizeit, Kinderkosten, bestehende Kredite und sonstige Ausgaben. |
+| Finanzierungsreserve | Automatische Reserve des Rechners | \(\max(300 €,\ 10\% \times \max(0,\ Gesamteinnahmen - feste\ Ausgaben))\). |
+| Frei verfügbares Monatsbudget | Betrag nach Ausgaben und Reserve | \(\max(0,\ Gesamteinnahmen - feste\ Ausgaben - Finanzierungsreserve)\). |
+| Budgetanteil für Kreditrate | Anteil des freien Budgets, der maximal für die Rate angesetzt wird | Eingabewert in Prozent, begrenzt auf 0–100 %. |
+| Maximal tragbare Kreditrate | Monatliche Rate nach Budgetanteil | Frei verfügbares Monatsbudget \(\times Budgetanteil\% / 100\). Der Rest ist zusätzlicher Puffer. |
+| Max. Darlehen | Aus der tragbaren Rate und den angenommenen Sätzen | \(Monatsrate \times 12 / (Zins\% + Tilgung\%)\); bei Summe 0 wird 0 ausgegeben. |
+| Eigenkapital verfügbar | Zusätzliches Eigenkapital im Gesamtbudget | Direkte Eingabe. |
+| Gesamtbudget | Gesamtes rechnerisches Kaufbudget einschließlich Eigenkapital | Max. Darlehen + Eigenkapital. |
+| Grunderwerbsteuer / Notar / Makler | Erwerbsnebenkosten als Anteil am Kaufpreis | Bundeslandsatz + Notar-/Grundbuchsatz + Makler-Kaufsatz. Diese drei Komponenten bilden den angezeigten Gesamtprozentsatz. |
+| Sonstige Kosten | Zusätzlicher Kostenanteil, z. B. Renovierung, Umzug oder Möbel | Eingegebener Prozentsatz vom Immobilienpreis. |
+| Max. Immobilienpreis | Preis, der nach Prozentanteilen noch ins Gesamtbudget passt | \(Gesamtbudget / (1 + Kaufnebenkosten\% + SonstigeKosten\%)\). |
+| Kaufnebenkosten / sonstige Kosten in Euro | Umrechnung der Kostenanteile auf den Immobilienpreis | Immobilienpreis \(\times jeweiliger\ Prozentsatz\). |
+| Zins- und Tilgungsanteil zu Beginn | Aufteilung der maximal tragbaren Rate | Zins = Darlehen \(\times Zins\% / 1.200\); Tilgung = \(\max(0,\ Monatsrate - Zins)\). |
+| Restschuld nach 10, 20 oder 30 Jahren | Modell mit gleichbleibender Monatsrate | Bei Monatszins \(r=Zins\%/1.200\) und \(n=12 \times Jahre\): \(K(1+r)^n - Monatsrate \times ((1+r)^n-1)/r\), mindestens 0. Bei \(r=0\): \(\max(0,K-Monatsrate \times n)\). |
+
+Familienstatus und Haushaltsgrößen steuern die Vorschläge und Darstellung. Wenn Ausgaben manuell eingegeben werden, bleiben sie unabhängig von später geänderten Haushaltsvorschlägen erhalten.
 
 ### 4.3 Eigennutzung
 
-Der Rechner ordnet Kaufpreis, Kaufnebenkosten, Eigenkapital, Finanzierung, Modernisierung und laufende Belastung ein. Die Kreditrate folgt den Annuitätsregeln aus Abschnitt 4.1. Tilgung ist Vermögensaufbau, aber gleichzeitig Teil des monatlichen Liquiditätsabflusses. Im Rechner lautet die Leitfrage „Lohnt sich diese Eigentumswohnung?“.
+Die Eigennutzungsrechnung verwendet gemeinsame Erwerbs-, Sanierungs- und Finanzierungsformeln aus 4.1. Sie stellt Kauf und Sanierung für die Selbstnutzung dar. Die Ampel für Projektziele, persönlichen Steuersatz und Stressszenarien des Fix-und-Flip-Rechners wird in diesem Modus nicht verwendet.
+
+| Feld / Kennzahl | Erklärung | Formel / Rechenlogik |
+|---|---|---|
+| Marktwert nach Sanierung | Angenommener oder aus Vergleichen abgeleiteter Wert | Direkte Eingabe. Ist das Feld leer und gibt es keine gültigen Vergleiche, wird \(Anfangsinvestition / 0{,}90\) vorbelegt (10 % Wertpuffer). |
+| Vergleich 1–3: Preis und Wohnfläche | Manuelle Vergleichsobjekte | Vergleichspreis je m² = Vergleichspreis / Vergleichsfläche; nur Paare mit Preis > 0 und Fläche > 0 zählen. |
+| Geschätzter Marktwert heute | Hochrechnung aus Vergleichsobjekten | Arithmetischer Mittelwert der gültigen Vergleichspreise je m² \(\times\) Wohnfläche des Zielobjekts. |
+| Orientierungsspanne | Unsicherheitsband um den geschätzten Marktwert | 1 Vergleich: ±10 %; 2 Vergleiche: ±7,5 %; 3 Vergleiche: ±5 %. |
+| Abweichung Kaufpreis | Differenz zum geschätzten heutigen Marktwert | Euro = Kaufpreis − Marktwert; Prozent = Euro-Differenz / Marktwert. Unter −5 %: unter Vergleichsniveau; bis +5 %: marktüblich; bis +10 %: leicht erhöht; über +10 %: deutlich erhöht. |
+| Energieeffizienzklasse | Kann den maximal vertretbaren Kaufpreis beeinflussen | Energieabschlag: Marktwert \(\times Klassenabschlag\). A+ bis D: 0 %; E: 3 %; F: 5,5 %; G: 8,5 %; H: 12,5 %. Energiebedarf in kWh/(m²·a) ist ein Informationswert und wirkt nicht direkt auf die Kostenrechnung. |
+| Anrechenbare energetische Sanierung | Verhindert einen doppelten Abzug energetischer Gewerke | Summe Dach, Fassade, Wärmeerzeuger, Heizung und Fenster \(\times (1 + Puffer\% / 100)\). |
+| Verbleibender Energieabschlag | Nur noch nicht durch energetische Gewerke abgedeckter Anteil | \(\max(0,\ Bruttoenergieabschlag - anrechenbare\ energetische\ Sanierung)\). |
+| Maximal vertretbarer Kaufpreis | Kaufpreisgrenze nach Marktwert, Sanierung, Erwerbskosten und Energierisiko | \(\max(0,\ (Marktwert - Sanierung\ inkl.\ Puffer - verbleibender\ Energieabschlag) / (1 + Erwerbsnebenkostenquote))\). |
+| Differenz zum Marktwert nach Sanierung | Rechnerischer Wertpuffer bei einem späteren Verkauf | Marktwert − Kaufpreis − Kaufnebenkosten − Sanierung inkl. Puffer − Verkaufsmakler − weitere Verkaufskosten. Zinsen und laufende Kosten sind in dieser Kennzahl nicht abgezogen. |
+| Monatliche Kreditrate | Anfangszins plus Anfangstilgung | Darlehen \(\times (Zins\% + Tilgung\%) / 1.200\). |
+| Monatliche Gesamtbelastung | Kreditrate plus eingegebene laufende Kosten | Monatszins + Monatstilgung + laufende Kosten pro Monat. |
+
+Baujahr, Grundstücksfläche, PLZ/Ort, Objektart und Zustand sind Angaben zur Einordnung oder Vorbereitung einer späteren Bewertungs-API. Sie beeinflussen die manuelle Vergleichsrechnung nicht direkt. Die Vergleichsobjekte werden derzeit gemittelt; die Oberfläche nennt den angezeigten Wert „Ø Vergleichspreis“.
 
 ### 4.4 Vermietung
 
-Der Rechner betrachtet Mieteinnahmen, Kaufpreis, Erwerbsnebenkosten, nicht umlagefähige Kosten, Finanzierung und Cashflow. Die grundlegenden Kennzahlen lauten:
+Die Vermietung berechnet laufende Einnahmen, nicht umlagefähige Eigentümerkosten und eine vereinfachte Finanzierung. Die gesamte Hausgeldzahlung wird angezeigt bzw. erläutert, aber nur der eingegebene nicht umlagefähige Anteil fließt in die Kosten ein.
 
-- Bruttomietrendite: `Jahresnettokaltmiete ÷ Kaufpreis × 100`.
-- Kaufpreisfaktor: `Kaufpreis ÷ Jahresnettokaltmiete`.
-- Cashflow vor Steuern: `Mieteinnahmen − nicht umlagefähige Bewirtschaftungskosten − Kreditrate − weitere im Rechner erfasste laufende Kosten`.
-- Tilgung und Zins werden getrennt erklärt: Zins ist Finanzierungskosten; Tilgung reduziert die Restschuld.
+| Feld / Kennzahl | Erklärung | Formel / Rechenlogik |
+|---|---|---|
+| Kaufpreis je m² / Nettokaltmiete je m² | Einheitspreise zur Einordnung | Kaufpreis bzw. Monatsnettokaltmiete / Wohnfläche, sofern Fläche > 0. |
+| Grunderwerbsteuer | Bundeslandsatz auf den Kaufpreis | Kaufpreis \(\times\) Bundeslandsatz. |
+| Notar und Makler | Eingegebene Prozentsätze auf den Kaufpreis | Kaufpreis \(\times (Notar\% + Makler\%)\). |
+| Kaufnebenkosten | Summe der Erwerbskosten | Grunderwerbsteuer + Notar/Grundbuch + Makler beim Kauf. |
+| Gesamtinvestition | Kaufpreis, Erwerbsnebenkosten und Modernisierung | Kaufpreis + Kaufnebenkosten + einmalige Modernisierung inkl. Puffer. |
+| Eingesetztes Eigenkapital | Tatsächlich angesetzter Anteil des eingegebenen Eigenkapitals | \(\min(Eigenkapital,\ Gesamtinvestition)\). |
+| Darlehen | Verbleibender Finanzierungsbedarf | \(\max(0,\ Gesamtinvestition - eingesetztes\ Eigenkapital)\). |
+| Mietausfall / Leerstand | Sicherheitsabschlag auf die Nettokaltmiete | Eingabe in Prozent, auf höchstens 95 % begrenzt. Effektive Miete = Nettokaltmiete \(\times (1 - Abschlag)\). |
+| Eigentümerkosten pro Monat | Kosten, die nicht auf den Mieter umgelegt werden | Nicht umlagefähiges Hausgeld + Verwaltung + zusätzliche Instandhaltung + sonstige Vermieterkosten. Hausgeld gesamt wird nicht zusätzlich addiert. |
+| Kreditrate | Vereinfachte anfängliche Zins- und Tilgungsrate | Darlehen \(\times (Zins\% + Tilgung\%) / 1.200\). |
+| Monatlicher Cashflow | Einnahmen nach Ausfall, Eigentümerkosten und Finanzierung | Effektive Miete − Eigentümerkosten − Kreditrate; vor Steuer. |
+| Bruttomietrendite | Jahresnettokaltmiete bezogen auf den Kaufpreis | Nettokaltmiete pro Monat \(\times 12 / Kaufpreis\). Ohne Mietausfall-Abzug. |
+| Nettomietrendite | Nettoertrag vor Finanzierung bezogen auf die Gesamtinvestition | (Effektive Jahresmiete − jährliche Eigentümerkosten) / Gesamtinvestition. |
+| Rendite auf Eigenkapital | Jährlicher Cashflow bezogen auf angesetztes Eigenkapital | Monatlicher Cashflow \(\times 12 / eingesetztes\ Eigenkapital\). |
+| Kaufpreisfaktor | Kaufpreis in Jahresnettokaltmieten | Kaufpreis / (monatliche Nettokaltmiete \(\times 12\)). |
+| Tilgung / Vermögensaufbau | Rechnerische Tilgung im ersten Jahr | Darlehen \(\times Tilgung\% / 100\). |
+| Break-even-Nettokaltmiete | Miete, bei der der modellierte Cashflow 0 € beträgt | (Eigentümerkosten + Kreditrate) / (1 − Mietausfallquote). |
 
-Die konkrete Kostenabgrenzung richtet sich nach den Eingabefeldern des Rechners. Eine Steuer- oder AfA-Berechnung ist nicht Bestandteil des aktuellen Rechenmodells und bleibt eine mögliche fachlich zu definierende Erweiterung.
+Die Modernisierungsgewerke starten in der Vermietung bei 0 €. Graue Richtwerte werden erst durch „Vorschlag übernehmen“ Teil der Rechnung. Die zusätzliche Instandhaltung wird standardmäßig mit 1,50 €/m² Wohnfläche und Monat vorgeschlagen; eine manuelle Änderung bleibt bestehen. Baujahr und Grundstücksfläche dienen nur der Objektbeschreibung.
 
-### 4.5 Fix & Flip
+Die Ampel beschreibt ausschließlich den monatlichen Cashflow: ab 0 € positiv, von −100 € bis unter 0 € nahe am Break-even, unter −100 € negativ. Einkommensteuer, AfA, Mietsteigerungen, Wertentwicklung, Instandhaltungsbedarf über den gewählten Ansatz hinaus und Bankkonditionen sind nicht vollständig modelliert.
 
-Das Modell führt Kaufpreis, Erwerbsnebenkosten, Modernisierung, Haltekosten, Finanzierung und Verkaufserlös zusammen. Grundregel: `Projektüberschuss = Verkaufserlös − modellierte Projektkosten`. Finanzierungskosten und Rückzahlung sind nach den im Rechner verwendeten Zahlungsströmen zu unterscheiden; Tilgung darf nicht doppelt als Aufwand angesetzt werden. Die konkrete Renditebasis muss im Ergebnisbericht ausdrücklich mit Eigenkapital oder Gesamtkapital benannt sein.
+### 4.5 Fix und Flip
 
-### 4.6 Historische Hypothekenzinsen
+Fix und Flip verbindet Kauf, Sanierung, Projektdauer, Finanzierung, Verkaufskosten und Verkaufserlös. Das Finanzierungsmodell verwendet konstante Zinsen auf den ursprünglichen Kreditbetrag; sinkende Restschuld reduziert die angesetzten Zinskosten nicht.
 
-Die Finanzierung zeigt die rollierende Zehnjahresreihe der Bundesbank-Zeitreihen SUD117 (1 bis 5 Jahre Zinsbindung) und SUD118 (5 bis 10 Jahre). Der Workflow bündelt Monatswerte für die Anzeige. Historische Werte beschreiben die Vergangenheit und sind keine Prognose.
+| Feld / Kennzahl | Erklärung | Formel / Rechenlogik |
+|---|---|---|
+| Kaufpreis je m² | Kaufpreis im Verhältnis zur Wohnfläche | Kaufpreis / Wohnfläche, sofern Wohnfläche > 0. |
+| Verkaufspreis nach Sanierung | Manuelles Verkaufsziel oder kalkulatorischer Wert | Wenn kein positiver manueller Wert eingegeben ist: \(Kosten\ vor\ Verkaufsmakler / (1 - Zielmarge - Verkaufsmaklerquote)\). Ist der Nenner ≤ 0, wird 0 angesetzt. |
+| Zinsen gesamt | Vereinfachte Finanzierung über die Projektdauer | Kredit \(\times Zins\% / 100 \times Monate / 12\). |
+| Tilgung gesamt | Rückzahlung im vereinfachten Modell | \(\min(Kredit,\ Kredit \times Tilgung\% / 100 \times Monate / 12)\). Sie reduziert den Kreditbetrag, ist aber kein zusätzlicher Projektaufwand. |
+| Laufende Kosten gesamt | Monatliche Haltekosten über das Projekt | Laufende Kosten pro Monat \(\times Monate\). |
+| Makler beim Verkauf | Verkaufskosten als Anteil am Verkaufspreis | Verkaufspreis \(\times Verkaufsprovision\% / 100\). |
+| Projektkosten | Modellierte Erwerbs-, Umbau-, Finanzierungs- und Verkaufskosten | Kaufpreis + Kaufnebenkosten + Sanierung inkl. Puffer + Zinsen + laufende Kosten + Verkaufsmakler + weitere Verkaufskosten. |
+| Projektgewinn | Ergebnis vor persönlicher Steuer | Verkaufspreis − Projektkosten. |
+| Gewinn nach Steuer | Vereinfachte Steuer auf positive Gewinne | Gewinn − \(\max(0,\ Gewinn \times persönlicher\ Steuersatz\% / 100)\). Bei Verlust wird keine Steuererstattung berechnet. |
+| Marge | Gewinnanteil am Verkaufspreis | Projektgewinn / Verkaufspreis. |
+| Eigenes Geld im Projekt | Modellierter Kapitalbedarf nach Finanzierung | \(\max(0,\ Projektkosten - Darlehen)\). |
+| Rendite auf eigenes Geld | Gewinn im Verhältnis zum benötigten Eigenkapital | Projektgewinn / eigenes Geld im Projekt; bei 0 € Eigenkapital wird 0 angezeigt. |
+| Nullpunkt Verkauf | Verkaufspreis, bei dem der Gewinn 0 € erreicht | \((Projektkosten - Verkaufsmakler) / (1 - Verkaufsprovisionquote)\). |
+| Sicherheitspuffer | Abstand des Verkaufspreises zum Nullpunkt | \((Verkaufspreis - Nullpunkt) / Verkaufspreis\). |
+| Ziel-Gewinn | Mindestgewinn vor persönlicher Steuer | Vergleichswert für die Ampel und Abzug im maximal sinnvollen Kaufpreis. |
+| Ziel-Marge | Zielwert als Anteil am Verkaufspreis | Gewinn / Verkaufspreis. Wird auch beim kalkulatorischen Verkaufspreis verwendet. |
+| Max. eigenes Geld | Persönliche Obergrenze für gebundenes Eigenkapital | Ändert keine Kennzahl; markiert das Ziel als verfehlt, wenn eigenes Geld im Projekt darüber liegt. |
+| Mindest-Rendite | Gewünschte Rendite auf eingesetztes Eigenkapital | Ändert keine Kennzahl; Vergleich von ROI und eingegebenem Mindestwert steuert die Zielprüfung. |
+| Maximal sinnvoller Kaufpreis | Kaufpreisgrenze für den eingegebenen Verkaufspreis und Zielgewinn | Zähler = Verkaufspreis \(\times (1-Verkaufsmaklerquote) - Zielgewinn - (weitere Verkaufskosten + laufende Kosten) - Sanierung \(\times (1 + Finanzierungsquote \times Zins\%/100 \times Monate/12)\). Nenner = \(1 + Kaufnebenkostenquote + Finanzierungsquote \times Zins\%/100 \times Monate/12 \times (1 + Kaufnebenkostenquote,\ falls\ Kaufnebenkosten\ mitfinanziert)\). Ergebnis = \(\max(0,\ Zähler/Nenner)\). |
+| Stress-Test Verkauf | Neu berechneter Gewinn bei niedrigerem Verkaufspreis | Verkaufspreis \(\times (1 - Stresswert\%/100)\); alle verkaufsabhängigen Kosten werden neu berechnet. |
+| Stress-Test Sanierung | Neu berechneter Gewinn bei höherer Sanierungsbasis | Sanierungsbasis \(\times (1 + Stresswert\%/100)\); anschließend greift der Sanierungspuffer erneut. |
+
+Baujahr, Grundstücksfläche, Energiebedarf und PLZ/Ort haben im Fix-und-Flip-Rechenmodell keine direkte mathematische Wirkung. Die Energieeffizienzklasse beeinflusst nur den Eigennutzungs-Kaufpreischeck.
+
+### 4.6 Anschlussfinanzierung
+
+Die Szenarien setzen die am Ende des Betrachtungszeitraums berechnete Restschuld und die eingestellte neue Anfangstilgung an. Sie sind Belastungsvarianten, keine Zinsprognosen.
+
+| Szenario | Szenariozins | Angezeigte Monatsrate |
+|---|---:|---:|
+| Zinssatz fällt | eingestellter Sollzins − 1,5 Prozentpunkte | Restschuld \(\times (Szenariozins\% + Tilgung\%)/1.200\) |
+| Zinssatz stabil | eingestellter Sollzins | Restschuld \(\times (Szenariozins\% + Tilgung\%)/1.200\) |
+| Zinssatz steigt | eingestellter Sollzins + 2 Prozentpunkte | Restschuld \(\times (Szenariozins\% + Tilgung\%)/1.200\) |
+
+Die Beträge werden als EUR ohne Nachkommastellen formatiert. Der Szenariozins wird zusätzlich ausgegeben. Während der ersten Zinsbindung sind Sondertilgungen jährlich am Jahresende berücksichtigt; für die Anschlussperiode nimmt der Hinweis konstante Rate und konstanten Zins an, ohne zusätzliche Sondertilgungen, Gebühren oder weitere Zinsänderungen.
+
+### 4.7 Historische Hypothekenzinsen
+
+Die Grafik zeigt bundesweite monatliche Effektivzinsen aus der Bundesbank-MFI-Zinsstatistik für Wohnungsbaukredite mit 1–5 und 5–10 Jahren anfänglicher Zinsbindung. Angezeigt werden rollierende zehn Jahre bis zum jüngsten verfügbaren Monatswert. Die Zeitreihe wird nach Möglichkeit aus dem veröffentlichten lokalen Datensatz gelesen und bei Bedarf direkt von der Bundesbank abgerufen. Fehlende Datenblöcke werden ausgelassen.
+
+Der Finanzierungsrechner verwendet den eingestellten Sollzins. Die historischen Reihen zeigen Effektivzinsen und dienen nur zur Orientierung. Die Schaltflächen übernehmen den jüngsten Monatswert der passenden Zinsbindungsreihe in das Sollzinsfeld; sie erzeugen keine Zinsprognose.
 
 ## 5. Standardwerte und Eingaben
 
@@ -104,37 +205,30 @@ Die Finanzierung zeigt die rollierende Zehnjahresreihe der Bundesbank-Zeitreihen
 | Sollzins p. a. | 4,01 % |
 | Anfangstilgung p. a. | 1,5 % |
 | Sondertilgung p. a. | 0 % |
-| Zinsbindung | 10 Jahre |
-| Budget – persönliche Beispielangaben | Nettoeinkommen, Einkommen, Kindergeld und Eigenkapital 0; Single, 1 Erwachsener, 0 Kinder |
-| Eigennutzung / Fix & Flip – Ort | Hamburg, PLZ/Ort 20095 Hamburg als voreingestellte Ortsangabe |
+| Betrachtungszeitraum | 10 Jahre |
+| Budget – persönliche Beispielangaben | Nettoeinkommen, Einkommenskomponenten, Kindergeld und Eigenkapital starten neutral bei 0; Single, 1 Erwachsener, 0 Kinder. Haushaltsausgaben werden aus Vorschlägen vorbelegt. |
+| Budget – Finanzierung | Ort standardmäßig Hamburg; Notar/Grundbuch 2 %, Makler beim Kauf 0 %, sonstige Kosten 5 %, Budgetanteil der Monatsrate 75 %. |
+| Eigennutzung / Fix und Flip – Ort | Hamburg, PLZ/Ort 20095 Hamburg als voreingestellte Ortsangabe. |
+| Vermietung | Bundesland Hamburg; Zinssatz 4 %, Tilgung 1,5 %, Notar 2 %, Makler 0 %, Mietausfall 2 %, Modernisierung und laufende Kosten starten bei 0 €. |
+| Fix und Flip – Zielwerte | Zielgewinn 40.000 €, Zielmarge 10 %, max. eigenes Geld 100.000 €, Mindest-Rendite 25 %, persönlicher Steuersatz 42 %. |
 
-Andere Kalkulatoren und weitere Felder behalten ihre Defaults im Quellcode. Änderungen an Startwerten sollen hier und in den Verifikationsfällen nachgeführt werden.
+Weitere Felder verwenden die Startwerte in der jeweiligen Quellkomponente. Benutzereingaben werden lokal im Browser gespeichert und können daher nach dem ersten Aufruf von den ursprünglichen Standardwerten abweichen.
 
-## 6. CSS- und PDF-Regeln
+## 6. Build, Tests und Veröffentlichung
 
-- Admin → Layout: Schriftfamilie, Grundschriftgröße, H1 bis H4 und Hintergrund-, Text-, Button-Hintergrund- und Button-Textfarbe. Die Farben werden als sechsstellige HEX-Werte validiert. Ein Kontrastwert wird angezeigt; unter 4,5:1 erscheint ein Hinweis.
-- Rechnerbreite: maximal 640 px; Karten, Ranges, Ergebnisboxen und Navigationsflächen verwenden flexible Grid-Layouts. Bei schmalen Ansichten wechseln Ergebnisboxen und Buttons in einspaltige Darstellung.
-- Finanzierungs-Ergebnisboxen haben eine gemeinsame Basisgestaltung (`.kpi`). Die Anschlussfinanzierung überschreibt nur die Hintergründe von „Bleibt“ und „Steigt“; Beschriftungen bleiben sichtbar und der Zahlenwert verwendet Tabellenschriftziffern.
-- PDFs: `assets/pdf-reports.js` stellt `create`, `header`, `footer`, `logo` und Disclaimer-Funktionen bereit. Dokumente sind A4-Hochformat. Kopfzeile dunkelblau (#0F172A), Logo auf weißem Feld, Footer mit Domain, Version und Seitennummer. Neue Dokumente sollen diese gemeinsame Implementierung nutzen.
-- Die README-PDF wird im Admin-Tab „Layout“ als letzte Karte mit einem direkten Downloadlink angeboten. Der Build kopiert die versionierte PDF-Datei in den veröffentlichten Pfad.
+Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Er entpackt die Hauptseite, wendet fest definierte Inhalts- und Layoutänderungen an, erzeugt Routen und Einstellungsseiten, kopiert Rechnerassets und Dokumente und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Erst nach erfolgreichen Prüfungen wird nach GitHub Pages veröffentlicht.
 
-## 7. Build, Tests und Veröffentlichung
+Für die Anschlussfinanzierung enthält `scripts/verify_finance_updates.js` Prüffälle für Monatsrate, Restschuld, Sondertilgung, Null-Darlehen, Ergebnisfarben, Downloadkarte und PDF-Datei. Ein Prüffall nutzt 300.000 € Darlehen, 4 % Sollzins, 2 % Tilgung und 5 % Sondertilgung über zehn Jahre. Der Release-Vertrag in `scripts/release_contract.py` leitet die sichtbare Versionsnummer aus dem neuesten `scripts/patch*_v8*.py`-Dateinamen ab.
 
-Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Er entpackt `source/index.html.gz.b64.part*`, wendet die dokumentierten Layout- und Inhaltsänderungen an, erzeugt Routen und Einstellungen, kopiert den Finanzierungsrechner und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Bei Erfolg wird das Ergebnis nach GitHub Pages veröffentlicht. Der Build und Pages-Deploy des Releases V8.348 waren am 26.10.2026 erfolgreich (Commit `033391509d88236c9bcb2d2c70d78bde60561c99`; [Workflow-Lauf](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/40373087414)). Der Workflow prüfte außerdem die neuen Szenario-Ausgaben, Farben, Admin-Downloadkarte und das PDF im veröffentlichten Build-Artefakt.
-
-Für die Anschlussfinanzierung gilt der Prüffall: Restschuld 200.000 €, Sollzins 3,5 %, Tilgung 2 %. Erwartete Monatsraten vor Anzeigeformatierung: 666,67 €, 916,67 € und 1.250,00 €; erwartete Anzeige: 667 €, 917 € und 1.250 €. Zusätzlich sind die Null-Darlehen- und Zinsbindungsfälle zu prüfen. Der Versionsvertrag in `scripts/release_contract.py` leitet die Versionsnummer aus dem neuesten `scripts/patch*_v8*.py`-Dateinamen ab.
-
-## 8. Offene Aufgaben
-
-Abgeschlossen für V8.348: Szenarioausgabe und Farben, README-PDF im Admin-Layout, gemeinsamer Report-Header und Footer, Projektdokumentation im Repository sowie erfolgreicher Pages-Build und Deploy.
+## 7. Offene Aufgaben
 
 | Priorität | Aufgabe |
 |---|---|
-| Mittel | Weitere Standardwerte aus allen Rechnerfeldern zentral erfassen und mit Quellcode/Tests abgleichen. |
-| Mittel | Berechnungsdetails der Vermietungs- und Fix-&-Flip-Kennzahlen je Eingabefeld eindeutig dokumentieren; Renditebasis und berücksichtigte Kosten bestätigen. |
-| Mittel | Headerhöhe, Sticky-Verhalten und alle Rechnerwechsel auf Desktop und Mobilgeräten erneut visuell abnehmen. |
+| Mittel | Standardwerte aller Rechnerfelder zentral mit den Quellkomponenten abgleichen. |
+| Mittel | Die Ergebnisse der Vermietungs- und Fix-und-Flip-Rechnung fachlich bestätigen, besonders Renditebasis und berücksichtigte Kosten. |
+| Mittel | Headerhöhe, Sticky-Verhalten und Rechnerwechsel auf Desktop und Mobilgeräten erneut visuell abnehmen. |
 | Offen | Sichere Anmeldung, serverseitige Speicherung und Datenbankanbindung planen; Adminwerte liegen derzeit lokal im Browser. |
 | Offen | Steuer-/AfA-Erweiterung für Vermietung fachlich definieren und rechtlich prüfen, bevor sie als Rechenfunktion ergänzt wird. |
-| Offen | Aktualisierungsrhythmus und Verhalten bei Ausfall/Lücken der Bundesbank-Reihe dokumentieren. |
-| Hoch | Anbieter- und Impressumsangaben in `assets/site-settings.json` prüfen und durch freigegebene Unternehmensdaten ersetzen. |
-
+| Offen | Aktualisierungsrhythmus und Verhalten bei Ausfall oder Lücken der Bundesbank-Reihe dokumentieren. |
+| Hoch | Anbieter- und Impressumsangaben in `assets/site-settings.json` prüfen und mit freigegebenen Unternehmensdaten ersetzen. |
+| Mittel | Den Text der Schaltflächen für den 5- und 10-Jahreszins mit der tatsächlichen Übernahme des jüngsten Monatswerts abstimmen. |

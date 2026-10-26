@@ -20,4 +20,12 @@ const admin=fs.readFileSync(site+'/admin.html','utf8');assert(admin.includes('hr
 assert(html.includes('.refinance-grid .kpi:nth-child(2){background:#fef3c7'));assert(html.includes('.refinance-grid .kpi:nth-child(3){background:#fee2e2'));
 const config=JSON.parse(fs.readFileSync(site+'/site-settings.json'));assert(config.meta.finance.title);assert(config.meta.finance.description);
 for(const path of ['budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner'])assert(fs.readFileSync(site+'/'+path+'/index.html','utf8').includes('/calculator-actions.'));
+for(const label of ['Zinssatz fällt','Zinssatz stabil','Zinssatz steigt']) assert(html.includes('<span>'+label+'</span>'),`finance scenario label missing: ${label}`);
+const reportSource=fs.readFileSync('assets/pdf-reports.js','utf8');
+for(const label of ['Zinssatz fällt','Zinssatz stabil','Zinssatz steigt']) assert(reportSource.includes(label),`finance report scenario label missing: ${label}`);
+const docs=fs.readFileSync('docs/PROJEKTSTATUS.md','utf8');
+const ordered=['## 1. Aktueller Stand','## 2. Navigation und Layoutregeln','## 3. CSS- und PDF-Regeln','## 4. Formeln und Berechnungsregeln','## 5. Standardwerte und Eingaben','## 6. Build, Tests und Veröffentlichung','## 7. Offene Aufgaben'];
+const sectionPositions=ordered.map(section=>docs.indexOf(section));
+assert(sectionPositions.every((position,index)=>position>=0&&(index===0||position>sectionPositions[index-1])),'project documentation sections must follow the agreed order');
+assert(docs.includes('### 4.6 Anschlussfinanzierung')&&docs.includes('### 4.7 Historische Hypothekenzinsen'),'finance formulas must occupy sections 4.6 and 4.7');
 console.log('Finance updates passed: first visit/remembered selection/deep links; initial monthly interest/repayment/annual extra and zero loan; static finance metadata and shared action CSS.');

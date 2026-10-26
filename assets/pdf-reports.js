@@ -87,7 +87,7 @@ function financeOutlook(doc,m,values){
  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text('4. Anschlussfinanzierung',16,45);
  doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(100,110,125);
  doc.text(doc.splitTextToSize('Wir können die Zinsen für die Zukunft nicht seriös vorhersagen. Wir können aber historische Schwankungen verwenden, um mögliche Belastungsszenarien zu simulieren.',178),16,52,{lineHeightFactor:1.3});
- [['Fällt',-1.5],['Bleibt',0],['Steigt',2]].forEach(([label,delta],i)=>{
+ [['Zinssatz fällt',-1.5],['Zinssatz stabil',0],['Zinssatz steigt',2]].forEach(([label,delta],i)=>{
   const x=16+i*60,rate=m.interest+delta;doc.setFillColor(247,249,252);doc.roundedRect(x,65,58,36,3,3,'F');
   doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,110,125);doc.text(label,x+3,72);
   doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(23,32,51);doc.text(money(m.balance*(rate+m.repay)/1200),x+3,81);

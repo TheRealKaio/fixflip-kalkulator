@@ -7,9 +7,10 @@ Responsive Immobilien-Kalkulatoren für Budget, Eigennutzung, Vermietung, Fix & 
 Die App wird als statische Website über GitHub Pages veröffentlicht. Die Hauptseite wird im GitHub-Actions-Workflow aus den komprimierten Dateien unter `source/` gebaut. Rechner, Adminbereich, PDF-Berichte und Build-Verarbeitung liegen ergänzend in `assets/` und `scripts/`.
 
 - Rechnernavigation mit eigenen URLs und zuletzt gewähltem Rechner
-- Finanzierungsrechner mit Restschuldverlauf, Bundesbank-Zinsreihe und Anschlussfinanzierungsszenarien
+- Finanzierungsrechner mit Restschuldverlauf, Bundesbank-Zinsreihe und den Szenarien „Zinssatz fällt“, „Zinssatz stabil“ und „Zinssatz steigt“
 - Adminbereich für Layout, Unternehmensangaben, Metadaten, Profile, rechtliche Inhalte und Statistiken
 - Gemeinsame PDF-Berichtsfunktionen für Logo, Kopfbereich, Fußzeile und rechtliche Hinweise
+- Die Projektdokumentation kann unter Admin → Layout als letzte Karte heruntergeladen werden
 
 Die Admin-Einstellungen werden derzeit lokal im Browser gespeichert. Eine serverseitige Anmeldung und zentrale Datenbank sind noch offen.
 
@@ -18,7 +19,17 @@ Die Admin-Einstellungen werden derzeit lokal im Browser gespeichert. Eine server
 - [Vollständige Projektdokumentation (Markdown)](docs/PROJEKTSTATUS.md)
 - [Projektdokumentation als PDF](docs/README-Projektdokumentation.pdf)
 
-Die vollständige Dokumentation enthält Formeln, Berechnungsregeln, bekannte Standardwerte, CSS- und PDF-Regeln, Build-Ablauf und offene Aufgaben.
+Die Dokumentation folgt dieser Gliederung:
+
+1. Aktueller Stand
+2. Navigation und Layoutregeln
+3. CSS- und PDF-Regeln
+4. Formeln und Berechnungsregeln, einschließlich Anschlussfinanzierung (4.6) und historischer Hypothekenzinsen (4.7)
+5. Standardwerte und Eingaben
+6. Build, Tests und Veröffentlichung
+7. Offene Aufgaben
+
+Sie enthält gemeinsame Formeln sowie Feldreferenz-Tabellen mit Erklärung und Formel für Budget, Eigennutzung, Vermietung, Fix & Flip und Finanzierungsrechner.
 
 ## Entwicklung und Veröffentlichung
 
