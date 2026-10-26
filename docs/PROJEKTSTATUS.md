@@ -21,6 +21,17 @@ Die veröffentlichte App wird im GitHub-Actions-Workflow aus der aufgeteilten gz
 - `assets/site-settings.json` enthält noch Platzhalterangaben zu Anbieter- und Impressumsdaten. Vor Bestätigung des öffentlichen Impressums müssen die freigegebenen Unternehmensdaten eingetragen werden.
 - PDF-Berichte nutzen die gemeinsame Implementierung in `assets/pdf-reports.js` für Kopfbereich, Logo, Fußzeile und rechtliche Hinweise.
 
+### Arbeitsrahmen für künftige Änderungen
+
+- Dieses GitHub-Repository ist der maßgebliche aktuelle Quellstand. Vor Änderungen den Stand auf `main` prüfen; generierte `_site/`-Dateien nicht als Quelle bearbeiten. Rechner, Adminbereich und bestehende Funktionen bleiben erhalten, sofern eine Änderung sie nicht ausdrücklich betrifft.
+- Die fünf Rechner bleiben über eigene Routen erreichbar. Neue oder geänderte Rechnerlogik muss Eingaben und gespeicherte Werte der übrigen Rechner erhalten. Finanzierungslogik und sonstige Formeln nicht stillschweigend vereinfachen oder ändern.
+- Änderungen an der Hauptseite gehören in `source/` bzw. in die vorgesehenen Build-Patches; die eigenständige Finanzierungsseite liegt in `assets/financing.html`. Gemeinsame PDF-Berichte nutzen `assets/pdf-reports.js`. Release-Versionen werden durch den höchsten Patch-Dateinamen `scripts/patch*_v8*.py` festgelegt; der nächste Patch braucht deshalb eine höhere V8-Nummer.
+- Admin-Vorschauen und „Lokal speichern“ ändern nur den aktuellen Browser. Globale Einstellungen werden über `assets/site-settings.json` veröffentlicht: Konfiguration exportieren, Datei im Repository ersetzen, committen und erfolgreichen Pages-Workflow abwarten.
+- Header, Sticky-Verhalten und Navigation sollen auf allen fünf Rechnern derselben gemeinsamen Höhen- und Scrolllogik folgen. Gemeinsame Layoutregeln bevorzugt in den gemeinsamen Header-Dateien pflegen und Sonderregeln nur ergänzen, wenn die Produktanforderung sie begründet.
+- Buttons unter „Rechtliche Pflichtangaben“ (`.legal-section-links button` in `assets/admin.css`) sollen flach ohne 3D-Schatten oder abweichende Rahmen bleiben; der Radius beträgt 9 px. Beim Social-Setup Logo, Favicon und Apple-Touch-Icon getrennt behandeln; das Website-Logo steuert den gemeinsamen Header. Richtwerte: Favicon 32 × 32 px oder ICO, Apple-Touch-Icon PNG 180 × 180 px.
+- Die Domain `www.neustart-immocheck.de` wird derzeit über GitHub Pages ausgeliefert. Eine spätere Verlagerung der Live-Version zu STRATO oder eine Datenbank-/Loginlösung ist noch eine Architekturentscheidung; bestehende Domain-, Pages- und CNAME-Einstellungen bis zu einer geplanten Migration erhalten.
+- Statistik bleibt zustimmungsabhängig. Finanz- und Objektdaten werden nicht an Google Analytics übermittelt. Serverseitige Anmeldung und zentrale Speicherung erst nach gesonderter Planung mit geschützter Konfiguration und passenden Geheimnissen umsetzen.
+
 ## 2. Navigation und Layoutregeln
 
 Die Navigation führt zu den fünf Rechnern Budget, Eigennutzung, Vermietung, Fix und Flip und Finanzierung. Die Rechner sind über eigene Pfade erreichbar. Beim nächsten Aufruf wird der zuletzt verwendete Rechner geöffnet; direkte Rechnerlinks bleiben möglich.
