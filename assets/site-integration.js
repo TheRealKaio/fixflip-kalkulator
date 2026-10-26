@@ -55,12 +55,12 @@ if(account&&hero){
  tab.id='nicFinancingTab';
  tab.className='deal-type-option';
  tab.href=new URL('finanzierungsrechner/',S.ROOT).href;
- tab.innerHTML='<input class="nic-financing-radio" type="radio" name="nicFinancingMenuSelect" aria-label="Finanzierungsrechner auswählen" tabindex="-1"><span class="nic-financing-copy"><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span>';
- // Reuse the same native grid typography and radio sizing as the original four cards.
- tab.style.cssText='text-decoration:none;cursor:pointer;box-sizing:border-box;min-width:0;';
- const style=document.createElement('style');
- style.textContent='#nicFinancingTab{grid-column:1/-1!important;width:100%!important;min-width:0!important}#nicFinancingTab .nic-financing-copy{display:contents!important}#nicFinancingTab .nic-financing-radio{grid-column:1!important;grid-row:1!important;align-self:center!important;appearance:none!important;-webkit-appearance:none!important;display:block!important;width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;max-width:20px!important;max-height:20px!important;margin:0!important;padding:0!important;border:2px solid #969ba5!important;border-radius:50%!important;background:transparent!important;box-sizing:border-box!important;pointer-events:none!important}#nicFinancingTab .nic-financing-copy strong{grid-column:2!important;grid-row:1!important;align-self:center!important;min-width:0!important;font-size:inherit!important;line-height:inherit!important;font-weight:inherit!important;margin:0!important}#nicFinancingTab .nic-financing-copy small{grid-column:1/-1!important;grid-row:2!important;display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0 2px!important;box-sizing:border-box!important;text-align:justify!important;text-align-last:left!important;hyphens:auto!important;font-size:inherit!important;line-height:inherit!important}';
- document.head.append(style);
+ tab.innerHTML='<input type="radio" name="nicFinancingMenuSelect" aria-label="Finanzierungsrechner auswählen" tabindex="-1"><span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span>';
+ // The fifth option uses the exact same direct-child structure and the original
+ // .deal-type-option typography, spacing and input-radio rules as the first four.
+ tab.style.cssText='text-decoration:none;cursor:pointer;grid-column:1/-1;min-width:0;';
+ tab.querySelector('input').addEventListener('click',event=>{event.preventDefault();location.href=tab.href;});
+
  row.append(tab);
 })();
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#admin(?:-|$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
