@@ -11,7 +11,7 @@ def selectors(s):
         elif c in ')]':depth-=1
         elif c==',' and depth==0:out.append(s[start:i]);start=i+1
     out.append(s[start:]);return out
-def split(css):
+def split(css,pattern=TOKEN):
     stack=[];pos=0;edits=[];rules=[]
     for m in LEX.finditer(css):
         token=m.group()
@@ -22,7 +22,7 @@ def split(css):
         elif stack:
             n=stack.pop()
             if not n['nested'] and not n['head'].lstrip().startswith('@'):
-                parts=selectors(n['head']);yes=[s for s in parts if TOKEN.search(s) and ':not(.hero)' not in s]
+                parts=selectors(n['head']);yes=[s for s in parts if pattern.search(s) and ':not(.hero)' not in s]
                 if yes:
                     no=[s for s in parts if s not in yes];body=css[n['body']:m.start()]
                     rule=','.join(yes)+'{'+body+'}'
@@ -32,26 +32,32 @@ def split(css):
         pos=m.end()
     for a,b,value in reversed(edits):css=css[:a]+value+css[b:]
     return css,rules
-original=(site/'index.html').read_text();common=[]
-for block in re.findall(r'<style\b[^>]*>(.*?)</style>',original,re.S|re.I):common.extend(split(block)[1])
-layout=site/'header-layout.css';rest,rules=split(layout.read_text());common.extend(rules);layout.write_text(rest)
-common.append((site/'stable-header.css').read_text())
-if len(common)<8:raise SystemExit('Shared header rules missing')
-(site/'calculator-header.css').write_text('/* Shared by Budget, Eigennutzung, Vermietung, Fix und Flip and Finanzierung. */\n'+'\n'.join(common)+'\n')
-# Keep only non-header shell declarations in the legacy finance bundle.
-legacy=site/'finance-shared-header.css';legacy.write_text(split(legacy.read_text())[0])
-shutil.copyfile('assets/calculator-navigation.js',site/'calculator-navigation.js')
-shutil.copyfile('scripts/navigation_browser_check.html',site/'_checks'/'navigation.html')
-config=json.dumps(json.loads((site/'site-settings.json').read_text()),ensure_ascii=False).replace('<','\\u003c')
-for page in site.rglob('*.html'):
-    html=page.read_text()
-    html=re.sub(r'(<style\b[^>]*>)(.*?)(</style>)',lambda m:m[1]+split(m[2])[0]+m[3],html,flags=re.S|re.I)
-    html=html.replace('href="stable-header.css"','href="/calculator-header.css"').replace('href="/stable-header.css"','href="/calculator-header.css"')
-    if 'src="stable-header.js"' in html or 'src="/stable-header.js"' in html:
-        html=html.replace('</head>','<script type="application/json" id="nic-published-settings">'+config+'</script><script src="/calculator-navigation.js" defer></script></head>',1)
-    page.write_text(html)
-for name in ['budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner']:
-    html=(site/name/'index.html').read_text()
-    if html.count('href="/calculator-header.css"')!=1:raise SystemExit('Shared header stylesheet missing: '+name)
-    if any(split(css)[1] for css in re.findall(r'<style\b[^>]*>(.*?)</style>',html,re.S|re.I)):raise SystemExit('Inline header override: '+name)
-print('All five calculators use calculator-header.css; inline and finance header copies removed')
+def main():
+    original=(site/'index.html').read_text();common=[]
+    for block in re.findall(r'<style\b[^>]*>(.*?)</style>',original,re.S|re.I):common.extend(split(block)[1])
+    layout=site/'header-layout.css';rest,rules=split(layout.read_text());common.extend(rules);layout.write_text(rest)
+    common.append((site/'stable-header.css').read_text())
+    if len(common)<8:raise SystemExit('Shared header rules missing')
+    (site/'calculator-header.css').write_text('/* Shared by Budget, Eigennutzung, Vermietung, Fix und Flip and Finanzierung. */\n'+'\n'.join(common)+'\n')
+    # Keep only non-header shell declarations in the legacy finance bundle.
+    legacy=site/'finance-shared-header.css';legacy.write_text(split(legacy.read_text())[0])
+    shutil.copyfile('assets/calculator-navigation.js',site/'calculator-navigation.js')
+    shutil.copyfile('scripts/navigation_browser_check.html',site/'_checks'/'navigation.html')
+    shutil.copyfile('scripts/finance_features_browser_check.html',site/'_checks'/'finance-features.html')
+    start=Path('assets/calculator-start.js').read_text()
+    config=json.dumps(json.loads((site/'site-settings.json').read_text()),ensure_ascii=False).replace('<','\\u003c')
+    for page in site.rglob('*.html'):
+        html=page.read_text()
+        html=re.sub(r'(<style\b[^>]*>)(.*?)(</style>)',lambda m:m[1]+split(m[2])[0]+m[3],html,flags=re.S|re.I)
+        html=html.replace('href="stable-header.css"','href="/calculator-header.css"').replace('href="/stable-header.css"','href="/calculator-header.css"')
+        if 'src="stable-header.js"' in html or 'src="/stable-header.js"' in html:
+            html=html.replace('<head>','<head><script>'+start+'</script>',1)
+            html=html.replace('</head>','<script type="application/json" id="nic-published-settings">'+config+'</script><script src="/calculator-navigation.js" defer></script></head>',1)
+        page.write_text(html)
+    for name in ['budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner']:
+        html=(site/name/'index.html').read_text()
+        if html.count('href="/calculator-header.css"')!=1:raise SystemExit('Shared header stylesheet missing: '+name)
+        if any(split(css)[1] for css in re.findall(r'<style\b[^>]*>(.*?)</style>',html,re.S|re.I)):raise SystemExit('Inline header override: '+name)
+    print('All five calculators use calculator-header.css; inline and finance header copies removed')
+
+if __name__=="__main__":main()

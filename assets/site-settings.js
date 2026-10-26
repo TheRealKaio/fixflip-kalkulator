@@ -45,7 +45,7 @@
   }
   const imageAltDefaults={websiteLogo:'Neustart ImmoCheck – Immobilien-Kalkulatoren',favicon:'Haus-Symbol von Neustart ImmoCheck',appleTouchIcon:'Neustart ImmoCheck – Haus-Symbol',sharing:'Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden.'};
   const portals=[['instagram','Instagram'],['facebook','Facebook'],['youtube','YouTube'],['linkedin','LinkedIn'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X'],['threads','Threads'],['xing','XING'],['whatsapp','WhatsApp']];
-  const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/']];
+  const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/'],['finance','Finanzierungsrechner','finanzierungsrechner/']];
   const fonts={system:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif',trebuchet:'"Trebuchet MS",Arial,sans-serif'};
   const layoutDefaults={font:'system',bodySize:16,h1:30,h2:18,h3:22,h4:16,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'#FFFFFF'};
   let published=null,current=null;
@@ -67,6 +67,7 @@
       else s.layout[k]=/^#[0-9a-f]{6}$/i.test(x)?x.toUpperCase():v;
     }
     portals.forEach(([k])=>s.social[k]=httpUrl(raw.social?.[k]));
+    if(!raw.meta?.finance)raw={...raw,meta:{...raw.meta,finance:{"title": "Finanzierungsrechner: Rate & Restschuld | Neustart ImmoCheck", "description": "Berechne deine monatliche Kreditrate, Zinsen, Tilgung und Restschuld. Vergleiche Laufzeiten und prüfe, wie Sondertilgungen deine Finanzierung verändern.", "googleTag": ""}}};
     pages.forEach(([k])=>{const tag=text(raw.meta?.[k]?.googleTag,40).toUpperCase();s.meta[k]={title:text(raw.meta?.[k]?.title,200),description:text(raw.meta?.[k]?.description,500),googleTag:/^(G|GT)-[A-Z0-9]{4,30}$/.test(tag)?tag:''};});
     const propertyId=text(raw.reporting?.propertyId,20),clientId=text(raw.reporting?.clientId,200);
     s.reporting={propertyId:/^[0-9]{1,20}$/.test(propertyId)?propertyId:'',clientId:/^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)?clientId:''};

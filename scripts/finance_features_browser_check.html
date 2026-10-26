@@ -1,0 +1,25 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="robots" content="noindex"><title>Finance features check</title><h1>Finance features check</h1><pre id="result">Running…</pre><div id="frames"></div><script>
+(async()=>{
+const out=document.getElementById('result'),rows=[],key='nic_last_calculator_v1',old=localStorage.getItem(key),draftKey='nic_financing_draft_v1',draft=localStorage.getItem(draftKey);
+const settle=w=>new Promise(r=>w.requestAnimationFrame(()=>w.requestAnimationFrame(r)));
+const load=async(f,url,expected)=>{const p=new Promise((r,j)=>{f.onload=r;f.onerror=j;});f.src=url;await p;const at=Date.now();while((expected&&f.contentWindow.location.pathname!==expected)||!f.contentWindow.NICSettings?.current){if(Date.now()-at>20000)throw Error('Page startup timed out: '+url);await new Promise(r=>setTimeout(r,50));}await settle(f.contentWindow);};
+try{
+ const f=document.createElement('iframe'),g=document.createElement('iframe');for(const e of [f,g]){e.height=844;e.style.cssText='position:fixed;top:200px;left:0;border:1px solid #aaa';document.getElementById('frames').append(e);}
+ localStorage.removeItem(key);f.width=390;await load(f,'/?feature-default=1','/finanzierungsrechner/');rows.push('First visit: Finanzierungsrechner PASS');
+ await load(f,'/eigennutzung/','/eigennutzung/');await load(f,'/?feature-remember=1','/eigennutzung/');rows.push('Remembered selection on next root visit: Eigennutzung PASS');out.textContent=rows.join('\n');
+ for(const width of [390,1440,320]){
+  f.width=g.width=width;await Promise.all([load(f,'/finanzierungsrechner/','/finanzierungsrechner/'),load(g,'/budget/','/budget/')]);
+  const metrics=e=>{const d=e.contentDocument,w=e.contentWindow;return [...d.querySelectorAll('.bottom-actions>button')].map(b=>{const r=b.getBoundingClientRect(),s=w.getComputedStyle(b);return {width:r.width,height:r.height,font:s.font,padding:s.padding,radius:s.borderRadius,background:s.backgroundColor,color:s.color,shadow:s.boxShadow};});};
+  const finance=metrics(f),budget=metrics(g);if(JSON.stringify(finance)!==JSON.stringify(budget))throw Error('Footer mismatch '+width+': '+JSON.stringify({finance,budget}));
+  const d=f.contentDocument,w=f.contentWindow;for(const [id,value]of Object.entries({loan:300000,interest:4,repay:2,extra:5})){d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new w.Event('input',{bubbles:true}));}
+  const fmt=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2});
+  for(const [id,value]of [['monthlyInterest',1000],['monthlyRepayment',500],['annualExtraValue',15000]])if(!d.getElementById(id).textContent.includes(fmt.format(value)))throw Error('Amount incorrect: '+id);
+  rows.push(width+'px: all 3 footer buttons match Budget exactly; monthly/annual amounts update PASS');out.textContent=rows.join('\n');
+ }
+ await load(f,'/admin.html?embedded=1#meta','/admin.html');const d=f.contentDocument;
+ for(const suffix of ['title','description'])if(!d.getElementById('meta-finance-'+suffix))throw Error('Finance meta field missing '+suffix);
+ const headings=[...d.querySelectorAll('#metaFields h3')].map(h=>h.textContent);if(headings.at(-1)!=='Finanzierungsrechner'||headings.at(-2)!=='Fix & Flip')throw Error('Meta entry order incorrect');
+ rows.push('Admin: finance title/description directly below Fix & Flip PASS');out.textContent='ALL PASSED\n'+rows.join('\n');document.title='PASS – Finance features';f.remove();g.remove();
+}finally{if(old===null)localStorage.removeItem(key);else localStorage.setItem(key,old);if(draft===null)localStorage.removeItem(draftKey);else localStorage.setItem(draftKey,draft);}
+})().catch(e=>document.getElementById('result').textContent='FAILED: '+e.message);
+</script></html>

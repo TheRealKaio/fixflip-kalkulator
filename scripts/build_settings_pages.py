@@ -17,7 +17,7 @@ if config.get('version')!=1:
 base='https://www.neustart-immocheck.de/'
 share_name=render_share_image(config,site)
 share_url=base+share_name
-pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/'}
+pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
 # Publish a real PNG so Safari can fetch the icon before JavaScript runs.
 apple=config.get('appleTouchIcon','')
 if apple:

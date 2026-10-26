@@ -88,6 +88,11 @@
       "title": "Fix & Flip kalkulieren | Neustart ImmoCheck",
       "description": "Kalkuliere Kauf, Modernisierung, Finanzierung und Verkauf deines Immobilienprojekts. Schätze Gewinn und Marge vor dem Kauf ein.",
       "googleTag": ""
+    },
+    "finance": {
+      "title": "Finanzierungsrechner: Rate & Restschuld | Neustart ImmoCheck",
+      "description": "Berechne deine monatliche Kreditrate, Zinsen, Tilgung und Restschuld. Vergleiche Laufzeiten und prüfe, wie Sondertilgungen deine Finanzierung verändern.",
+      "googleTag": ""
     }
   },
   "reporting": {
