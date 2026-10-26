@@ -13,12 +13,21 @@ function measure(){
  probe.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
  probe.removeAttribute('id');probe.setAttribute('aria-hidden','true');probe.inert=true;
  Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',height:'auto',minHeight:'0',maxHeight:'none',display:'flow-root'});
- document.body.append(probe);
+ // Keep the same ancestor styles and inherited typography as the visible header.
+ hero.parentElement.append(probe);
  try{
   const heading=probe.querySelector('h1'),description=probe.querySelector('p');
   let maximum=0;
   const states=[...variants,[hero.querySelector('h1').innerHTML,hero.querySelector('p').textContent]];
-  for(const [title,text]of states){heading.innerHTML=title;description.textContent=text;maximum=Math.max(maximum,probe.getBoundingClientRect().height);}
+  for(const [title,text]of states){
+   heading.innerHTML=title;description.textContent=text;
+   const rect=probe.getBoundingClientRect(),style=getComputedStyle(probe);
+   const bottom=Math.max(rect.top,...Array.from(probe.children).map(el=>el.getBoundingClientRect().bottom));
+   // Measure every variant's actual text extent, including rental, before fixing
+   // the live height. This guard must not depend on visiting that calculator.
+   const extent=bottom-rect.top+parseFloat(style.paddingBottom||0)+parseFloat(style.borderBottomWidth||0);
+   maximum=Math.max(maximum,rect.height,extent);
+  }
   // Include the actual rendered text, so inherited styles or late font changes
   // cannot make the live subtitle exceed the measured clone.
   const box=hero.getBoundingClientRect(),heroStyle=getComputedStyle(hero);
@@ -43,5 +52,6 @@ window.addEventListener('resize',schedule);
 window.addEventListener('orientationchange',schedule);
 document.fonts?.ready.then(schedule);
 window.NICHeader={refresh:schedule};
-schedule();
+// Reserve the largest variant synchronously on first load, before the next paint.
+measure();
 })();
