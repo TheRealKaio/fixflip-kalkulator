@@ -13,5 +13,5 @@ for block in blocks:
     selected.append(block)
 if not selected:
     raise SystemExit('Original calculator menu CSS missing')
-(site/'finance-shared-menu.css').write_text('\n'.join(selected),encoding='utf-8')
+(site/'finance-shared-menu.css').write_text('\n'.join(selected)+ '\n.deal-type-row > :last-child:nth-child(odd){grid-column:1 / -1;}\n',encoding='utf-8')
 print('Original shared calculator menu CSS blocks:',len(selected))
