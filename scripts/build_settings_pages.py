@@ -85,3 +85,42 @@ print('Settings metadata pages built: website, company and four calculators')
 
 admin=site/'admin.html'
 admin.write_text(re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', admin.read_text(), flags=re.I).replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1))
+
+
+# Bundle verified Bundesbank monthly data on this same origin as a fallback for browsers
+# that disallow cross-origin reads from the Bundesbank API.
+def write_mortgage_rates():
+    import urllib.request
+    import csv
+    import io
+    from datetime import date
+    try:
+        values={}
+        for name,code in [('five','I'),('ten','O')]:
+            url=('https://api.statistiken.bundesbank.de/rest/data/BBIM1/'
+                 'M.DE.B.A2C.'+code+'.R.A.2250.EUR.N?format=csv&startPeriod='+str(date.today().year-11)+'-01')
+            req=urllib.request.Request(url,headers={'Accept':'text/csv','User-Agent':'Neustart-ImmoCheck/1.0'})
+            with urllib.request.urlopen(req,timeout=15) as response:
+                raw=response.read().decode('utf-8-sig')
+            lines=raw.splitlines()
+            i=next((i for i,line in enumerate(lines) if 'TIME_PERIOD' in line and 'OBS_VALUE' in line),None)
+            if i is None:
+                raise ValueError('No SDMX CSV header for '+name)
+            reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])))
+            rows={}
+            for row in reader:
+                month=row.get('TIME_PERIOD','')
+                value=row.get('OBS_VALUE','')
+                if len(month)==7 and month[4]=='-' and value:
+                    try:rows[month]=float(value)
+                    except ValueError:pass
+            if not rows:raise ValueError('No data for '+name)
+            values[name]=rows
+        keys=sorted(set(values['five'])|set(values['ten']))
+        points=[{'month':k,'five':values['five'].get(k),'ten':values['ten'].get(k)} for k in keys[-121:]]
+        (site/'mortgage-rates.json').write_text(json.dumps({'source':'Deutsche Bundesbank BBIM1 SUD117 SUD118','series':points,'latest':keys[-1]},ensure_ascii=False))
+        print('Bundesbank rate data bundled:',keys[-1],len(points))
+    except Exception as err:
+        print('Bundesbank bundled data unavailable; client falls back to live API:',err)
+
+write_mortgage_rates()
