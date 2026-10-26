@@ -47,5 +47,17 @@ if(account&&hero){
   if(adminOpen&&e.data?.type==='nic-logo-preview')S.applyLogo(e.data.value,e.data.alt,e.data.website);
  });
 }
+// Independent fifth main-menu entry. Existing modes and their storage remain untouched.
+(function addFinancingTab(){
+ const row=document.querySelector('.deal-type-row');
+ if(!row||document.getElementById('nicFinancingTab'))return;
+ const tab=document.createElement('a');
+ tab.id='nicFinancingTab';
+ tab.className='deal-type-option';
+ tab.href=new URL('finanzierungsrechner/',S.ROOT).href;
+ tab.innerHTML='<span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span>';
+ tab.style.cssText='display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;min-height:78px;box-sizing:border-box;';
+ row.append(tab);
+})();
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#admin(?:-|$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
 })();
