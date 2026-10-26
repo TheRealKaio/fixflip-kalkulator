@@ -82,6 +82,37 @@ function model(v){
  for(let m=1;m<=years*12;m++){if(balance>0){const i=balance*interest/1200;interestTotal+=i;balance=Math.max(0,balance-Math.max(0,Math.min(balance,monthly-i)));if(m%12===0)balance=Math.max(0,balance-annualExtra);}if(m%12===0)balances.push(balance);}
  return {loan,interest,repay,extra,years,monthly,annualExtra,balance,interestTotal,paid:loan-balance,interestMonthly:loan*interest/1200,repayMonthly:loan*repay/1200,balances};
 }
+function financeOutlook(doc,m,values){
+ doc.addPage();header(doc,'Finanzierungsrechner - Bericht','Anschlussfinanzierung und historische Hypothekenzinsen');
+ doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text('4. Anschlussfinanzierung',16,45);
+ doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(100,110,125);
+ doc.text(doc.splitTextToSize('Wir können die Zinsen für die Zukunft nicht seriös vorhersagen. Wir können aber historische Schwankungen verwenden, um mögliche Belastungsszenarien zu simulieren.',178),16,52,{lineHeightFactor:1.3});
+ [['Fällt',-1.5],['Bleibt',0],['Steigt',2]].forEach(([label,delta],i)=>{
+  const x=16+i*60,rate=m.interest+delta;doc.setFillColor(247,249,252);doc.roundedRect(x,65,58,36,3,3,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,110,125);doc.text(label,x+3,72);
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(23,32,51);doc.text(money(m.balance*(rate+m.repay)/1200),x+3,81);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,110,125);doc.text('pro Monat · '+(delta>0?'+':'')+String(delta).replace('.',',')+' Prozentpunkte',x+3,88);doc.text(percent(rate)+' Sollzins p. a.',x+3,95);
+ });
+ doc.setFontSize(7.4);doc.setTextColor(148,163,184);doc.text(doc.splitTextToSize('Annuitätendarlehen mit konstantem Sollzins und gleichbleibender Monatsrate während der ersten Zinsbindung. Die Anschlussrate wird aus der Restschuld, dem Szenariozins und der gewählten neuen Anfangstilgung berechnet. Keine Sondertilgungen, Gebühren oder Zinsänderungen während der jeweiligen Bindung berücksichtigt.',178),16,108,{lineHeightFactor:1.3});
+ doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text('5. Hypothekenzinsen - rollierende 10 Jahre',16,135);
+ doc.setFont('helvetica','normal');doc.setFontSize(7.8);doc.setTextColor(100,110,125);doc.text(doc.splitTextToSize('Bundesweiter durchschnittlicher Effektivzins für neue Wohnungsbaukredite mit über 1 bis 5 Jahren (SUD117) und über 5 bis 10 Jahren (SUD118) Zinsbindung.',178),16,142,{lineHeightFactor:1.25});
+ const series=(Array.isArray(values.rateSeries)?values.rateSeries:[]).filter(r=>/^\d{4}-\d{2}$/.test(r.month)&&(Number.isFinite(r.five)||Number.isFinite(r.ten))).sort((a,b)=>a.month.localeCompare(b.month)).slice(-121);
+ const colors=[[13,148,136],[99,102,241],[234,88,12]];
+ ['1-5 Jahre','5-10 Jahre','Dein Sollzins'].forEach((label,i)=>{const x=16+i*59;doc.setDrawColor(...colors[i]);doc.setLineWidth(i===2?.74:.66);doc.setLineDashPattern(i===2?[2,1.5]:[],0);doc.line(x,157,x+8,157);doc.setLineDashPattern([],0);doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(8);doc.text(label,x+10,158);});
+ doc.setFont('helvetica','normal');
+ if(series.length){
+  const all=series.flatMap(r=>[r.five,r.ten]).filter(Number.isFinite).concat(m.interest),low=Math.max(0,Math.floor(Math.min(...all)*2)/2-.5),high=Math.max(low+2,Math.ceil(Math.max(...all)*2)/2+.5);
+  const left=31,right=190,top=168,bottom=236,X=i=>left+i/Math.max(1,series.length-1)*(right-left),Y=v=>bottom-(v-low)/(high-low)*(bottom-top);
+  doc.setFontSize(7);
+  for(let i=0;i<=4;i++){const v=low+(high-low)*i/4,y=Y(v);doc.setDrawColor(220,225,232);doc.setLineWidth(.2);doc.line(left,y,right,y);doc.text(percent(v),left-3,y+1,{align:'right'});}
+  for(const [key,c] of [['five',colors[0]],['ten',colors[1]]]){doc.setDrawColor(...c);doc.setLineWidth(.66);for(let i=1;i<series.length;i++)if(Number.isFinite(series[i-1][key])&&Number.isFinite(series[i][key]))doc.line(X(i-1),Y(series[i-1][key]),X(i),Y(series[i][key]));}
+  doc.setDrawColor(...colors[2]);doc.setLineWidth(.74);doc.setLineDashPattern([2,1.5],0);doc.line(left,Y(m.interest),right,Y(m.interest));doc.setLineDashPattern([],0);
+  for(let i=0;i<series.length;i+=24)doc.text(series[i].month.slice(0,4),X(i),bottom+5,{align:'center'});
+  doc.setFontSize(7.4);doc.text('Datenstand: '+series.at(-1).month.slice(5)+'.'+series.at(-1).month.slice(0,4),16,250);
+ }else{doc.setFontSize(9);doc.text('Keine historischen Monatswerte verfügbar.',16,190);}
+ doc.setFontSize(7.4);doc.setTextColor(100,110,125);doc.text(doc.splitTextToSize('Quelle: Deutsche Bundesbank, MFI-Zinsstatistik. Die Statistik zeigt Effektivzinsen; der Rechner kalkuliert mit dem eingestellten Sollzins. Der Vergleich dient der Orientierung und ist keine Zinsprognose.',178),16,258,{lineHeightFactor:1.3});
+}
+
 function financeDocument(values){
  const m=model(values),doc=create({unit:'mm',format:'a4'},'finance'),s=settings(doc);
  doc.setProperties({title:s.meta?.finance?.title||filename('finance').slice(0,-4),subject:s.meta?.finance?.description||'Finanzierung und Restschuld'});
@@ -102,10 +133,10 @@ function financeDocument(values){
  for(let i=1;i<m.balances.length;i++)doc.line(left+(i-1)/m.years*(right-left),bottom-m.balances[i-1]/Math.max(m.loan,1)*32,left+i/m.years*(right-left),bottom-m.balances[i]/Math.max(m.loan,1)*32);
  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,110,125);doc.text('Start',left,bottom+5);doc.text('Jahr '+m.years,right,bottom+5,{align:'right'});
  y=bottom+13;doc.setFontSize(7.4);doc.text(doc.splitTextToSize('Modellrechnung mit konstantem Sollzins und konstanter Monatsrate. Sondertilgungen zusätzlich jeweils am Jahresende. Der Betrachtungszeitraum ist nicht mit der Zinsbindung gleichzusetzen.',178),16,y,{lineHeightFactor:1.2});
- disclaimer(doc);const total=doc.getNumberOfPages();for(let p=1;p<=total;p++){doc.setPage(p);footer(doc,p,total,defaults.version);}return doc;
+ financeOutlook(doc,m,values);disclaimer(doc);const total=doc.getNumberOfPages();for(let p=1;p<=total;p++){doc.setPage(p);footer(doc,p,total,defaults.version);}return doc;
 }
 async function exportFinance(values,download){
- await prepare();const doc=financeDocument(values),name=filename('finance');
+ await prepare();if(!values.rateSeries?.length){try{const response=await fetch('/mortgage-rates.json',{cache:'no-store'});if(response.ok)values={...values,rateSeries:(await response.json()).series};}catch(err){console.warn('Historische Zinsdaten für den Bericht nicht verfügbar',err);}}const doc=financeDocument(values),name=filename('finance');
  if(download){doc.save(name);return;}
  const blob=doc.output('blob'),file=new File([blob],name,{type:'application/pdf'});
  if(navigator.canShare?.({files:[file]})&&navigator.share)await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});else doc.save(name);

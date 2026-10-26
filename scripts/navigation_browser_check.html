@@ -8,7 +8,11 @@ for(const [width,height]of [[390,844],[1440,900]]){
  for(const target of ['/budget/','/eigennutzung/','/vermietung/','/fix-flip/']){
   await navigate(()=>f.src='/finanzierungsrechner/');let w=f.contentWindow,d=f.contentDocument;
   w.scrollTo(0,120);await settle(w);const before=w.scrollY,header=d.querySelector('.hero').getBoundingClientRect().height;
-  await navigate(()=>d.querySelector('[data-href="'+target+'"] strong').click());w=f.contentWindow;d=f.contentDocument;
+  const samples=[];let watching=true;
+  const capture=()=>{const cw=f.contentWindow,cd=f.contentDocument,h=cd.querySelector('.hero');if(cd.documentElement.dataset.nicPage!=='finance'&&h&&h.getBoundingClientRect().height>0){samples.push({y:cw.scrollY,height:h.getBoundingClientRect().height});}if(watching)requestAnimationFrame(capture);};requestAnimationFrame(capture);
+  await navigate(()=>d.querySelector('[data-href="'+target+'"] strong').click());watching=false;w=f.contentWindow;d=f.contentDocument;
+  for(const sample of samples){if(Math.abs(sample.y-before)>1)throw Error('Intermediate scroll jump '+target+': '+sample.y);if(Math.abs(sample.height-header)>.5)throw Error('Intermediate header jump '+target+': '+sample.height);}
+
   if(Math.abs(w.scrollY-before)>1)throw Error('Scroll reset '+width+' '+target+': '+before+' → '+w.scrollY);
   if(Math.abs(header-d.querySelector('.hero').getBoundingClientRect().height)>.5)throw Error('Header height changed '+target);
   const page=d.documentElement.dataset.nicPage,active=d.getElementById('dealTypeRent').getAttribute('aria-pressed')==='true'?'rent':d.querySelector('input[name="dealType"]:checked').value;

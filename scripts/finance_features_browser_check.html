@@ -18,6 +18,14 @@ try{
   for(const [id,value]of [['monthlyInterest',1000],['monthlyRepayment',500],['annualExtraAmount',15000]])if(!d.getElementById(id).textContent.includes(fmt.format(value)))throw Error('Amount incorrect: '+id);
   for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])if(d.getElementById(id).tagName!=='STRONG')throw Error('Amount must be bold: '+id);
   const reference=g.contentDocument.getElementById('budgetHouseholdSection').getBoundingClientRect(),card=d.querySelector('.section > section.card').getBoundingClientRect();if(Math.abs(reference.width-card.width)>.5||Math.abs(reference.left-card.left)>.5)throw Error('Card width/position mismatch '+width);
+  const boxes=[...d.querySelectorAll('.refinance-grid .kpi')],rects=boxes.map(e=>e.getBoundingClientRect());
+  if(boxes.length!==3||rects.some(r=>Math.abs(r.top-rects[0].top)>.5)||boxes.some(e=>e.scrollWidth>e.clientWidth+1))throw Error('Refinancing boxes wrap/overflow '+width);
+  const model=w.NICPDF.model({loan:300000,interest:4,repay:2,extra:5,years:Number(d.getElementById('years').value)});
+  for(const [id,delta] of [['refinanceFalls',-1.5],['refinanceStays',0],['refinanceRises',2]])if(d.getElementById(id).textContent!==fmt.format(model.balance*(4+delta+2)/1200))throw Error('Refinancing amount incorrect '+id);
+  if(w.getComputedStyle(d.querySelector('.refinance-note')).fontWeight!=='400')throw Error('Refinancing explanation must not be bold');
+  if(d.getElementById('extra').step!=='0.01')throw Error('Special repayment precision');
+  if(d.querySelector('#rateChart path[stroke="#ea580c"]')?.getAttribute('stroke-width')!=='2.8')throw Error('Sollzins line width');
+  rows.push(width+'px: 3 refinancing scenarios, same row, correct amounts, normal-weight explanation PASS');
   rows.push(width+'px: all 3 footer buttons match Budget exactly; monthly/annual amounts update PASS');out.textContent=rows.join('\n');
  }
  await load(f,'/admin.html?embedded=1#meta','/admin.html');const d=f.contentDocument;

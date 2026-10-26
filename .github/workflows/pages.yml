@@ -659,6 +659,7 @@ jobs:
           python scripts/unify_calculator_header.py _site
           python scripts/unify_calculator_actions.py _site
           python scripts/unify_calculator_layout.py _site
+          python scripts/initialize_calculator_routes.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site

@@ -23,7 +23,7 @@ function restore(){
  if(!window.NICSettings?.current||!hero?.classList.contains('nic-fixed-header')){requestAnimationFrame(restore);return;}
  window.scrollTo({top:saved.y,left:0,behavior:'instant'});
  if(document.readyState==='complete')history.scrollRestoration=previous;
- else window.addEventListener('load',()=>{if(!cancelled)window.scrollTo({top:saved.y,left:0,behavior:'instant'});history.scrollRestoration=previous;},{once:true});
+ else requestAnimationFrame(restore);
 }
 requestAnimationFrame(restore);
 })();
