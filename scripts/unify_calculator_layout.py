@@ -13,6 +13,7 @@ for href in re.findall(r'<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"',root):
 if not rules:raise SystemExit('Original card layout rules missing')
 css=re.sub(r'\.deal-type-title\s*\{[^{}]*\}','','\n'.join(rules))
 css+='\n.deal-type-card>.deal-type-title{font-size:var(--nic-menu-title-size,18px)!important;font-weight:700;line-height:1.5;letter-spacing:-.02em;color:var(--ink);margin:0 0 4px}\n'
+if css.count('/*')!=css.count('*/'):raise SystemExit('Unbalanced comment in shared layout CSS')
 (site/'calculator-layout.css').write_text('/* Original shared calculator shell, cards and menu heading. */\n'+css)
 for asset in site.glob('*.css'):
  if asset.name=='calculator-layout.css':continue

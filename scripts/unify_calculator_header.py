@@ -5,6 +5,8 @@ site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 TOKEN=re.compile(r'\.(?:hero(?:-top)?|brand-logo(?:-wrap)?|nic-account-link)(?![\w-])|#nicAccountLink(?![\w-])')
 LEX=re.compile(r'/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[{}]')
 def selectors(s):
+    # Comments can contain commas; never treat those as selector separators.
+    s=re.sub(r'/\*[\s\S]*?\*/','',s)
     out=[];start=depth=0
     for i,c in enumerate(s):
         if c in '([':depth+=1
