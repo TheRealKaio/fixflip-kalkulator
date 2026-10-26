@@ -654,6 +654,7 @@ jobs:
           node --check _site/statistics-admin.js
           node scripts/verify_statistics.js _site
           node scripts/verify_statistics_reporting.js _site
+          python scripts/unify_calculator_header.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           touch _site/.nojekyll

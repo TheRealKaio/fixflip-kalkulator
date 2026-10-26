@@ -4,7 +4,7 @@
  const settle=w=>new Promise(r=>w.requestAnimationFrame(()=>w.requestAnimationFrame(()=>w.requestAnimationFrame(r))));
  if(new URLSearchParams(location.search).has('finance')){
   for(const [width,height]of [[390,844],[1440,900],[320,568],[844,390]]){
-   const frames=await Promise.all(['/budget/','/finanzierungsrechner/'].map(async src=>{
+   const frames=await Promise.all(['/budget/','/eigennutzung/','/vermietung/','/fix-flip/','/finanzierungsrechner/'].map(async src=>{
     const f=document.createElement('iframe');f.width=width;f.height=height;f.title=src;document.getElementById('frames').append(f);
     const loaded=new Promise((r,j)=>{f.onload=r;f.onerror=j;});f.src=src;await loaded;
     const start=Date.now(),w=f.contentWindow;
@@ -13,13 +13,13 @@
    }));
    for(const font of [45,60]){
     for(const f of frames){const w=f.contentWindow,s=JSON.parse(JSON.stringify(w.NICSettings.current));s.layout.h1=font;w.NICSettings.apply(s);await settle(w);}
-    const metrics=frames.map(f=>{const w=f.contentWindow,d=f.contentDocument,h=d.querySelector('.hero'),r=h.getBoundingClientRect();return {height:r.height,width:r.width,font:w.getComputedStyle(h.querySelector('h1')).font,descriptionWidth:h.querySelector('p').getBoundingClientRect().width,variants:d.getElementById('nic-header-variants').textContent};});
-    if(Math.abs(metrics[0].height-metrics[1].height)>.5||metrics[0].font!==metrics[1].font||metrics[0].descriptionWidth!==metrics[1].descriptionWidth||metrics[0].variants!==metrics[1].variants)throw Error('Finance mismatch '+width+' H1 '+font+': '+JSON.stringify(metrics));
-    results.push(width+' × '+height+', H1 '+font+'px: PASS, Budget = Finanzierung = '+metrics[0].height+'px');output.textContent=results.join('\n');
+    const metrics=frames.map(f=>{const w=f.contentWindow,d=f.contentDocument,h=d.querySelector('.hero'),r=h.getBoundingClientRect();return {height:r.height,width:r.width,font:w.getComputedStyle(h.querySelector('h1')).font,descriptionWidth:h.querySelector('p').getBoundingClientRect().width,css:Array.from(d.querySelectorAll('link[rel=stylesheet]')).map(l=>l.href).filter(h=>h.includes('/calculator-header.')).join(),variants:d.getElementById('nic-header-variants').textContent};});
+    if(metrics.some(m=>Math.abs(metrics[0].height-m.height)>.5||metrics[0].font!==m.font||metrics[0].descriptionWidth!==m.descriptionWidth||metrics[0].variants!==m.variants||!m.css||metrics[0].css!==m.css))throw Error('Finance mismatch '+width+' H1 '+font+': '+JSON.stringify(metrics));
+    results.push(width+' × '+height+', H1 '+font+'px: PASS, alle 5 Header = '+metrics[0].height+'px');output.textContent=results.join('\n');
    }
    frames.forEach(f=>f.remove());
   }
-  output.textContent='ALL PASSED\n'+results.join('\n');document.title='PASS – Finance header comparison';return;
+  output.textContent='ALL PASSED\n'+results.join('\n');document.title='PASS – All five header comparison';return;
  }
 
  for(const [width,height]of [[320,568],[390,844],[640,900],[1440,900],[844,390]]){
