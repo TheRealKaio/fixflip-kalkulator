@@ -1,7 +1,7 @@
 # Neustart ImmoCheck – Projektdokumentation
 
 **Repository:** `TheRealKaio/fixflip-kalkulator`  
-**Stand:** 26.10.2026 · Zielrelease V8.348  
+**Stand:** 26.10.2026 · Release V8.348  
 **Produktivadresse:** <https://www.neustart-immocheck.de/>  
 **GitHub-Pages-Adresse:** <https://therealkaio.github.io/fixflip-kalkulator/>
 
@@ -13,6 +13,7 @@ Diese Dokumentation beschreibt den Repository-Stand und die vereinbarten Produkt
 - Rechner: Budget, Eigennutzung, Vermietung, Fix & Flip und Finanzierungsrechner. Die Rechner teilen Navigation, Kopfbereich, Admin-Konfiguration und PDF-Branding.
 - Quellmodell: `source/index.html.gz.b64.part*` enthält die komprimierte Hauptseite. `assets/financing.html` ist die eigenständige Finanzierungsseite. `assets/admin.html`, `assets/admin.js`, `assets/admin.css` und `assets/pdf-reports.js` liefern Admin- und PDF-Bausteine. Der Workflow `.github/workflows/pages.yml` baut, prüft und veröffentlicht die Seiten.
 - Für Änderungen an Seiteninhalten und Layout sind die Quellassets und Build-Skripte maßgeblich; generierte `_site`-Dateien werden beim Build neu erstellt.
+- Die Anschlussfinanzierung zeigt Fällt/Bleibt/Steigt in ganzen Euro; „Bleibt“ ist gelb und „Steigt“ rot. Der Admin-Tab Layout bietet die PDF-Dokumentation als letzte Karte zum Download an.
 - Admin-Einstellungen liegen derzeit lokal im Browser. Die Einstellungsseite weist darauf hin, dass der Bereich nicht angemeldet und nicht geräteübergreifend ist. Eine serverseitige Benutzerverwaltung und Datenbank sind noch nicht eingerichtet.
 - Die Admin-Seite bearbeitet Schriftfamilie, Schriftgrößen, Grund-/Text-/Buttonfarben, Unternehmens- und Metadaten, Profile, rechtliche Inhalte und Statistiken. Die Layoutfarben sind sechstellige HEX-Werte.
 - `assets/site-settings.json` enthält noch Platzhalterangaben für Anbieter- und Impressumsdaten. Vor einer Bestätigung im öffentlichen Impressum müssen die Angaben durch freigegebene Unternehmensdaten ersetzt werden.
@@ -119,16 +120,16 @@ Andere Kalkulatoren und weitere Felder behalten ihre Defaults im Quellcode. Änd
 
 ## 7. Build, Tests und Veröffentlichung
 
-Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Er entpackt `source/index.html.gz.b64.part*`, wendet die dokumentierten Layout- und Inhaltsänderungen an, erzeugt Routen und Einstellungen, kopiert den Finanzierungsrechner und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Bei Erfolg wird das Ergebnis nach GitHub Pages veröffentlicht.
+Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Er entpackt `source/index.html.gz.b64.part*`, wendet die dokumentierten Layout- und Inhaltsänderungen an, erzeugt Routen und Einstellungen, kopiert den Finanzierungsrechner und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Bei Erfolg wird das Ergebnis nach GitHub Pages veröffentlicht. Der Build und Pages-Deploy des Releases V8.348 waren am 26.10.2026 erfolgreich (Commit `033391509d88236c9bcb2d2c70d78bde60561c99`; [Workflow-Lauf](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/40373087414)). Der Workflow prüfte außerdem die neuen Szenario-Ausgaben, Farben, Admin-Downloadkarte und das PDF im veröffentlichten Build-Artefakt.
 
 Für die Anschlussfinanzierung gilt der Prüffall: Restschuld 200.000 €, Sollzins 3,5 %, Tilgung 2 %. Erwartete Monatsraten vor Anzeigeformatierung: 666,67 €, 916,67 € und 1.250,00 €; erwartete Anzeige: 667 €, 917 € und 1.250 €. Zusätzlich sind die Null-Darlehen- und Zinsbindungsfälle zu prüfen. Der Versionsvertrag in `scripts/release_contract.py` leitet die Versionsnummer aus dem neuesten `scripts/patch*_v8*.py`-Dateinamen ab.
 
 ## 8. Offene Aufgaben
 
+Abgeschlossen für V8.348: Szenarioausgabe und Farben, README-PDF im Admin-Layout, gemeinsamer Report-Header und Footer, Projektdokumentation im Repository sowie erfolgreicher Pages-Build und Deploy.
+
 | Priorität | Aufgabe |
 |---|---|
-| Hoch | Build und Live-Deployment nach dieser Änderung erfolgreich abschließen; veröffentlichte README-PDF-URL und Admin-Download prüfen. |
-| Hoch | Kopf-/Fußzeile der README-PDF nach dem Rendern visuell mit einem aktuellen Kalkulatorbericht vergleichen. |
 | Mittel | Weitere Standardwerte aus allen Rechnerfeldern zentral erfassen und mit Quellcode/Tests abgleichen. |
 | Mittel | Berechnungsdetails der Vermietungs- und Fix-&-Flip-Kennzahlen je Eingabefeld eindeutig dokumentieren; Renditebasis und berücksichtigte Kosten bestätigen. |
 | Mittel | Headerhöhe, Sticky-Verhalten und alle Rechnerwechsel auf Desktop und Mobilgeräten erneut visuell abnehmen. |
