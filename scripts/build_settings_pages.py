@@ -83,6 +83,11 @@ urls=[base+p for p in pages.values()]
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
 print('Settings metadata pages built: website, company and four calculators')
 
+for name in ('admin.html','admin.css','admin.js'):
+    shutil.copyfile(Path('assets')/name,site/name)
+docs_dir=site/'docs'
+docs_dir.mkdir(exist_ok=True)
+shutil.copyfile('docs/README-Projektdokumentation.pdf',docs_dir/'README-Projektdokumentation.pdf')
 admin=site/'admin.html'
 admin.write_text(re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', admin.read_text(), flags=re.I).replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1))
 
