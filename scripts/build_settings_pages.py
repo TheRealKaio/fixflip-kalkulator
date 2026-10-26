@@ -106,7 +106,9 @@ def write_mortgage_rates():
             i=next((i for i,line in enumerate(lines) if 'TIME_PERIOD' in line and 'OBS_VALUE' in line),None)
             if i is None:
                 raise ValueError('No SDMX CSV header for '+name+': '+raw[:250].replace('\\n',' '))
-            sample=lines[i]\n            delimiter=';' if sample.count(';')>sample.count(',') else ','\n            reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])),delimiter=delimiter)
+            sample=lines[i]
+            delimiter=';' if sample.count(';')>sample.count(',') else ','
+            reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])),delimiter=delimiter)
             rows={}
             for row in reader:
                 month=str(row.get('TIME_PERIOD','')).strip().strip('"')
