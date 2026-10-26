@@ -58,10 +58,16 @@ if(account&&hero){
  tab.innerHTML='<input type="radio" name="nicFinancingMenuSelect" aria-label="Finanzierungsrechner auswählen" tabindex="-1"><span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span>';
  // The fifth option uses the exact same direct-child structure and the original
  // .deal-type-option typography, spacing and input-radio rules as the first four.
- tab.style.cssText='text-decoration:none;cursor:pointer;';;
+ tab.style.cssText='text-decoration:none;cursor:pointer;';
  tab.querySelector('input').addEventListener('click',event=>{event.preventDefault();location.href=tab.href;});
 
  row.append(tab);
+ // Shared row-layout rule: any unpaired final calculator card spans both columns.
+ if(!document.getElementById('nicMenuOddCardLayout')){
+   const css=document.createElement('style');css.id='nicMenuOddCardLayout';
+   css.textContent='.deal-type-row > :last-child:nth-child(odd){grid-column:1 / -1;}';
+   document.head.append(css);
+ }
 })();
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#admin(?:-|$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
 })();
