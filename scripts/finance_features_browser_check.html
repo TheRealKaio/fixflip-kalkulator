@@ -23,6 +23,7 @@ try{
   const model=w.NICPDF.model({loan:300000,interest:4,repay:2,extra:5,years:Number(d.getElementById('years').value)});
   for(const [id,delta] of [['refinanceFalls',-1.5],['refinanceStays',0],['refinanceRises',2]])if(d.getElementById(id).textContent!==fmt.format(model.balance*(4+delta+2)/1200))throw Error('Refinancing amount incorrect '+id);
   if(w.getComputedStyle(d.querySelector('.refinance-note')).fontWeight!=='400')throw Error('Refinancing explanation must not be bold');
+  if(w.getComputedStyle(d.querySelector('.refinance-note')).color!=='rgb(148, 163, 184)')throw Error('Refinancing explanation must be light grey');
   if(d.getElementById('extra').step!=='0.01')throw Error('Special repayment precision');
   if(d.querySelector('#rateChart path[stroke="#ea580c"]')?.getAttribute('stroke-width')!=='2.8')throw Error('Sollzins line width');
   rows.push(width+'px: 3 refinancing scenarios, same row, correct amounts, normal-weight explanation PASS');
