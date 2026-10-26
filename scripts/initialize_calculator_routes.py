@@ -12,7 +12,8 @@ for page in site.rglob('*.html'):
  s=re.sub(r'<script\b(?=[^>]*\bsrc="/?calculator-navigation\.js")[^>]*>\s*</script>','',s)
  s=s.replace('</head>','<script src="/site-settings.js"></script><script src="/calculator-navigation.js"></script></head>',1)
  s=re.sub(r'<script\b(?=[^>]*\bsrc="/?stable-header\.js")[^>]*>\s*</script>','',s)
- s=s.replace('</header>','</header><script src="/stable-header.js"></script>',1)
+ s=s.replace('</head>','<script src="/stable-header.js"></script></head>',1)
+ s=s.replace('</header>','</header><script>window.NICInitializeHeader();</script>',1)
  if 'function buildBudgetPdf(){' in s:
   old='const savedDealType = localStorage.getItem("ff_dealType") || "budget";'
   new='const requestedDealType=document.documentElement.dataset.nicPage;\nconst savedDealType = ["budget","own","flip"].includes(requestedDealType)?requestedDealType:(localStorage.getItem("ff_dealType") || "budget");'

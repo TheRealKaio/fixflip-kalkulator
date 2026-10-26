@@ -1,5 +1,6 @@
 (function(){
 'use strict';
+function initialize(){
 const hero=document.querySelector('.app > .hero');
 const data=document.getElementById('nic-header-variants');
 if(!hero||!data)return;
@@ -54,4 +55,8 @@ document.fonts?.ready.then(schedule);
 window.NICHeader={refresh:schedule};
 // Reserve the largest variant synchronously on first load, before the next paint.
 measure();
+window.NICCalculatorNavigation?.restore();
+}
+window.NICInitializeHeader=initialize;
+initialize();
 })();

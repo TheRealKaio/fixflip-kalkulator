@@ -13,17 +13,21 @@ document.addEventListener('click',event=>{
 let saved;
 try{saved=JSON.parse(sessionStorage.getItem(key)||'null');sessionStorage.removeItem(key);}catch(_){}
 if(!saved||saved.path!==location.pathname||Date.now()-saved.at>15000||!Number.isFinite(saved.y)||saved.y<0)return;
-const previous=history.scrollRestoration;history.scrollRestoration='manual';
+const previous=history.scrollRestoration,root=document.documentElement,previousMinHeight=root.style.minHeight;history.scrollRestoration='manual';
+// Make the previous scroll offset available even while the destination body is parsing.
+root.style.minHeight=Math.max(root.getBoundingClientRect().height,innerHeight+saved.y)+'px';
+const release=()=>{root.style.minHeight=previousMinHeight;history.scrollRestoration=previous;};
 const started=Date.now();let cancelled=false;
-const cancel=()=>{cancelled=true;history.scrollRestoration=previous;};
+const cancel=()=>{cancelled=true;release();};
 for(const name of ['wheel','touchstart','pointerdown','keydown'])window.addEventListener(name,cancel,{once:true,passive:true});
 function restore(){
- if(cancelled||Date.now()-started>5000){history.scrollRestoration=previous;return;}
+ if(cancelled||Date.now()-started>5000){release();return;}
  const hero=document.querySelector('.hero');
  if(!window.NICSettings?.current||!hero?.classList.contains('nic-fixed-header')){requestAnimationFrame(restore);return;}
  window.scrollTo({top:saved.y,left:0,behavior:'instant'});
- if(document.readyState==='complete')history.scrollRestoration=previous;
+ if(document.readyState==='complete')release();
  else requestAnimationFrame(restore);
 }
+window.NICCalculatorNavigation={restore};
 requestAnimationFrame(restore);
 })();
