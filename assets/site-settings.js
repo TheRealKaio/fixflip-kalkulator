@@ -89,6 +89,8 @@
   function applyLogo(value,alt=current?.imageAlts?.websiteLogo??imageAltDefaults.websiteLogo,website=current?.company?.website){
     const src=validFavicon(value)||new URL('neustart-immocheck-logo.svg',ROOT).href;
     document.querySelectorAll('.brand-logo-wrap').forEach(wrap=>{
+      const inline=wrap.querySelector('svg.brand-logo');
+      if(!validFavicon(value)&&inline){const link=wrap.querySelector('a.nic-logo-link');if(link)link.href=websiteUrl(website)||ROOT.href;inline.removeAttribute('aria-labelledby');inline.setAttribute('role','img');inline.setAttribute('aria-label',alt);return;}
       let img=wrap.querySelector('img.brand-logo');
       if(!img){img=document.createElement('img');img.className='brand-logo';img.alt='Neustart ImmoCheck';wrap.replaceChildren(img);}
       let link=wrap.querySelector('a.nic-logo-link');if(!link){link=document.createElement('a');link.className='nic-logo-link';wrap.replaceChildren(link);link.append(img);}link.href=websiteUrl(website)||ROOT.href;link.removeAttribute('target');
@@ -126,4 +128,7 @@
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
   window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  // Apply the versioned public configuration before the first rendered frame.
+  const bootstrap=document.getElementById?.('nic-published-settings');
+  if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
 })();

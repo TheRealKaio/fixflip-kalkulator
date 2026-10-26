@@ -1,6 +1,6 @@
 """Publish one authoritative header stylesheet for all five calculator pages."""
 from pathlib import Path
-import re,sys
+import re,sys,json,shutil
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 TOKEN=re.compile(r'\.(?:hero(?:-top)?|brand-logo(?:-wrap)?|nic-account-link)(?![\w-])|#nicAccountLink(?![\w-])')
 LEX=re.compile(r'/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[{}]')
@@ -40,10 +40,15 @@ if len(common)<8:raise SystemExit('Shared header rules missing')
 (site/'calculator-header.css').write_text('/* Shared by Budget, Eigennutzung, Vermietung, Fix und Flip and Finanzierung. */\n'+'\n'.join(common)+'\n')
 # Keep only non-header shell declarations in the legacy finance bundle.
 legacy=site/'finance-shared-header.css';legacy.write_text(split(legacy.read_text())[0])
+shutil.copyfile('assets/calculator-navigation.js',site/'calculator-navigation.js')
+shutil.copyfile('scripts/navigation_browser_check.html',site/'_checks'/'navigation.html')
+config=json.dumps(json.loads((site/'site-settings.json').read_text()),ensure_ascii=False).replace('<','\\u003c')
 for page in site.rglob('*.html'):
     html=page.read_text()
     html=re.sub(r'(<style\b[^>]*>)(.*?)(</style>)',lambda m:m[1]+split(m[2])[0]+m[3],html,flags=re.S|re.I)
     html=html.replace('href="stable-header.css"','href="/calculator-header.css"').replace('href="/stable-header.css"','href="/calculator-header.css"')
+    if 'src="stable-header.js"' in html or 'src="/stable-header.js"' in html:
+        html=html.replace('</head>','<script type="application/json" id="nic-published-settings">'+config+'</script><script src="/calculator-navigation.js" defer></script></head>',1)
     page.write_text(html)
 for name in ['budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner']:
     html=(site/name/'index.html').read_text()

@@ -1,0 +1,22 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="robots" content="noindex"><title>Calculator navigation check</title><h1>Calculator navigation check</h1><pre id="result">Running…</pre><div id="frames"></div><script>
+(async()=>{
+const output=document.getElementById('result'),rows=[];
+const settle=w=>new Promise(r=>w.requestAnimationFrame(()=>w.requestAnimationFrame(r)));
+for(const [width,height]of [[390,844],[1440,900]]){
+ const f=document.createElement('iframe');f.width=width;f.height=height;f.style.cssText='position:fixed;top:180px;left:0;border:1px solid #aaa';document.getElementById('frames').append(f);
+ const navigate=async action=>{const loaded=new Promise((r,j)=>{f.onload=r;f.onerror=j;});action();await loaded;await settle(f.contentWindow);};
+ for(const target of ['/budget/','/eigennutzung/','/vermietung/','/fix-flip/']){
+  await navigate(()=>f.src='/finanzierungsrechner/');let w=f.contentWindow,d=f.contentDocument;
+  w.scrollTo(0,120);await settle(w);const before=w.scrollY,header=d.querySelector('.hero').getBoundingClientRect().height;
+  await navigate(()=>d.querySelector('[data-href="'+target+'"] strong').click());w=f.contentWindow;d=f.contentDocument;
+  if(Math.abs(w.scrollY-before)>1)throw Error('Scroll reset '+width+' '+target+': '+before+' → '+w.scrollY);
+  if(Math.abs(header-d.querySelector('.hero').getBoundingClientRect().height)>.5)throw Error('Header height changed '+target);
+  const page=d.documentElement.dataset.nicPage,active=d.getElementById('dealTypeRent').getAttribute('aria-pressed')==='true'?'rent':d.querySelector('input[name="dealType"]:checked').value;
+  if(page!==active)throw Error('Wrong initial calculator '+page+' / '+active);
+  rows.push(width+' × '+height+': Finanzierung → '+page+' PASS; scroll '+w.scrollY+'px, header '+header+'px');output.textContent=rows.join('\n');
+ }
+ f.remove();
+}
+output.textContent='ALL PASSED\n'+rows.join('\n');document.title='PASS – Calculator navigation';
+})().catch(e=>document.getElementById('result').textContent='FAILED: '+e.message);
+</script></html>
