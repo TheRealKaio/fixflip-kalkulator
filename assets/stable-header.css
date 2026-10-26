@@ -1,7 +1,7 @@
 /* Reserve scrollbar space so short legal views keep the same text width. */
 html:not(.nic-embed){overflow-y:scroll;scrollbar-gutter:stable}
 /* All views share the smallest header that fits their complete content. */
-.hero.nic-responsive-header{padding:calc(16px + env(safe-area-inset-top)) 20px 20px}
+.hero.nic-responsive-header{line-height:normal;padding:calc(16px + env(safe-area-inset-top)) 20px 20px}
 .hero.nic-responsive-header>h1{margin:20px 0 10px}
 .hero.nic-fixed-header{
   box-sizing:border-box;
@@ -9,7 +9,7 @@ html:not(.nic-embed){overflow-y:scroll;scrollbar-gutter:stable}
   min-height:var(--nic-header-content-height);
 }
 @media(max-width:600px),(max-height:480px) and (max-width:950px){
-  .hero.nic-responsive-header{padding:calc(14px + env(safe-area-inset-top)) 18px 20px}
+  .hero.nic-responsive-header{line-height:normal;padding:calc(14px + env(safe-area-inset-top)) 18px 20px}
   .hero.nic-responsive-header>h1{
     font-size:min(var(--nic-header-h1-max,45px),clamp(26px,7.5vw,45px))!important;
     line-height:1.08;margin:18px 0 10px;

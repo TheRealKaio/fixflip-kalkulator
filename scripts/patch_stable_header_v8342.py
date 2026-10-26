@@ -6,7 +6,7 @@ if not m:raise SystemExit('Calculator header variants missing')
 budget='Ermittle aus Einkommen, Ausgaben, Eigenkapital und Finanzierung eine realistische Kaufpreis-Spanne.'
 deal='Du gibst ein, was du kaufst und sanierst. Die App übernimmt die Finanzmathematik und zeigt dir, wo das Risiko steckt.'
 rent=re.search(r'heroTitle.innerHTML="([^"]+)";',s)
-variants=[[m[1],budget],[m[2],deal],[m[3],deal],[rent[1],'Prüfe Miete, laufende Kosten und Finanzierung. Der Rechner zeigt dir Cashflow, Renditen und die notwendige Break-even-Miete.'],['Admin-Bereich','Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten und Statistik.']]+[[name,'Rechtliche Informationen zu Neustart ImmoCheck'] for name in ['Impressum','Datenschutz','AGBs','Haftungsausschluss']]
+variants=[['Fi&shy;nan&shy;zie&shy;rungs&shy;rech&shy;ner','Darlehen, Tilgung, Sondertilgung und Restschuld'],[m[1],budget],[m[2],deal],[m[3],deal],[rent[1],'Prüfe Miete, laufende Kosten und Finanzierung. Der Rechner zeigt dir Cashflow, Renditen und die notwendige Break-even-Miete.'],['Admin-Bereich','Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten und Statistik.']]+[[name,'Rechtliche Informationen zu Neustart ImmoCheck'] for name in ['Impressum','Datenschutz','AGBs','Haftungsausschluss']]
 s=s.replace('</head>','<script type="application/json" id="nic-header-variants">'+json.dumps(variants,ensure_ascii=False).replace('<','\\u003c')+'</script><link rel="stylesheet" href="stable-header.css"><script src="stable-header.js" defer></script></head>',1)
 p.write_text(s)
 for name in ['stable-header.css','stable-header.js']:
