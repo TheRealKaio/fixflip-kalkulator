@@ -98,14 +98,14 @@ def write_mortgage_rates():
         values={}
         for name,code in [('five','I'),('ten','O')]:
             url=('https://api.statistiken.bundesbank.de/rest/data/BBIM1/'
-                 'M.DE.B.A2C.'+code+'.R.A.2250.EUR.N?format=csv&startPeriod='+str(date.today().year-11)+'-01')
+                 'M.DE.B.A2C.'+code+'.R.A.2250.EUR.N?format=sdmx_csv&startPeriod='+str(date.today().year-11)+'-01')
             req=urllib.request.Request(url,headers={'Accept':'text/csv','User-Agent':'Neustart-ImmoCheck/1.0'})
             with urllib.request.urlopen(req,timeout=15) as response:
                 raw=response.read().decode('utf-8-sig')
             lines=raw.splitlines()
             i=next((i for i,line in enumerate(lines) if 'TIME_PERIOD' in line and 'OBS_VALUE' in line),None)
             if i is None:
-                raise ValueError('No SDMX CSV header for '+name)
+                raise ValueError('No SDMX CSV header for '+name+': '+raw[:250].replace('\\n',' '))
             reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])))
             rows={}
             for row in reader:
@@ -124,3 +124,9 @@ def write_mortgage_rates():
         print('Bundesbank bundled data unavailable; client falls back to live API:',err)
 
 write_mortgage_rates()
+
+# Finance standalone page shares the same release number as the four calculators.
+finance=site/'finanzierungsrechner'/'index.html'
+if finance.exists():
+    release=(site/'.release-version').read_text(encoding='utf-8').strip()
+    finance.write_text(finance.read_text(encoding='utf-8').replace('VERSION_PLACEHOLDER',release),encoding='utf-8')
