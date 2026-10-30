@@ -8,12 +8,24 @@ for(const [key,path]of Object.entries({budget:'/budget/',own:'/eigennutzung/',re
  const store={};assert.deepEqual(open(path,store).replaced,[]);assert.equal(store.nic_last_calculator_v1,key);assert.deepEqual(open('/',store).replaced,[path]);assert.deepEqual(open(path,store).replaced,[]);
 }
 assert.deepEqual(open('/',{},'#admin').replaced,[]);assert.deepEqual(open('/',{},'#datenschutz').replaced,[]);assert.deepEqual(open('/',{},'','?utm_source=test').replaced,['/finanzierungsrechner/?utm_source=test']);
-const html=fs.readFileSync(site+'/finanzierungsrechner/index.html','utf8'),from=html.indexOf('function calculate(){'),to=html.indexOf('\nfunction drawRates',from),els={};const $=id=>els[id]??=( {textContent:'',innerHTML:''} );
+const html=fs.readFileSync(site+'/finanzierungsrechner/index.html','utf8'),from=html.indexOf('function calculate(){'),to=html.indexOf('\nfunction drawRates',from),els={};const $=id=>els[id]??=( {textContent:'',innerHTML:'',value:'0',setAttribute(){}} );
 let values={loan:300000,interest:4,repay:2,extra:5,years:10};const fmt=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}),whole=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
-const ctx={$: $,values:()=>values,money:x=>fmt.format(x),euro:x=>whole.format(x),pct:x=>x+' %',grid:()=>'',line:()=>'',drawRates(){},localStorage:{setItem(){}},F:'test',Math};vm.createContext(ctx);vm.runInContext(html.slice(from,to),ctx);vm.runInContext('calculate()',ctx);
+const ctx={$: $,values:()=>values,money:x=>fmt.format(x),euro:x=>whole.format(x),pct:x=>x+' %',grid:()=>'',line:()=>'',drawRates(){},localStorage:{setItem(){}},F:'test',Math,refinanceBase:null,refinanceDistance:null};vm.createContext(ctx);vm.runInContext(html.slice(from,to),ctx);vm.runInContext('calculate()',ctx);
 assert($('monthlyInterestValue').textContent.includes(fmt.format(1000)));assert($('monthlyRepaymentValue').textContent.includes(fmt.format(500)));assert($('annualExtraAmount').textContent.includes(fmt.format(15000)));assert(html.includes('Finanzierung neu kalkulieren'));assert(!html.includes('svg text{font:11px'));assert.equal($('rate').textContent,whole.format(1500));
 let balance=300000;for(let month=1;month<=120;month++){balance=Math.max(0,balance+balance*4/1200-1500);if(month%12===0)balance=Math.max(0,balance-15000);}
 for(const [id,delta] of [['refinanceFalls',-1.5],['refinanceStays',0],['refinanceRises',2]])assert.equal($(id).textContent,whole.format(balance*(4+delta+2)/1200));
+const stableScenario=$('refinanceStays').textContent;
+for(const shift of [-10,-3,0,3,10]){
+ ctx.refinanceDistance=Math.abs(shift);$('refinanceChange').value=String(shift);
+ vm.runInContext('calculate()',ctx);
+ assert.equal($('refinanceStays').textContent,stableScenario);
+ assert.equal($('refinanceFalls').textContent,whole.format(balance*(4-Math.abs(shift)+2)/1200));
+ assert.equal($('refinanceRises').textContent,whole.format(balance*(4+Math.abs(shift)+2)/1200));
+}
+values={...values,interest:5};vm.runInContext('calculate()',ctx);
+assert.equal($('refinanceChange').value,0);assert.equal(ctx.refinanceDistance,null);
+assert.equal($('refinanceFallsInterest').textContent,'3.5 % Sollzins p. a.');
+assert.equal($('refinanceRisesInterest').textContent,'7 % Sollzins p. a.');
 values={loan:0,interest:4,repay:2,extra:5,years:10};vm.runInContext('calculate()',ctx);for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])assert($(id).textContent.includes(fmt.format(0)));for(const id of ['refinanceFalls','refinanceStays','refinanceRises'])assert.equal($(id).textContent,whole.format(0));
 assert(html.includes('Mtl. Kreditrate inkl. Tilgung'));assert(!html.includes('annualExtraValue'));assert(html.includes('<strong id="annualExtraAmount"'));assert(html.includes('<strong id="monthlyInterestValue"'));assert(html.includes('<strong id="monthlyRepaymentValue"'));assert(!html.includes('class="action-bar"'));assert(html.includes('data-nic-page="finance"'));assert(html.includes('Finanzierungsrechner: Rate &amp; Restschuld'));
 const admin=fs.readFileSync(site+'/admin.html','utf8');assert(admin.includes('href="/docs/README-Projektdokumentation.pdf"'));assert(fs.existsSync(site+'/docs/README-Projektdokumentation.pdf'));
