@@ -15,17 +15,23 @@ assert($('monthlyInterestValue').textContent.includes(fmt.format(1000)));assert(
 let balance=300000;for(let month=1;month<=120;month++){balance=Math.max(0,balance+balance*4/1200-1500);if(month%12===0)balance=Math.max(0,balance-15000);}
 for(const [id,delta] of [['refinanceFalls',-1.5],['refinanceStays',0],['refinanceRises',2]])assert.equal($(id).textContent,whole.format(balance*(4+delta+2)/1200));
 const stableScenario=$('refinanceStays').textContent;
-for(const shift of [-10,-3,0,3,10]){
- ctx.refinanceDistance=Math.abs(shift);$('refinanceChange').value=String(shift);
+assert.equal(Number($('refinanceChange').value),4);
+for(const selected of [0,1,4,7,10,2,8,4]){
+ $('refinanceChange').value=String(selected);
  vm.runInContext('calculate()',ctx);
+ const falls=selected<4?selected:2.5,rises=selected>4?selected:6;
  assert.equal($('refinanceStays').textContent,stableScenario);
- assert.equal($('refinanceFalls').textContent,whole.format(balance*(4-Math.abs(shift)+2)/1200));
- assert.equal($('refinanceRises').textContent,whole.format(balance*(4+Math.abs(shift)+2)/1200));
+ assert.equal($('refinanceFalls').textContent,whole.format(balance*(falls+2)/1200));
+ assert.equal($('refinanceRises').textContent,whole.format(balance*(rises+2)/1200));
+ assert.equal($('refinanceFallsInterest').textContent,falls+' % Sollzins p. a.');
+ assert.equal($('refinanceRisesInterest').textContent,rises+' % Sollzins p. a.');
 }
-values={...values,interest:5};vm.runInContext('calculate()',ctx);
-assert.equal($('refinanceChange').value,0);assert.equal(ctx.refinanceDistance,null);
-assert.equal($('refinanceFallsInterest').textContent,'3.5 % Sollzins p. a.');
-assert.equal($('refinanceRisesInterest').textContent,'7 % Sollzins p. a.');
+for(const interest of [0,1,5,9,10]){
+ values={...values,interest};vm.runInContext('calculate()',ctx);
+ assert.equal(Number($('refinanceChange').value),interest);
+ assert.equal($('refinanceFallsInterest').textContent,Math.max(0,interest-1.5)+' % Sollzins p. a.');
+ assert.equal($('refinanceRisesInterest').textContent,Math.min(10,interest+2)+' % Sollzins p. a.');
+}
 values={loan:0,interest:4,repay:2,extra:5,years:10};vm.runInContext('calculate()',ctx);for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])assert($(id).textContent.includes(fmt.format(0)));for(const id of ['refinanceFalls','refinanceStays','refinanceRises'])assert.equal($(id).textContent,whole.format(0));
 assert(html.includes('Mtl. Kreditrate inkl. Tilgung'));assert(!html.includes('annualExtraValue'));assert(html.includes('<strong id="annualExtraAmount"'));assert(html.includes('<strong id="monthlyInterestValue"'));assert(html.includes('<strong id="monthlyRepaymentValue"'));assert(!html.includes('class="action-bar"'));assert(html.includes('data-nic-page="finance"'));assert(html.includes('Finanzierungsrechner: Rate &amp; Restschuld'));
 const admin=fs.readFileSync(site+'/admin.html','utf8');assert(admin.includes('href="/docs/README-Projektdokumentation.pdf"'));assert(fs.existsSync(site+'/docs/README-Projektdokumentation.pdf'));
