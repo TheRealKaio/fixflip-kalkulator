@@ -3,6 +3,10 @@ declare(strict_types=1);
 // Minimal SMTP client: implicit TLS on 465 or mandatory STARTTLS on 587.
 // Certificate and peer-name verification are enabled; no cleartext fallback.
 function nic_send_code(array $smtp, string $to, string $code): void {
+    nic_send_message($smtp,$to,'Dein ImmoCheck-Anmeldecode',"Dein Anmeldecode lautet: $code\n\nEr ist 10 Minuten gültig und nur einmal verwendbar.\nWenn du diesen Code nicht angefordert hast, ignoriere diese E-Mail.\n");
+}
+function nic_send_message(array $smtp, string $to, string $subject, string $body): void {
+    if (preg_match('/[\r\n\x00]/',$subject)) throw new RuntimeException('SMTP subject');
     foreach ([$to, $smtp['from'], $smtp['user'], $smtp['host'], $smtp['from_name']] as $value) {
         if (!is_string($value) || preg_match('/[\r\n\x00]/', $value)) throw new RuntimeException('SMTP configuration');
     }
@@ -47,8 +51,7 @@ function nic_send_code(array $smtp, string $to, string $code): void {
         $command('RCPT TO:<' . $to . '>', [250, 251]);
         $command('DATA', [354]);
         $name = '=?UTF-8?B?' . base64_encode($smtp['from_name']) . '?=';
-        $headers = 'From: ' . $name . ' <' . $smtp['from'] . ">\r\nTo: <" . $to . ">\r\nSubject: Dein ImmoCheck-Anmeldecode\r\nDate: " . date(DATE_RFC2822) . "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n";
-        $body = "Dein Anmeldecode lautet: $code\n\nEr ist 10 Minuten gültig und nur einmal verwendbar.\nWenn du diesen Code nicht angefordert hast, ignoriere diese E-Mail.\n";
+        $headers = "From: " . $name . " <" . $smtp['from'] . ">\r\nTo: <" . $to . ">\r\nSubject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\nDate: " . date(DATE_RFC2822) . "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n";
         $command($headers . "\r\n" . rtrim(chunk_split(base64_encode($body), 76, "\r\n")) . "\r\n.", [250]);
         $command('QUIT', [221]);
     } finally { fclose($socket); }

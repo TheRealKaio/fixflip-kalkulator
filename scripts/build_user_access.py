@@ -2,7 +2,7 @@
 from pathlib import Path
 import re,shutil,sys
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
-for name in ['user-access.js','backend-config.json','user-data.html','user-data.js']:
+for name in ['user-access.js','backend-config.json','user-data.html','user-data.js','email-change.html','email-change.js']:
     shutil.copyfile(Path('assets')/name,site/name)
 for page in site.rglob('*.html'):
     s=page.read_text()

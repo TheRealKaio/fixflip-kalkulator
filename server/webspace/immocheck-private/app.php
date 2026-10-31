@@ -74,6 +74,12 @@ function nic_remove_account(PDO $db, string $id): void {
     nic_query($db,'UPDATE nic_audit SET target_id=NULL WHERE target_id=?',[$id]);
     nic_query($db,'DELETE FROM nic_users WHERE id=?',[$id]);
 }
+function nic_email_change_table(PDO $db): void {
+    nic_query($db,"CREATE TABLE IF NOT EXISTS nic_email_changes (user_id CHAR(32) PRIMARY KEY, old_email VARCHAR(254) NOT NULL, new_email VARCHAR(254) NOT NULL, token_hash CHAR(64) UNIQUE NULL, code_hash CHAR(64) NOT NULL, stage VARCHAR(16) NOT NULL, attempts INT NOT NULL DEFAULT 0, expires_at DATETIME NOT NULL, FOREIGN KEY (user_id) REFERENCES nic_users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+function nic_email_change_valid(array $change, string $email, string $stage): bool {
+    return $change['old_email']===$email && $change['stage']===$stage && $change['expires_at']>=nic_now() && (int)$change['attempts']<5;
+}
 function nic_auth_allowed(array $settings, ?array $user, bool $register): bool {
     if (($user['role'] ?? '') === 'admin') return true;
     if (($settings['access']['loginBlocked'] ?? false) === true) return false;
@@ -223,6 +229,56 @@ function nic_run(): void {
         $s=json_decode($row,true,16,JSON_THROW_ON_ERROR);$action=$input['action']??'';
         if(!in_array($action,['calculators','pdfDownload','pdfShare'],true))nic_fail('Unbekannte Funktion.');
         if(($s['access']['calculators']??true)!==true || ($s['access'][$action]??true)!==true)nic_session($db,$c);
+        nic_reply(['ok'=>true]);
+    }
+    if ($route==='email-change-status' && $method==='GET') {
+        $u=nic_session($db,$c);nic_email_change_table($db);
+        $change=nic_query($db,'SELECT * FROM nic_email_changes WHERE user_id=?',[$u['id']])->fetch(PDO::FETCH_ASSOC);
+        $valid=$change && nic_email_change_valid($change,$u['email'],$change['stage']);
+        nic_reply(['change'=>$valid?['email'=>$change['new_email'],'stage'=>$change['stage']]:null]);
+    }
+    if ($route==='email-change-start' && $method==='POST') {
+        $u=nic_session($db,$c);$email=nic_email($input['email']??null);
+        if ($email===$u['email']) nic_fail('Bitte eine andere E-Mail-Adresse eingeben.');
+        nic_limit($db,$c,'email-change',$u['id'],3600,3);
+        if (nic_query($db,'SELECT id FROM nic_users WHERE email=?',[$email])->fetchColumn()) nic_fail('Diese E-Mail-Adresse kann nicht verwendet werden.',409);
+        nic_email_change_table($db);
+        $token=bin2hex(random_bytes(32));$hash=nic_hash('email-change|'.$token,$c);
+        nic_query($db,"INSERT INTO nic_email_changes(user_id,old_email,new_email,token_hash,code_hash,stage,attempts,expires_at) VALUES (?,?,?,?,'','pending',0,?) ON DUPLICATE KEY UPDATE old_email=VALUES(old_email),new_email=VALUES(new_email),token_hash=VALUES(token_hash),code_hash='',stage='pending',attempts=0,expires_at=VALUES(expires_at)",[$u['id'],$u['email'],$email,$hash,nic_now(1800)]);
+        $link='https://www.neustart-immocheck.de/email-change.html#token='.$token;
+        try {nic_send_message($c['smtp'],$u['email'],'E-Mail-Änderung bestätigen',"Möchtest du deine E-Mail-Adresse zu ".$email." ändern?\n\nÖffne diesen Link und bestätige die Änderung innerhalb von 30 Minuten:\n".$link."\n\nWenn du die Änderung nicht angefordert hast, bestätige sie nicht. Deine bisherige Adresse bleibt gültig.");}
+        catch(Throwable $e){nic_query($db,'DELETE FROM nic_email_changes WHERE user_id=? AND token_hash=?',[$u['id'],$hash]);throw $e;}
+        nic_reply(['ok'=>true]);
+    }
+    if ($route==='email-change-approve' && $method==='POST') {
+        nic_limit($db,$c,'email-change-approve-ip',$_SERVER['REMOTE_ADDR']??'',900,20);
+        $token=$input['token']??'';if(!is_string($token)||!preg_match('/^[a-f0-9]{64}$/D',$token))nic_fail('Bestätigung ungültig oder abgelaufen.',400);
+        $db->beginTransaction();
+        $change=nic_query($db,'SELECT * FROM nic_email_changes WHERE token_hash=? FOR UPDATE',[nic_hash('email-change|'.$token,$c)])->fetch(PDO::FETCH_ASSOC);
+        if(!$change){$db->rollBack();nic_fail('Bestätigung ungültig oder abgelaufen.',400);}
+        $u=nic_query($db,'SELECT email,status FROM nic_users WHERE id=? FOR UPDATE',[$change['user_id']])->fetch(PDO::FETCH_ASSOC);
+        if(!$u||$u['status']!=='active'||!nic_email_change_valid($change,$u['email'],'pending')){$db->rollBack();nic_fail('Bestätigung ungültig oder abgelaufen.',400);}
+        $code=(string)random_int(10000000,99999999);
+        nic_query($db,"UPDATE nic_email_changes SET stage='approved',token_hash=NULL,code_hash=?,expires_at=? WHERE user_id=?",[nic_hash('email-change-code|'.$change['user_id'].'|'.$code,$c),nic_now(600),$change['user_id']]);
+        $db->commit();
+        try{nic_send_message($c['smtp'],$change['new_email'],'Neue E-Mail-Adresse bestätigen',"Dein Bestätigungscode lautet: $code\n\nGib ihn innerhalb von 10 Minuten im Nutzerkonto unter E-Mail ändern ein. Erst danach wird deine Adresse geändert.");}
+        catch(Throwable $e){nic_query($db,'DELETE FROM nic_email_changes WHERE user_id=? AND code_hash=?',[$change['user_id'],nic_hash('email-change-code|'.$change['user_id'].'|'.$code,$c)]);throw $e;}
+        nic_reply(['ok'=>true]);
+    }
+    if ($route==='email-change-finish' && $method==='POST') {
+        $u=nic_session($db,$c);$code=$input['code']??'';
+        nic_limit($db,$c,'email-change-finish',$u['id'],900,20);
+        if(!is_string($code)||!preg_match('/^[0-9]{8}$/D',$code))nic_fail('Bitte den achtstelligen Code eingeben.');
+        $db->beginTransaction();
+        $change=nic_query($db,'SELECT * FROM nic_email_changes WHERE user_id=? FOR UPDATE',[$u['id']])->fetch(PDO::FETCH_ASSOC);
+        $current=nic_query($db,'SELECT email,status FROM nic_users WHERE id=? FOR UPDATE',[$u['id']])->fetch(PDO::FETCH_ASSOC);
+        if(!$change||!$current||$current['status']!=='active'||!nic_email_change_valid($change,$current['email'],'approved')){$db->rollBack();nic_fail('Bitte zuerst über deine bisherige Adresse bestätigen. Der Vorgang darf nicht abgelaufen sein.',400);}
+        if(!hash_equals($change['code_hash'],nic_hash('email-change-code|'.$u['id'].'|'.$code,$c))){nic_query($db,'UPDATE nic_email_changes SET attempts=attempts+1 WHERE user_id=?',[$u['id']]);$db->commit();nic_fail('Code ungültig oder abgelaufen.',400);}
+        if(nic_query($db,'SELECT id FROM nic_users WHERE email=?',[$change['new_email']])->fetchColumn()){$db->rollBack();nic_fail('Diese E-Mail-Adresse kann nicht verwendet werden.',409);}
+        nic_query($db,'UPDATE nic_users SET email=? WHERE id=?',[$change['new_email'],$u['id']]);
+        nic_query($db,'DELETE FROM nic_sessions WHERE user_id=?',[$u['id']]);nic_query($db,'DELETE FROM nic_challenges WHERE user_id=?',[$u['id']]);nic_query($db,'DELETE FROM nic_email_changes WHERE user_id=?',[$u['id']]);$db->commit();
+        setcookie('__Host-nic_session','',['expires'=>1,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
+        try{nic_send_message($c['smtp'],$change['old_email'],'Deine E-Mail-Adresse wurde geändert','Deine E-Mail-Adresse wurde erfolgreich zu '.$change['new_email'].' geändert. Alle Sitzungen wurden beendet.');}catch(Throwable $e){error_log('ImmoCheck: email change notification failed');}
         nic_reply(['ok'=>true]);
     }
     if ($route==='profile' && $method==='POST') {

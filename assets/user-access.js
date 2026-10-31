@@ -78,7 +78,7 @@ document.addEventListener('click',event=>{
  const target=event.target.closest?.('#nicAccountLink,.nic-account-link');if(!target||!config?.enabled)return;
  event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
 },true);
-window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),get enabled(){return config?.enabled===true;},get user(){return user;}};
+window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:code=>api('email-change-finish',{code}),get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
 .nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
 .nic-auth-dialog::backdrop{background:#0f172a88}
@@ -101,9 +101,9 @@ const css=element('style');css.textContent=`
 // Logout confirmation is a nonmodal notice on the calculator page.
 if(typeof location!=='undefined'){
  const currentURL=new URL(location.href);
- if(currentURL.searchParams.get('logged-out')==='1'){
-  currentURL.searchParams.delete('logged-out');history.replaceState(null,'',currentURL.href);
-  const notice=element('div','Du wurdest erfolgreich abgemeldet!',{role:'status',class:'nic-logout-notice'});
+ if(currentURL.searchParams.get('logged-out')==='1'||currentURL.searchParams.get('email-changed')==='1'){
+  const emailChanged=currentURL.searchParams.get('email-changed')==='1';currentURL.searchParams.delete('email-changed');currentURL.searchParams.delete('logged-out');history.replaceState(null,'',currentURL.href);
+  const notice=element('div',emailChanged?'Deine E-Mail-Adresse wurde geändert. Bitte melde dich mit der neuen Adresse an.':'Du wurdest erfolgreich abgemeldet!',{role:'status',class:'nic-logout-notice'});
   notice.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;max-width:calc(100% - 40px);box-sizing:border-box;padding:16px 22px;border:1px solid #cbd5e1;border-radius:12px;background:var(--bg,#fff);color:var(--ink,#172033);box-shadow:0 6px 24px #0f172a20;font:inherit;text-align:center';
   document.body.append(notice);setTimeout(()=>notice.remove(),6000);
  }

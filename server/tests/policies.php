@@ -7,6 +7,13 @@ $c=['pepper'=>str_repeat('t',64)];
 if($mode==='settings-invalid'){nic_clean_settings(['version'=>1,'access'=>['pdfShare'=>'false']]);throw new RuntimeException('invalid accepted');}
 if($mode==='email-invalid'){nic_email("x@example.com\r\nBcc: y@example.com");throw new RuntimeException('header injection accepted');}
 if($mode==='normal'){
+ $change=['old_email'=>'old@example.test','stage'=>'pending','expires_at'=>nic_now(60),'attempts'=>0];
+ check(nic_email_change_valid($change,'old@example.test','pending'),'pending old confirmation');
+ check(!nic_email_change_valid($change,'old@example.test','approved'),'new code requires old approval');
+ check(!nic_email_change_valid($change,'other@example.test','pending'),'changed old address invalidates request');
+ check(!nic_email_change_valid(array_replace($change,['expires_at'=>nic_now(-60)]),'old@example.test','pending'),'expired request rejected');
+ check(!nic_email_change_valid(array_replace($change,['attempts'=>5]),'old@example.test','pending'),'attempts capped');
+
  foreach ([false,true] as $registration) foreach ([false,true] as $login) {
   $rules=['access'=>['registrationBlocked'=>$registration,'loginBlocked'=>$login]];
   check(nic_auth_allowed($rules,['role'=>'admin'],true),'admin must always be allowed');
