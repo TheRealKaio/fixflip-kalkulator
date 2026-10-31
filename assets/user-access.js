@@ -81,6 +81,7 @@ document.addEventListener('click',event=>{
 window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
 .nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
+.nic-auth-dialog [hidden]{display:none!important}
 .nic-auth-dialog::backdrop{background:#0f172a88}
 .nic-auth-dialog h2{color:inherit;margin:0 0 16px;line-height:1.25}
 .nic-auth-dialog p{color:inherit;margin:0 0 16px;overflow-wrap:anywhere}
