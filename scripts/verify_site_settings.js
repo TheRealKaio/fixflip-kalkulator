@@ -7,6 +7,22 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
 (async()=>{
  const s=await S.init();assert.equal(S.portals.length,10);assert.equal(S.pages.length,7);assert.equal(S.companyFields.length,29);
+ const accessKeys=['calculators','pdfDownload','pdfShare'];
+ for(const key of accessKeys){
+  assert.equal(s.access[key],true,'published defaults keep public access');
+  assert.equal(S.normalize({...s,access:undefined}).access[key],true,'legacy config keeps public access');
+  const restricted=S.normalize({...s,access:{...s.access,[key]:false}});
+  assert.equal(restricted.access[key],false);
+  S.save(restricted);assert.equal((await S.init()).access[key],false);
+  assert.equal(S.normalize(JSON.parse(JSON.stringify(restricted))).access[key],false);
+  for(const invalid of ['false',0,null])assert.throws(()=>S.normalize({...s,access:{[key]:invalid}}));
+ }
+ S.discard();
+ const adminSource=fs.readFileSync('assets/admin.html','utf8');
+ assert(adminSource.indexOf('id="tab-users"')<adminSource.indexOf('id="tab-stats"'));
+ assert(adminSource.includes('id="panel-users"'));
+ for(const key of accessKeys)assert(adminSource.includes('id="access-'+key+'"'));
+ assert(adminSource.includes('erzwingen aber noch keine Anmeldung'));
  const raw=JSON.parse(JSON.stringify(s));raw.layout.background='red;display:none';raw.layout.h1=999;raw.layout.font='evil';raw.social.instagram='javascript:alert(1)';raw.social.facebook='https://www.facebook.com/example';raw.company.name='<img onerror=alert(1)>';raw.company.secret='ignored';raw.meta.rent.title='Mietwohnung prüfen';raw.meta.rent.googleTag='g-example1234';raw.meta.own.googleTag='<script>alert(1)</script>';raw.reporting={propertyId:'123456789',clientId:'123-example.apps.googleusercontent.com'};
  const safe=S.normalize(raw);const address=S.normalize({...raw,company:{street:'Musterstraße 1',postalCode:'20095\n',city:'\nHamburg\n',country:'Deutschland'}});assert.equal(S.imprint(address).find(x=>x.label==='Anschrift').value,'Musterstraße 1\n20095 Hamburg\nDeutschland');address.company.postalCode='';assert.equal(S.imprint(address).find(x=>x.label==='Anschrift').value,'Musterstraße 1\nHamburg\nDeutschland');assert.equal(safe.meta.rent.googleTag,'G-EXAMPLE1234');assert.equal(safe.meta.own.googleTag,'');assert.equal(safe.reporting.propertyId,'123456789');assert.equal(safe.reporting.clientId,'123-example.apps.googleusercontent.com');assert.equal(safe.layout.background,'#F5F7FB');assert.equal(safe.layout.h1,30);assert.equal(safe.layout.font,'system');assert.equal(safe.social.instagram,'');assert.equal(safe.social.facebook,'https://www.facebook.com/example');assert.equal(safe.company.secret,undefined);assert.equal(S.pageMeta(safe,'rent').title,'Mietwohnung prüfen');assert(S.imprint(safe).some(x=>x.value==='<img onerror=alert(1)>'));
  assert.equal(S.websiteUrl('www.beispiel.de'),'https://www.beispiel.de/');assert.equal(S.websiteUrl('javascript:alert(1)'),'');assert.equal(S.websiteUrl('https://user:pass@beispiel.de'),'');safe.company.website='https://www.beispiel.de/';

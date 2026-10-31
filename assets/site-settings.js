@@ -72,6 +72,7 @@
     const propertyId=text(raw.reporting?.propertyId,20),clientId=text(raw.reporting?.clientId,200);
     s.reporting={propertyId:/^[0-9]{1,20}$/.test(propertyId)?propertyId:'',clientId:/^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)?clientId:''};
     s.legal={};for(const key of Object.keys(legalLabels)){const value=raw.legal?.[key];if(value!==undefined&&typeof value!=='string')throw new Error('Ungültiger HTML-Text: '+legalLabels[key]);if(value?.length>100000)throw new Error('HTML-Text zu lang (maximal 100.000 Zeichen): '+legalLabels[key]);s.legal[key]=value||'';}
+    s.access={};for(const key of ['calculators','pdfDownload','pdfShare']){const value=raw.access?.[key];if(value!==undefined&&typeof value!=='boolean')throw new Error('Ungültige Zugangsregel: '+key);s.access[key]=value??true;}
     return s;
   }
   function pageMeta(s,key){const m=s.meta[key]||{};return {title:m.title||s.meta.website.title||'Neustart ImmoCheck',description:m.description||s.meta.website.description||''};}

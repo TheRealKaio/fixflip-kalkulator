@@ -115,5 +115,10 @@
     "datenschutz": "",
     "haftungsausschluss": "",
     "cookie-hinweis": ""
+  },
+  "access": {
+    "calculators": true,
+    "pdfDownload": true,
+    "pdfShare": true
   }
 }

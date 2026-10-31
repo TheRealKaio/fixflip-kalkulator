@@ -25,11 +25,11 @@ function setAdmin(open){
    adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
    const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);setAdmin(false);});
    adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
-   const section=location.hash.slice(7);adminFrame.src=new URL('admin.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current')+(['company','layout','social','meta','legal','stats'].includes(section)?'#'+section:''),S.ROOT).href;
+   const section=location.hash.slice(7);adminFrame.src=new URL('admin.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current')+(['company','layout','social','meta','legal','users','stats'].includes(section)?'#'+section:''),S.ROOT).href;
    adminPanel.append(close,adminFrame);hero.after(adminPanel);
   }
   adminOpen=true;document.body.classList.add('nic-admin-open');adminPanel.hidden=false;
-  document.getElementById('heroTitle').textContent='Admin-Bereich';document.getElementById('heroText').textContent='Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten und Statistik.';
+  document.getElementById('heroTitle').textContent='Admin-Bereich';document.getElementById('heroText').textContent='Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
   document.title='Admin-Bereich | Neustart ImmoCheck';account.setAttribute('aria-expanded','true');account.setAttribute('aria-controls','nicAdminPanel');
   adminFrame.contentWindow?.postMessage({type:'nic-request-logo'},location.origin);
  }else if(!open&&adminOpen){
