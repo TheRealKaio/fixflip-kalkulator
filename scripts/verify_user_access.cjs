@@ -2,7 +2,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const site=process.argv[2]||'_site';
 const config=JSON.parse(fs.readFileSync('assets/backend-config.json','utf8'));
-assert.equal(config.enabled,false,'Backend must remain opt-in until STRATO setup');
+assert.equal(config.enabled,true,'Production backend is enabled after confirmed STRATO setup');
 assert.equal(new URL(config.apiUrl).protocol,'https:');
 assert.equal(config.apiUrl,'https://neustart-immocheck.de/api/index.php');
 const source=fs.readFileSync('assets/user-access.js','utf8');

@@ -1,4 +1,4 @@
 {
-  "enabled": false,
+  "enabled": true,
   "apiUrl": "https://neustart-immocheck.de/api/index.php"
 }
