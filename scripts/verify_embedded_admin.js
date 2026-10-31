@@ -20,5 +20,11 @@ for(const f of events.message)f({origin:location.origin,source:frame.contentWind
 panel.children[0].click();assert(panel.hidden);assert.equal(title.innerHTML,'Budget prüfen');assert.equal(S.lastLogo,'saved-logo');assert(account.focused);
 account.click();assert.equal(panel.hidden,false);assert.equal(hero.sibling,panel);assert.equal(location.hash,'#admin');
 location.hash='';for(const f of events.popstate)f();assert(panel.hidden);
+const userHero=new El(),userTitle=new El(),userText=new El(),userAccount=new El();
+const userLocation={...location,hash:'#account'};
+const userDoc={...document,body:new El(),getElementById:id=>({nicAccountLink:userAccount,heroTitle:userTitle,heroText:userText})[id],querySelector:s=>s==='.app > .hero'?userHero:null};
+const userContext={...context,document:userDoc,location:userLocation,addEventListener(){}};userContext.window=userContext;
+vm.createContext(userContext);vm.runInContext(fs.readFileSync('assets/site-integration.js','utf8'),userContext);await new Promise(setImmediate);
+assert.equal(userTitle.textContent,'Deine Nutzerdaten');assert(userText.textContent.includes('unwiderruflich'));assert(userHero.sibling.children[1].src.includes('/user-data.html?embedded=1'));assert.equal(userDoc.title,'Deine Nutzerdaten | Neustart ImmoCheck');
 console.log('Embedded admin checks passed: deep link, shared heading, same frame on reopen, back navigation, saved logo restore, live preview and message origin protection.');
 })().catch(e=>{console.error(e);process.exit(1)});
