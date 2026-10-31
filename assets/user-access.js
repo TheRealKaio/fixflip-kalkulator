@@ -55,8 +55,9 @@ async function profile(){
  if(!user&&!await login())return;
  const modal=element('dialog',null,{'aria-label':'Benutzerkonto'});modal.className='nic-auth-dialog';
  modal.append(element('h2',user.first_name+' '+user.last_name),element('p',user.email));
- if(user.role==='admin'){const a=element('a','Admin-Bereich öffnen',{href:new URL('#admin',ROOT).href});modal.append(a);}
- const close=element('button','Schließen'),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();location.reload();}catch(e){alert(e.message);}});modal.append(out,close);document.body.append(modal);modal.showModal();
+ const actions=element('div',null,{class:'nic-auth-actions nic-profile-actions'});
+ if(user.role==='admin'){const a=element('a','Admin-Bereich öffnen',{href:new URL('#admin',ROOT).href,class:'nic-auth-button'});actions.append(a);}
+ const close=element('button','Schließen'),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();location.reload();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
 }
 function mountUsers(){
  const panel=document.getElementById('panel-users');if(!panel||!config?.enabled||user?.role!=='admin')return;
@@ -77,7 +78,23 @@ document.addEventListener('click',event=>{
  event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
 },true);
 window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,get enabled(){return config?.enabled===true;},get user(){return user;}};
-const css=element('style');css.textContent='.nic-auth-dialog{border:1px solid #cbd5e1;border-radius:18px;padding:24px;max-width:430px;width:calc(100% - 32px);color:#172033;background:white;font:16px/1.5 system-ui}.nic-auth-dialog::backdrop{background:#0f172a88}.nic-auth-dialog label{display:block;margin:14px 0}.nic-auth-dialog input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #cbd5e1;border-radius:8px}.nic-auth-actions{display:flex;gap:10px;flex-wrap:wrap}.nic-auth-dialog button{font:inherit;padding:9px;margin:6px 4px 0 0;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}.nic-user-row{padding:14px 0;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}';document.head.append(css);
+const css=element('style');css.textContent=`
+.nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
+.nic-auth-dialog::backdrop{background:#0f172a88}
+.nic-auth-dialog h2{color:inherit;margin:0 0 16px;line-height:1.25}
+.nic-auth-dialog p{color:inherit;margin:0 0 16px;overflow-wrap:anywhere}
+.nic-auth-dialog label{display:block;color:inherit;margin:14px 0}
+.nic-auth-dialog input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:11px 12px;border:1px solid var(--line,#cbd5e1);border-radius:10px;background:var(--bg,#f5f7fb);color:var(--ink,#172033)}
+.nic-auth-dialog input[type=checkbox]{accent-color:var(--nic-button-bg,#0f172a)}
+.nic-auth-dialog input:focus-visible{outline:2px solid var(--nic-button-bg,#0f172a);outline-offset:3px}
+.nic-auth-dialog .nic-auth-actions{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:12px;margin-top:24px;align-items:stretch}
+.nic-auth-dialog button,.nic-auth-dialog a.nic-auth-button,.nic-auth-dialog a.nic-auth-button:visited{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:46px;font:inherit;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-shadow:none;padding:12px 14px;margin:0;border:1px solid var(--nic-button-bg,#0f172a);border-radius:11px;background:var(--nic-button-bg,#0f172a);color:var(--nic-button-text,#fff);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.nic-auth-dialog :is(button,a.nic-auth-button):hover{filter:brightness(.92)}
+.nic-auth-dialog :is(button,a.nic-auth-button):focus-visible{outline:3px solid var(--nic-button-bg,#0f172a);outline-offset:4px}
+.nic-auth-dialog button:disabled{opacity:.65;cursor:wait}
+.nic-user-row{padding:14px 0;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}
+@media(max-width:480px){.nic-auth-dialog{padding:20px}.nic-auth-dialog .nic-auth-actions{grid-auto-flow:row;grid-template-columns:1fr}}
+`;document.head.append(css);
 // Public-page gate. This controls application use, not distribution of its public source.
 let gate=null,checking=false;
 async function checkCalculator(){
