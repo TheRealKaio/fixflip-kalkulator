@@ -58,7 +58,7 @@ async function profile(){
  modal.append(element('h2',user.first_name+' '+user.last_name),element('p',user.email));
  const actions=element('div',null,{class:'nic-auth-actions nic-profile-actions'});
  if(user.role==='admin'){const a=element('a','Admin-Bereich',{href:new URL('#admin',ROOT).href,class:'nic-auth-button nic-admin-action'});actions.append(a);}
- const close=element('button','Schließen'),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();location.reload();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
+ const close=element('button','Schließen',{autofocus:''}),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();location.reload();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
 }
 function mountUsers(){
  const panel=document.getElementById('panel-users');if(!panel||!config?.enabled||user?.role!=='admin')return;
