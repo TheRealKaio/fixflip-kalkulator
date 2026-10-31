@@ -68,18 +68,29 @@ function nic_admin(PDO $db, array $c): array {
 function nic_audit(PDO $db, ?string $actor, string $action, ?string $target = null): void {
     nic_query($db, 'INSERT INTO nic_audit(actor_id,action,target_id,created_at) VALUES (?,?,?,?)', [$actor,$action,$target,nic_now()]);
 }
+function nic_auth_allowed(array $settings, ?array $user, bool $register): bool {
+    if (($user['role'] ?? '') === 'admin') return true;
+    if (($settings['access']['loginBlocked'] ?? false) === true) return false;
+    if ($register && ($settings['access']['registrationBlocked'] ?? false) === true) return false;
+    return true;
+}
+function nic_auth_settings(PDO $db): array {
+    $payload=nic_query($db,'SELECT payload FROM nic_settings WHERE id=1')->fetchColumn();
+    if (!$payload) nic_fail('Einrichtung fehlt.',503);
+    return json_decode($payload,true,16,JSON_THROW_ON_ERROR);
+}
 function nic_clean_settings(mixed $raw): array {
     if (!is_array($raw) || ($raw['version'] ?? null) !== 1) nic_fail('Ungültige Einstellungen.');
     $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access'];
     $s = array_intersect_key($raw, array_flip($keys));
     foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
     $s['access'] = $s['access'] ?? [];
-    foreach (['calculators','pdfDownload','pdfShare'] as $key) {
-        $value = $s['access'][$key] ?? true;
+    foreach (['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'] as $key) {
+        $value = $s['access'][$key] ?? !in_array($key,['registrationBlocked','loginBlocked'],true);
         if (array_key_exists($key,$s['access']) && !is_bool($s['access'][$key])) nic_fail('Ungültige Zugangsregel.');
         $s['access'][$key] = $value;
     }
-    $s['access'] = array_intersect_key($s['access'], array_flip(['calculators','pdfDownload','pdfShare']));
+    $s['access'] = array_intersect_key($s['access'], array_flip(['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare']));
     // Inputs are public website settings, never server configuration or account data.
     $check = function (mixed $v, int $depth = 0) use (&$check): void {
         if ($depth > 5) nic_fail('Einstellungen zu tief verschachtelt.');
@@ -143,7 +154,7 @@ function nic_run(): void {
     if ($route==='settings' && $method==='GET') {
         $row=nic_query($db,'SELECT payload,revision FROM nic_settings WHERE id=1')->fetch(PDO::FETCH_ASSOC);
         if (!$row) nic_fail('Die Einrichtung ist noch nicht abgeschlossen.',503);
-        nic_reply(['settings'=>json_decode($row['payload'],true,16,JSON_THROW_ON_ERROR),'revision'=>(int)$row['revision']]);
+        nic_reply(['settings'=>json_decode($row['payload'],true,16,JSON_THROW_ON_ERROR),'revision'=>(int)$row['revision'],'authControlsVersion'=>1]);
     }
     if ($route==='me' && $method==='GET') {
         $u=nic_session($db,$c,false);
@@ -155,11 +166,12 @@ function nic_run(): void {
         nic_limit($db,$c,'ip',$_SERVER['REMOTE_ADDR']??'',900,20);
         $first=$last='';
         if (($input['register']??false)===true) {$first=nic_name($input['first_name']??null);$last=nic_name($input['last_name']??null);}
-        $u=nic_query($db,'SELECT id,status FROM nic_users WHERE email=?',[$email])->fetch(PDO::FETCH_ASSOC);
+        $u=nic_query($db,'SELECT id,status,role,verified_at FROM nic_users WHERE email=?',[$email])->fetch(PDO::FETCH_ASSOC);
+        if (!nic_auth_allowed(nic_auth_settings($db),$u?:null,!$u || empty($u['verified_at']))) nic_fail('Registrierung oder Anmeldung ist derzeit gesperrt.',403);
         if (!$u && ($input['register']??false)===true) {
             $id=bin2hex(random_bytes(16));
             nic_query($db,'INSERT IGNORE INTO nic_users(id,email,first_name,last_name,created_at) VALUES (?,?,?,?,?)',[$id,$email,$first,$last,nic_now()]);
-            $u=nic_query($db,'SELECT id,status FROM nic_users WHERE email=?',[$email])->fetch(PDO::FETCH_ASSOC);
+            $u=nic_query($db,'SELECT id,status,role,verified_at FROM nic_users WHERE email=?',[$email])->fetch(PDO::FETCH_ASSOC);
         }
         $challenge=bin2hex(random_bytes(32));
         if ($u && $u['status']==='active') {
@@ -186,6 +198,7 @@ function nic_run(): void {
         }
         $u=nic_query($db,'SELECT * FROM nic_users WHERE id=? FOR UPDATE',[$ch['user_id']])->fetch(PDO::FETCH_ASSOC);
         if (!$u||$u['status']!=='active'){$db->commit();nic_fail('Konto nicht verfügbar.',401);}
+        if (!nic_auth_allowed(nic_auth_settings($db),$u,empty($u['verified_at']))) {$db->commit();nic_fail('Registrierung oder Anmeldung ist derzeit gesperrt.',403);}
         nic_query($db,'DELETE FROM nic_challenges WHERE id=?',[$id]);
         nic_query($db,'UPDATE nic_users SET verified_at=COALESCE(verified_at,?) WHERE id=?',[nic_now(),$u['id']]);
         $token=bin2hex(random_bytes(32));$csrf=nic_hash('csrf|'.$token,$c);

@@ -7,6 +7,14 @@ $c=['pepper'=>str_repeat('t',64)];
 if($mode==='settings-invalid'){nic_clean_settings(['version'=>1,'access'=>['pdfShare'=>'false']]);throw new RuntimeException('invalid accepted');}
 if($mode==='email-invalid'){nic_email("x@example.com\r\nBcc: y@example.com");throw new RuntimeException('header injection accepted');}
 if($mode==='normal'){
+ foreach ([false,true] as $registration) foreach ([false,true] as $login) {
+  $rules=['access'=>['registrationBlocked'=>$registration,'loginBlocked'=>$login]];
+  check(nic_auth_allowed($rules,['role'=>'admin'],true),'admin must always be allowed');
+  check(nic_auth_allowed($rules,['role'=>'user'],false)===!$login,'existing user login policy');
+  check(nic_auth_allowed($rules,null,true)===(!$login&&!$registration),'registration policy');
+  check(nic_auth_allowed($rules,['role'=>'user'],true)===(!$login&&!$registration),'pending code registration policy');
+ }
+
  $s=nic_clean_settings(['version'=>1,'secret'=>'must disappear','access'=>['pdfDownload'=>false,'pdfShare'=>true]]);
  check(!isset($s['secret']),'unknown top-level settings retained');check($s['access']['calculators']===true,'missing defaults');check($s['access']['pdfDownload']===false,'false lost');
  check(nic_email(' TEST@EXAMPLE.COM ')==='test@example.com','email normalization');check(nic_name(' Kai ')==='Kai','name trim');

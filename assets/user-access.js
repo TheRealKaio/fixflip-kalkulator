@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const ROOT=new URL('.',document.currentScript.src);
-let config=null,boot=null,user=null,csrf=null,revision=null,authPending=null,requestPending=false;
+let config=null,boot=null,user=null,csrf=null,revision=null,authPending=null,requestPending=false,authControlsVersion=0;
 async function api(route,body,query=''){
  const url=new URL(config.apiUrl);url.searchParams.set('r',route);if(query)for(const [k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
  const headers={'X-NIC-Request':'1'};if(body!==undefined){headers['Content-Type']='application/json';if(csrf)headers['X-NIC-CSRF']=csrf;}
@@ -22,7 +22,7 @@ function login(){
  if(authPending)return authPending;
  authPending=new Promise(resolve=>{
  const modal=element('dialog',null,{'aria-labelledby':'nicLoginTitle'});modal.className='nic-auth-dialog';
- const form=element('form');form.innerHTML='<h2 id="nicLoginTitle">Anmelden oder registrieren</h2><p>Du erhältst einen einmaligen Code per E-Mail.</p><label>E-Mail-Adresse<input type="email" name="email" autocomplete="email" maxlength="254" required></label><label><input type="checkbox" name="register"> Neues Benutzerkonto anlegen</label><div data-names hidden><label>Vorname<input name="first_name" autocomplete="given-name" maxlength="100"></label><label>Nachname<input name="last_name" autocomplete="family-name" maxlength="100"></label></div><div data-code hidden><label>Anmeldecode<input name="code" inputmode="numeric" pattern="[0-9]{8}" autocomplete="one-time-code" maxlength="8"></label></div><p role="status" aria-live="polite"></p><div class="nic-auth-actions"><button type="submit">Code anfordern</button><button type="button" data-close>Abbrechen</button></div>';
+ const form=element('form');form.innerHTML='<h2 id="nicLoginTitle">Anmelden oder registrieren</h2><p>Du erhältst einen einmaligen Code per E-Mail.</p><label>E-Mail-Adresse<input type="email" name="email" autocomplete="email" maxlength="254" required></label><label class="nic-register-choice"><input type="checkbox" name="register"><span>Neues Benutzerkonto anlegen</span></label><div data-names hidden><label>Vorname<input name="first_name" autocomplete="given-name" maxlength="100"></label><label>Nachname<input name="last_name" autocomplete="family-name" maxlength="100"></label></div><div data-code hidden><label>Anmeldecode<input name="code" inputmode="numeric" pattern="[0-9]{8}" autocomplete="one-time-code" maxlength="8"></label></div><p role="status" aria-live="polite"></p><div class="nic-auth-actions"><button type="submit">Code anfordern</button><button type="button" data-close>Abbrechen</button></div>';
  let challenge=null;const status=form.querySelector('[role=status]'),submit=form.querySelector('[type=submit]'),register=form.elements.register;
  register.addEventListener('change',()=>{form.querySelector('[data-names]').hidden=!register.checked;for(const key of ['first_name','last_name'])form.elements[key].required=register.checked;});
  const finish=ok=>{modal.close();modal.remove();authPending=null;resolve(ok);};
@@ -47,8 +47,8 @@ async function requireAdmin(){
  if(user?.role!=='admin'){message('Dieser Bereich ist nur für Administratoren verfügbar.');return false;}
  return true;
 }
-async function loadSettings(){if(!await init())return null;const data=await api('settings');revision=data.revision;return data.settings;}
-async function saveSettings(settings){if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');return api('settings',{settings,revision}).then(data=>{revision=data.revision;return data.settings;});}
+async function loadSettings(){if(!await init())return null;const data=await api('settings');revision=data.revision;authControlsVersion=data.authControlsVersion||0;return data.settings;}
+async function saveSettings(settings){if((settings.access?.registrationBlocked||settings.access?.loginBlocked)&&authControlsVersion<1)throw Error('Bitte zuerst die aktualisierte app.php auf STRATO hochladen. Die Sperren wurden nicht gespeichert.');if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');return api('settings',{settings,revision}).then(data=>{revision=data.revision;return data.settings;});}
 async function logout(){await api('logout',{});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));}
 async function profile(){
  if(!await init())return;
@@ -85,6 +85,7 @@ const css=element('style');css.textContent=`
 .nic-auth-dialog p{color:inherit;margin:0 0 16px;overflow-wrap:anywhere}
 .nic-auth-dialog label{display:block;color:inherit;margin:14px 0}
 .nic-auth-dialog input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:11px 12px;border:1px solid var(--line,#cbd5e1);border-radius:10px;background:var(--bg,#f5f7fb);color:var(--ink,#172033)}
+.nic-auth-dialog .nic-register-choice{display:flex;align-items:center;gap:10px;cursor:pointer}.nic-auth-dialog .nic-register-choice input[type=checkbox]{appearance:auto;-webkit-appearance:checkbox;flex:0 0 10px;width:10px;height:10px;min-width:10px;min-height:10px;padding:0;margin:0}.nic-auth-dialog .nic-register-choice span{flex:1;text-align:left}
 .nic-auth-dialog input[type=checkbox]{accent-color:var(--nic-button-bg,#0f172a)}
 .nic-auth-dialog input:focus-visible{outline:2px solid var(--nic-button-bg,#0f172a);outline-offset:3px}
 .nic-auth-dialog .nic-auth-actions{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:12px;margin-top:24px;align-items:stretch}
