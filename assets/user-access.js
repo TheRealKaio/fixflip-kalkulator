@@ -5,7 +5,7 @@ let config=null,boot=null,user=null,csrf=null,revision=null,authPending=null,req
 async function api(route,body,query=''){
  const url=new URL(config.apiUrl);url.searchParams.set('r',route);if(query)for(const [k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
  const headers={'X-NIC-Request':'1'};if(body!==undefined){headers['Content-Type']='application/json';if(csrf)headers['X-NIC-CSRF']=csrf;}
- const response=await fetch(url,{method:body===undefined?'GET':'POST',credentials:'include',headers,body:body===undefined?undefined:JSON.stringify(body),cache:'no-store',signal:AbortSignal.timeout(15000)});
+ const response=await fetch(url,{method:body===undefined?'GET':'POST',credentials:'include',headers,body:body===undefined?undefined:JSON.stringify(body),cache:'no-store',signal:AbortSignal.timeout(['email-change-start','email-change-approve','email-change-resend','request-code'].includes(route)?60000:15000)});
  let data;try{data=await response.json();}catch(_){throw Error('Die Schnittstelle liefert keine gültige Antwort.');}
  if(!response.ok){const error=Error(data.error||'Anfrage fehlgeschlagen.');error.status=response.status;if(response.status===401){user=null;csrf=null;}throw error;}
  return data;
@@ -78,7 +78,7 @@ document.addEventListener('click',event=>{
  const target=event.target.closest?.('#nicAccountLink,.nic-account-link');if(!target||!config?.enabled)return;
  event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
 },true);
-window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
+window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
 .nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
 .nic-auth-dialog::backdrop{background:#0f172a88}

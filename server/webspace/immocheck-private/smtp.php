@@ -51,7 +51,8 @@ function nic_send_message(array $smtp, string $to, string $subject, string $body
         $command('RCPT TO:<' . $to . '>', [250, 251]);
         $command('DATA', [354]);
         $name = '=?UTF-8?B?' . base64_encode($smtp['from_name']) . '?=';
-        $headers = "From: " . $name . " <" . $smtp['from'] . ">\r\nTo: <" . $to . ">\r\nSubject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\nDate: " . date(DATE_RFC2822) . "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n";
+        $messageId=bin2hex(random_bytes(16)).'@'.substr(strrchr($smtp['from'],'@'),1);
+        $headers = "From: " . $name . " <" . $smtp['from'] . ">\r\nTo: <" . $to . ">\r\nSubject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\nMessage-ID: <".$messageId.">\r\nDate: " . date(DATE_RFC2822) . "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n";
         $command($headers . "\r\n" . rtrim(chunk_split(base64_encode($body), 76, "\r\n")) . "\r\n.", [250]);
         $command('QUIT', [221]);
     } finally { fclose($socket); }
