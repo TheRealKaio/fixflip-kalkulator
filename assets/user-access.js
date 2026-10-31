@@ -29,7 +29,7 @@ function login(){
  form.querySelector('[data-close]').addEventListener('click',()=>finish(false));modal.addEventListener('cancel',event=>{event.preventDefault();finish(false);});
  form.addEventListener('submit',async event=>{event.preventDefault();if(requestPending)return;requestPending=true;submit.disabled=true;status.textContent='Bitte warten …';try{
  if(!challenge){const r=await api('request-code',{email:form.elements.email.value,register:register.checked,first_name:form.elements.first_name.value,last_name:form.elements.last_name.value});challenge=r.challenge;status.textContent=r.message;form.querySelector('[data-code]').hidden=false;form.elements.code.required=true;form.elements.email.readOnly=true;register.disabled=true;submit.textContent='Code bestätigen';form.elements.code.focus();}
- else{const r=await api('verify-code',{challenge,code:form.elements.code.value});user=r.user;csrf=r.csrf;window.dispatchEvent(new Event('nic-auth-changed'));finish(true);}
+ else{const r=await api('verify-code',{challenge,code:form.elements.code.value});user=r.user;csrf=r.csrf;window.dispatchEvent(new Event('nic-auth-changed'));finish(true);if(user.role!=='admin')location.assign(new URL('user-data.html',ROOT).href);}
  }catch(error){status.textContent=error.message;}finally{requestPending=false;submit.disabled=false;}});
  modal.append(form);document.body.append(modal);modal.showModal();form.elements.email.focus();
  });return authPending;
@@ -53,10 +53,11 @@ async function logout(){await api('logout',{});user=null;csrf=null;window.dispat
 async function profile(){
  if(!await init())return;
  if(!user&&!await login())return;
+ if(user.role!=='admin'){location.assign(new URL('user-data.html',ROOT).href);return;}
  const modal=element('dialog',null,{'aria-label':'Benutzerkonto'});modal.className='nic-auth-dialog';
  modal.append(element('h2',user.first_name+' '+user.last_name),element('p',user.email));
  const actions=element('div',null,{class:'nic-auth-actions nic-profile-actions'});
- if(user.role==='admin'){const a=element('a','Admin-Bereich öffnen',{href:new URL('#admin',ROOT).href,class:'nic-auth-button'});actions.append(a);}
+ if(user.role==='admin'){const a=element('a','Admin-Bereich',{href:new URL('#admin',ROOT).href,class:'nic-auth-button nic-admin-action'});actions.append(a);}
  const close=element('button','Schließen'),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();location.reload();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
 }
 function mountUsers(){
@@ -77,7 +78,7 @@ document.addEventListener('click',event=>{
  const target=event.target.closest?.('#nicAccountLink,.nic-account-link');if(!target||!config?.enabled)return;
  event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
 },true);
-window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,get enabled(){return config?.enabled===true;},get user(){return user;}};
+window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
 .nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
 .nic-auth-dialog::backdrop{background:#0f172a88}
@@ -90,6 +91,7 @@ const css=element('style');css.textContent=`
 .nic-auth-dialog input:focus-visible{outline:2px solid var(--nic-button-bg,#0f172a);outline-offset:3px}
 .nic-auth-dialog .nic-auth-actions{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:12px;margin-top:24px;align-items:stretch}
 .nic-auth-dialog button,.nic-auth-dialog a.nic-auth-button,.nic-auth-dialog a.nic-auth-button:visited{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:46px;font:inherit;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-shadow:none;padding:12px 14px;margin:0;border:1px solid var(--nic-button-bg,#0f172a);border-radius:11px;background:var(--nic-button-bg,#0f172a);color:var(--nic-button-text,#fff);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.nic-auth-dialog a.nic-admin-action{border:0}
 .nic-auth-dialog :is(button,a.nic-auth-button):hover{filter:brightness(.92)}
 .nic-auth-dialog :is(button,a.nic-auth-button):focus-visible{outline:3px solid var(--nic-button-bg,#0f172a);outline-offset:4px}
 .nic-auth-dialog button:disabled{opacity:.65;cursor:wait}

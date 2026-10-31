@@ -19,6 +19,14 @@ if($mode==='normal'){
  check(!isset($s['secret']),'unknown top-level settings retained');check($s['access']['calculators']===true,'missing defaults');check($s['access']['pdfDownload']===false,'false lost');
  check(nic_email(' TEST@EXAMPLE.COM ')==='test@example.com','email normalization');check(nic_name(' Kai ')==='Kai','name trim');
  check(nic_hash('session|one',$c)!==nic_hash('session|two',$c),'hash separation');
+ $test=new PDO('sqlite::memory:');$test->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);$test->exec('PRAGMA foreign_keys=ON');
+ $test->exec('CREATE TABLE nic_users(id TEXT PRIMARY KEY);CREATE TABLE nic_sessions(user_id TEXT REFERENCES nic_users(id) ON DELETE CASCADE);CREATE TABLE nic_challenges(user_id TEXT REFERENCES nic_users(id) ON DELETE CASCADE);CREATE TABLE nic_settings(updated_by TEXT);CREATE TABLE nic_audit(actor_id TEXT,target_id TEXT)');
+ $test->exec("INSERT INTO nic_users VALUES ('self'),('other');INSERT INTO nic_sessions VALUES ('self'),('other');INSERT INTO nic_challenges VALUES ('self'),('other');INSERT INTO nic_settings VALUES ('self');INSERT INTO nic_audit VALUES ('self','other'),('other','self')");
+ $test->beginTransaction();nic_remove_account($test,'self');$test->commit();
+ check($test->query('SELECT id FROM nic_users')->fetchColumn()==='other','other account must remain');
+ foreach(['nic_sessions','nic_challenges'] as $table)check($test->query('SELECT user_id FROM '.$table)->fetchAll(PDO::FETCH_COLUMN)===['other'],'own tokens must be removed');
+ check($test->query('SELECT updated_by FROM nic_settings')->fetchColumn()===null,'settings reference must be cleared');
+ check((int)$test->query("SELECT COUNT(*) FROM nic_audit WHERE actor_id='self' OR target_id='self'")->fetchColumn()===0,'audit references must be cleared');
  echo "PASS: input validation, public access defaults, independent flags, no unknown top-level settings, keyed hash separation\n";exit;
 }
 $db=new PDO('sqlite::memory:');$db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);

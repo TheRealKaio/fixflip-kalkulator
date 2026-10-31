@@ -68,6 +68,12 @@ function nic_admin(PDO $db, array $c): array {
 function nic_audit(PDO $db, ?string $actor, string $action, ?string $target = null): void {
     nic_query($db, 'INSERT INTO nic_audit(actor_id,action,target_id,created_at) VALUES (?,?,?,?)', [$actor,$action,$target,nic_now()]);
 }
+function nic_remove_account(PDO $db, string $id): void {
+    nic_query($db,'UPDATE nic_settings SET updated_by=NULL WHERE updated_by=?',[$id]);
+    nic_query($db,'UPDATE nic_audit SET actor_id=NULL WHERE actor_id=?',[$id]);
+    nic_query($db,'UPDATE nic_audit SET target_id=NULL WHERE target_id=?',[$id]);
+    nic_query($db,'DELETE FROM nic_users WHERE id=?',[$id]);
+}
 function nic_auth_allowed(array $settings, ?array $user, bool $register): bool {
     if (($user['role'] ?? '') === 'admin') return true;
     if (($settings['access']['loginBlocked'] ?? false) === true) return false;
@@ -219,6 +225,24 @@ function nic_run(): void {
         if(($s['access']['calculators']??true)!==true || ($s['access'][$action]??true)!==true)nic_session($db,$c);
         nic_reply(['ok'=>true]);
     }
+    if ($route==='profile' && $method==='POST') {
+        $u=nic_session($db,$c);
+        $first=nic_name($input['first_name']??null);$last=nic_name($input['last_name']??null);
+        nic_query($db,'UPDATE nic_users SET first_name=?,last_name=? WHERE id=?',[$first,$last,$u['id']]);
+        $u['first_name']=$first;$u['last_name']=$last;nic_reply(['user'=>$u]);
+    }
+    if ($route==='delete-own-account' && $method==='POST') {
+        $u=nic_session($db,$c);
+        if (($input['confirm']??false)!==true) nic_fail('Bitte Löschung bestätigen.');
+        if ($u['role']==='admin') nic_fail('Admin-Konten werden über die Benutzerverwaltung verwaltet.',403);
+        $db->beginTransaction();
+        nic_query($db,'SELECT id FROM nic_settings WHERE id=1 FOR UPDATE');
+        $current=nic_query($db,'SELECT role,status FROM nic_users WHERE id=? FOR UPDATE',[$u['id']])->fetch(PDO::FETCH_ASSOC);
+        if (!$current || $current['role']==='admin' || $current['status']!=='active') {$db->rollBack();nic_fail('Konto nicht verfügbar.',403);}
+        nic_remove_account($db,$u['id']);
+        $db->commit();
+        setcookie('__Host-nic_session','',['expires'=>1,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);nic_reply(['ok'=>true]);
+    }
     $admin=nic_admin($db,$c);
     if ($route==='settings' && $method==='POST') {
         $s=nic_clean_settings($input['settings']??null);$revision=$input['revision']??null;
@@ -248,10 +272,7 @@ function nic_run(): void {
         }
         nic_audit($db,$admin['id'],$action,$target);
         if($action==='delete') {
-            nic_query($db,'UPDATE nic_settings SET updated_by=NULL WHERE updated_by=?',[$target]);
-            nic_query($db,'UPDATE nic_audit SET actor_id=NULL WHERE actor_id=?',[$target]);
-            nic_query($db,'UPDATE nic_audit SET target_id=NULL WHERE target_id=?',[$target]);
-            nic_query($db,'DELETE FROM nic_users WHERE id=?',[$target]);
+            nic_remove_account($db,$target);
         } else {
             nic_query($db,'UPDATE nic_users SET status=? WHERE id=?',[$action==='block'?'blocked':'active',$target]);
             if($action==='block') {nic_query($db,'DELETE FROM nic_sessions WHERE user_id=?',[$target]);nic_query($db,'DELETE FROM nic_challenges WHERE user_id=?',[$target]);}
