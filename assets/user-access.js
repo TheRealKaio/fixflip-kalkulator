@@ -78,7 +78,7 @@ document.addEventListener('click',event=>{
  const target=event.target.closest?.('#nicAccountLink,.nic-account-link');if(!target||!config?.enabled)return;
  event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
 },true);
-window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:()=>api('delete-own-account',{confirm:true}),resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
+window.NICAccess={init,authorize,requireAdmin,loadSettings,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:async()=>{const result=await api('delete-own-account',{confirm:true});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
 .nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
 .nic-auth-dialog [hidden]{display:none!important}
@@ -102,9 +102,9 @@ const css=element('style');css.textContent=`
 // Logout confirmation is a nonmodal notice on the calculator page.
 if(typeof location!=='undefined'){
  const currentURL=new URL(location.href);
- if(currentURL.searchParams.get('logged-out')==='1'||currentURL.searchParams.get('email-changed')==='1'){
-  const emailChanged=currentURL.searchParams.get('email-changed')==='1';currentURL.searchParams.delete('email-changed');currentURL.searchParams.delete('logged-out');history.replaceState(null,'',currentURL.href);
-  const notice=element('div',emailChanged?'Deine E-Mail-Adresse wurde geändert. Bitte melde dich mit der neuen Adresse an.':'Du wurdest erfolgreich abgemeldet!',{role:'status',class:'nic-logout-notice'});
+ if(currentURL.searchParams.get('logged-out')==='1'||currentURL.searchParams.get('email-changed')==='1'||currentURL.searchParams.get('account-deleted')==='1'){
+  const accountDeleted=currentURL.searchParams.get('account-deleted')==='1';currentURL.searchParams.delete('account-deleted');const emailChanged=currentURL.searchParams.get('email-changed')==='1';currentURL.searchParams.delete('email-changed');currentURL.searchParams.delete('logged-out');history.replaceState(null,'',currentURL.href);
+  const notice=element('div',accountDeleted?'Nutzerdaten erfolgreich gelöscht!':emailChanged?'Deine E-Mail-Adresse wurde geändert. Bitte melde dich mit der neuen Adresse an.':'Du wurdest erfolgreich abgemeldet!',{role:'status',class:'nic-logout-notice'});
   notice.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;max-width:calc(100% - 40px);box-sizing:border-box;padding:16px 22px;border:1px solid #cbd5e1;border-radius:12px;background:var(--bg,#fff);color:var(--ink,#172033);box-shadow:0 6px 24px #0f172a20;font:inherit;text-align:center';
   document.body.append(notice);setTimeout(()=>notice.remove(),6000);
  }
