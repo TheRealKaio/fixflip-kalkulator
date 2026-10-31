@@ -13,6 +13,7 @@ document.querySelectorAll('[data-legal-placeholder="impressum"]').forEach(a=>a.h
 document.querySelectorAll('input[name="dealType"]').forEach(el=>el.addEventListener('change',()=>{if(el.checked)updateMode();}));
 document.getElementById('dealTypeRent')?.addEventListener('click',updateMode);
 window.addEventListener('storage',e=>{if(e.key===S.KEY)S.init().then(apply).catch(()=>{});});
+window.addEventListener('nic-settings-updated',apply);
 window.addEventListener('pageshow',()=>{if(S.current)S.init().then(apply).catch(()=>{});});
 // Keep the calculator header and state while opening administration below it.
 const account=document.getElementById('nicAccountLink'),hero=document.querySelector('.app > .hero');

@@ -136,10 +136,11 @@ function financeDocument(values){
  financeOutlook(doc,m,values);disclaimer(doc);const total=doc.getNumberOfPages();for(let p=1;p<=total;p++){doc.setPage(p);footer(doc,p,total,defaults.version);}return doc;
 }
 async function exportFinance(values,download){
+ if(window.NICAccess&&!await window.NICAccess.authorize(download?'pdfDownload':'pdfShare'))return;
  await prepare();if(!values.rateSeries?.length){try{const response=await fetch('/mortgage-rates.json',{cache:'no-store'});if(response.ok)values={...values,rateSeries:(await response.json()).series};}catch(err){console.warn('Historische Zinsdaten für den Bericht nicht verfügbar',err);}}const doc=financeDocument(values),name=filename('finance');
  if(download){doc.save(name);return;}
  const blob=doc.output('blob'),file=new File([blob],name,{type:'application/pdf'});
- if(navigator.canShare?.({files:[file]})&&navigator.share)await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});else doc.save(name);
+ if(navigator.canShare?.({files:[file]})&&navigator.share)await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});else{if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;doc.save(name);}
 }
 window.NICPDF={prepare,create,logo,header,footer,disclaimer,filename,financeDocument,exportFinance,model,legalBlocks};
 })();

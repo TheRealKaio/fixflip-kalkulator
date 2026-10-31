@@ -660,12 +660,18 @@ jobs:
           python scripts/unify_calculator_actions.py _site
           python scripts/unify_calculator_layout.py _site
           python scripts/initialize_calculator_routes.py _site
+          python scripts/build_user_access.py _site
+          node --check _site/user-access.js
+          node scripts/verify_user_access.cjs _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
           npm install --prefix /tmp/nic-pdf-check jspdf@2.5.1 linkedom@0.18.12 --silent
           node scripts/verify_pdf_reports.cjs _site /tmp/nic-pdf-check/node_modules
           touch _site/.nojekyll
+
+      - name: Check PHP API and session policies
+        run: node server/tests/run.cjs
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

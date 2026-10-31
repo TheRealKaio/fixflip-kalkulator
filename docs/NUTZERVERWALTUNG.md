@@ -1,31 +1,27 @@
-# Nutzerverwaltung und zentrale Einstellungen – Vorbereitungsstand
+# Nutzerverwaltung – V8.350
 
-## Umgesetzt
-Im Admin-Bereich liegt „Nutzereinstellungen“ direkt vor „Statistik“. Die drei booleschen Einstellungen werden unter `access` gemeinsam mit der gesamten Konfiguration lokal gespeichert, exportiert und importiert:
+Die Oberfläche und das Installationspaket für STRATO sind implementiert. **Der produktive Backend-Schalter bleibt ausgeschaltet**, bis das Paket installiert, die privaten Zugangsdaten eingetragen und Datenbank sowie SMTP geprüft wurden.
 
-- `calculators`: Kalkulatoren ohne Registrierung nutzen.
-- `pdfDownload`: PDF-Berichte ohne Registrierung speichern/herunterladen.
-- `pdfShare`: PDF-Berichte ohne Registrierung versenden/teilen.
+## Umfang
 
-Alle Werte sind standardmäßig `true`. Alte Konfigurationen ohne `access` behalten diese öffentlichen Standardwerte. Ungültige Typen werden abgewiesen. Mit „Speichern“ ist hier ausschließlich der PDF-Download gemeint, nicht das Speichern von Kalkulationsständen.
+- `assets/user-access.js`: Anmeldung/Registrierung mit E-Mail-Code, Benutzerkonto, Zugangskontrolle der App, Benutzerverwaltung für Admins.
+- `assets/backend-config.json`: standardmäßig `enabled: false`; Aktivierung ist ein eigener Schritt nach der Servereinrichtung.
+- `server/webspace/immocheck-api/`: öffentlicher PHP-Einstieg und einmaliges Installationsformular.
+- `server/webspace/immocheck-private/`: geschützter Programmcode, Datenbankschema, SMTP-Client und Konfigurationsvorlage ohne Zugangsdaten.
+- Admin-Reiter Nutzereinstellungen vor Statistik mit drei unabhängigen öffentlichen Zugangsregeln: `calculators`, `pdfDownload`, `pdfShare`. Alle starten mit `true`.
+- Bestehender lokaler Modus bleibt erhalten. Im aktivierten zentralen Modus lädt die App Datenbank-Einstellungen statt lokaler Entwürfe; Admin-Speichern veröffentlicht Änderungen über die authentifizierte API mit Versionsprüfung.
+- Globale Daten werden auf öffentlichen Seiten bei sichtbarer Seite alle 30 Sekunden nachgeladen. PDF-Aktionen prüfen die aktuellen Zugangsregeln; ein Teilen-Fallback benötigt Download-Berechtigung.
+- Nur normale Benutzer können sich öffentlich registrieren. Der erste Admin wird einmalig mit einem geheimen Einrichtungsschlüssel aus der privaten Serverkonfiguration angelegt und muss seine E-Mail bestätigen.
+- Admins können Konten sperren, freigeben und löschen. Sperren entfernen Sitzungen und offene Codes, Zugriffsprüfungen lesen den aktuellen Kontostatus. Das eigene Konto und der letzte aktive Admin sind geschützt.
+- Anmeldecodes: acht Stellen, zehn Minuten Gültigkeit, maximal fünf Fehlversuche, einmalige Verwendung, HMAC-gehasht gespeichert und begrenzte Anforderungs-/Verifikationsraten.
+- Sitzungen: sichere HttpOnly-Cookies, SameSite=Lax, 14 Tage maximale Laufzeit; CSRF-Schutz und genaue CORS-Freigaben.
 
-## Noch nicht aktiviert
-Es existiert noch keine serverseitige Nutzerverwaltung. Die Checkboxen sind vorbereitete Regeln; sie erzwingen derzeit weder Anmeldung noch Zugriffsrechte. Es wird bewusst keine bloße Browser-Sperre als abgesicherte Anmeldung ausgegeben. Der Admin-Bereich ist weiterhin ohne Anmeldung erreichbar, besitzt aber keine Datenbank-Administrationsrechte. Es wurde kein Administrator in der Datenbank angelegt. Die MariaDB-Verbindung und der SMTP-Versand wurden noch nicht geprüft.
+## Grenzen und offener Betriebsschritt
 
-## Infrastruktur
-PHP 8.2 und MariaDB 11.8 auf dem vorhandenen STRATO-Webspace. Der E-Mail-Versand ist über SMTP mit TLS vorgesehen. Hostnamen, Datenbanknamen, Benutzernamen und die persönlichen Daten des ersten Administrators werden bei der Installation ausschließlich in einer nicht öffentlichen Serverkonfiguration hinterlegt.
+Ohne Installation auf STRATO wurden weder Tabellen noch echte Konten angelegt und keine E-Mail versendet. Die Datenbank-11.8-Kompatibilität und der SMTP-Versand müssen mit der tatsächlichen Serverkonfiguration geprüft werden. Die lokale PHP-Prüfung der Sitzungsregeln nutzt eine SQLite-Testdatenbank und ersetzt keinen MariaDB-Integrationstest.
 
-Passwörter gehören niemals in das Repository, einen Export oder die öffentliche Einstellungsantwort.
+Die App bleibt eine Browser-Anwendung. Die Registrierungspflicht schützt ihre Bedienoberfläche und serverseitige Einstellungen/Kontodaten; öffentlich ausgelieferter Rechnercode lässt sich nicht vor eigenständiger Ausführung schützen. Für eine streng geschützte PDF- oder Berechnungsleistung müsste die Erzeugung auf den Server verlagert werden.
 
-## Nächster Umsetzungsschritt auf STRATO
-1. Vorhandene Website und API-Unterverzeichnis prüfen, ohne WordPress-Routen zu überschreiben.
-2. PHP-API, versionierte MariaDB-Migrationen und geschützte Serverkonfiguration installieren.
-3. Registrierung und E-Mail-Code-Anmeldung mit Ablauf, Einmalverwendung und Versuchslimits implementieren. Nur Hashes der Codes und Sitzungsschlüssel speichern; keine E-Mail-Codes protokollieren.
-4. Das bestätigte Konto des vorgesehenen Administrators einmalig über einen geschützten Einrichtungsweg zum Admin machen. Keine automatische Rechtevergabe allein über eine vom Browser übermittelte E-Mail-Adresse.
-5. Sämtliche Admin-Konfigurationen in MariaDB übernehmen; globale Änderungen ausschließlich durch einen authentifizierten, aktiven Admin erlauben. Öffentliche Einstellungen von internen Kontodaten trennen.
-6. Benutzerverwaltung mit Sperren/Entsperren/Löschen und Schutz des letzten aktiven Admins ergänzen. Sperrstatus bei jeder geschützten Anfrage prüfen, einschließlich laufender Sitzungen.
-7. Die drei Regeln an die verifizierte Sitzung anbinden. Bei `calculators=false` sind auch Berichte aus diesen Kalkulatoren erst nach Anmeldung zugänglich. PDF-Download und Teilen getrennt prüfen; ein Teilen-Fallback auf Download benötigt ebenfalls die Download-Berechtigung. Bei fehlender Berechtigung Anmeldung anzeigen und anschließend die ursprünglich angeforderte Aktion fortsetzen.
-8. Globale Einstellungen bei Seitenaufruf und vor geschützten Aktionen frisch laden. Veraltete lokale Entwürfe dürfen veröffentlichte Zugangsregeln nicht überschreiben.
-9. Erst nach erfolgreicher Prüfung von Registrierung, Rollen, Sperrstatus, E-Mail-Versand und globaler Speicherung die Registrierungspflicht aktivierbar machen.
+PDF-Versenden bezeichnet die bestehende Geräte-Teilen-Funktion, keinen automatischen Versand von PDF-Anhängen. Persönliche Kalkulationen werden weiterhin nicht zentral gespeichert. Statistik bleibt im bestehenden, zustimmungsabhängigen Modell; es wird keine zentrale Statistikdatenbank behauptet.
 
-GitHub Pages führt kein PHP aus. Die API muss auf STRATO eingerichtet werden; ein GitHub-Commit stellt weder Datenbanktabellen noch das SMTP-Postfach bereit. Ohne Serverzugriff können diese Schritte vorbereitet, aber nicht als installiert oder funktionsgeprüft bezeichnet werden.
+Die vollständige Anleitung und die noch durchzuführende Abnahme stehen in `server/INSTALLATION.md`. Serverpasswörter und persönliche Admin-Stammdaten gehören nur in `config.php` auf STRATO und werden nicht mitgeliefert oder auf GitHub veröffentlicht.

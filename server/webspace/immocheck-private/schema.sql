@@ -1,0 +1,36 @@
+CREATE TABLE IF NOT EXISTS nic_users (
+ id CHAR(32) PRIMARY KEY,
+ email VARCHAR(254) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL UNIQUE,
+ first_name VARCHAR(100) NOT NULL, last_name VARCHAR(100) NOT NULL,
+ role ENUM('user','admin') NOT NULL DEFAULT 'user',
+ status ENUM('active','blocked') NOT NULL DEFAULT 'active',
+ verified_at DATETIME NULL, created_at DATETIME NOT NULL,
+ INDEX(status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS nic_challenges (
+ id CHAR(64) PRIMARY KEY, user_id CHAR(32) NOT NULL,
+ code_hash CHAR(64) NOT NULL, attempts INT NOT NULL DEFAULT 0,
+ expires_at DATETIME NOT NULL, created_at DATETIME NOT NULL,
+ FOREIGN KEY (user_id) REFERENCES nic_users(id) ON DELETE CASCADE,
+ INDEX(user_id), INDEX(expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS nic_sessions (
+ token_hash CHAR(64) PRIMARY KEY, user_id CHAR(32) NOT NULL,
+ csrf_hash CHAR(64) NOT NULL, expires_at DATETIME NOT NULL, created_at DATETIME NOT NULL,
+ FOREIGN KEY (user_id) REFERENCES nic_users(id) ON DELETE CASCADE,
+ INDEX(user_id), INDEX(expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS nic_settings (
+ id TINYINT PRIMARY KEY, payload LONGTEXT NOT NULL, revision BIGINT UNSIGNED NOT NULL DEFAULT 1,
+ updated_by CHAR(32) NULL, updated_at DATETIME NOT NULL,
+ CONSTRAINT nic_settings_json CHECK (JSON_VALID(payload))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS nic_rate_limits (
+ bucket CHAR(64) PRIMARY KEY, hits INT NOT NULL, window_start DATETIME NOT NULL,
+ INDEX(window_start)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS nic_audit (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ actor_id CHAR(32) NULL, action VARCHAR(50) NOT NULL, target_id CHAR(32) NULL,
+ created_at DATETIME NOT NULL, INDEX(created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

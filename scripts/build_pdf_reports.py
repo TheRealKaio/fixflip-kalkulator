@@ -24,6 +24,13 @@ for page in site.rglob('*.html'):
   s=re.sub(r'function nicPdfReportName\(mode,now=new Date\(\)\)\{.*?\n\}', 'function nicPdfReportName(mode,now=new Date()){return window.NICPDF.filename(mode,now).slice(0,-4);}',s,count=1,flags=re.S)
   if s.count('appendPdfDisclaimerPage(doc);')!=3:raise SystemExit('Missing existing report disclaimer calls: '+str(page))
  elif page.parent.name!='finanzierungsrechner':continue
+ # Registration checks apply to all four existing reports, including download fallbacks.
+ if 'async function sharePdf(){' in s:
+  s=s.replace('async function sharePdf(){', "async function sharePdf(){if(window.NICAccess&&!await window.NICAccess.authorize('pdfShare'))return;",1)
+  s=s.replace('async function savePdf(){', "async function savePdf(){if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;",1)
+  s=s.replace('async function rentalPdf(kind){', "async function rentalPdf(kind){if(window.NICAccess&&!await window.NICAccess.authorize(kind==='save'?'pdfDownload':'pdfShare'))return;",1)
+  s=s.replace('      const url = URL.createObjectURL(blob);', "      if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;\n      const url = URL.createObjectURL(blob);",1)
+  s=s.replace("      const u=URL.createObjectURL(blob),a=document.createElement('a');", "      if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;\n      const u=URL.createObjectURL(blob),a=document.createElement('a');",1)
  s=s.replace('</head>','<script type="application/json" id="nic-pdf-defaults">'+data+'</script><script src="/pdf-reports.js" defer></script></head>',1)
  if page.parent.name=='finanzierungsrechner':
   s=s.replace('</head>','<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script></head>',1)

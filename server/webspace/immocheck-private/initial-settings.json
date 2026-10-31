@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "company": {
+    "name": "Neustart ImmoCheck",
+    "legalForm": "",
+    "representative": "Max Mustermann",
+    "street": "Mustergasse 1",
+    "postalCode": "22457",
+    "city": "Hamburg",
+    "country": "Deutschland",
+    "email": "info@neustart-immocheck.de",
+    "website": "https://www.neustart-immocheck.de/",
+    "phone": "+49 162 123456",
+    "fax": "",
+    "registerType": "",
+    "registerCourt": "",
+    "registerNumber": "",
+    "vatId": "Steuer ID: 0815",
+    "businessId": "",
+    "authority": "",
+    "profession": "",
+    "professionalCountry": "",
+    "chamber": "",
+    "professionalRules": "",
+    "capital": "",
+    "liquidation": "",
+    "mediaState": "",
+    "mediaAuthority": "",
+    "editorialResponsible": "",
+    "editorialAddress": "",
+    "disputeResolution": "",
+    "additional": ""
+  },
+  "layout": {
+    "font": "system",
+    "bodySize": 16,
+    "h1": 45,
+    "h2": 18,
+    "h3": 22,
+    "h4": 16,
+    "background": "#F5F7FB",
+    "text": "#172033",
+    "buttonBackground": "#0F172A",
+    "buttonText": "#FFFFFF"
+  },
+  "social": {
+    "instagram": "",
+    "facebook": "",
+    "youtube": "",
+    "linkedin": "",
+    "tiktok": "",
+    "pinterest": "",
+    "x": "",
+    "threads": "",
+    "xing": "",
+    "whatsapp": ""
+  },
+  "favicon": "",
+  "websiteLogo": "",
+  "appleTouchIcon": "",
+  "meta": {
+    "website": {
+      "title": "Neustart ImmoCheck – Immobilien verstehen und kalkulieren",
+      "description": "Berechne dein Immobilienbudget und prüfe Eigennutzung, Vermietung sowie Fix & Flip mit den vier Immobilien-Kalkulatoren von Neustart ImmoCheck.",
+      "googleTag": ""
+    },
+    "company": {
+      "title": "Über Neustart ImmoCheck",
+      "description": "Informationen zum Anbieter von Neustart ImmoCheck und Kontaktmöglichkeiten.",
+      "googleTag": ""
+    },
+    "budget": {
+      "title": "Immobilienbudget berechnen | Neustart ImmoCheck",
+      "description": "Ermittle deinen finanziellen Spielraum für den Immobilienkauf. Berechne Budget, mögliche Kreditrate und Kaufnebenkosten.",
+      "googleTag": ""
+    },
+    "own": {
+      "title": "Eigentumswohnung zur Eigennutzung prüfen | Neustart ImmoCheck",
+      "description": "Prüfe Kaufkosten, Modernisierung und Finanzierung deiner Eigentumswohnung und schätze deine monatliche Belastung ein.",
+      "googleTag": ""
+    },
+    "rent": {
+      "title": "Vermietung: Cashflow und Rendite berechnen | Neustart ImmoCheck",
+      "description": "Prüfe deine Mietwohnung als Kapitalanlage. Berechne Cashflow, Mietrendite, Finanzierung und Break-even-Miete.",
+      "googleTag": ""
+    },
+    "flip": {
+      "title": "Fix & Flip kalkulieren | Neustart ImmoCheck",
+      "description": "Kalkuliere Kauf, Modernisierung, Finanzierung und Verkauf deines Immobilienprojekts. Schätze Gewinn und Marge vor dem Kauf ein.",
+      "googleTag": ""
+    },
+    "finance": {
+      "title": "Finanzierungsrechner: Rate & Restschuld | Neustart ImmoCheck",
+      "description": "Berechne deine monatliche Kreditrate, Zinsen, Tilgung und Restschuld. Vergleiche Laufzeiten und prüfe, wie Sondertilgungen deine Finanzierung verändern.",
+      "googleTag": ""
+    }
+  },
+  "reporting": {
+    "propertyId": "",
+    "clientId": ""
+  },
+  "sharing": {
+    "text": "Immobilien verstehen. Sicherer entscheiden.",
+    "image": ""
+  },
+  "imageAlts": {
+    "websiteLogo": "Neustart ImmoCheck – Immobilien-Kalkulatoren",
+    "favicon": "Haus-Symbol von Neustart ImmoCheck",
+    "appleTouchIcon": "Neustart ImmoCheck – Haus-Symbol",
+    "sharing": "Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden."
+  },
+  "legal": {
+    "impressum": "",
+    "agbs": "",
+    "datenschutz": "",
+    "haftungsausschluss": "",
+    "cookie-hinweis": ""
+  },
+  "access": {
+    "calculators": true,
+    "pdfDownload": true,
+    "pdfShare": true
+  }
+}

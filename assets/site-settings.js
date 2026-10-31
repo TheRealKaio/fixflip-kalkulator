@@ -122,14 +122,15 @@
   async function init(){
     const response=await fetch(new URL('site-settings.json',ROOT),{cache:'no-store'});
     if(!response.ok)throw new Error('Veröffentlichte Einstellungen konnten nicht geladen werden.');
-    published=normalize(await response.json());current=readLocal()||published;return current;
+    published=normalize(await response.json());if(window.NICAccess){const cloud=await window.NICAccess.loadSettings();if(cloud){published=normalize(cloud);current=published;return current;}}current=readLocal()||published;return current;
   }
   function save(s){const safe=normalize(s);localStorage.setItem(KEY,JSON.stringify(safe));current=safe;return safe;}
+  async function saveGlobal(s){const safe=normalize(s);if(!window.NICAccess?.enabled)return save(safe);const result=normalize(await window.NICAccess.saveSettings(safe));localStorage.removeItem(KEY);published=current=result;return result;}
   function discard(){localStorage.removeItem(KEY);current=published;return published;}
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
