@@ -17,11 +17,13 @@ function environment(enabled,role='admin'){
   if(r==='me')return{ok:true,json:async()=>({user:{id:'u',first_name:'Test',last_name:'Person',email:'test@example.com',role},csrf:'test-csrf'})};
   if(r==='settings'&&options.method==='POST'){const body=JSON.parse(options.body);assert.equal(body.revision,revision);assert.equal(options.headers['X-NIC-CSRF'],'test-csrf');revision++;return{ok:true,json:async()=>({settings:body.settings,revision})};}
   if(r==='settings')return{ok:true,json:async()=>({settings,revision})};
+  if(r==='email-change-finish')return{ok:true,json:async()=>({ok:true,email:'new@example.test',loggedOut:true})};
   if(r==='authorize')return{ok:true,json:async()=>({ok:true})};
   throw Error('Unexpected route '+r);
  }};ctx.window=ctx;vm.createContext(ctx);vm.runInContext(source,ctx);return{A:ctx.NICAccess,calls,ctx,settings};
 }
 (async()=>{
+ const changed=environment(true,'user');await changed.A.init();const result=await changed.A.finishEmailChange('12345678');assert.equal(result.email,'new@example.test');assert.equal(changed.A.user,null,'email change must clear client login state');
  const off=environment(false);assert.equal(await off.A.init(),false);assert.equal(await off.A.authorize('pdfDownload'),true);assert.equal(off.calls.length,0);
  const normal=environment(true,'user');assert.equal(await normal.A.requireAdmin(),false);assert.equal(normal.calls.filter(x=>x.route==='settings').length,0);
  const admin=environment(true);await admin.A.init();assert.equal(await admin.A.requireAdmin(),true);await admin.A.loadSettings();const next={...admin.settings,access:{calculators:true,pdfDownload:false,pdfShare:true}};assert.equal((await admin.A.saveSettings(next)).access.pdfDownload,false);await admin.A.authorize('pdfShare');

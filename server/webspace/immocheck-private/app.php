@@ -77,6 +77,16 @@ function nic_remove_account(PDO $db, string $id): void {
 function nic_email_change_table(PDO $db): void {
     nic_query($db,"CREATE TABLE IF NOT EXISTS nic_email_changes (user_id CHAR(32) PRIMARY KEY, old_email VARCHAR(254) NOT NULL, new_email VARCHAR(254) NOT NULL, token_hash CHAR(64) UNIQUE NULL, code_hash CHAR(64) NOT NULL, stage VARCHAR(16) NOT NULL, attempts INT NOT NULL DEFAULT 0, expires_at DATETIME NOT NULL, FOREIGN KEY (user_id) REFERENCES nic_users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
+function nic_complete_email_change(PDO $db, string $userId, string $oldEmail, string $newEmail): string {
+    $email=nic_email($newEmail);
+    $changed=nic_query($db,'UPDATE nic_users SET email=?,verified_at=? WHERE id=? AND email=? AND status=?',[$email,nic_now(),$userId,$oldEmail,'active']);
+    if($changed->rowCount()!==1) throw new RuntimeException('Email change was not saved');
+    if(nic_query($db,'SELECT email FROM nic_users WHERE id=?',[$userId])->fetchColumn()!==$email) throw new RuntimeException('Email change verification failed');
+    nic_query($db,'DELETE FROM nic_sessions WHERE user_id=?',[$userId]);
+    nic_query($db,'DELETE FROM nic_challenges WHERE user_id=?',[$userId]);
+    nic_query($db,'DELETE FROM nic_email_changes WHERE user_id=?',[$userId]);
+    return $email;
+}
 function nic_email_change_valid(array $change, string $email, string $stage): bool {
     return $change['old_email']===$email && $change['stage']===$stage && $change['expires_at']>=nic_now() && (int)$change['attempts']<5;
 }
@@ -275,11 +285,11 @@ function nic_run(): void {
         if(!$change||!$current||$current['status']!=='active'||!nic_email_change_valid($change,$current['email'],'approved')){$db->rollBack();nic_fail('Bitte zuerst über deine bisherige Adresse bestätigen. Der Vorgang darf nicht abgelaufen sein.',400);}
         if(!hash_equals($change['code_hash'],nic_hash('email-change-code|'.$u['id'].'|'.$code,$c))){nic_query($db,'UPDATE nic_email_changes SET attempts=attempts+1 WHERE user_id=?',[$u['id']]);$db->commit();nic_fail('Code ungültig oder abgelaufen.',400);}
         if(nic_query($db,'SELECT id FROM nic_users WHERE email=?',[$change['new_email']])->fetchColumn()){$db->rollBack();nic_fail('Diese E-Mail-Adresse kann nicht verwendet werden.',409);}
-        nic_query($db,'UPDATE nic_users SET email=? WHERE id=?',[$change['new_email'],$u['id']]);
-        nic_query($db,'DELETE FROM nic_sessions WHERE user_id=?',[$u['id']]);nic_query($db,'DELETE FROM nic_challenges WHERE user_id=?',[$u['id']]);nic_query($db,'DELETE FROM nic_email_changes WHERE user_id=?',[$u['id']]);$db->commit();
+        $newEmail=nic_complete_email_change($db,$u['id'],$change['old_email'],$change['new_email']);
+        $db->commit();
         setcookie('__Host-nic_session','',['expires'=>1,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
-        try{nic_send_message($c['smtp'],$change['old_email'],'Deine E-Mail-Adresse wurde geändert','Deine E-Mail-Adresse wurde erfolgreich zu '.$change['new_email'].' geändert. Alle Sitzungen wurden beendet.');}catch(Throwable $e){error_log('ImmoCheck: email change notification failed');}
-        nic_reply(['ok'=>true]);
+        // Respond immediately after commit. SMTP must not time out an already completed change.
+        nic_reply(['ok'=>true,'email'=>$newEmail,'loggedOut'=>true]);
     }
     if ($route==='profile' && $method==='POST') {
         $u=nic_session($db,$c);

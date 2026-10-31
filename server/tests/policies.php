@@ -34,6 +34,16 @@ if($mode==='normal'){
  foreach(['nic_sessions','nic_challenges'] as $table)check($test->query('SELECT user_id FROM '.$table)->fetchAll(PDO::FETCH_COLUMN)===['other'],'own tokens must be removed');
  check($test->query('SELECT updated_by FROM nic_settings')->fetchColumn()===null,'settings reference must be cleared');
  check((int)$test->query("SELECT COUNT(*) FROM nic_audit WHERE actor_id='self' OR target_id='self'")->fetchColumn()===0,'audit references must be cleared');
+ $emailDb=new PDO('sqlite::memory:');$emailDb->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+ $emailDb->exec('CREATE TABLE nic_users(id TEXT PRIMARY KEY,email TEXT UNIQUE,status TEXT,role TEXT,verified_at TEXT);CREATE TABLE nic_sessions(user_id TEXT);CREATE TABLE nic_challenges(user_id TEXT);CREATE TABLE nic_email_changes(user_id TEXT)');
+ $emailDb->exec("INSERT INTO nic_users VALUES ('owner','old@example.test','active','user','2026-01-01');INSERT INTO nic_users VALUES ('other','other@example.test','active','user','2026-01-01');INSERT INTO nic_sessions VALUES ('owner'),('owner'),('other');INSERT INTO nic_challenges VALUES ('owner'),('other');INSERT INTO nic_email_changes VALUES ('owner')");
+ $emailDb->beginTransaction();$newEmail=nic_complete_email_change($emailDb,'owner','old@example.test',' NEW@EXAMPLE.TEST ');$emailDb->commit();
+ check($newEmail==='new@example.test','new email normalized and returned');
+ check(!nic_query($emailDb,'SELECT id FROM nic_users WHERE email=?',['old@example.test'])->fetchColumn(),'old email no longer logs in');
+ $login=nic_query($emailDb,'SELECT id,status,role,verified_at FROM nic_users WHERE email=?',[nic_email('NEW@example.test')])->fetch(PDO::FETCH_ASSOC);
+ check($login && $login['id']==='owner' && $login['status']==='active' && !empty($login['verified_at']),'new email eligible for login-code delivery');
+ foreach(['nic_sessions','nic_challenges'] as $table)check(nic_query($emailDb,'SELECT user_id FROM '.$table)->fetchAll(PDO::FETCH_COLUMN)===['other'],'all owner sessions and codes revoked');
+ check((int)$emailDb->query('SELECT COUNT(*) FROM nic_email_changes')->fetchColumn()===0,'email request consumed');
  echo "PASS: input validation, public access defaults, independent flags, no unknown top-level settings, keyed hash separation\n";exit;
 }
 $db=new PDO('sqlite::memory:');$db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
