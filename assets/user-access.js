@@ -49,7 +49,7 @@ async function requireAdmin(){
 }
 async function loadSettings(){if(!await init())return null;const data=await api('settings');revision=data.revision;authControlsVersion=data.authControlsVersion||0;return data.settings;}
 async function saveSettings(settings){if((settings.access?.registrationBlocked||settings.access?.loginBlocked)&&authControlsVersion<1)throw Error('Bitte zuerst die aktualisierte app.php auf STRATO hochladen. Die Sperren wurden nicht gespeichert.');if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');return api('settings',{settings,revision}).then(data=>{revision=data.revision;return data.settings;});}
-async function logout(){await api('logout',{});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));}
+async function logout(){await api('logout',{});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));const destination=new URL('.',ROOT);destination.searchParams.set('logged-out','1');window.top.location.replace(destination.href);}
 async function profile(){
  if(!await init())return;
  if(!user&&!await login())return;
@@ -57,15 +57,15 @@ async function profile(){
  const modal=element('dialog',null,{'aria-label':'Benutzerkonto'});modal.className='nic-auth-dialog';
  modal.append(element('h2',user.first_name+' '+user.last_name),element('p',user.email));
  const actions=element('div',null,{class:'nic-auth-actions nic-profile-actions'});
- if(user.role==='admin'){const a=element('a','Admin-Bereich',{href:new URL('#admin',ROOT).href,class:'nic-auth-button nic-admin-action'});actions.append(a);}
- const close=element('button','Schließen',{autofocus:''}),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();location.reload();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
+ if(user.role==='admin'){const a=element('a','Admin-Bereich',{href:new URL('#admin',ROOT).href,class:'nic-auth-button nic-admin-action'});a.addEventListener('click',()=>{modal.close();modal.remove();});actions.append(a);}
+ const close=element('button','Schließen',{autofocus:''}),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
 }
 function mountUsers(){
  const panel=document.getElementById('panel-users');if(!panel||!config?.enabled||user?.role!=='admin')return;
  const old=panel.querySelector('[data-access-pending]');if(old)old.textContent='Zentrale Nutzerverwaltung aktiv. Gespeicherte Regeln gelten für alle Besucher.';
  const card=element('div',null,{class:'form-card'});card.append(element('h3','Benutzerverwaltung'));
  const who=element('p','Angemeldet als '+user.first_name+' '+user.last_name+' ('+user.email+')');card.append(who);
- const out=element('button','Abmelden',{type:'button'});out.addEventListener('click',async()=>{try{await logout();location.reload();}catch(e){message(e.message);}});card.append(out);
+ const out=element('button','Abmelden',{type:'button'});out.addEventListener('click',async()=>{try{await logout();}catch(e){message(e.message);}});card.append(out);
  const search=element('input',null,{type:'search',placeholder:'Name oder E-Mail filtern','aria-label':'Benutzer filtern'}),list=element('div'),status=element('p',null,{role:'status'}),more=element('button','Weitere Benutzer laden',{type:'button'});card.append(search,status,list,more);panel.append(card);
  let page=0,rows=[];
  function render(){list.replaceChildren();const q=search.value.trim().toLowerCase();for(const row of rows){if(![row.first_name,row.last_name,row.email].join(' ').toLowerCase().includes(q))continue;const item=element('div',null,{class:'nic-user-row'});item.append(element('strong',row.first_name+' '+row.last_name),element('p',row.email+' · '+(row.role==='admin'?'Administrator':'Benutzer')+' · '+(row.status==='blocked'?'Gesperrt':row.verified_at?'Aktiv':'E-Mail noch nicht bestätigt')));
@@ -88,7 +88,7 @@ const css=element('style');css.textContent=`
 .nic-auth-dialog input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:11px 12px;border:1px solid var(--line,#cbd5e1);border-radius:10px;background:var(--bg,#f5f7fb);color:var(--ink,#172033)}
 .nic-auth-dialog .nic-register-choice{display:flex;align-items:center;gap:10px;cursor:pointer}.nic-auth-dialog .nic-register-choice input[type=checkbox]{appearance:auto;-webkit-appearance:checkbox;flex:0 0 10px;width:10px;height:10px;min-width:10px;min-height:10px;padding:0;margin:0}.nic-auth-dialog .nic-register-choice span{flex:1;text-align:left}
 .nic-auth-dialog input[type=checkbox]{accent-color:var(--nic-button-bg,#0f172a)}
-.nic-auth-dialog input:focus-visible{outline:2px solid var(--nic-button-bg,#0f172a);outline-offset:3px}
+.nic-auth-dialog input:not([type=checkbox]):focus,.nic-auth-dialog input:not([type=checkbox]):focus-visible{outline:none;box-shadow:none;border-color:#4b5563}
 .nic-auth-dialog .nic-auth-actions{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:12px;margin-top:24px;align-items:stretch}
 .nic-auth-dialog button,.nic-auth-dialog a.nic-auth-button,.nic-auth-dialog a.nic-auth-button:visited{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:46px;font:inherit;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-shadow:none;padding:12px 14px;margin:0;border:1px solid var(--nic-button-bg,#0f172a);border-radius:11px;background:var(--nic-button-bg,#0f172a);color:var(--nic-button-text,#fff);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
 .nic-auth-dialog a.nic-admin-action{border:0}
@@ -98,6 +98,16 @@ const css=element('style');css.textContent=`
 .nic-user-row{padding:14px 0;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}
 @media(max-width:480px){.nic-auth-dialog{padding:20px}.nic-auth-dialog .nic-auth-actions{grid-auto-flow:row;grid-template-columns:1fr}}
 `;document.head.append(css);
+// Logout confirmation is a nonmodal notice on the calculator page.
+if(typeof location!=='undefined'){
+ const currentURL=new URL(location.href);
+ if(currentURL.searchParams.get('logged-out')==='1'){
+  currentURL.searchParams.delete('logged-out');history.replaceState(null,'',currentURL.href);
+  const notice=element('div','Du wurdest erfolgreich abgemeldet!',{role:'status',class:'nic-logout-notice'});
+  notice.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;max-width:calc(100% - 40px);box-sizing:border-box;padding:16px 22px;border:1px solid #cbd5e1;border-radius:12px;background:var(--bg,#fff);color:var(--ink,#172033);box-shadow:0 6px 24px #0f172a20;font:inherit;text-align:center';
+  document.body.append(notice);setTimeout(()=>notice.remove(),6000);
+ }
+}
 // Public-page gate. This controls application use, not distribution of its public source.
 let gate=null,checking=false;
 async function checkCalculator(){
