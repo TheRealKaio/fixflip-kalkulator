@@ -4,6 +4,7 @@ const site=process.argv[2]||'_site';
 const config=JSON.parse(fs.readFileSync('assets/backend-config.json','utf8'));
 assert.equal(config.enabled,false,'Backend must remain opt-in until STRATO setup');
 assert.equal(new URL(config.apiUrl).protocol,'https:');
+assert.equal(config.apiUrl,'https://neustart-immocheck.de/api/index.php');
 const source=fs.readFileSync('assets/user-access.js','utf8');
 function environment(enabled,role='admin'){
  const calls=[],store=new Map();let revision=1;

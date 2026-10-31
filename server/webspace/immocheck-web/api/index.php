@@ -5,7 +5,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff');
 try {
-    require dirname(__DIR__) . '/immocheck-private/app.php';
+    require dirname(__DIR__, 2) . '/immocheck-private/app.php';
     nic_run();
 } catch (Throwable $e) {
     if (isset($GLOBALS['nic_db']) && $GLOBALS['nic_db']->inTransaction()) $GLOBALS['nic_db']->rollBack();

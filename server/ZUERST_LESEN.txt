@@ -1,0 +1,10 @@
+ImmoCheck – Umstellung ohne Wildcard-Zertifikat, V8.351
+
+Zuerst MIGRATION_OHNE_WILDCARD.md lesen.
+
+1. Den Ordner webspace/immocheck-web neben den vorhandenen Ordner immocheck-private hochladen.
+2. Die bereits ausgefüllte config.php behalten. Nicht durch die Vorlage ersetzen.
+3. DNS-Einstellungen noch nicht blind ändern: www muss direkt bei GitHub bleiben.
+4. Die Datenbankanbindung bleibt bis zur bestätigten Einrichtung ausgeschaltet.
+
+Es sind keine Passwörter enthalten. Die API-Adresse ist jetzt https://neustart-immocheck.de/api/index.php

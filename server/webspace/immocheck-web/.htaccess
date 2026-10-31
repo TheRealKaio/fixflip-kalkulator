@@ -1,0 +1,9 @@
+Options -Indexes
+RewriteEngine On
+
+# The API must stay on STRATO. Never redirect it to GitHub Pages.
+RewriteRule ^api(?:/|$) - [L]
+
+# Temporary redirect during setup; preserves path and query string.
+# Use the fixed www host so the request Host cannot create an open redirect.
+RewriteRule ^(.*)$ https://www.neustart-immocheck.de/$1 [R=302,L]

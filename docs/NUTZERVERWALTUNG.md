@@ -1,12 +1,16 @@
-# Nutzerverwaltung – V8.350
+# Nutzerverwaltung – V8.351
 
 Die Oberfläche und das Installationspaket für STRATO sind implementiert. **Der produktive Backend-Schalter bleibt ausgeschaltet**, bis das Paket installiert, die privaten Zugangsdaten eingetragen und Datenbank sowie SMTP geprüft wurden.
+
+## Kostenlose Zertifikatsvariante
+
+Die Zieladresse lautet `https://neustart-immocheck.de/api/index.php`; die Hauptdomain ohne www wird dafür auf STRATO ausgeliefert. Die www-Seite bleibt bei GitHub Pages. Der neue öffentliche Ordner `immocheck-web` leitet alle Nicht-API-Pfade auf www weiter. Privater Code liegt außerhalb dieses Verzeichnisses. DNS, Zertifikat und Dateiinstallation wurden noch nicht auf dem Kundenkonto umgestellt. Die vorhandene `config.php` mit Zugangsdaten bleibt erhalten; lediglich öffentliche Adresswerte werden angepasst. Details und Rückweg: `server/MIGRATION_OHNE_WILDCARD.md`.
 
 ## Umfang
 
 - `assets/user-access.js`: Anmeldung/Registrierung mit E-Mail-Code, Benutzerkonto, Zugangskontrolle der App, Benutzerverwaltung für Admins.
 - `assets/backend-config.json`: standardmäßig `enabled: false`; Aktivierung ist ein eigener Schritt nach der Servereinrichtung.
-- `server/webspace/immocheck-api/`: öffentlicher PHP-Einstieg und einmaliges Installationsformular.
+- `server/webspace/immocheck-web/api/`: öffentlicher PHP-Einstieg und einmaliges Installationsformular.
 - `server/webspace/immocheck-private/`: geschützter Programmcode, Datenbankschema, SMTP-Client und Konfigurationsvorlage ohne Zugangsdaten.
 - Admin-Reiter Nutzereinstellungen vor Statistik mit drei unabhängigen öffentlichen Zugangsregeln: `calculators`, `pdfDownload`, `pdfShare`. Alle starten mit `true`.
 - Bestehender lokaler Modus bleibt erhalten. Im aktivierten zentralen Modus lädt die App Datenbank-Einstellungen statt lokaler Entwürfe; Admin-Speichern veröffentlicht Änderungen über die authentifizierte API mit Versionsprüfung.

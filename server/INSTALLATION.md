@@ -1,4 +1,4 @@
-# ImmoCheck – Installation auf STRATO
+# ImmoCheck – Installation auf STRATO ohne Wildcard-Zertifikat
 
 Dieses Paket enthält die PHP-Schnittstelle für MariaDB und den passenden Anmelde-Client. Die vorhandenen Kalkulatoren bleiben öffentlich nutzbar. Erst die gesonderte Aktivierung in `backend-config.json` verbindet die Oberfläche mit dem Server.
 
@@ -6,23 +6,25 @@ Dieses Paket enthält die PHP-Schnittstelle für MariaDB und den passenden Anmel
 
 - PHP 8.2 mit PDO/MySQL, OpenSSL, JSON und ausgehenden TLS-Verbindungen.
 - MariaDB 11.8, eine eigene Datenbank mit Berechtigung zum Erstellen von Tabellen.
-- HTTPS für die API-Subdomain und die eigentliche Kalkulator-Domain.
+- HTTPS für die Hauptdomain ohne www (STRATO) und die Kalkulator-Domain mit www (GitHub Pages).
 - SFTP mit Zugriff auf das gemeinsame Stammverzeichnis.
 - SMTP-Postfach mit dem vom Anbieter vorgegebenen Server, Benutzer und Passwort.
 - Eine Sicherung vorhandener Admin-Einstellungen: Im alten Admin-Bereich „Konfiguration exportieren“. **Diese Datei vor Einrichtung als `initial-settings.json` verwenden**, um eigene Browser-Entwürfe zu übernehmen. Das mitgelieferte Exemplar enthält den veröffentlichten Stand, nicht unbekannte lokale Entwürfe.
 
 Es werden nur Tabellen mit Präfix `nic_` erzeugt. Existieren solche Tabellen bereits aus einer anderen Installation, Einrichtung anhalten und erst Herkunft/Backup klären. Einrichtung nicht zum Zurücksetzen einer vorhandenen Datenbank verwenden.
 
-## 2. Die beiden Ordner hochladen
+## 2. Ordner hochladen und Domain trennen
 
-Im Paket unter `webspace/`:
+Bei einer bereits begonnenen Installation zuerst `MIGRATION_OHNE_WILDCARD.md` lesen. Darin stehen die genaue Reihenfolge und die DNS-Prüfungen. Die bisher ausgefüllte `config.php` unbedingt behalten.
 
-- `immocheck-api/`: in den bereits angelegten, der API-Subdomain zugeordneten Ordner hochladen.
-- `immocheck-private/`: **daneben**, nicht innerhalb des API-Ordners, hochladen.
+Unter `webspace/` liegen:
 
-Beide Ordner müssen auf gleicher Ebene liegen. Der private Ordner enthält eine `.htaccess` mit `Require all denied`. Sie muss mit hochgeladen werden (versteckte Dateien im SFTP-Programm anzeigen). Noch besser: Falls der Hoster es ermöglicht, privaten Code ganz außerhalb aller zugeordneten Domain-Verzeichnisse ablegen und den Require-Pfad in `index.php` entsprechend anpassen.
+- `immocheck-web/`: öffentliches Webverzeichnis der Hauptdomain ohne www. Enthält die API unter `api/` und eine Root-`.htaccess`, die alle anderen Pfade zur bestehenden www-Seite auf GitHub weiterleitet.
+- `immocheck-private/`: direkt **daneben**, außerhalb des öffentlichen Verzeichnisses. Enthält Programmcode, Konfiguration und eine `.htaccess` mit `Require all denied`.
 
-Die API-Domain darf nur auf `immocheck-api/` zeigen. Andere Domains dürfen nicht auf `immocheck-private/` zeigen. Über eine Domain, die den gemeinsamen Stammordner ausliefert, muss ein Aufruf von `/immocheck-private/initial-settings.json` 403/404 liefern. Falls nicht: Installation stoppen, Ordnerzuordnung/Apache-Zugriffsschutz korrigieren. Nicht pauschal das gesamte Stammverzeichnis hochladen.
+Die Hauptdomain muss auf `immocheck-web/` zeigen. Keine Domain darf auf `immocheck-private/` zeigen. Alle `.htaccess`-Dateien mit hochladen. Die API-Einstiegsdatei lädt den privaten Code zwei Verzeichnisebenen oberhalb von `api/`. Die Dateien nicht beliebig umsortieren.
+
+Der private Ordner darf über keine andere Domain aus dem gemeinsamen Stammordner öffentlich ausgeliefert werden. Falls eine andere Domain dorthin zeigt, muss der Aufruf von `/immocheck-private/initial-settings.json` 403/404 liefern. Andernfalls Zugriffsschutz korrigieren, bevor Konfiguration oder Konten angelegt werden.
 
 ## 3. Geschützte Konfiguration ausfüllen
 
@@ -33,14 +35,14 @@ Nur auf STRATO `immocheck-private/config.example.php` nach `config.php` kopieren
 - `smtp.port=465`, `smtp.encryption='tls'` für implizites TLS; alternativ `587` und `'starttls'`. Das Paket erlaubt keinen unverschlüsselten SMTP-Fallback und prüft Serverzertifikate.
 - `admin.first_name`, `admin.last_name`, `admin.email`: Daten des vorgesehenen ersten Administrators.
 - `pepper` und `setup_key`: zwei **unabhängige**, zufällige Geheimnisse mit mindestens 64 Zeichen. Zum Beispiel zweimal im lokalen Terminal `openssl rand -hex 32` ausführen. Werte nicht hier posten und nicht in URLs einfügen.
-- `api_origin` und `allowed_origins`: exakt die produktiven HTTPS-Ursprünge, ohne abschließenden Schrägstrich. Die API-Adresse selbst für das Installationsformular aufnehmen. Nur vertraute Origins verwenden, niemals `*` oder beliebige GitHub-Benutzerseiten.
+- `api_origin` und `allowed_origins`: exakt die produktiven HTTPS-Ursprünge, ohne abschließenden Schrägstrich. Die Hauptdomain ohne www für das Installationsformular aufnehmen. Nur vertraute Origins verwenden, niemals `*` oder beliebige GitHub-Benutzerseiten.
 
 PHP-Strings mit Apostrophen/Backslashes müssen korrekt maskiert werden. Kein BOM und kein Text vor `<?php`. Für `config.php` möglichst Dateirechte 600, sofern PHP damit lesen kann. Diese Datei niemals nach GitHub oder in öffentliche Uploads kopieren. Der ZIP-Download enthält absichtlich keine echten Zugangsdaten.
 
 ## 4. Einmalig einrichten
 
-1. `https://api.neustart-immocheck.de/index.php?r=health` öffnen. Vor Einrichtung sollte `ok: true, ready: false` erscheinen. Bei 503 Serverkonfiguration prüfen; Datenbankdetails werden bewusst nicht öffentlich angezeigt.
-2. `https://api.neustart-immocheck.de/install.html` öffnen.
+1. `https://neustart-immocheck.de/api/index.php?r=health` öffnen. Vor Einrichtung sollte `ok: true, ready: false` erscheinen. Bei 503 Serverkonfiguration prüfen; Datenbankdetails werden bewusst nicht öffentlich angezeigt.
+2. `https://neustart-immocheck.de/api/install.html` öffnen.
 3. Den selbst erzeugten `setup_key` in das Formular eingeben und „Einmalig einrichten“ wählen. Dadurch entstehen Tabellen, Startkonfiguration und das noch nicht E-Mail-bestätigte Admin-Konto. Dabei wird **keine E-Mail versendet**.
 4. `install.html` anschließend vom Server löschen. Der Setup-Endpunkt verweigert eine zweite Einrichtung, solange die zentrale Konfiguration existiert.
 5. `health` muss nun `ready: true` melden.
@@ -49,7 +51,7 @@ PHP-Strings mit Apostrophen/Backslashes müssen korrekt maskiert werden. Kein BO
 
 Die GitHub-Version enthält bereits `user-access.js`, lädt aber standardmäßig `assets/backend-config.json` mit `enabled: false`. Erst nach erfolgreicher Servereinrichtung `enabled` auf `true` setzen und die API-URL prüfen. Anschließend die Änderung über den bestehenden GitHub-Pages-Build veröffentlichen. Eine vorbereitete JSON-Datei liegt im Paket unter `frontend/backend-config.enabled.json`.
 
-Die App muss auf der eigentlichen Kalkulator-Domain geöffnet werden. Authentifizierung verwendet ein sicheres HttpOnly-Cookie der API-Subdomain mit SameSite=Lax. Das funktioniert bei HTTPS auf API und Webseite derselben Hauptdomain. Eine fremde `github.io`-Adresse ist nicht für den produktiven Login vorgesehen und wird nicht in die CORS-Freigabe aufgenommen. Keine Cookies über URL-Parameter übertragen.
+Die App muss auf der eigentlichen Kalkulator-Domain geöffnet werden. Authentifizierung verwendet ein sicheres HttpOnly-Cookie der Hauptdomain ohne www mit SameSite=Lax. Das funktioniert bei HTTPS auf Hauptdomain und www-Seite derselben Hauptdomain. Eine fremde `github.io`-Adresse ist nicht für den produktiven Login vorgesehen und wird nicht in die CORS-Freigabe aufgenommen. Keine Cookies über URL-Parameter übertragen.
 
 **Noch nicht aktivieren**, solange Datenbank- und SMTP-Passwörter fehlen oder der geschützte Ordner öffentlich erreichbar ist. Bei Problemen `enabled` wieder auf `false` setzen und neu veröffentlichen: Der bisherige lokale Modus bleibt verfügbar. Dadurch werden jedoch Registrierungspflichten deaktiviert; diese Rückkehr zum öffentlichen Modus ist eine bewusste Betreiberentscheidung.
 
