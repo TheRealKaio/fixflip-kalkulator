@@ -27,10 +27,29 @@ const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:fa
     if(result.stepCount<2)throw Error('Less than 2 steps');
     if(result.overflow)throw Error('Horizontal viewport overflow: '+JSON.stringify(result.overflowNodes));
     if(!result.loginLabel)throw Error('Login label missing');
+    // One active calculator step, regardless of persistent mode selector cards.
+    const active=await page.evaluate(()=>{
+      const root=document.querySelector('.nic-step-enabled');
+      return root ? [...root.children].filter(el=>el.matches('.card')&&getComputedStyle(el).display!=='none').length : 0;
+    });
+    if(active!==1)throw Error('Expected exactly one active calculator card, found '+active);
+    const labelVisible=await page.locator('.nic-account-label').evaluate(el=>{
+      const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+      return r.width>0&&r.height>0&&r.left>=-5&&r.right<=innerWidth+5&&style.visibility!=='hidden'&&style.display!=='none';
+    });
+    if(!labelVisible)throw Error('Account label not fully visible');
+
     await page.locator('.nic-step-next').evaluate(button=>button.click());
     const counter=await page.locator('.nic-step-count').innerText();
     if(!counter.includes('Schritt 2'))throw Error('Next button did not advance');
     await page.locator('.nic-step-prev').evaluate(button=>button.click());
+
+    // Save an unobstructed screenshot when the actual consent UI offers a reject option.
+    const reject=page.getByRole('button',{name:/^(Alle ablehnen|Ablehnen|Nur notwendige|Nur notwendige Cookies|Notwendige Cookies|Reject all)$/i}).first();
+    if(await reject.isVisible().catch(()=>false)){
+      await reject.click({timeout:3000});
+      await page.waitForTimeout(200);
+    }
     await page.screenshot({path:'tmp/browser-qa/'+variant.name+'-'+path.split('/')[1]+'.png',fullPage:true});
     if(errors.length)throw Error('Browser JS error: '+errors.join('; '));
     console.log('PASS',variant.name,path,JSON.stringify(result));
