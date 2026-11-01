@@ -72,4 +72,35 @@ if(account&&hero){
 })();
 if(S.current){if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));}
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
+
+/* Scoped renovation proposal controls; calculations remain in the original handlers. */
+(function renovationControls(){
+  function enhance(){
+    if(!document.querySelectorAll)return;
+    document.querySelectorAll('#applyTradeSuggestions').forEach(button=>{
+      if(button.dataset.nicEnhanced)return;
+      const panel=button.closest('.reno-inline-panel, .reno-sheet');
+      if(!panel)return;
+      button.dataset.nicEnhanced='1';
+      button.textContent='Vorschläge übernehmen';
+      button.style.cssText='background:#16867a;color:#fff;border-color:#075c55;min-width:0;max-width:calc(100% - 52px)';
+      const clear=document.createElement('button');
+      clear.type='button';
+      clear.textContent='X';
+      clear.setAttribute('aria-label','Eingaben dieser Sanierungsmaske löschen');
+      clear.style.cssText='display:inline-flex;align-items:center;justify-content:center;width:42px;min-width:42px;margin-left:8px;border:1px solid #b42318;border-radius:10px;background:#b42318;color:#fff';
+      clear.addEventListener('click',()=>{
+        panel.querySelectorAll('#tradeList input.trade-amount, #tradeList input.trade-area').forEach(input=>{
+          if(input.disabled)return;
+          input.value='0';
+          input.dispatchEvent(new Event('input',{bubbles:true}));
+          input.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      });
+      button.after(clear);
+    });
+  }
+  enhance();
+  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(enhance));
+})();
 })();
