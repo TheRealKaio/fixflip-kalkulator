@@ -117,8 +117,8 @@ js=r"""
       localStorage.setItem(modeAreaKey(mode,hint),String(area||0));
     });
 
-    const currentBuffer=$("buffer") ? $("buffer").value : "5";
-    localStorage.setItem(stateKey(mode,"buffer"),String(currentBuffer||"5"));
+    const currentBuffer=$("buffer") ? $("buffer").value : "0";
+    localStorage.setItem(stateKey(mode,"buffer"),String(currentBuffer||"0"));
 
     // Ein bereits in V8.240 bestätigter Vorschlag wird nur für den aktuell
     // migrierten Modus übernommen. Der andere Modus startet bewusst unabhängig.
