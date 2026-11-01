@@ -314,7 +314,7 @@ body:not(.nic-embed) .nic-actions-above-footer{
  position:sticky!important;top:auto!important;bottom:0!important;left:auto!important;right:auto!important;
  z-index:30!important;box-sizing:border-box!important;
  width:calc(100% - 48px)!important;max-width:calc(100% - 48px)!important;
- margin:12px auto 14px!important;padding:0!important;
+ margin:12px auto 19px!important;padding:0!important;
  background:transparent!important;background-color:transparent!important;
  background-image:none!important;border:0!important;box-shadow:none!important;
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
@@ -328,7 +328,7 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
 @media(max-width:650px){
  body:not(.nic-embed) .nic-actions-above-footer{
   width:calc(100% - 28px)!important;max-width:calc(100% - 28px)!important;
-  margin:10px auto 12px!important
+  margin:10px auto 17px!important
  }
 }
 
