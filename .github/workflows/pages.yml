@@ -669,13 +669,7 @@ jobs:
           node scripts/verify_account_navigation.cjs
           python scripts/apply_immocheck_brand.py _site
           cp assets/immocheck-brand-theme.css _site/immocheck-brand-theme.css
-          python - <<'PY_BRAND_THEME'
-          from pathlib import Path
-          for page in Path('_site').rglob('*.html'):
-              html=page.read_text()
-              if 'class="hero' in html:
-                  page.write_text(html.replace('</head>','<link rel="stylesheet" href="/immocheck-brand-theme.css"></head>',1))
-          PY_BRAND_THEME
+          cp assets/immocheck-ui-details.js _site/immocheck-ui-details.js
           python scripts/verify_original_restore.py
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
