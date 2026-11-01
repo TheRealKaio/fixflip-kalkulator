@@ -131,8 +131,37 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
       row.append(clear);
     });
   }
+  function enhanceRent(){
+    if(typeof document.querySelectorAll!=='function')return;
+    document.querySelectorAll('#rentApplyTradeSuggestions').forEach(button=>{
+      if(button.dataset.nicEnhanced==='1')return;
+      const panel=document.getElementById('rentRenoPanel')||button.closest('.card,section');
+      if(!panel)return;
+      button.dataset.nicEnhanced='1';
+      button.textContent='Vorschläge übernehmen';
+      const row=document.createElement('div');
+      row.className='nic-reno-action-row';
+      button.before(row);
+      row.append(button);
+      const clear=document.createElement('button');
+      clear.type='button';
+      clear.className='nic-clear-reno';
+      clear.textContent='X';
+      clear.setAttribute('aria-label','Modernisierungseingaben der Vermietung auf null setzen');
+      clear.addEventListener('click',()=>{
+        panel.querySelectorAll('input.rent-trade-amount,input.rent-trade-area').forEach(input=>{
+          if(input.disabled)return;
+          input.value='0';
+          input.dispatchEvent(new Event('input',{bubbles:true}));
+          input.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      });
+      row.append(clear);
+    });
+  }
   enhance();
   enhanceBudget();
-  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(()=>{enhance();enhanceBudget();}));
+  enhanceRent();
+  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(()=>{enhance();enhanceBudget();enhanceRent();}));
 })();
 })();
