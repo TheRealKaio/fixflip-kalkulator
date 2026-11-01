@@ -1,0 +1,57 @@
+name: ImmoCheck UI development checks (10 min)
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - design/immocheck-ui-only-2026-11
+    paths:
+      - 'assets/immocheck-ui-*'
+      - 'assets/financing.html'
+      - '.github/workflows/immocheck-ui-check.yml'
+permissions:
+  contents: read
+concurrency:
+  group: immocheck-ui-check
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Verify isolated UI branch (no deploy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout development branch only
+        uses: actions/checkout@v4
+        with:
+          ref: design/immocheck-ui-only-2026-11
+          persist-credentials: false
+      - name: Check UI scripts and original financing inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/immocheck-ui-steps.js
+          node --check scripts/verify_finance_updates.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          css=Path('assets/immocheck-ui-refresh.css').read_text()
+          steps=Path('assets/immocheck-ui-steps.js').read_text()
+          step_css=Path('assets/immocheck-ui-steps.css').read_text()
+          workflow=Path('.github/workflows/pages.yml').read_text()
+          finance=Path('assets/financing.html').read_text()
+          for item in ('immocheck-ui-refresh.css','immocheck-ui-steps.js','immocheck-ui-steps.css'):
+              assert f'cp assets/{item}' in workflow, f'Missing build integration: {item}'
+          assert 'cards.length!==6' in steps, 'Budget six-step safeguard missing'
+          for item in ('repayChart','rateChart','refinanceChange','loan','interest','repay','extra','years'):
+              assert f'id="{item}"' in finance, f'Financing UI element missing: {item}'
+          assert '.nic-step-inactive' in step_css, 'Step visibility styling missing'
+          assert 'input[type=range]' not in re.sub(r'/\\*.*?\\*/','',css,flags=re.S), 'Refresh CSS modifies range input'
+          print('UI source checks passed; original financing fields and chart IDs present.')
+          PY
+      - name: Run non-deployment repository checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify_account_navigation.cjs
+          node server/tests/run.cjs
