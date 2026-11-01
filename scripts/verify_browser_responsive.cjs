@@ -30,7 +30,7 @@ const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:fa
     // One active calculator step, regardless of persistent mode selector cards.
     const active=await page.evaluate(()=>{
       const root=document.querySelector('.nic-step-enabled');
-      return root ? [...root.children].filter(el=>el.matches('.card')&&!el.classList.contains('deal-type-card')&&getComputedStyle(el).display!=='none').length : 0;
+      return root ? [...root.children].filter(el=>el.hasAttribute('data-nic-step')&&getComputedStyle(el).display!=='none').length : 0;
     });
     if(active!==1)throw Error('Expected exactly one active calculator card, found '+active);
     const labelVisible=await page.locator('.nic-account-label').evaluate(el=>{
