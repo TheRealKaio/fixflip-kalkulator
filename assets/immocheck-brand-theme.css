@@ -231,3 +231,10 @@ body:not(.nic-embed) #rentRenoPanel #rentRenoSheetTotal.nic-rental-proposal-tota
  font-size:clamp(13px,1.6vw,16px)!important;text-align:right!important;
  padding:0!important;margin:8px 0 0!important;line-height:1.35!important
 }
+
+/* Eigennutzung und Fix & Flip: Vorschlagssumme unter den Buttons blau. */
+body:not(.nic-embed) #renoBackdrop #renoSuggestionTotal,
+body:not(.nic-embed) #renoBackdrop .reno-suggestion-total,
+body:not(.nic-embed) #renoBackdrop .nic-reno-proposal-total{
+ color:#2563eb!important;
+}
