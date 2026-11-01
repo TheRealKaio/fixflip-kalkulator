@@ -27,6 +27,16 @@ decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
+/* Put the existing calculator action bar in normal document flow above the footer. */
+function positionCalculatorActions(){
+ const footer=document.querySelector('.footer-note, .nic-shared-footer');
+ const bar=document.querySelector('.app > .bottom, .bottom');
+ if(!footer||!bar||bar===footer||bar.dataset.nicPositioned==='1')return;
+ footer.before(bar);
+ bar.dataset.nicPositioned='1';
+ bar.classList.add('nic-actions-above-footer');
+}
+positionCalculatorActions();
 /* All five calculators: align the footer to the visible shared brand header. */
 function alignSharedFooter(){
  const header=document.querySelector('.app > .nic-brand-bar')||document.querySelector('.app > .hero');
