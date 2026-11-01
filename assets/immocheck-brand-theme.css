@@ -45,3 +45,25 @@ body:not(.nic-embed) .deal-type-option[aria-pressed="true"] *{color:#fff!importa
 .nic-brand-bar a.nic-login-button{grid-column:3;grid-row:1;font-size:14px;padding:10px 12px!important}
 @media(max-width:700px){.nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;padding:12px;gap:8px}.nic-brand-bar .brand-logo{width:150px!important}.nic-brand-description{grid-column:1 / -1;grid-row:2;padding:0}.nic-brand-bar a.nic-login-button{grid-column:2;grid-row:1;font-size:13px;padding:10px!important}}
 @media(max-width:380px){.nic-brand-bar .brand-logo{width:130px!important}.nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important}}
+
+/* November 2026 visible refinements to current (restored) UI. */
+body:not(.nic-embed) .footer-note,
+body:not(.nic-embed) .nic-shared-footer{
+  border-radius:0 0 14px 14px!important;
+  color:#fff!important;
+  padding-top:5px!important;
+}
+body:not(.nic-embed) .footer-note *,
+body:not(.nic-embed) .nic-shared-footer *{color:inherit}
+body:not(.nic-embed) .footer-note a,
+body:not(.nic-embed) .nic-shared-footer a,
+body:not(.nic-embed) .footer-version,
+body:not(.nic-embed) .nic-consent-settings{color:#fff!important;opacity:1!important}
+body:not(.nic-embed) .bottom,
+body:not(.nic-embed) .bottom-actions{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+body:not(.nic-embed) .bottom-actions>*{min-width:0}
+body:not(.nic-embed) .budget-apply-btn,
+body:not(.nic-embed) #applyTradeSuggestions,
+body:not(.nic-embed) .save-reno-btn{background:#16867a!important;border-color:#075c55!important;color:#fff!important}
+body:not(.nic-embed) #applyTradeSuggestions{max-width:calc(100% - 52px);min-width:0}
+body:not(.nic-embed) .nic-clear-reno{width:42px;min-width:42px;min-height:42px;border-radius:10px;background:#b42318!important;border:1px solid #b42318!important;color:#fff!important}
