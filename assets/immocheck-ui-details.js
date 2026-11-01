@@ -27,20 +27,24 @@ decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
-/* Match footer outer edges to the actual rendered header, not a percentage of a padded parent. */
+/* All five calculators: align the footer to the visible shared brand header. */
 function alignSharedFooter(){
  const header=document.querySelector('.app > .nic-brand-bar')||document.querySelector('.app > .hero');
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
- if(!header||!footer||!footer.parentElement)return;
- const rect=header.getBoundingClientRect();
- const parent=footer.parentElement.getBoundingClientRect();
- if(rect.width<=0)return;
+ if(!header||!footer)return;
+ footer.style.removeProperty('transform');
  footer.style.setProperty('box-sizing','border-box','important');
- footer.style.setProperty('width',rect.width+'px','important');
- footer.style.setProperty('min-width',rect.width+'px','important');
- footer.style.setProperty('max-width',rect.width+'px','important');
- footer.style.setProperty('margin-left',(rect.left-parent.left)+'px','important');
+ footer.style.setProperty('margin-left','0','important');
  footer.style.setProperty('margin-right','0','important');
+ footer.style.setProperty('min-width','0','important');
+ footer.style.setProperty('width','100%','important');
+ footer.style.setProperty('max-width','100%','important');
+ const headerRect=header.getBoundingClientRect();
+ const footerRect=footer.getBoundingClientRect();
+ if(headerRect.width<=0)return;
+ footer.style.setProperty('width',headerRect.width+'px','important');
+ footer.style.setProperty('max-width','none','important');
+ footer.style.setProperty('transform','translateX('+(headerRect.left-footer.getBoundingClientRect().left)+'px)','important');
  footer.style.setProperty('border-radius','22px 22px 0 0','important');
 }
 alignSharedFooter();
