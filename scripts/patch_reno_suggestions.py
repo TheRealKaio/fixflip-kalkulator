@@ -158,6 +158,7 @@ js = r"""
     proposalTotal.className="nic-reno-proposal-total";
     proposalTotal.id="nicRenoProposalTotal";
     right.appendChild(proposalTotal);
+    proposalTotal.textContent="Vorschlag gesamt: "+trades.reduce(function(total,t){return total+suggestionForTrade(t);},0).toLocaleString("de-DE")+" € · ohne Puffer";
     head.appendChild(right);
 
     const intro=head.querySelector(".sub");
