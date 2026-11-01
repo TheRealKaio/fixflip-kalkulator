@@ -2,6 +2,7 @@ name: ImmoCheck dev PDF and chart integration checks (no deploy)
 on:
   # Re-run after login-header regex correction; development branch only.
   # Recheck finance controls and diagnose mobile overflow element positions.
+  # Recheck inactive result-card visibility after d13e0f9.
   workflow_dispatch:
   push:
     branches: [design/immocheck-ui-only-2026-11]
