@@ -291,3 +291,20 @@ body:not(.nic-embed) .nic-shared-footer{
   border-radius:22px 22px 0 0!important;
   padding-top:10px!important;padding-bottom:10px!important;
 }
+
+/* Three existing calculator actions between last information card and footer. */
+body:not(.nic-embed) .nic-actions-above-footer{
+ position:relative!important;inset:auto!important;top:auto!important;right:auto!important;
+ bottom:auto!important;left:auto!important;transform:none!important;
+ box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+ margin:12px 0 14px!important;padding:0!important;z-index:auto!important
+}
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
+ display:flex!important;box-sizing:border-box!important;width:100%!important;
+ max-width:100%!important;min-width:0!important;gap:8px!important;flex-wrap:nowrap!important
+}
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>*{min-width:0!important}
+@media(max-width:650px){
+ body:not(.nic-embed) .nic-actions-above-footer{margin:10px 0 12px!important}
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{gap:6px!important}
+}
