@@ -76,5 +76,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 scripts/verify_legal_footer.py
           node scripts/verify_account_navigation.cjs
           node server/tests/run.cjs
