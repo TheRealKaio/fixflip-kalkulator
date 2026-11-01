@@ -3,12 +3,14 @@
 (()=>{
 'use strict';
 function init(){
- const page=document.documentElement.dataset.nicPage || (location.pathname.includes('finanzierungsrechner')?'finance':'');
+ const page=location.pathname.includes('finanzierungsrechner')?'finance':(document.documentElement.dataset.nicPage||'');
  const root=page==='finance'?document.querySelector('main.section'):({'budget':'#budgetSection','rent':'#rentSection','own':'#dealCalculatorContent','flip':'#dealCalculatorContent'}[page] ? document.querySelector({'budget':'#budgetSection','rent':'#rentSection','own':'#dealCalculatorContent','flip':'#dealCalculatorContent'}[page]) : null);
  if(!root || root.classList.contains('mode-hidden'))return;
  const cards=[...root.children].filter(el=>el.matches('.card, section.card, div.card')&&!el.classList.contains('deal-type-card')&&!el.classList.contains('mode-hidden'));
  // The visible original card structure is the only source of step counts.
  if(cards.length<2)return;
+ // Financing retains all native result, interest-curve, and refinance controls inside their original cards.
+ if(page==='finance' && (!root.querySelector('#repayChart') || !root.querySelector('#rateChart') || !root.querySelector('#refinanceChange'))){console.warn('Financing navigation disabled: original results missing');return;}
  // Do not replace the six-box Budget UI with an incorrect number of steps.
  if(page==='budget' && cards.length!==6){console.warn('Budget step layout skipped: expected 6 original cards, found',cards.length);return;}
  // Preserve original section, slider, chart and expandable-field structure.
