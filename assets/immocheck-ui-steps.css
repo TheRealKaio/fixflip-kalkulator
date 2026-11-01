@@ -13,3 +13,14 @@
 body:not(.nic-embed) .nic-step-enabled > .card.result-card.nic-step-inactive,
 body:not(.nic-embed) .nic-step-enabled > .card.go.nic-step-inactive,
 body:not(.nic-embed) .nic-step-enabled > .card.nic-step-inactive{display:none!important}
+
+/* Accessible, labeled horizontal step navigation (presentation only). */
+body:not(.nic-embed) .nic-step-buttons{display:grid;grid-template-columns:repeat(var(--nic-step-columns, 6),minmax(0,1fr));gap:10px}
+body:not(.nic-embed) .nic-step-dot{display:flex;align-items:center;justify-content:center;min-height:44px;height:auto;padding:10px 6px;font-size:15px;font-weight:750;line-height:1.2;color:#075c55;background:#eef5f2;border:2px solid #bfd5cd;border-radius:12px;cursor:pointer}
+body:not(.nic-embed) .nic-step-dot[aria-current="step"]{color:#fff;background:#075c55;border-color:#075c55}
+body:not(.nic-embed) .nic-step-dot:focus-visible{outline:3px solid #1a77db;outline-offset:3px}
+@media(max-width:650px){body:not(.nic-embed) .nic-step-buttons{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:5px}body:not(.nic-embed) .nic-step-dot{flex:0 0 54px;scroll-snap-align:start}}
+/* Connecting lines preserve the existing accessible step buttons. */
+body:not(.nic-embed) .nic-step-dot{position:relative}
+body:not(.nic-embed) .nic-step-dot:not(:last-child)::after{content:"";position:absolute;left:calc(100% + 2px);top:50%;width:10px;height:2px;background:#bfd5cd;pointer-events:none}
+@media(max-width:650px){body:not(.nic-embed) .nic-step-dot{flex-basis:150px}}

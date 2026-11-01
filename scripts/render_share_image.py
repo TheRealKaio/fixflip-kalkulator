@@ -26,7 +26,7 @@ def render_share_image(config,site):
                 raise ValueError('Sharing image dimensions too large')
             logo=original.convert('RGBA')
     logo.thumbnail((800,300),Image.Resampling.LANCZOS)
-    image=Image.new('RGB',(1200,630),'#f6f1e9')
+    image=Image.new('RGB',(1200,630),'#ffffff')
     image.paste(logo,((1200-logo.width)//2,90+(300-logo.height)//2),logo)
     draw=ImageDraw.Draw(image)
     def font(size):
