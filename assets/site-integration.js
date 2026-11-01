@@ -99,6 +99,6 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
     });
   }
   apply();
-  document.addEventListener('click',()=>queueMicrotask(apply));
+  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(apply));
 })();;
 })();
