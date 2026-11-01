@@ -1,0 +1,57 @@
+/* Neustart ImmoCheck: presentation-only design layer.
+   No selectors target input[type=range], svg.chart, canvas, .advanced, or data/logic hooks.
+   Keep all existing DOM nodes, calculators, field names and legal anchors. */
+:root{--nic-design-deep:#075c55;--nic-design-teal:#16867a;--nic-design-mint:#ddece8;--nic-design-warm:#f6f1e9;--nic-design-ink:#263b3a}
+body:not(.nic-embed){background:var(--nic-design-warm);color:var(--nic-design-ink)}
+body:not(.nic-embed) .hero{background:#fff;border-color:#e2e9e5}
+body:not(.nic-embed) .hero-top{background:#fff}
+body:not(.nic-embed) .brand-logo-wrap{background:#fff;box-shadow:none}
+body:not(.nic-embed) .card{border-color:#e2e9e5;box-shadow:0 5px 22px rgba(7,92,85,.055)}
+body:not(.nic-embed) .deal-type-card{background:#fff}
+body:not(.nic-embed) .deal-type-option{border-color:#dce8e2;background:#fff;border-radius:15px;box-shadow:0 3px 12px rgba(7,92,85,.06)}
+body:not(.nic-embed) .deal-type-option:has(input:checked){background:linear-gradient(135deg,#16867a,#075c55);color:#fff;border-color:#075c55}
+body:not(.nic-embed) .deal-type-option:has(input:checked) strong,body:not(.nic-embed) .deal-type-option:has(input:checked) small{color:#fff}
+body:not(.nic-embed) .nic-account-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;border-radius:12px;padding:10px 17px;text-decoration:none}
+body:not(.nic-embed) .nic-account-label{font:700 15px/1.2 system-ui,sans-serif;white-space:nowrap}
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:var(--nic-design-deep);color:#fff}
+body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff}
+@media(max-width:600px){body:not(.nic-embed) .nic-account-link{padding:10px}body:not(.nic-embed) .nic-account-label{font-size:12px}}
+
+/* Mobile header: keep the login label inside the available header width. */
+@media (max-width:600px){
+  body:not(.nic-embed) .hero-top{min-width:0}
+  body:not(.nic-embed) .brand-logo-wrap{min-width:0}
+  body:not(.nic-embed) .nic-account-link{box-sizing:border-box;min-width:0;max-width:100%;flex-shrink:1;gap:5px;padding:8px 9px}
+  body:not(.nic-embed) .nic-account-link svg{width:18px;height:18px;flex:0 0 18px}
+  body:not(.nic-embed) .nic-account-label{min-width:0;font-size:11px;line-height:1.1;white-space:normal;overflow-wrap:anywhere;text-align:center}
+}
+
+/* Keep the account control legible beside the brand on desktop and mobile. */
+body:not(.nic-embed) .hero-top .nic-account-link{
+  box-sizing:border-box;flex:0 1 auto;min-width:0;max-width:100%;
+  overflow:visible;line-height:1.2;
+}
+body:not(.nic-embed) .hero-top .nic-account-label{
+  display:block;min-width:0;max-width:100%;color:#fff!important;
+  opacity:1!important;visibility:visible!important;
+  text-shadow:none;overflow-wrap:normal;
+}
+@media(max-width:600px){
+  body:not(.nic-embed) .hero-top .nic-account-label{overflow-wrap:anywhere}
+}
+
+/* Existing header may force a compact icon-only link width; accommodate real text. */
+body:not(.nic-embed) .hero-top a.nic-account-link{
+  width:max-content!important;min-width:max-content!important;max-width:min(100%,190px)!important;
+  flex:0 0 auto!important;overflow:visible!important;
+}
+body:not(.nic-embed) .hero-top a.nic-account-link .nic-account-label{
+  display:inline-block!important;width:auto!important;min-width:max-content!important;
+  color:#fff!important;white-space:nowrap!important;font-size:14px!important;line-height:1.25!important;
+}
+@media(max-width:600px){
+  body:not(.nic-embed) .hero-top a.nic-account-link{max-width:min(100%,145px)!important}
+  body:not(.nic-embed) .hero-top a.nic-account-link .nic-account-label{
+    min-width:0!important;white-space:normal!important;font-size:11px!important;
+  }
+}
