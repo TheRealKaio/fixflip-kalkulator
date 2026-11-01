@@ -146,3 +146,5 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option>span>small{display:block;m
  body:not(.nic-embed) .kpi .name,body:not(.nic-embed) .kpi .note{overflow-wrap:anywhere}
  body:not(.nic-embed) .own-budget-transfer-head{flex-wrap:wrap}
 }
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{text-align:left!important}
+@media(max-width:380px){body:not(.nic-embed) .app>.hero .brand-logo{width:130px!important;max-width:42vw!important}}
