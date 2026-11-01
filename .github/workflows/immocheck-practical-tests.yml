@@ -736,6 +736,20 @@ jobs:
           python3 scripts/verify_ui_steps_contract.py
           python3 scripts/verify_legal_footer.py
           python3 scripts/verify_login_header.py
+      - name: Test desktop and smartphone navigation in Chromium
+        run: |
+          npm install --prefix /tmp/nic-browser-check playwright@1.56.1 --silent
+          /tmp/nic-browser-check/node_modules/.bin/playwright install --with-deps chromium
+          python3 -m http.server 8765 --directory _site > /tmp/nic-browser-server.log 2>&1 &
+          NODE_PATH=/tmp/nic-browser-check/node_modules node scripts/verify_browser_responsive.cjs
+      - name: Retain browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: immocheck-browser-screenshots
+          path: tmp/browser-qa/*.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Retain PDF QA outputs for inspection
         if: always()
         uses: actions/upload-artifact@v4
