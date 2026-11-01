@@ -56,7 +56,7 @@ const assert=require('node:assert/strict');
     assert.equal(await page.locator(area).inputValue(),'120');
     if(slug==='eigennutzung')assert.equal(await page.locator('#ownImportBudgetValues').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(7, 92, 85)');
     for(const id of rent?['rentResetTrades','rentSaveTrades']:['resetTrades','saveTrades'])assert.equal(await page.locator('#'+id).isVisible(),false);
-    assert(await page.locator(apply).evaluate(el=>{const c=el.parentElement,r=c.getBoundingClientRect(),b=el.getBoundingClientRect(),x=c.querySelector('.nic-clear-mask').getBoundingClientRect();return r.width<=parseFloat(c.style.getPropertyValue('--nic-suggestion-width'))+1&&Math.abs(b.top-x.top)<1}),'Clear control must not widen or wrap its action row');
+    assert(await page.locator(apply).evaluate(el=>{const c=el.parentElement,r=c.getBoundingClientRect(),b=el.getBoundingClientRect(),x=c.querySelector('.nic-clear-mask').getBoundingClientRect();const h=el.closest('.reno-head')?.getBoundingClientRect();return r.width<=parseFloat(c.style.getPropertyValue('--nic-suggestion-width'))+1&&Math.abs(b.top-x.top)<1&&(!h||r.right<=h.right+1)}),'Clear control must not widen or wrap its action row');
     if(width===1440){await page.reload({waitUntil:'domcontentloaded'});await page.waitForTimeout(800);await page.locator(open).evaluate(el=>el.click());assert(await page.locator(mask+' input[data-trade]').evaluateAll(els=>els.every(el=>!Number(el.value))),'Cleared renovation amounts must stay cleared after reload');assert.equal(await page.locator(area).inputValue(),'120');}
    }
    if(slug==='finanzierungsrechner'){

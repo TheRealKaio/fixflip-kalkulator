@@ -55,3 +55,8 @@ body:not(.nic-embed) .bottom{box-sizing:border-box!important;width:var(--nic-cal
 .nic-suggestion-controls>.budget-apply-btn{box-sizing:border-box;flex:1 1 0!important;width:0!important;min-width:0!important;white-space:normal!important;line-height:1.1!important;padding:3px 5px!important}
 .nic-clear-mask{box-sizing:border-box;flex:0 0 30px;width:30px;min-width:30px;min-height:38px;border:1px solid #b91c1c;border-radius:10px;background:#b91c1c;color:#fff;font:700 15px/1 system-ui;cursor:pointer;padding:0}
 .nic-clear-mask:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
+/* Let the compact action pair fit within the existing renovation header on phones. */
+.reno-head>div:first-child{min-width:0}
+.reno-head .reno-head-actions{min-width:0;max-width:calc(50% - 6px)!important;flex-shrink:1!important}
+.reno-head .nic-suggestion-controls{width:min(var(--nic-suggestion-width),100%)}
+.reno-head .suggestion-total{max-width:none;white-space:nowrap!important;overflow-wrap:normal;align-self:flex-end}
