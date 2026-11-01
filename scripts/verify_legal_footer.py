@@ -19,9 +19,9 @@ assert "data-legal-placeholder" in build, 'Original legal placeholder verificati
 # Visual footer styling is permitted. Preserve the original legal links and
 # prohibit hiding legal navigation or its surrounding footer in the design layer.
 css=Path('assets/immocheck-ui-refresh.css').read_text(encoding='utf-8')
-css=re.sub(r'/\\*.*?\\*/','',css,flags=re.S)
-for match in re.finditer(r'([^{}]+)\\{([^{}]*)\\}',css):
+css=re.sub(r'/\*.*?\*/','',css,flags=re.S)
+for match in re.finditer(r'([^{}]+)\{([^{}]*)\}',css):
     selectors, declarations=match.groups()
     if any(token in selectors for token in ('.footer-legal-links','.footer-note','.footer-meta','.footer-version','.nic-shared-footer')):
-        assert not re.search(r'(?:^|;)\\s*(?:display\\s*:\\s*none|visibility\\s*:\\s*hidden)',declarations,re.I), 'Legal footer hidden by design layer'
+        assert not re.search(r'(?:^|;)\s*(?:display\s*:\s*none|visibility\s*:\s*hidden)',declarations,re.I), 'Legal footer hidden by design layer'
 print('Legal source checks passed: original footer links, disclaimer, extraction and compatible visual styling.')
