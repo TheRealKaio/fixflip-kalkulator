@@ -18,9 +18,9 @@ practical=Path('.github/workflows/immocheck-practical-tests.yml').read_text(enco
 def header_pattern(text):
     line=next((line for line in text.splitlines() if "html=re.sub(r'(<a" in line),None)
     assert line, 'Login anchor selector missing in build workflow'
-    match=re.search(r"html=re.sub\\((r'[^']+')",line)
-    assert match, 'Cannot inspect login anchor selector'
-    return ast.literal_eval(match.group(1))
+    expression=line.split('html=re.sub(',1)[1].split(',replace',1)[0]
+    assert expression.startswith("r'"), 'Cannot inspect login anchor selector'
+    return ast.literal_eval(expression)
 pattern=header_pattern(workflow)
 assert pattern==header_pattern(practical), 'Practical build login selector differs from page build'
 assert re.search(pattern,'<a href="/#admin" class="nic-account-link">Konto</a>',re.S), 'Login selector does not match account link'
