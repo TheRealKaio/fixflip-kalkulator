@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/immocheck-practical-tests.yml'
       - 'assets/immocheck-ui-refresh.css'
+      - 'assets/immocheck-ui-steps.css'
       - 'scripts/verify_browser_responsive.cjs'
 permissions:
   contents: read
