@@ -158,3 +158,22 @@ body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .nic-reno-action-row #
 }
 body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .nic-clear-reno{flex:0 0 38px!important}
 body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .reno-total-pill{min-width:0!important}
+
+/* Explicitly give generated renovation action wrapper usable width on mobile. */
+body:not(.nic-embed) #renoBackdrop .reno-head .reno-head-actions{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ justify-self:stretch!important;width:100%!important;max-width:100%!important;
+ min-width:0!important;box-sizing:border-box!important
+}
+body:not(.nic-embed) #renoBackdrop .reno-head .reno-head-actions .nic-reno-action-row{
+ align-self:stretch!important;min-width:0!important;width:100%!important
+}
+body:not(.nic-embed) #renoBackdrop .reno-head .reno-head-actions .nic-reno-action-row #applyTradeSuggestions{
+ width:auto!important;min-width:0!important;flex:1 1 auto!important
+}
+@media(min-width:900px){
+ body:not(.nic-embed) #renoBackdrop .reno-head:has(.nic-reno-action-row){
+  grid-template-columns:minmax(0,1fr) minmax(270px,45%)!important
+ }
+ body:not(.nic-embed) #renoBackdrop .reno-head .reno-head-actions{grid-column:2!important}
+}
