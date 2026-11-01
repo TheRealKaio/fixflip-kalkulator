@@ -1,0 +1,9 @@
+.nic-step-enabled>.nic-step-inactive{display:none!important}
+.nic-step-nav{background:white;border:1px solid #dce8e2;border-radius:18px;padding:18px;margin:14px 0;display:grid;gap:12px}
+.nic-step-count{font-weight:700;color:#075c55}
+.nic-step-buttons{display:flex;gap:8px}
+.nic-step-dot{flex:1;min-width:0;height:11px;font-size:0;border:0;border-radius:20px;background:#dce8e2;padding:0}
+.nic-step-dot[aria-current="step"]{background:#16867a}
+.nic-step-controls{display:flex;gap:12px;justify-content:space-between;margin:18px 0 24px}
+.nic-step-controls button{background:#075c55;color:white;border:0;border-radius:12px;padding:12px 22px;font-weight:700}
+.nic-step-controls button:disabled{opacity:.4}
