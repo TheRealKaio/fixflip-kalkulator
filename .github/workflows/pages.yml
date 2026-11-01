@@ -677,7 +677,7 @@ jobs:
                   if 'nic-account-label' not in body:
                       body+='<span class="nic-account-label">Jetzt anmelden</span>'
                   return opening+body+'</a>'
-              html=re.sub(r'(<a\\b(?=[^>]*class="[^"]*\\bnic-account-link\\b[^"]*")[^>]*>)(.*?)</a>',replace,html,flags=re.S)
+              html=re.sub(r'(<a\b(?=[^>]*class="[^"]*\bnic-account-link\b[^"]*")[^>]*>)(.*?)</a>',replace,html,flags=re.S)
               page.write_text(html,encoding='utf-8')
           PY_LOGIN_HEADER
           # Presentation-only theme; injected after calculator route generation.
