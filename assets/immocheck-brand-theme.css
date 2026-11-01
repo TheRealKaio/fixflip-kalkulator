@@ -401,3 +401,9 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
   max-width:56px!important;padding:8px!important
  }
 }
+
+/* Legal links in the shared footer: increase text by 1px. */
+body:not(.nic-embed) .footer-note .footer-legal-links,
+body:not(.nic-embed) .nic-shared-footer .footer-legal-links{
+ font-size:calc(1em + 1px)!important;
+}
