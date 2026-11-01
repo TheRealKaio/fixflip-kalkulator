@@ -93,6 +93,7 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
       clear.textContent='X';
       clear.setAttribute('aria-label','Sanierungseingaben dieser Maske löschen');
       clear.addEventListener('click',()=>{
+        if(!window.confirm('Möchtest du die Eingaben dieser Maske wirklich löschen?'))return;
         panel.querySelectorAll('#tradeList input.trade-amount, #tradeList input.trade-area').forEach(input=>{
           if(input.disabled)return;
           input.value='0';
@@ -120,6 +121,7 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
       clear.textContent='X';
       clear.setAttribute('aria-label','Feste monatliche Ausgaben auf null setzen');
       clear.addEventListener('click',()=>{
+        if(!window.confirm('Möchtest du die Eingaben dieser Maske wirklich löschen?'))return;
         panel.querySelectorAll('#budgetExpensesBody input:not([type="hidden"]):not([type="range"])').forEach(input=>{
           if(input.disabled||input.readOnly)return;
           if(input.type==='checkbox'||input.type==='radio')return;
@@ -154,6 +156,7 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
       clear.textContent='X';
       clear.setAttribute('aria-label','Modernisierungseingaben der Vermietung auf null setzen');
       clear.addEventListener('click',()=>{
+        if(!window.confirm('Möchtest du die Eingaben dieser Maske wirklich löschen?'))return;
         panel.querySelectorAll('input.rent-trade-amount,input.rent-trade-area').forEach(input=>{
           if(input.disabled)return;
           input.value='0';
