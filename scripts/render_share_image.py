@@ -18,7 +18,7 @@ def render_share_image(config,site):
             raise ValueError('Invalid sharing image')
         raw=BytesIO(base64.b64decode(source.split(',',1)[1],validate=True))
     else:
-        raw=Path('assets/share-logo.png')
+        raw=Path(site)/'share-logo.png' if (Path(site)/'share-logo.png').exists() else Path('assets/share-logo.png')
     with warnings.catch_warnings():
         warnings.simplefilter('error',Image.DecompressionBombWarning)
         with Image.open(raw) as original:
@@ -26,7 +26,7 @@ def render_share_image(config,site):
                 raise ValueError('Sharing image dimensions too large')
             logo=original.convert('RGBA')
     logo.thumbnail((800,300),Image.Resampling.LANCZOS)
-    image=Image.new('RGB',(1200,630),'#f5f7fb')
+    image=Image.new('RGB',(1200,630),'#f6f1e9')
     image.paste(logo,((1200-logo.width)//2,90+(300-logo.height)//2),logo)
     draw=ImageDraw.Draw(image)
     def font(size):
@@ -45,7 +45,7 @@ def render_share_image(config,site):
     while lines and max(draw.textlength(line,font=selected) for line in lines)>1000 and size>6:
         size-=1;selected=font(size)
     for i,line in enumerate(lines):
-        draw.text((600,450+i*46),line,font=selected,fill='#07345f',anchor='mm')
+        draw.text((600,450+i*46),line,font=selected,fill='#075c55',anchor='mm')
     output=BytesIO();image.save(output,format='JPEG',quality=88,optimize=True)
     content=output.getvalue()
     name='social-preview-'+hashlib.sha256(content).hexdigest()[:16]+'.jpg'
