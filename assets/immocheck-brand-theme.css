@@ -357,3 +357,22 @@ body:not(.nic-embed) .bottom-primary .nic-mobile-reset-label{display:none!import
  body:not(.nic-embed) .bottom-primary .nic-desktop-reset-label{display:none!important}
  body:not(.nic-embed) .bottom-primary .nic-mobile-reset-label{display:inline!important}
 }
+
+/* Uniform button typography and restore original share/download dimensions on landscape and desktop. */
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
+ font-size:inherit!important;line-height:inherit!important;
+}
+@media(max-width:650px){
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
+  font-size:inherit!important;line-height:normal!important;
+ }
+}
+@media(orientation:landscape), (min-width:651px){
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf,
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
+  flex:initial!important;width:auto!important;min-width:0!important;max-width:none!important;
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
+  font-size:inherit!important;line-height:normal!important;
+ }
+}
