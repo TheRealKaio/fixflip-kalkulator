@@ -12,6 +12,7 @@ Ausgangsstand: `d4dcca46dedb290c51684e0e2e73acd812e3e180`.
 - Fix-&-Flip-Route `/fix-flip/` erhält nun ebenfalls das Design-Stylesheet. Sie fehlte zuvor in der Liste der zu gestaltenden Routen.
 - Der Laufzeit-Fallback der Website-Einstellungen verwendet das bestätigte Logo und stellt nicht erneut das alte Zeichen her.
 - Auf 320 Pixel breiten Geräten stehen die Ergebniskacheln untereinander. Damit laufen Eigennutzung und Vermietung auch in den späteren Schritten nicht aus dem Bildschirm.
+- PNG-Dateien werden zunächst vollständig im Speicher erzeugt und dekodiert, dann atomar ersetzt. Die Prüfung lädt alle PNGs vollständig; so werden auch abgeschnittene Bilddaten erkannt. Der Icon-Zuschnitt enthält die vollständige gelbe Welle.
 - Browserzoom bleibt möglich. Bildbeschreibungen, Tastaturfokus, Feld-IDs und bestehende Bedienfunktionen bleiben erhalten.
 
 ## Schutz der Berechnungen
@@ -48,7 +49,9 @@ Für Implementierungsstand `889136fd73d6916bf529c98157ba786be7b22151`:
 - [UI-Entwicklungsprüfungen – erfolgreich](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/41335660921)
 - [Build, PHP, PDFs und Browserintegration ohne Deployment – erfolgreich](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/41335660902)
 
-Die abschließende Aktualisierung der statischen Ersatzlogos und kleiner Darstellungsdetails löst dieselben Entwicklungsprüfungen erneut aus. Die jeweils zum aktuellen Commit gehörenden Ergebnisse stehen unter [Actions für diesen Branch](https://github.com/TheRealKaio/fixflip-kalkulator/actions?query=branch%3Adesign%2Fimmocheck-ui-only-2026-11).
+Für `191a2d0ff3689885e52546e3abc9fc710d77513b` sind sowohl die [UI-Prüfung](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/41336045466) als auch der [Integrationslauf](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/41336045391) erfolgreich.
+
+Die abschließende Aktualisierung der PNG-Erzeugung und statischen Ersatzlogos und kleiner Darstellungsdetails löst dieselben Entwicklungsprüfungen erneut aus. Die jeweils zum aktuellen Commit gehörenden Ergebnisse stehen unter [Actions für diesen Branch](https://github.com/TheRealKaio/fixflip-kalkulator/actions?query=branch%3Adesign%2Fimmocheck-ui-only-2026-11).
 
 ## Prüfgrenzen und Veröffentlichung
 

@@ -3,6 +3,8 @@ from pathlib import Path
 from PIL import Image
 import re
 site=Path('_site')
+for name in ['header-logo.png','brand-icon.png','apple-touch-icon.png','favicon-64.png','share-logo.png']:
+    with Image.open(site/name) as im: im.load()
 for name,size in [('apple-touch-icon.png',(180,180)),('favicon-64.png',(64,64)),('share-logo.png',(800,300))]:
     with Image.open(site/name) as im:
         assert im.size==size,(name,im.size)
