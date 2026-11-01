@@ -331,3 +331,22 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
   margin:10px auto 12px!important
  }
 }
+
+/* Mobile: restore PDF/share widths and reserve remaining width for recalculation. */
+@media(max-width:650px){
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
+  display:flex!important;flex-wrap:nowrap!important;gap:6px!important;align-items:stretch!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf{
+  flex:0 0 auto!important;width:auto!important;max-width:none!important;
+  min-width:max-content!important;white-space:nowrap!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
+  flex:0 0 48px!important;width:48px!important;min-width:48px!important;
+  max-width:48px!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
+  flex:1 1 0!important;width:0!important;min-width:0!important;max-width:none!important;
+  padding-inline:6px!important;white-space:nowrap!important;font-size:clamp(11px,2.9vw,14px)!important
+ }
+}
