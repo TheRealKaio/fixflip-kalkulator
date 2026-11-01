@@ -179,3 +179,8 @@ body:not(.nic-embed) .footer-version,
 body:not(.nic-embed) .footer-note [class*="cookie"],
 body:not(.nic-embed) .nic-shared-footer [class*="cookie"]{color:#fff!important}
 body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{border-radius:0 0 14px 14px!important}
+
+/* The proposal button can be outside .reno-actions; keep both controls together. */
+body:not(.nic-embed) #applyTradeSuggestions{background:#16867a!important;border-color:#075c55!important;color:#fff!important;max-width:calc(100% - 52px);min-width:0}
+body:not(.nic-embed) .nic-clear-reno{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;width:42px;min-width:42px;min-height:42px;margin-left:8px;padding:8px;border-radius:10px;background:#b42318!important;border:1px solid #b42318!important;color:#fff!important;font-weight:750}
+body:not(.nic-embed) .nic-clear-reno:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
