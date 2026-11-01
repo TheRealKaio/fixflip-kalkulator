@@ -376,3 +376,28 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
   font-size:inherit!important;line-height:normal!important;
  }
 }
+
+/* Landscape: restore full-size action buttons, overriding mobile portrait dimensions. */
+@media (orientation:landscape){
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
+  align-items:stretch!important;gap:10px!important;flex-wrap:nowrap!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary,
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf,
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
+  box-sizing:border-box!important;height:48px!important;min-height:48px!important;
+  max-height:none!important;font-size:16px!important;line-height:1.2!important;
+  padding:10px 14px!important;align-items:center!important;justify-content:center!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
+  flex:1 1 auto!important;width:auto!important;min-width:0!important;
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf{
+  flex:0 0 auto!important;width:auto!important;min-width:max-content!important;
+  white-space:nowrap!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
+  flex:0 0 56px!important;width:56px!important;min-width:56px!important;
+  max-width:56px!important;padding:8px!important
+ }
+}
