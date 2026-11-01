@@ -30,14 +30,14 @@ const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:fa
     // One active calculator step, regardless of persistent mode selector cards.
     const active=await page.evaluate(()=>{
       const root=document.querySelector('.nic-step-enabled');
-      return root ? [...root.children].filter(el=>el.matches('.card')&&getComputedStyle(el).display!=='none').length : 0;
+      return root ? [...root.children].filter(el=>el.matches('.card')&&!el.classList.contains('deal-type-card')&&getComputedStyle(el).display!=='none').length : 0;
     });
     if(active!==1)throw Error('Expected exactly one active calculator card, found '+active);
     const labelVisible=await page.locator('.nic-account-label').evaluate(el=>{
       const r=el.getBoundingClientRect(),style=getComputedStyle(el);
-      return r.width>0&&r.height>0&&r.left>=-5&&r.right<=innerWidth+5&&style.visibility!=='hidden'&&style.display!=='none';
+      return {ok:r.width>0&&r.height>0&&r.left>=-5&&r.right<=innerWidth+5&&style.visibility!=='hidden'&&style.display!=='none',left:Math.round(r.left),right:Math.round(r.right),viewport:innerWidth,display:style.display,visibility:style.visibility};
     });
-    if(!labelVisible)throw Error('Account label not fully visible');
+    if(!labelVisible.ok)throw Error('Account label not fully visible: '+JSON.stringify(labelVisible));
 
     await page.locator('.nic-step-next').evaluate(button=>button.click());
     const counter=await page.locator('.nic-step-count').innerText();
