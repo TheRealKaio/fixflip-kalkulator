@@ -72,7 +72,7 @@ panel='''        </div>
             </div>
             <div class="reno-note"><strong>So funktioniert es:</strong> Alle Sanierungspositionen starten rechnerisch bei 0 €. Graue Werte sind unverbindliche Richtwerte. Du kannst sie gesammelt übernehmen oder jeden Betrag selbst eintragen.</div>
             <div id="rentTradeList" class="trade-list"></div>
-            <div class="quick-grid rent-reno-buffer-grid"><div class="field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="rentRenoBuffer" inputmode="decimal" value="5.00"><span class="unit">%</span></div><div class="mini">Renovierungsaufschlag für Unerwartetes</div></div></div>
+            <div class="quick-grid rent-reno-buffer-grid"><div class="field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="rentRenoBuffer" inputmode="decimal" value="0.00"><span class="unit">%</span></div><div class="mini">Renovierungsaufschlag für Unerwartetes</div></div></div>
             <div class="reno-actions">
               <button class="reset-btn" id="rentResetTrades" type="button">Auf 0 zurücksetzen</button>
               <button class="save-reno-btn" id="rentSaveTrades" type="button">Übernehmen</button>
@@ -149,7 +149,7 @@ js=r'''
   }
   function load(){
     trades.forEach(t=>{const v=localStorage.getItem(RP+"trade_"+t.key); vals[t.key]=v===null?0:num(v); if(localStorage.getItem(RP+"manual_"+t.key)==="1") manual.add(t.key);});
-    const b=localStorage.getItem(RP+"buffer"); if($r("rentRenoBuffer")) $r("rentRenoBuffer").value=b===null?"5.00":b;
+    const b=localStorage.getItem(RP+"buffer"); if($r("rentRenoBuffer")) $r("rentRenoBuffer").value=b===null?"0.00":b;
   }
   function saveTrade(t){localStorage.setItem(RP+"trade_"+t.key,String(vals[t.key]||0));localStorage.setItem(RP+"manual_"+t.key,manual.has(t.key)?"1":"0")}
   function total(){const base=trades.reduce((a,t)=>a+(Number(vals[t.key])||0),0);const buffer=Math.max(0,num($r("rentRenoBuffer")?.value))/100;return Math.round(base*(1+buffer));}
@@ -168,7 +168,7 @@ js=r'''
     list.querySelectorAll('.rent-trade-area').forEach(inp=>inp.addEventListener('input',()=>{const t=trades.find(x=>x.key===inp.dataset.tradeKey),h=t?fixedTradeHints[t.name]:null;if(h){localStorage.setItem(areaKey(h),String(num(inp.value)));if(!manual.has(t.key)) vals[t.key]=0;render();sync();}}));
     sync();
   }
-  function reset(ask=true){if(ask&&!confirm('Möchtest du wirklich alle Sanierungswerte der Vermietung auf 0 zurücksetzen?'))return; trades.forEach(t=>{vals[t.key]=0;manual.delete(t.key);localStorage.removeItem(RP+'trade_'+t.key);localStorage.removeItem(RP+'manual_'+t.key);const h=fixedTradeHints[t.name];if(h&&h.areaKey)localStorage.removeItem(areaKey(h));});localStorage.removeItem(RP+'buffer');if($r('rentRenoBuffer'))$r('rentRenoBuffer').value='5.00';render();sync();}
+  function reset(ask=true){if(ask&&!confirm('Möchtest du wirklich alle Sanierungswerte der Vermietung auf 0 zurücksetzen?'))return; trades.forEach(t=>{vals[t.key]=0;manual.delete(t.key);localStorage.removeItem(RP+'trade_'+t.key);localStorage.removeItem(RP+'manual_'+t.key);const h=fixedTradeHints[t.name];if(h&&h.areaKey)localStorage.removeItem(areaKey(h));});localStorage.removeItem(RP+'buffer');if($r('rentRenoBuffer'))$r('rentRenoBuffer').value='0.00';render();sync();}
   window.resetRentRenoV8300=reset;
   load(); render();
   $r('rentOpenReno')?.addEventListener('click',()=>{const p=$r('rentRenoPanel');const open=!p.classList.contains('show');p.classList.toggle('show',open);$r('rentOpenReno').textContent=open?'−':'+';$r('rentOpenReno').setAttribute('aria-expanded',open?'true':'false');if(open)render();});
