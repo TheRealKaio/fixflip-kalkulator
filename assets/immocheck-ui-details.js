@@ -26,6 +26,28 @@ function decorate(){
 decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
+
+/* Match footer outer edges to the actual rendered header, not a percentage of a padded parent. */
+function alignSharedFooter(){
+ const header=document.querySelector('.app > .nic-brand-bar')||document.querySelector('.app > .hero');
+ const footer=document.querySelector('.footer-note, .nic-shared-footer');
+ if(!header||!footer||!footer.parentElement)return;
+ const rect=header.getBoundingClientRect();
+ const parent=footer.parentElement.getBoundingClientRect();
+ if(rect.width<=0)return;
+ footer.style.setProperty('box-sizing','border-box','important');
+ footer.style.setProperty('width',rect.width+'px','important');
+ footer.style.setProperty('min-width',rect.width+'px','important');
+ footer.style.setProperty('max-width',rect.width+'px','important');
+ footer.style.setProperty('margin-left',(rect.left-parent.left)+'px','important');
+ footer.style.setProperty('margin-right','0','important');
+ footer.style.setProperty('border-radius','22px 22px 0 0','important');
+}
+alignSharedFooter();
+if(typeof window.addEventListener==='function'){
+ window.addEventListener('resize',alignSharedFooter,{passive:true});
+ window.addEventListener('orientationchange',alignSharedFooter,{passive:true});
+}
 // Existing authentication capture handler keeps logged-in account behavior.
 // Wait for initialization on a very early click instead of opening administration.
 document.querySelector('.nic-login-button')?.addEventListener('click',async e=>{
