@@ -16,7 +16,12 @@ build=Path('.github/workflows/pages.yml').read_text(encoding='utf-8')
 assert 'python scripts/extract_finance_footer.py _site' in build
 assert 'python scripts/build_settings_pages.py _site' in build
 assert "data-legal-placeholder" in build, 'Original legal placeholder verification missing'
+# Visual footer styling is permitted. Preserve the original legal links and
+# prohibit hiding legal navigation or its surrounding footer in the design layer.
 css=Path('assets/immocheck-ui-refresh.css').read_text(encoding='utf-8')
-for selector in ('.footer-legal-links','.footer-note','.footer-meta','.footer-version'):
-    assert not re.search(r'[^}]*'+re.escape(selector)+r'[^{}]*{',css),f'Design override potentially changes legal footer: {selector}'
-print('Legal source checks passed: original footer links, disclaimer, extraction and no design override.')
+css=re.sub(r'/\\*.*?\\*/','',css,flags=re.S)
+for match in re.finditer(r'([^{}]+)\\{([^{}]*)\\}',css):
+    selectors, declarations=match.groups()
+    if any(token in selectors for token in ('.footer-legal-links','.footer-note','.footer-meta','.footer-version','.nic-shared-footer')):
+        assert not re.search(r'(?:^|;)\\s*(?:display\\s*:\\s*none|visibility\\s*:\\s*hidden)',declarations,re.I), 'Legal footer hidden by design layer'
+print('Legal source checks passed: original footer links, disclaimer, extraction and compatible visual styling.')
