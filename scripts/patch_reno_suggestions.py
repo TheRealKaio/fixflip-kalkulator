@@ -121,6 +121,11 @@ js = r"""
     });
 
     syncRenoTotal();
+    const display=document.getElementById("nicRenoProposalTotal");
+    if(display){
+      const sum=trades.reduce(function(total,t){return total+suggestionForTrade(t);},0);
+      display.textContent="Vorschlag gesamt: "+sum.toLocaleString("de-DE")+" € · ohne Puffer";
+    }
   };
 
   function applyTradeSuggestions(){
@@ -148,7 +153,11 @@ js = r"""
     btn.addEventListener("click",applyTradeSuggestions);
 
     right.appendChild(btn);
-    if(currentTotal) right.appendChild(currentTotal);
+    if(currentTotal){currentTotal.style.display="none";right.appendChild(currentTotal);}
+    const proposalTotal=document.createElement("div");
+    proposalTotal.className="nic-reno-proposal-total";
+    proposalTotal.id="nicRenoProposalTotal";
+    right.appendChild(proposalTotal);
     head.appendChild(right);
 
     const intro=head.querySelector(".sub");
