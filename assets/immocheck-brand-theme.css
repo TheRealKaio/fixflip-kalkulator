@@ -142,3 +142,19 @@ body:not(.nic-embed) #budgetExpensesSection .budget-apply-btn:not(.nic-reno-acti
 
 /* Hide only the brand description on mobile; desktop remains unchanged. */
 @media(max-width:700px){body:not(.nic-embed) .nic-brand-bar .nic-brand-description{display:none!important}}
+
+/* Prevent the renovation heading from crushing the proposal actions. */
+body:not(.nic-embed) .reno-head{min-width:0!important}
+body:not(.nic-embed) .reno-head:has(.nic-reno-action-row){
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;align-items:start!important
+}
+body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .nic-reno-action-row{
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ display:flex!important;flex-wrap:nowrap!important;gap:7px!important
+}
+body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .nic-reno-action-row #applyTradeSuggestions{
+ flex:1 1 auto!important;width:auto!important;min-width:0!important;max-width:none!important;
+ overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important
+}
+body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .nic-clear-reno{flex:0 0 38px!important}
+body:not(.nic-embed) .reno-head:has(.nic-reno-action-row) .reno-total-pill{min-width:0!important}
