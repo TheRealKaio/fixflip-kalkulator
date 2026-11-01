@@ -164,9 +164,27 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
       row.append(clear);
     });
   }
+  function tidyTotals(){
+    if(typeof document.querySelectorAll!=='function')return;
+    const renovation=document.getElementById('renoBackdrop');
+    if(renovation){
+      const totals=[...renovation.querySelectorAll('*')].filter(el=>!el.children.length && /^Vorschlag gesamt\s*:/i.test((el.textContent||'').trim()));
+      if(totals.length>1)totals.slice(1).forEach(el=>{el.hidden=true;el.style.display='none'});
+    }
+    const rent=document.getElementById('rentRenoPanel');
+    const total=document.getElementById('rentRenoSheetTotal');
+    if(rent&&total){
+      const fields=[...rent.querySelectorAll('input.rent-trade-amount')];
+      const values=fields.map(el=>Number((el.placeholder||'0').replace(/\./g,'').replace(',','.'))||0);
+      const amount=values.reduce((a,b)=>a+b,0);
+      total.textContent='Vorschlag gesamt: '+amount.toLocaleString('de-DE')+' € · ohne Puffer';
+      total.classList.add('nic-rental-proposal-total');
+    }
+  }
   enhance();
   enhanceBudget();
   enhanceRent();
-  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(()=>{enhance();enhanceBudget();enhanceRent();}));
+  tidyTotals();
+  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(()=>{enhance();enhanceBudget();enhanceRent();tidyTotals();}));
 })();
 })();
