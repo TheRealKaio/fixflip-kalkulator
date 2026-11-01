@@ -2,7 +2,7 @@ name: ImmoCheck UI development checks (10 min)
 on:
   schedule:
     - cron: '*/10 * * * *'
-  # Re-run after login-header regex correction; development branch only.
+  # Verify corrected legal footer assertions on development branch only.
   workflow_dispatch:
   push:
     branches:
