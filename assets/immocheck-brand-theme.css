@@ -118,3 +118,24 @@ body:not(.nic-embed) #budgetExpensesSection .budget-expenses-toolbar{
   display:block!important;min-width:0!important;width:100%!important;max-width:100%!important
 }
 body:not(.nic-embed) #budgetExpensesSection .budget-expenses-toolbar .nic-reno-action-row{max-width:100%!important}
+
+/* Unified header action layout for Budget expenses and Rental modernization. */
+body:not(.nic-embed) .nic-reno-action-row #rentApplyTradeSuggestions{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex:1 1 0!important;box-sizing:border-box!important;width:0!important;min-width:0!important;max-width:none!important;
+ height:40px!important;min-height:40px!important;max-height:40px!important;
+ padding:4px 9px!important;margin:0!important;border:1px solid #075c55!important;
+ border-radius:12px!important;background:#16867a!important;color:#fff!important;
+ font-size:clamp(12px,1.9vw,15px)!important;font-weight:700!important;
+ line-height:1.13!important;white-space:normal!important;text-align:center!important;overflow-wrap:anywhere!important
+}
+body:not(.nic-embed) #budgetExpensesSection .budget-expenses-toolbar,
+body:not(.nic-embed) #rentRenoPanel .nic-reno-action-row{min-width:0;max-width:100%;box-sizing:border-box}
+body:not(.nic-embed) #budgetExpensesSection .budget-expenses-toolbar .nic-reno-action-row{
+ display:flex!important;align-items:center!important;gap:7px!important;flex-wrap:nowrap!important
+}
+body:not(.nic-embed) #budgetExpensesSection .budget-apply-btn:not(.nic-reno-action-row .budget-apply-btn){max-width:100%}
+@media(max-width:650px){
+ body:not(.nic-embed) .nic-reno-action-row{gap:7px!important}
+ body:not(.nic-embed) .nic-reno-action-row :is(#budgetApplySuggestions,#rentApplyTradeSuggestions,#applyTradeSuggestions){font-size:12px!important}
+}
