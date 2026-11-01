@@ -87,3 +87,22 @@ body:not(.nic-embed) .deal-type-option small{font-size:13px;line-height:1.35}
  body:not(.nic-embed) .deal-type-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
  body:not(.nic-embed) .deal-type-option{grid-column:auto!important;min-width:0!important}
 }
+
+/* Screenshot-2 design pass: compact brand bar, five consistent navigation tiles, footer. */
+body:not(.nic-embed) .app>.hero{box-sizing:border-box;border-radius:0!important;overflow:hidden;padding:18px clamp(18px,3vw,44px) 28px!important}
+body:not(.nic-embed) .app>.hero .hero-top{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:62px}
+body:not(.nic-embed) .app>.hero .brand-logo-wrap{flex:0 1 auto}
+body:not(.nic-embed) .app>.hero .brand-logo{max-width:220px;object-fit:contain}
+body:not(.nic-embed) .app>.hero>h1{margin:28px 0 8px!important;line-height:1.08!important;letter-spacing:-.025em}
+body:not(.nic-embed) .app>.hero>p{max-width:700px!important;text-align:left!important;line-height:1.5!important}
+body:not(.nic-embed) .deal-type-row>.deal-type-option{box-sizing:border-box;display:flex!important;align-items:flex-start;gap:8px;padding:15px 12px!important;min-height:104px;overflow-wrap:anywhere}
+body:not(.nic-embed) .deal-type-row>.deal-type-option strong{font-size:clamp(14px,1.15vw,18px);line-height:1.2}
+body:not(.nic-embed) .deal-type-row>.deal-type-option small{display:block;margin-top:5px;font-size:clamp(11px,.85vw,13px);line-height:1.35}
+body:not(.nic-embed) .deal-type-row>.deal-type-option:last-child:nth-child(odd){grid-column:auto!important}
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{box-sizing:border-box;background:#075c55!important;color:#fff!important;padding:14px clamp(16px,3vw,40px);font-size:13px;line-height:1.5}
+body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff!important;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:650px){
+ body:not(.nic-embed) .app>.hero{padding:12px 16px 22px!important}
+ body:not(.nic-embed) .app>.hero>h1{margin-top:22px!important}
+ body:not(.nic-embed) .deal-type-row>.deal-type-option{min-height:82px}
+}
