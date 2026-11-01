@@ -39,3 +39,19 @@ body:not(.nic-embed) .hero-top .nic-account-label{
 @media(max-width:600px){
   body:not(.nic-embed) .hero-top .nic-account-label{overflow-wrap:anywhere}
 }
+
+/* Existing header may force a compact icon-only link width; accommodate real text. */
+body:not(.nic-embed) .hero-top a.nic-account-link{
+  width:max-content!important;min-width:max-content!important;max-width:min(100%,190px)!important;
+  flex:0 0 auto!important;overflow:visible!important;
+}
+body:not(.nic-embed) .hero-top a.nic-account-link .nic-account-label{
+  display:inline-block!important;width:auto!important;min-width:max-content!important;
+  color:#fff!important;white-space:nowrap!important;font-size:14px!important;line-height:1.25!important;
+}
+@media(max-width:600px){
+  body:not(.nic-embed) .hero-top a.nic-account-link{max-width:min(100%,145px)!important}
+  body:not(.nic-embed) .hero-top a.nic-account-link .nic-account-label{
+    min-width:0!important;white-space:normal!important;font-size:11px!important;
+  }
+}
