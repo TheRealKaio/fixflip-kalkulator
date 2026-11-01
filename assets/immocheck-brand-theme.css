@@ -139,3 +139,6 @@ body:not(.nic-embed) #budgetExpensesSection .budget-apply-btn:not(.nic-reno-acti
  body:not(.nic-embed) .nic-reno-action-row{gap:7px!important}
  body:not(.nic-embed) .nic-reno-action-row :is(#budgetApplySuggestions,#rentApplyTradeSuggestions,#applyTradeSuggestions){font-size:12px!important}
 }
+
+/* Hide only the brand description on mobile; desktop remains unchanged. */
+@media(max-width:700px){body:not(.nic-embed) .nic-brand-bar .nic-brand-description{display:none!important}}
