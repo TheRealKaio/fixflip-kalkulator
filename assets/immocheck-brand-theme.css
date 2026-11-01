@@ -350,3 +350,10 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
   padding-inline:6px!important;white-space:nowrap!important;font-size:clamp(11px,2.9vw,14px)!important
  }
 }
+
+/* Preserve existing desktop wording; use concise shared mobile wording. */
+body:not(.nic-embed) .bottom-primary .nic-mobile-reset-label{display:none!important}
+@media(max-width:650px){
+ body:not(.nic-embed) .bottom-primary .nic-desktop-reset-label{display:none!important}
+ body:not(.nic-embed) .bottom-primary .nic-mobile-reset-label{display:inline!important}
+}
