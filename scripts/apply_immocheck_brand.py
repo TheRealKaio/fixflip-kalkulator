@@ -21,6 +21,9 @@ def run(site):
         source=re.sub(r'(<header class="hero"[^>]*>\s*)(<div class="hero-top">.*?</div></div>)',brand_bar,source,flags=re.S)
         disclaimer='Der Deal Check ist eine Kalkulationshilfe und keine Steuer-, Rechts- oder Finanzierungsberatung. Steuern werden nicht individuell berechnet. Prüfe vor einem Kauf insbesondere Verkaufspreis, Sanierungsumfang und Finanzierung mit belastbaren Unterlagen.'
         source=re.sub(r'(<(?:div|footer) class="footer-note"[^>]*>\s*)<span>'+re.escape(disclaimer)+r'</span>',r'\1',source)
+        finance_disclaimer='Der Finanzierungsrechner ist eine Kalkulationshilfe und keine Steuer-, Rechts- oder Finanzierungsberatung. Die Ergebnisse sind unverbindliche Modellrechnungen. Prüfe Zinssatz, Tilgung, Sondertilgungen und Restschuld vor Vertragsabschluss anhand belastbarer Unterlagen.'
+        if page.parent.name == 'finanzierungsrechner':
+            source=re.sub(r'(<footer class="footer-note"[^>]*>\\s*)<span>'+re.escape(finance_disclaimer)+r'</span>',r'\\1',source,count=1)
         assert scripts==re.findall(r"<script\b[^>]*>.*?</script>",source,flags=re.S), f"Calculator script changed: {page}"
         if 'class="nic-brand-bar"' in source:
             if 'immocheck-ui-details' not in source:
