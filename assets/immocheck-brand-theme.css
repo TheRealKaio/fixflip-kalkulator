@@ -1,0 +1,16 @@
+/* Original backup layout and interactions; retain only current branding and colors. */
+:root{--nic-design-deep:#075c55;--nic-design-teal:#16867a;--nic-design-mint:#ddece8;--nic-design-warm:#f6f1e9;--nic-design-ink:#263b3a}
+body:not(.nic-embed){background:var(--nic-design-warm);color:var(--nic-design-ink)}
+body:not(.nic-embed) .hero{background-color:#f6f1e9!important;background-image:linear-gradient(90deg,rgba(246,241,233,.98),rgba(246,241,233,.92) 50%,rgba(246,241,233,.45)),url('/immocheck-hero.jpg')!important;background-size:cover!important;background-position:center!important}
+body:not(.nic-embed) .hero-top,body:not(.nic-embed) .brand-logo-wrap{background:#fff!important}
+body:not(.nic-embed) .brand-logo-wrap{box-shadow:none!important}
+body:not(.nic-embed) .hero>h1{color:#075c55!important;opacity:1!important}
+body:not(.nic-embed) .hero>p{color:#263b3a!important;opacity:1!important}
+body:not(.nic-embed) .card{border-color:#e2e9e5}
+body:not(.nic-embed) .deal-type-option{background:#fff;color:#172e2b;border-color:#dce8e2}
+body:not(.nic-embed) .deal-type-option small{color:#425b62;opacity:1}
+body:not(.nic-embed) .deal-type-option:has(input:checked),body:not(.nic-embed) .deal-type-option.current{background:linear-gradient(135deg,#16867a,#075c55)!important;border-color:#075c55;color:#fff!important}
+body:not(.nic-embed) .deal-type-option:has(input:checked) *,body:not(.nic-embed) .deal-type-option.current *{color:#fff!important;opacity:1!important}
+body:not(.nic-embed) .nic-account-link{background:#075c55;color:#fff}
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:#075c55!important;color:#fff!important}
+body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff!important}
