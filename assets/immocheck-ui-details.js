@@ -27,6 +27,21 @@ decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
+/* Keep the desktop labels; show one consistent mobile label on red reset actions. */
+function labelMobileRecalculation(){
+ document.querySelectorAll('.bottom-actions .bottom-primary').forEach(button=>{
+  if(button.dataset.nicMobileLabel==='1')return;
+  const original=document.createElement('span');
+  original.className='nic-desktop-reset-label';
+  while(button.firstChild)original.appendChild(button.firstChild);
+  const mobile=document.createElement('span');
+  mobile.className='nic-mobile-reset-label';
+  mobile.textContent='Neu kalkulieren';
+  button.append(original,mobile);
+  button.dataset.nicMobileLabel='1';
+ });
+}
+labelMobileRecalculation();
 /* Put the existing calculator action bar in normal document flow above the footer. */
 function positionCalculatorActions(){
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
