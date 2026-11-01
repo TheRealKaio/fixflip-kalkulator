@@ -45,3 +45,13 @@ body:not(.nic-embed) .deal-type-option[aria-pressed="true"] *{color:#fff!importa
 .nic-brand-bar a.nic-login-button{grid-column:3;grid-row:1;font-size:14px;padding:10px 12px!important}
 @media(max-width:700px){.nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;padding:12px;gap:8px}.nic-brand-bar .brand-logo{width:150px!important}.nic-brand-description{grid-column:1 / -1;grid-row:2;padding:0}.nic-brand-bar a.nic-login-button{grid-column:2;grid-row:1;font-size:13px;padding:10px!important}}
 @media(max-width:380px){.nic-brand-bar .brand-logo{width:130px!important}.nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important}}
+/* Requested compact footer and full calculator-width action bar. */
+body:not(.nic-embed) .footer-note{padding-top:5px!important}
+body:not(.nic-embed) .bottom{box-sizing:border-box!important;width:var(--nic-calculator-width,min(640px,100%))!important;left:var(--nic-calculator-left,0px)!important;transform:none!important}
+.deal-type-option[data-nic-calculator="finance"] .nic-menu-icon,.deal-type-option[data-nic-calculator="finance"] strong{align-self:center!important}
+#resetTrades,#saveTrades,#rentResetTrades,#rentSaveTrades,.reno-actions{display:none!important}
+#budgetApplySuggestions,#applyTradeSuggestions,#rentApplyTradeSuggestions,#ownImportBudgetValues{background:#075c55!important;border-color:#075c55!important;color:#fff!important}
+.nic-suggestion-controls{display:inline-flex;align-items:stretch;gap:5px;width:var(--nic-suggestion-width);max-width:100%;min-width:0;flex:0 1 auto}
+.nic-suggestion-controls>.budget-apply-btn{box-sizing:border-box;flex:1 1 0!important;width:0!important;min-width:0!important;white-space:normal!important;line-height:1.1!important;padding:3px 5px!important}
+.nic-clear-mask{box-sizing:border-box;flex:0 0 30px;width:30px;min-width:30px;min-height:38px;border:1px solid #b91c1c;border-radius:10px;background:#b91c1c;color:#fff;font:700 15px/1 system-ui;cursor:pointer;padding:0}
+.nic-clear-mask:focus-visible{outline:3px solid #b37b00;outline-offset:3px}

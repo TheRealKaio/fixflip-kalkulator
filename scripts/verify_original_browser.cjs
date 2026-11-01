@@ -28,6 +28,37 @@ const assert=require('node:assert/strict');
    await page.locator('#nicAccountLink').click();
    await page.locator('#nicLoginTitle').waitFor({state:'visible'});
    await page.getByRole('button',{name:'Abbrechen',exact:true}).click();
+   assert.equal(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).paddingTop),'5px');
+   assert(await page.evaluate(()=>{const a=document.querySelector('.app').getBoundingClientRect(),b=document.querySelector('.bottom').getBoundingClientRect();return Math.abs(a.width-b.width)<1&&Math.abs(a.left-b.left)<1}),'Action bar must align with calculator width');
+   assert(await page.locator('[data-nic-calculator="finance"]').evaluate(el=>{const i=el.querySelector('.nic-menu-icon').getBoundingClientRect(),t=el.querySelector('strong').getBoundingClientRect();return Math.abs(i.top+i.height/2-t.top-t.height/2)<1}),'Finance title and symbol must be centered');
+   if(slug==='budget'){
+    await page.locator('#budgetNetIncome').fill('5000');
+    await page.locator('#budgetExpensesToggle').evaluate(el=>el.click());
+    await page.locator('#budgetApplySuggestions').evaluate(el=>el.click());
+    assert.equal(await page.locator('#budgetApplySuggestions').innerText(),'Vorschläge übernehmen');
+    await page.locator('#budgetFood').fill('777');
+    await page.locator('[data-clear-mask="#budgetExpensesBody"]').evaluate(el=>el.click());
+    assert(await page.locator('#budgetExpensesBody input').evaluateAll(els=>els.every(el=>!Number(el.value.replace(',','.')))),'Expense mask must be cleared');
+    assert.equal(await page.locator('#budgetNetIncome').inputValue(),'5000');
+    assert.equal(await page.locator('#budgetApplySuggestions').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(7, 92, 85)');
+    if(width===1440){await page.reload({waitUntil:'domcontentloaded'});await page.waitForTimeout(800);await page.locator('#budgetExpensesToggle').evaluate(el=>el.click());assert.equal(Number(await page.locator('#budgetFood').inputValue()),0,'Cleared expenses must stay cleared after reload');}
+   }
+   if(['eigennutzung','fix-flip','vermietung'].includes(slug)){
+    const rent=slug==='vermietung',area=rent?'#rentArea':'#area',open=rent?'#rentOpenReno':'#openReno',apply=rent?'#rentApplyTradeSuggestions':'#applyTradeSuggestions',mask=rent?'#rentRenoPanel':'#renoBackdrop';
+    await page.locator(area).fill('120');
+    await page.locator(open).evaluate(el=>el.click());
+    await page.locator(apply).evaluate(el=>el.click());
+    assert.equal(await page.locator(apply).innerText(),'Vorschläge übernehmen');
+    assert.equal(await page.locator(apply).evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(7, 92, 85)');
+    assert(await page.locator(mask+' input[data-trade]').evaluateAll(els=>els.some(el=>Number(el.value)>0)),'Suggestions must still apply');
+    await page.locator('[data-clear-mask="'+mask+'"]').evaluate(el=>el.click());
+    assert(await page.locator(mask+' input').evaluateAll(els=>els.filter(el=>!el.readOnly&&!el.disabled).every(el=>!Number(el.value.replace(',','.')))),'Renovation mask must be cleared');
+    assert.equal(await page.locator(area).inputValue(),'120');
+    if(slug==='eigennutzung')assert.equal(await page.locator('#ownImportBudgetValues').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(7, 92, 85)');
+    for(const id of rent?['rentResetTrades','rentSaveTrades']:['resetTrades','saveTrades'])assert.equal(await page.locator('#'+id).isVisible(),false);
+    assert(await page.locator(apply).evaluate(el=>{const c=el.parentElement,r=c.getBoundingClientRect(),b=el.getBoundingClientRect(),x=c.querySelector('.nic-clear-mask').getBoundingClientRect();return r.width<=parseFloat(c.style.getPropertyValue('--nic-suggestion-width'))+1&&Math.abs(b.top-x.top)<1}),'Clear control must not widen or wrap its action row');
+    if(width===1440){await page.reload({waitUntil:'domcontentloaded'});await page.waitForTimeout(800);await page.locator(open).evaluate(el=>el.click());assert(await page.locator(mask+' input[data-trade]').evaluateAll(els=>els.every(el=>!Number(el.value))),'Cleared renovation amounts must stay cleared after reload');assert.equal(await page.locator(area).inputValue(),'120');}
+   }
    if(slug==='finanzierungsrechner'){
     await page.evaluate(()=>{for(const [id,value] of Object.entries({loan:300000,interest:4,repay:2,extra:5,years:10})){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}});
     let expected=300000;const r=.04/12,f=Math.pow(1+r,12);
