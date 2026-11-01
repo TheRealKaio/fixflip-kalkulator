@@ -25,3 +25,17 @@ body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{co
   body:not(.nic-embed) .nic-account-link svg{width:18px;height:18px;flex:0 0 18px}
   body:not(.nic-embed) .nic-account-label{min-width:0;font-size:11px;line-height:1.1;white-space:normal;overflow-wrap:anywhere;text-align:center}
 }
+
+/* Keep the account control legible beside the brand on desktop and mobile. */
+body:not(.nic-embed) .hero-top .nic-account-link{
+  box-sizing:border-box;flex:0 1 auto;min-width:0;max-width:100%;
+  overflow:visible;line-height:1.2;
+}
+body:not(.nic-embed) .hero-top .nic-account-label{
+  display:block;min-width:0;max-width:100%;color:#fff!important;
+  opacity:1!important;visibility:visible!important;
+  text-shadow:none;overflow-wrap:normal;
+}
+@media(max-width:600px){
+  body:not(.nic-embed) .hero-top .nic-account-label{overflow-wrap:anywhere}
+}
