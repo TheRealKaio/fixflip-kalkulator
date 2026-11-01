@@ -73,22 +73,25 @@ if(account&&hero){
 if(S.current){if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));}
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
 
-/* Scoped renovation proposal controls; calculations remain in the original handlers. */
+/* Scoped renovation controls; keep calculation handlers intact. */
 (function renovationControls(){
   function enhance(){
-    if(!document.querySelectorAll)return;
+    if(typeof document.querySelectorAll!=='function')return;
     document.querySelectorAll('#applyTradeSuggestions').forEach(button=>{
-      if(button.dataset.nicEnhanced)return;
-      const panel=button.closest('.reno-inline-panel, .reno-sheet');
+      if(button.dataset.nicEnhanced==='1')return;
+      const panel=button.closest('.reno-inline-panel, .reno-sheet, .card');
       if(!panel)return;
       button.dataset.nicEnhanced='1';
       button.textContent='Vorschläge übernehmen';
-      button.style.cssText='background:#16867a;color:#fff;border-color:#075c55;min-width:0;max-width:calc(100% - 52px)';
+      const row=document.createElement('div');
+      row.className='nic-reno-action-row';
+      button.before(row);
+      row.append(button);
       const clear=document.createElement('button');
       clear.type='button';
+      clear.className='nic-clear-reno';
       clear.textContent='X';
-      clear.setAttribute('aria-label','Eingaben dieser Sanierungsmaske löschen');
-      clear.style.cssText='display:inline-flex;align-items:center;justify-content:center;width:42px;min-width:42px;margin-left:8px;border:1px solid #b42318;border-radius:10px;background:#b42318;color:#fff';
+      clear.setAttribute('aria-label','Sanierungseingaben dieser Maske löschen');
       clear.addEventListener('click',()=>{
         panel.querySelectorAll('#tradeList input.trade-amount, #tradeList input.trade-area').forEach(input=>{
           if(input.disabled)return;
@@ -97,7 +100,7 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
           input.dispatchEvent(new Event('change',{bubbles:true}));
         });
       });
-      button.after(clear);
+      row.append(clear);
     });
   }
   enhance();
