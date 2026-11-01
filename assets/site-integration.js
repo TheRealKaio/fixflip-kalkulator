@@ -129,6 +129,11 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
         });
       });
       row.append(clear);
+      panel.querySelectorAll('*').forEach(el=>{
+        if(!el.children.length && /^Vorschlag gesamt\s*:/i.test(el.textContent?.trim()||'')){
+          el.classList.add('nic-budget-proposal-total');
+        }
+      });
     });
   }
   function enhanceRent(){
