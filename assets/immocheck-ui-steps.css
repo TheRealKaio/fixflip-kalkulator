@@ -7,3 +7,9 @@
 .nic-step-controls{display:flex;gap:12px;justify-content:space-between;margin:18px 0 24px}
 .nic-step-controls button{background:#075c55;color:white;border:0;border-radius:12px;padding:12px 22px;font-weight:700}
 .nic-step-controls button:disabled{opacity:.4}
+
+/* Existing result-card visibility selectors must not override step navigation.
+   Only hide cards explicitly marked inactive; preserve internal result rendering. */
+body:not(.nic-embed) .nic-step-enabled > .card.result-card.nic-step-inactive,
+body:not(.nic-embed) .nic-step-enabled > .card.go.nic-step-inactive,
+body:not(.nic-embed) .nic-step-enabled > .card.nic-step-inactive{display:none!important}
