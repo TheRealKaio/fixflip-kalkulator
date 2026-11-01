@@ -1,5 +1,6 @@
 name: ImmoCheck dev PDF and chart integration checks (no deploy)
 on:
+  # Re-run after login-header regex correction; development branch only.
   workflow_dispatch:
   push:
     branches: [design/immocheck-ui-only-2026-11]
