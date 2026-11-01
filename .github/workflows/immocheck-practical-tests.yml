@@ -742,6 +742,11 @@ jobs:
           npm install --prefix /tmp/nic-browser-check playwright@1.56.1 --silent
           /tmp/nic-browser-check/node_modules/.bin/playwright install --with-deps chromium
           python3 -m http.server 8765 --directory _site > /tmp/nic-browser-server.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:8765/budget/; then break; fi
+            sleep 1
+          done
+          curl --fail --show-error http://127.0.0.1:8765/budget/ --output /dev/null
           NODE_PATH=/tmp/nic-browser-check/node_modules node scripts/verify_browser_responsive.cjs
       - name: Retain browser screenshots
         if: always()
