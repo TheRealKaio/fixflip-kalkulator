@@ -150,3 +150,17 @@ body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{text-a
 @media(max-width:380px){body:not(.nic-embed) .app>.hero .brand-logo{width:130px!important;max-width:42vw!important}}
 @media(max-width:650px){body:not(.nic-embed) .deal-type-row>.deal-type-option strong{overflow-wrap:anywhere!important}}
 body:not(.nic-embed) .footer-note p,body:not(.nic-embed) .nic-shared-footer p{text-align:left!important}
+
+/* Footer refinements requested after the last visual review. */
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{
+  padding-top:5px!important;
+  border-radius:0 0 14px 14px!important;
+  overflow:hidden;
+  color:#fff!important;
+}
+body:not(.nic-embed) .footer-note *,body:not(.nic-embed) .nic-shared-footer *{
+  color:inherit;
+}
+body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{
+  color:#fff!important;
+}
