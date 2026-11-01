@@ -12,7 +12,7 @@ body:not(.nic-embed) .deal-type-option{border-color:#dce8e2;background:#fff;bord
 body:not(.nic-embed) .deal-type-option:has(input:checked){background:linear-gradient(135deg,#16867a,#075c55);color:#fff;border-color:#075c55}
 body:not(.nic-embed) .deal-type-option:has(input:checked) strong,body:not(.nic-embed) .deal-type-option:has(input:checked) small{color:#fff}
 body:not(.nic-embed) .nic-account-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;border-radius:12px;padding:10px 17px;text-decoration:none}
-body:not(.nic-embed) .nic-account-link::after{content:"Jetzt anmelden";font:700 15px/1.2 system-ui,sans-serif;white-space:nowrap}
+body:not(.nic-embed) .nic-account-label{font:700 15px/1.2 system-ui,sans-serif;white-space:nowrap}
 body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:var(--nic-design-deep);color:#fff}
 body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff}
-@media(max-width:600px){body:not(.nic-embed) .nic-account-link{padding:10px}body:not(.nic-embed) .nic-account-link::after{font-size:12px}}
+@media(max-width:600px){body:not(.nic-embed) .nic-account-link{padding:10px}body:not(.nic-embed) .nic-account-label{font-size:12px}}
