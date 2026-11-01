@@ -7,7 +7,6 @@ def run(site):
         source=page.read_text()
         scripts=re.findall(r"<script\b[^>]*>.*?</script>",source,flags=re.S)
         source=re.sub(r'<svg class="brand-logo".*?</svg>|<img class="brand-logo"[^>]*>',r'<img class="brand-logo" src="/header-logo.png" width="920" height="307" alt="Neustart ImmoCheck – Haus mit vier Fenstern und gelber Welle">',source,flags=re.S)
-        source=re.sub(r'<meta name="viewport"[^>]*>', '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">',source)
         source=re.sub(r'<link[^>]*rel="(?:shortcut )?icon"[^>]*>', '', source)
         source=source.replace('</head>','<link rel="icon" type="image/svg+xml" href="/icon.svg"><link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png"></head>',1)
         if 'rel="apple-touch-icon"' not in source:

@@ -662,74 +662,19 @@ jobs:
           python scripts/unify_calculator_layout.py _site
           python scripts/initialize_calculator_routes.py _site
           python scripts/build_user_access.py _site
-          # Replace visual-only pseudo-label with a real accessible login control.
-          python - <<'PY_LOGIN_HEADER'
-          from pathlib import Path
-          import re
-          for page in Path('_site').rglob('*.html'):
-              html=page.read_text(encoding='utf-8')
-              def replace(match):
-                  opening,body=match.groups()
-                  opening=re.sub(r'href="[^"]*"', 'href="/#anmelden"', opening, count=1)
-                  opening=re.sub(r'aria-label="[^"]*"', 'aria-label="Jetzt anmelden"', opening, count=1)
-                  if 'aria-label=' not in opening:
-                      opening=opening[:-1]+' aria-label="Jetzt anmelden">'
-                  if 'nic-account-label' not in body:
-                      body+='<span class="nic-account-label">Jetzt anmelden</span>'
-                  return opening+body+'</a>'
-              html=re.sub(r'(<a\b(?=[^>]*class="[^"]*\bnic-account-link\b[^"]*")[^>]*>)(.*?)</a>',replace,html,flags=re.S)
-              page.write_text(html,encoding='utf-8')
-          PY_LOGIN_HEADER
-          # Presentation-only theme; injected after calculator route generation.
-          cp assets/immocheck-ui-refresh.css _site/immocheck-ui-refresh.css
-          python - <<'PY_UI_THEME'
-          from pathlib import Path
-          root = Path('_site')
-          for p in root.rglob('*.html'):
-              if p.name != 'index.html':
-                  continue
-              if p == root / 'index.html' or p.parent.name in ('budget','eigennutzung','vermietung','fix-und-flip','fix-und-flip-rechner','fix-flip','finanzierungsrechner'):
-                  html = p.read_text(encoding='utf-8')
-                  link = '<link rel="stylesheet" href="/immocheck-ui-refresh.css">'
-                  if link not in html:
-                      if '</head>' not in html:
-                          raise SystemExit(f'No head in {p}')
-                      p.write_text(html.replace('</head>', link + '</head>', 1), encoding='utf-8')
-          PY_UI_THEME
-          python - <<'PY_VERIFY_UI_THEME'
-          from pathlib import Path
-          site = Path('_site')
-          css = site / 'immocheck-ui-refresh.css'
-          assert css.is_file() and css.stat().st_size > 200, 'UI theme CSS missing'
-          link = '<link rel="stylesheet" href="/immocheck-ui-refresh.css">'
-          for page in ('index.html','budget/index.html','eigennutzung/index.html','vermietung/index.html','finanzierungsrechner/index.html'):
-              p = site / page
-              assert p.exists(), f'Calculator route missing: {page}'
-              assert link in p.read_text(encoding='utf-8'), f'UI theme missing in {page}'
-          print('UI theme applied to primary page and all verified calculator routes')
-          PY_VERIFY_UI_THEME
-          # Isolated, non-calculating navigation layer.
-          cp assets/immocheck-ui-steps.js _site/immocheck-ui-steps.js
-          cp assets/immocheck-ui-steps.css _site/immocheck-ui-steps.css
-          node --check _site/immocheck-ui-steps.js
-          python - <<'PY_UI_STEPS'
-          from pathlib import Path
-          root=Path('_site')
-          for slug in ('budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner'):
-              p=root/slug/'index.html'
-              if not p.is_file(): raise SystemExit(f'Missing calculator entrypoint: {p}')
-              s=p.read_text(encoding='utf-8')
-              if '</head>' not in s: raise SystemExit(f'Missing closing head in {p}')
-              if '</body>' not in s: raise SystemExit(f'Missing closing body in {p}')
-              s=s.replace('</head>','<link rel="stylesheet" href="/immocheck-ui-steps.css"></head>',1)
-              s=s.replace('</body>','<script defer src="/immocheck-ui-steps.js"></script></body>',1)
-              p.write_text(s,encoding='utf-8')
-          PY_UI_STEPS
           node --check _site/user-access.js
           node scripts/verify_user_access.cjs _site
           node scripts/verify_account_navigation.cjs
           python scripts/apply_immocheck_brand.py _site
-          python scripts/verify_immocheck_brand.py
+          cp assets/immocheck-brand-theme.css _site/immocheck-brand-theme.css
+          python - <<'PY_BRAND_THEME'
+          from pathlib import Path
+          for page in Path('_site').rglob('*.html'):
+              html=page.read_text()
+              if 'class="hero' in html:
+                  page.write_text(html.replace('</head>','<link rel="stylesheet" href="/immocheck-brand-theme.css"></head>',1))
+          PY_BRAND_THEME
+          python scripts/verify_original_restore.py
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site

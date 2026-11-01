@@ -28,8 +28,7 @@ if apple:
         raise SystemExit('Apple Touch Icon must be a 180 x 180 PNG')
     (site/'apple-touch-icon.png').write_bytes(data)
 else:
-    if not (site/'apple-touch-icon.png').is_file():
-        shutil.copyfile('assets/apple-touch-icon.png',site/'apple-touch-icon.png')
+    shutil.copyfile('assets/apple-touch-icon.png',site/'apple-touch-icon.png')
 root=(site/'index.html').read_text()
 # The base keeps calculator assets and the service worker on the root scope.
 root=root.replace('<head>','<head>\n<base href="/">',1)
