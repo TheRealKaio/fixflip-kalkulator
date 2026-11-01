@@ -218,3 +218,16 @@ body:not(.nic-embed) #rentRenoPanel #rentRenoSheetTotal.nic-rental-proposal-tota
   text-align:right!important;
   white-space:normal!important;
 }
+
+/* Rental suggestions are visually distinct placeholders until explicitly applied. */
+body:not(.nic-embed) #rentRenoPanel input.rent-trade-amount::placeholder,
+body:not(.nic-embed) #rentRenoPanel input.rent-trade-area::placeholder{
+ color:#9ca3af!important;opacity:1!important;font-weight:400!important
+}
+body:not(.nic-embed) #rentRenoPanel .reno-head-actions{min-width:0!important}
+body:not(.nic-embed) #rentRenoPanel #rentRenoSheetTotal.nic-rental-proposal-total{
+ display:block!important;color:#2563eb!important;background:transparent!important;
+ box-shadow:none!important;border:0!important;font-weight:400!important;
+ font-size:clamp(13px,1.6vw,16px)!important;text-align:right!important;
+ padding:0!important;margin:8px 0 0!important;line-height:1.35!important
+}
