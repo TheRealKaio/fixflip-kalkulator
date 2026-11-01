@@ -103,7 +103,36 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
       row.append(clear);
     });
   }
+  function enhanceBudget(){
+    if(typeof document.querySelectorAll!=='function')return;
+    document.querySelectorAll('#budgetApplySuggestions').forEach(button=>{
+      if(button.dataset.nicEnhanced==='1')return;
+      const panel=document.getElementById('budgetExpensesSection');
+      if(!panel)return;
+      button.dataset.nicEnhanced='1';
+      const row=document.createElement('div');
+      row.className='nic-reno-action-row';
+      button.before(row);
+      row.append(button);
+      const clear=document.createElement('button');
+      clear.type='button';
+      clear.className='nic-clear-reno';
+      clear.textContent='X';
+      clear.setAttribute('aria-label','Feste monatliche Ausgaben auf null setzen');
+      clear.addEventListener('click',()=>{
+        panel.querySelectorAll('#budgetExpensesBody input:not([type="hidden"]):not([type="range"])').forEach(input=>{
+          if(input.disabled||input.readOnly)return;
+          if(input.type==='checkbox'||input.type==='radio')return;
+          input.value='0';
+          input.dispatchEvent(new Event('input',{bubbles:true}));
+          input.dispatchEvent(new Event('change',{bubbles:true}));
+        });
+      });
+      row.append(clear);
+    });
+  }
   enhance();
-  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(enhance));
+  enhanceBudget();
+  if(typeof document.addEventListener==='function')document.addEventListener('click',()=>queueMicrotask(()=>{enhance();enhanceBudget();}));
 })();
 })();
