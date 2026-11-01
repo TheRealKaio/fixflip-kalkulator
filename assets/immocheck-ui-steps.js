@@ -4,9 +4,9 @@
 'use strict';
 function init(){
  const page=document.documentElement.dataset.nicPage || (location.pathname.includes('finanzierungsrechner')?'finance':'');
- const root=page==='finance'?document.querySelector('main.section'):document.querySelector('#budgetSection, #rentSection, #dealCalculatorContent');
- if(!root)return;
- const cards=[...root.children].filter(el=>el.matches('.card, section.card, div.card')&&!el.classList.contains('deal-type-card'));
+ const root=page==='finance'?document.querySelector('main.section'):({'budget':'#budgetSection','rent':'#rentSection','own':'#dealCalculatorContent','flip':'#dealCalculatorContent'}[page] ? document.querySelector({'budget':'#budgetSection','rent':'#rentSection','own':'#dealCalculatorContent','flip':'#dealCalculatorContent'}[page]) : null);
+ if(!root || root.classList.contains('mode-hidden'))return;
+ const cards=[...root.children].filter(el=>el.matches('.card, section.card, div.card')&&!el.classList.contains('deal-type-card')&&!el.classList.contains('mode-hidden'));
  // The visible original card structure is the only source of step counts.
  if(cards.length<2)return;
  const nav=document.createElement('nav');nav.className='nic-step-nav';nav.setAttribute('aria-label','Rechner-Schritte');
