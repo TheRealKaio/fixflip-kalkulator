@@ -1,0 +1,18 @@
+/* Neustart ImmoCheck: presentation-only design layer.
+   No selectors target input[type=range], svg.chart, canvas, .advanced, or data/logic hooks.
+   Keep all existing DOM nodes, calculators, field names and legal anchors. */
+:root{--nic-design-deep:#075c55;--nic-design-teal:#16867a;--nic-design-mint:#ddece8;--nic-design-warm:#f6f1e9;--nic-design-ink:#263b3a}
+body:not(.nic-embed){background:var(--nic-design-warm);color:var(--nic-design-ink)}
+body:not(.nic-embed) .hero{background:#fff;border-color:#e2e9e5}
+body:not(.nic-embed) .hero-top{background:#fff}
+body:not(.nic-embed) .brand-logo-wrap{background:#fff;box-shadow:none}
+body:not(.nic-embed) .card{border-color:#e2e9e5;box-shadow:0 5px 22px rgba(7,92,85,.055)}
+body:not(.nic-embed) .deal-type-card{background:#fff}
+body:not(.nic-embed) .deal-type-option{border-color:#dce8e2;background:#fff;border-radius:15px;box-shadow:0 3px 12px rgba(7,92,85,.06)}
+body:not(.nic-embed) .deal-type-option:has(input:checked){background:linear-gradient(135deg,#16867a,#075c55);color:#fff;border-color:#075c55}
+body:not(.nic-embed) .deal-type-option:has(input:checked) strong,body:not(.nic-embed) .deal-type-option:has(input:checked) small{color:#fff}
+body:not(.nic-embed) .nic-account-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;border-radius:12px;padding:10px 17px;text-decoration:none}
+body:not(.nic-embed) .nic-account-link::after{content:"Jetzt anmelden";font:700 15px/1.2 system-ui,sans-serif;white-space:nowrap}
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:var(--nic-design-deep);color:#fff}
+body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff}
+@media(max-width:600px){body:not(.nic-embed) .nic-account-link{padding:10px}body:not(.nic-embed) .nic-account-link::after{font-size:12px}}
