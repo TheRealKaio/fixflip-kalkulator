@@ -1,15 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-labelledby="title desc">
-<title id="title">Neustart ImmoCheck</title><desc id="desc">Neustart ImmoCheck Logo mit Haus, gruenem Pfeil und Wortmarke</desc>
+<title id="title">Neustart ImmoCheck</title><desc id="desc">Türkisfarbenes Haus-Symbol und Wortmarke Neustart ImmoCheck</desc>
 <rect width="900" height="340" rx="26" fill="#ffffff"/>
-<g transform="translate(22,26)">
-  <path d="M24 164 L142 62 L236 143 L236 256 L198 256 L198 154 L142 106 L62 176 L62 256 L24 256 Z" fill="#07345f"/>
-  <rect x="118" y="156" width="28" height="28" rx="2" fill="#07345f"/><rect x="152" y="156" width="28" height="28" rx="2" fill="#07345f"/>
-  <rect x="118" y="190" width="28" height="28" rx="2" fill="#07345f"/><rect x="152" y="190" width="28" height="28" rx="2" fill="#07345f"/>
-  <path d="M42 270 C122 320 254 294 273 173 C282 112 260 67 230 42 L250 15 L184 18 L166 80 L199 58 C222 79 236 116 229 156 C214 246 119 277 62 245 Z" fill="#2fb61f"/>
-  <path d="M198 22 L250 15 L236 64 Z" fill="#55c92f"/>
+<g transform="translate(35 36)">
+<rect x="20" y="90" width="228" height="198" rx="30" fill="#DDECE8"/>
+<path d="M39 150 L133 65 L227 150" fill="none" stroke="#075C55" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M61 146 V259 H204 V146" fill="none" stroke="#075C55" stroke-width="18" stroke-linejoin="round"/>
+<rect x="115" y="189" width="40" height="70" rx="7" fill="#16867A"/>
+<path d="M74 130 L133 76 L191 130" fill="none" stroke="#16867A" stroke-width="8" stroke-linecap="round"/>
 </g>
-<g font-family="Arial, Helvetica, sans-serif" fill="#071f3e">
-  <text x="318" y="155" font-size="92" font-weight="800" letter-spacing="1">NEUSTART</text>
-  <text x="318" y="252" font-size="78" font-weight="400">Immo<tspan fill="#2fb61f">Check</tspan></text>
-</g>
-</svg>
+<g fill="#075C55" font-family="Arial,Helvetica,sans-serif">
+<text x="324" y="155" font-size="90" font-weight="800" letter-spacing="0">NEUSTART</text>
+<text x="326" y="246" font-size="73" font-weight="500">Immo<tspan fill="#16867A" font-weight="700">Check</tspan></text>
+</g></svg>
