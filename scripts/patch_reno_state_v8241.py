@@ -117,7 +117,7 @@ js=r"""
       localStorage.setItem(modeAreaKey(mode,hint),String(area||0));
     });
 
-    const currentBuffer=$("buffer") ? $("buffer").value : "0";
+    const currentBuffer="0";
     localStorage.setItem(stateKey(mode,"buffer"),String(currentBuffer||"0"));
 
     // Ein bereits in V8.240 bestätigter Vorschlag wird nur für den aktuell
@@ -370,6 +370,9 @@ js=r"""
       const ok=confirm("Möchtest du wirklich alle Sanierungswerte in diesem Rechner auf 0 zurücksetzen?");
       if(!ok) return;
       initializeTrades(true);
+      if($("buffer")) $("buffer").value="0";
+      const currentMode=renoMode();
+      if(currentMode) localStorage.setItem(stateKey(currentMode,"buffer"),"0");
       renderTrades();
       try{render();}catch(_err){}
     },true);
