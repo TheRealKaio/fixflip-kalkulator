@@ -67,3 +67,31 @@ body:not(.nic-embed) #applyTradeSuggestions,
 body:not(.nic-embed) .save-reno-btn{background:#16867a!important;border-color:#075c55!important;color:#fff!important}
 body:not(.nic-embed) #applyTradeSuggestions{max-width:calc(100% - 52px);min-width:0}
 body:not(.nic-embed) .nic-clear-reno{width:42px;min-width:42px;min-height:42px;border-radius:10px;background:#b42318!important;border:1px solid #b42318!important;color:#fff!important}
+
+/* Screenshot corrections: footer spacing and scoped renovation controls. */
+body:not(.nic-embed) .footer-note,
+body:not(.nic-embed) .nic-shared-footer{padding-top:10px!important;padding-bottom:10px!important}
+body:not(.nic-embed) #resetTrades,
+body:not(.nic-embed) #saveTrades{display:none!important}
+body:not(.nic-embed) .nic-reno-action-row{
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ gap:8px!important;flex-wrap:nowrap!important;min-width:0;width:100%;max-width:100%;box-sizing:border-box
+}
+body:not(.nic-embed) .nic-reno-action-row #applyTradeSuggestions{
+ display:block;flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
+ box-sizing:border-box;white-space:normal!important;overflow-wrap:anywhere!important;
+ line-height:1.2!important;padding:10px 12px!important;text-align:center;
+ background:#16867a!important;border-color:#075c55!important;color:#fff!important
+}
+body:not(.nic-embed) .nic-reno-action-row .nic-clear-reno{
+ display:inline-flex!important;flex:0 0 42px!important;align-items:center;justify-content:center;
+ width:42px!important;min-width:42px!important;height:42px;min-height:42px;
+ padding:0!important;margin:0!important;background:#b42318!important;border:1px solid #b42318!important;
+ color:#fff!important;border-radius:10px
+}
+@media(orientation:landscape) and (max-height:600px){
+ body:not(.nic-embed) .nic-reno-action-row #applyTradeSuggestions{font-size:14px!important;padding:8px!important}
+}
+body:not(.nic-embed) .budget-section-title,
+body:not(.nic-embed) .budget-section-title>div,
+body:not(.nic-embed) .budget-section-title .sub{min-width:0;max-width:100%;overflow-wrap:anywhere}
