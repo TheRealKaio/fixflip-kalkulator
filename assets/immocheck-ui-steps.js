@@ -9,6 +9,9 @@ function init(){
  const cards=[...root.children].filter(el=>el.matches('.card, section.card, div.card')&&!el.classList.contains('deal-type-card')&&!el.classList.contains('mode-hidden'));
  // The visible original card structure is the only source of step counts.
  if(cards.length<2)return;
+ // Do not replace the six-box Budget UI with an incorrect number of steps.
+ if(page==='budget' && cards.length!==6){console.warn('Budget step layout skipped: expected 6 original cards, found',cards.length);return;}
+ // Preserve original section, slider, chart and expandable-field structure.
  const nav=document.createElement('nav');nav.className='nic-step-nav';nav.setAttribute('aria-label','Rechner-Schritte');
  const counter=document.createElement('span');counter.className='nic-step-count';nav.append(counter);
  const steps=document.createElement('div');steps.className='nic-step-buttons';nav.append(steps);
