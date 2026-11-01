@@ -20,3 +20,7 @@ body:not(.nic-embed) .nic-step-dot{display:flex;align-items:center;justify-conte
 body:not(.nic-embed) .nic-step-dot[aria-current="step"]{color:#fff;background:#075c55;border-color:#075c55}
 body:not(.nic-embed) .nic-step-dot:focus-visible{outline:3px solid #1a77db;outline-offset:3px}
 @media(max-width:650px){body:not(.nic-embed) .nic-step-buttons{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:5px}body:not(.nic-embed) .nic-step-dot{flex:0 0 54px;scroll-snap-align:start}}
+/* Connecting lines preserve the existing accessible step buttons. */
+body:not(.nic-embed) .nic-step-dot{position:relative}
+body:not(.nic-embed) .nic-step-dot:not(:last-child)::after{content:"";position:absolute;left:calc(100% + 2px);top:50%;width:10px;height:2px;background:#bfd5cd;pointer-events:none}
+@media(max-width:650px){body:not(.nic-embed) .nic-step-dot{flex-basis:150px}}

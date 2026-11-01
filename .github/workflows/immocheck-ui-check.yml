@@ -9,6 +9,10 @@ on:
       - design/immocheck-ui-only-2026-11
     paths:
       - 'assets/immocheck-ui-*'
+      - 'assets/brand-logo-source.png'
+      - 'assets/immocheck-hero.jpg'
+      - 'scripts/build_immocheck_brand_assets.py'
+      - 'scripts/apply_immocheck_brand.py'
       - 'assets/financing.html'
       - 'scripts/verify_*.py'
       - 'scripts/verify_account_navigation.cjs'

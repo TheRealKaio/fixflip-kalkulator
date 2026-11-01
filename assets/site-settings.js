@@ -89,7 +89,7 @@
     setMeta('meta[property="og:url"]',{property:'og:url'},canonical.href);
   }
   function applyLogo(value,alt=current?.imageAlts?.websiteLogo??imageAltDefaults.websiteLogo,website=current?.company?.website){
-    const src=validFavicon(value)||new URL('neustart-immocheck-logo.svg',ROOT).href;
+    const src=validFavicon(value)||new URL('header-logo.png',ROOT).href;
     document.querySelectorAll('.brand-logo-wrap').forEach(wrap=>{
       const inline=wrap.querySelector('svg.brand-logo');
       if(!validFavicon(value)&&inline){const link=wrap.querySelector('a.nic-logo-link');if(link)link.href=websiteUrl(website)||ROOT.href;inline.removeAttribute('aria-labelledby');inline.setAttribute('role','img');inline.setAttribute('aria-label',alt);return;}

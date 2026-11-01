@@ -1,11 +1,12 @@
 const { chromium, devices } = require('playwright');
 const fs = require('node:fs');
 const paths = ['/budget/','/eigennutzung/','/vermietung/','/fix-flip/','/finanzierungsrechner/'];
-const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:false }, {name:'smartphone',...devices['iPhone 13']}];
+const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:false }, {name:'wide-desktop',viewport:{width:1920,height:1080}}, {name:'small-phone',viewport:{width:320,height:740}}, {name:'landscape',viewport:{width:844,height:390}}, {name:'smartphone',...devices['iPhone 13']}];
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ const launch=()=>chromium.launch({headless:true,...(process.env.NIC_CHROMIUM_BIN?{executablePath:process.env.NIC_CHROMIUM_BIN,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--no-zygote','--single-process']}: {})});
  const failures=[];fs.mkdirSync('tmp/browser-qa',{recursive:true});
  for(const variant of variants){
+  const browser=await launch();
   const context=await browser.newContext(variant.name==='desktop'?{viewport:variant.viewport}:variant);
   for(const path of paths){
    const page=await context.newPage();
@@ -44,6 +45,31 @@ const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:fa
     if(!counter.includes('Schritt 2'))throw Error('Next button did not advance');
     await page.locator('.nic-step-prev').evaluate(button=>button.click());
 
+    const expectedSteps={'/budget/':6,'/eigennutzung/':7,'/vermietung/':4,'/fix-flip/':7,'/finanzierungsrechner/':2};
+    if(result.stepCount!==expectedSteps[path])throw Error('Unexpected step count '+result.stepCount);
+    for(let step=0;step<result.stepCount;step++){
+      await page.locator('.nic-step-dot').nth(step).evaluate(el=>el.click());
+      const state=await page.evaluate(()=>({active:document.querySelectorAll('.nic-step-enabled>[data-nic-step]:not(.nic-step-inactive)').length,overflow:document.documentElement.scrollWidth>innerWidth+5}));
+      if(state.active!==1||state.overflow)throw Error('Invalid step '+(step+1)+': '+JSON.stringify(state));
+    }
+    await page.locator('.nic-step-dot').first().evaluate(el=>el.click());
+    const brand=await page.locator('.brand-logo').evaluate(el=>el.tagName==='IMG'&&el.complete&&el.naturalWidth>0&&el.getAttribute('src').includes('header-logo.png'));
+    if(!brand)throw Error('Approved header logo not loaded');
+    if(path==='/finanzierungsrechner/'){
+      for(const [loan,interest,repay,extra,years] of [[300000,4,2,0,10],[300000,4,2,5,10],[120000,0,10,0,10],[0,4,2,0,10]]){
+        await page.evaluate(v=>{for(const [id,value] of Object.entries(v)){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}},{loan,interest,repay,extra,years});
+        const monthly=loan*(interest+repay)/1200;
+        // Independent annuity closed form with annual special repayment.
+        let expected=loan;
+        for(let year=0;year<years;year++){
+          const factor=Math.pow(1+interest/1200,12);
+          expected=Math.max(0,expected*factor-monthly*(interest?((factor-1)/(interest/1200)):12)-loan*extra/100);
+        }
+        const actual=await page.locator('#balance').innerText();
+        const parsed=Number(actual.replace(/[^0-9,-]/g,'').replace(',','.'));
+        if(Math.abs(parsed-expected)>1)throw Error('Restschuld differs: '+actual+' vs '+expected);
+      }
+    }
     // Save an unobstructed screenshot when the actual consent UI offers a reject option.
     const reject=page.getByRole('button',{name:/^(Alle ablehnen|Ablehnen|Nur notwendige|Nur notwendige Cookies|Notwendige Cookies|Reject all)$/i}).first();
     if(await reject.isVisible().catch(()=>false)){
@@ -58,7 +84,7 @@ const variants = [{ name:'desktop', viewport:{width:1440,height:900},isMobile:fa
    }finally{await page.close();}
   }
   await context.close();
+  await browser.close();
  }
- await browser.close();
  if(failures.length){console.error(failures.join('\n'));process.exitCode=1;}
 })().catch(e=>{console.error(e);process.exitCode=1;});
