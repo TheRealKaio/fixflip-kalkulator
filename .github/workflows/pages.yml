@@ -630,6 +630,7 @@ jobs:
           PY
 
           python -m pip install Pillow==12.0.0
+          python scripts/build_immocheck_brand_assets.py _site
           python scripts/build_settings_pages.py _site
           python scripts/extract_finance_footer.py _site
           python scripts/extract_finance_menu.py _site
