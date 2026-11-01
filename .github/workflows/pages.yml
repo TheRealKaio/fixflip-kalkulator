@@ -662,6 +662,24 @@ jobs:
           python scripts/unify_calculator_layout.py _site
           python scripts/initialize_calculator_routes.py _site
           python scripts/build_user_access.py _site
+          # Replace visual-only pseudo-label with a real accessible login control.
+          python - <<'PY_LOGIN_HEADER'
+          from pathlib import Path
+          import re
+          for page in Path('_site').rglob('*.html'):
+              html=page.read_text(encoding='utf-8')
+              def replace(match):
+                  opening,body=match.groups()
+                  opening=re.sub(r'href="[^"]*"', 'href="/#anmelden"', opening, count=1)
+                  opening=re.sub(r'aria-label="[^"]*"', 'aria-label="Jetzt anmelden"', opening, count=1)
+                  if 'aria-label=' not in opening:
+                      opening=opening[:-1]+' aria-label="Jetzt anmelden">'
+                  if 'nic-account-label' not in body:
+                      body+='<span class="nic-account-label">Jetzt anmelden</span>'
+                  return opening+body+'</a>'
+              html=re.sub(r'(<a\\b(?=[^>]*class="[^"]*\\bnic-account-link\\b[^"]*")[^>]*>)(.*?)</a>',replace,html,flags=re.S)
+              page.write_text(html,encoding='utf-8')
+          PY_LOGIN_HEADER
           # Presentation-only theme; injected after calculator route generation.
           cp assets/immocheck-ui-refresh.css _site/immocheck-ui-refresh.css
           python - <<'PY_UI_THEME'
