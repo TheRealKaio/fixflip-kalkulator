@@ -73,35 +73,32 @@ if(account&&hero){
 if(S.current){if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));}
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
 
-/* Renovation action refinements; limited to the visible renovation editor. */
+/* Renovation proposal and clear controls; no changes to calculation formulas. */
 (function configureRenovationActions(){
   function apply(){
-    document.querySelectorAll('.reno-actions').forEach(actions=>{
-      const editor=actions.closest('.reno-inline-panel, .reno-sheet');
+    document.querySelectorAll('#applyTradeSuggestions').forEach(proposal=>{
+      if(proposal.dataset.nicConfigured==='1')return;
+      const editor=proposal.closest('.reno-inline-panel, .reno-sheet');
       if(!editor)return;
-      const applyButton=actions.querySelector('.save-reno-btn');
-      if(!applyButton)return;
-      applyButton.textContent='Vorschläge übernehmen';
-      const oldReset=actions.querySelector('.reset-btn');
-      if(oldReset && /auf 0 zurücksetzen|standard zurücksetzen/i.test(oldReset.textContent||''))oldReset.hidden=true;
-      if(actions.querySelector('.nic-clear-reno'))return;
+      proposal.dataset.nicConfigured='1';
+      proposal.textContent='Vorschläge übernehmen';
+      proposal.classList.add('nic-proposal-apply');
       const clear=document.createElement('button');
       clear.type='button';clear.className='nic-clear-reno';
-      clear.textContent='X';clear.title='Eingaben dieser Sanierungsmaske löschen';
-      clear.setAttribute('aria-label','Eingaben dieser Sanierungsmaske löschen');
+      clear.textContent='X';clear.title='Eingaben der Sanierungsmaske löschen';
+      clear.setAttribute('aria-label','Eingaben der Sanierungsmaske löschen');
       clear.addEventListener('click',()=>{
-        editor.querySelectorAll('#tradeList input').forEach(input=>{
-          if(input.disabled||input.type==='hidden')return;
-          if(input.type==='checkbox'||input.type==='radio')input.checked=false;
-          else input.value='0';
+        editor.querySelectorAll('#tradeList input.trade-amount, #tradeList input.trade-area').forEach(input=>{
+          if(input.disabled)return;
+          input.value='0';
           input.dispatchEvent(new Event('input',{bubbles:true}));
           input.dispatchEvent(new Event('change',{bubbles:true}));
         });
       });
-      applyButton.after(clear);
+      proposal.after(clear);
     });
   }
   apply();
   document.addEventListener('click',()=>queueMicrotask(apply));
-})();
+})();;
 })();
