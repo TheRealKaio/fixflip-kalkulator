@@ -10,6 +10,8 @@ on:
     paths:
       - 'assets/immocheck-ui-*'
       - 'assets/financing.html'
+      - 'scripts/verify_*.py'
+      - 'scripts/verify_account_navigation.cjs'
       - '.github/workflows/immocheck-ui-check.yml'
 permissions:
   contents: read
