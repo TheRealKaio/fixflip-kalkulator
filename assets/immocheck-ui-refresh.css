@@ -66,3 +66,24 @@ body:not(.nic-embed) .deal-type-option small{color:#425b62;opacity:1}
 body:not(.nic-embed) .deal-type-option:has(input:checked) small,
 body:not(.nic-embed) .deal-type-option:has(input:checked) strong{color:#fff!important;opacity:1!important}
 body:not(.nic-embed) .nic-step-count{color:#075c55}
+
+/* Mockup alignment: full-width shell, compact navigation and readable five-column tabs. */
+@media(min-width:1050px){
+ body:not(.nic-embed) .app{max-width:1600px!important;width:calc(100% - 48px)!important;margin-inline:auto!important}
+ body:not(.nic-embed) .app>.hero{margin-inline:0!important;width:100%!important}
+ body:not(.nic-embed) .app>main.section{box-sizing:border-box;width:100%!important;max-width:none!important;margin-inline:0!important}
+ body:not(.nic-embed) .deal-type-row{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:10px!important}
+ body:not(.nic-embed) .deal-type-option{min-width:0!important;width:auto!important;grid-column:auto!important}
+}
+body:not(.nic-embed) .deal-type-option{color:#172e2b!important}
+body:not(.nic-embed) .deal-type-option:has(input:checked){color:#fff!important}
+body:not(.nic-embed) .deal-type-option:has(input:checked) span,
+body:not(.nic-embed) .deal-type-option:has(input:checked) small,
+body:not(.nic-embed) .deal-type-option:has(input:checked) strong{color:#fff!important}
+body:not(.nic-embed) .hero>h1{color:#075c55!important;opacity:1!important}
+body:not(.nic-embed) .hero>p{color:#263b3a!important;opacity:1!important}
+body:not(.nic-embed) .deal-type-option small{font-size:13px;line-height:1.35}
+@media(max-width:1049px) and (min-width:650px){
+ body:not(.nic-embed) .deal-type-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+ body:not(.nic-embed) .deal-type-option{grid-column:auto!important;min-width:0!important}
+}
