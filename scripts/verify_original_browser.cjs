@@ -65,7 +65,7 @@ const assert=require('node:assert/strict');
     assert(await page.locator('#repayChart path').count()>0);
    }
    await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));s.layout.font='georgia';s.layout.bodySize=20;s.layout.h2=24;NICSettings.save(s);NICSettings.apply(s);});
-   assert(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).fontSize==='20px'&&getComputedStyle(el).fontFamily.includes('Georgia')));
+   assert(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).fontSize===NICSettings.current.layout.subtextSize+'px'&&getComputedStyle(el).fontFamily.includes('Georgia')));
    assert(await page.locator('.deal-type-title').evaluate(el=>getComputedStyle(el).fontSize==='24px'));
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1?[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1}).map(e=>({tag:e.tagName,id:e.id,c:e.className,w:e.getBoundingClientRect().width,right:e.getBoundingClientRect().right})).slice(0,12):[]);
    assert.deepEqual(overflow,[],'No horizontal page overflow');
