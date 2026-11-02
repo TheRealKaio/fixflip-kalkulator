@@ -113,9 +113,21 @@ body:not(.nic-admin) :is(p,li,td,th,label,button,input,select,textarea,.mini,.hi
 body:not(.nic-admin) :is(p,li,.footer-note,.nic-legal-card){overflow-wrap:anywhere}
 body:not(.nic-admin) .footer-note{height:auto!important;min-height:0!important}
 body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}
-body:not(.nic-admin) :is(.card,.form-card,.budget-summary,.scenario-card){border-radius:${l.cornerRadius}px!important}body:not(.nic-admin) :is(input,select,textarea,button,.nic-clear-reno){border-radius:${scaledRadius(10)}px!important}body:not(.nic-admin) :is(.deal-type-option,.budget-result-card){border-radius:${scaledRadius(16)}px!important}body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
+body:not(.nic-admin) :is(.card,.form-card,.budget-summary,.scenario-card){border-radius:${l.cornerRadius}px!important}
+body:not(.nic-admin) .kpi{border-radius:${scaledRadius(17)}px!important}
+body:not(.nic-admin) :is(.metric-box,.info-box,.info-card,.tip-box,.note-box){border-radius:${scaledRadius(14)}px!important}
+body:not(.nic-admin) .equity-capital-note{border-radius:${scaledRadius(12)}px!important}
+body:not(.nic-admin) :is(.finance-full-warning,.equity-shortfall-warning){border-radius:${scaledRadius(10)}px!important}
+body:not(.nic-admin) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),select,textarea,button,.button,.btn,[role="button"],.import-label,.nic-clear-reno,.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,.nic-green-budget-transfer){border-radius:${scaledRadius(10)}px!important}
+body:not(.nic-admin) :is(.deal-type-option,.budget-result-card){border-radius:${scaledRadius(16)}px!important}
+body:not(.nic-admin) .deal-type-row>.deal-type-option{border-radius:${scaledRadius(16)}px!important}
+body:not(.nic-admin) .nic-brand-bar .nic-login-button{border-radius:${scaledRadius(16)}px!important}
+body:not(.nic-admin) :is(.info-btn,.nic-menu-icon){border-radius:50%!important}
+body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
-body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.info-box p,.info-box,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint){font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint,.field label .hint,.metric-box .metric-label){font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-card p,.tip-box p,.equity-capital-note){font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(.card h2~p,.rent-finance-head h2~p,.section-intro h2~p,.section-heading h2~p,.flip-section-subtitle){font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
 body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,#applyTradeSuggestions,.nic-green-budget-transfer,.btn.primary){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important;border-color:var(--nic-green-bg)!important}
 body:not(.nic-admin) :is(.nic-clear-reno,.bottom-primary,#newCalc){background:var(--nic-red-bg)!important;color:var(--nic-red-text)!important;border-color:var(--nic-red-bg)!important}
@@ -124,9 +136,17 @@ body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(a,.footer-version,
 body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]){background:var(--nic-green-bg)!important;border-color:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
 body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]) :is(strong,small,.nic-menu-icon){color:var(--nic-green-text)!important}
 body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"])::after{background:var(--nic-green-bg)!important}
-body:not(.nic-embed) .deal-type-row>.deal-type-option{box-sizing:border-box!important;border:2px solid #dce8e2!important;border-radius:16px!important}
+body:not(.nic-embed) .deal-type-row>.deal-type-option{box-sizing:border-box!important;border:2px solid #dce8e2!important;border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active{border:2px solid var(--nic-green-bg,#075c55)!important;background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong,small){color:var(--nic-green-text,#fff)!important}`;
+    const publicBody=document.querySelector('body:not(.nic-admin)');
+    if(publicBody){
+      const forceFont=(selector,size)=>publicBody.querySelectorAll(selector).forEach(el=>el.style.setProperty('font-size',size+'px','important'));
+      forceFont('.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-box div,.info-card p,.tip-box p,.equity-capital-note',l.subtextSize);
+      forceFont('.mini,.hint,.note,.info-text,.helper,.metric-label,.rent-maintenance-status,.field label .hint,.kpi .note',l.hintSize);
+      forceFont('.flip-section-subtitle',l.bodySize);
+      publicBody.querySelectorAll('h2').forEach(heading=>{let paragraph=heading.nextElementSibling;while(paragraph&&paragraph.tagName==='P'){paragraph.style.setProperty('font-size',l.bodySize+'px','important');paragraph=paragraph.nextElementSibling;}});
+    }
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
       for(const rel of ['icon','apple-touch-icon']){
