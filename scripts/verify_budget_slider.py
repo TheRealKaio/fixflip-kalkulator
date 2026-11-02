@@ -35,6 +35,8 @@ required_implementation = {
     "UI recalculated immediately": 'renderBudget();',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "warning hidden unless reserve is below minimum": '$("budgetRateSliderWarning").hidden=!minimumBufferBelow;',
+    "slider and guidance share one card": 'class="budget-rate-slider-wrap">\n            <div class="budget-rate-slider-head">',
+    "guidance no longer has separate box styling": '.budget-rate-guidance{margin-top:8px;padding:0;border:0;border-radius:0;background:transparent;',
     "financing guidance intro": 'Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten.',
     "raw reserve exposed": 'const rawReserve=freeBudget-monthlyRate;',
     "current buffer uses raw reserve": 'const currentBuffer=Number.isFinite(Number(m.rawReserve)) ? Number(m.rawReserve) : 0;',
@@ -153,6 +155,9 @@ for removed_message in (
 ):
     if removed_message in html:
         raise SystemExit("Slider acceptance failed - removed budget-rate message remains: " + removed_message)
+
+if '</div>\n          </div>\n          <div class="budget-rate-guidance"' in html:
+    raise SystemExit("Slider acceptance failed - guidance remains outside the slider card")
 
 
 def model(net, child_benefit, expenses, entered_reserve, selected_pct=None):
