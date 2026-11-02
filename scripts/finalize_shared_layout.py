@@ -81,12 +81,12 @@ body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){
  width:100%!important;max-width:100%!important;min-width:0!important;
 }
 body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar)
-:is(#applyTradeSuggestions,#budgetApplySuggestions){
+:is(#applyTradeSuggestions,#rentApplyTradeSuggestions,#budgetApplySuggestions){
  flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
  margin:0!important;white-space:nowrap!important;overflow-wrap:normal!important;
  line-height:1.2!important;box-sizing:border-box!important;
 }
-body:not(.nic-admin) .reno-head-actions{flex:1 1 auto!important}
+body:not(.nic-admin) .reno-head-actions{flex:1 1 auto!important;min-width:0!important}
 body:not(.nic-admin) .budget-expenses-toolbar>:is(button,.nic-clear-reno):not(#budgetApplySuggestions){
  flex:0 0 36px!important;width:36px!important;min-width:36px!important;
  max-width:36px!important;margin:0!important;
