@@ -223,11 +223,41 @@ js=r"""
     const hasManual=manualTrades.size>0;
     const useActual=suggestionsActive() || hasManual || actualBase>0;
     const base=useActual ? actualBase : proposedBase;
-    const totalWithBuffer=Math.round(base*(1+pct("buffer")));
+    const mode=renoMode();
+    const manual=mode ? localStorage.getItem(stateKey(mode,"manual_total")) : null;
+    const totalWithBuffer=manual!==null && Number.isFinite(Number(manual))
+      ? Math.max(0,Number(manual))
+      : Math.round(base*(1+pct("buffer")));
     if($("reno")) $("reno").value=String(totalWithBuffer);
     if($("renoSheetTotal")) $("renoSheetTotal").textContent=eur(totalWithBuffer);
     updateRenoProposalStatus();
   };
+
+  // Modernisierung can be entered as an independent total until detail values
+  // are entered or a renovation proposal is explicitly applied.
+  const manualTotalInput=$("reno");
+  if(manualTotalInput){
+    manualTotalInput.removeAttribute("readonly");
+    manualTotalInput.readOnly=false;
+    manualTotalInput.addEventListener("input",function(){
+      const mode=renoMode();
+      if(!mode)return;
+      const amount=Math.max(0,parseLocalizedNumber(manualTotalInput.value,false));
+      localStorage.setItem(stateKey(mode,"manual_total"),String(amount));
+      if($("renoSheetTotal"))$("renoSheetTotal").textContent=eur(amount);
+      try{render();}catch(_err){}
+    });
+  }
+  document.addEventListener("input",function(event){
+    if(!event.target.matches?.(".trade-amount,.trade-area"))return;
+    const mode=renoMode();
+    if(mode)localStorage.removeItem(stateKey(mode,"manual_total"));
+  },true);
+  document.addEventListener("click",function(event){
+    if(!event.target.closest?.("#applyTradeSuggestions,#resetTrades"))return;
+    const mode=renoMode();
+    if(mode)localStorage.removeItem(stateKey(mode,"manual_total"));
+  },true);
 
   // Wenn Vorschläge aktiv sind, folgen nicht manuell überschriebene Positionen
   // automatisch einer Änderung der Wohnfläche.
