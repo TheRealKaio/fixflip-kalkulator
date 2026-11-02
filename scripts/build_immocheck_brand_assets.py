@@ -21,7 +21,7 @@ def run(site):
     mark = logo.crop((100, 50, 832, 670))
     for name, size in [('apple-touch-icon.png',180), ('favicon-64.png',64), ('brand-icon.png',256)]:
         save_png(ImageOps.pad(mark, (size,size), color='white'),site/name)
-    save_png(ImageOps.pad(logo,(800,300),color='white'),site/'share-logo.png')
+    # Standard multi-size ICO for browsers and servers requesting /favicon.ico.\n    mark_icon=ImageOps.pad(mark,(256,256),color='white').convert('RGBA')\n    mark_icon.save(site/'favicon.ico',format='ICO',sizes=[(16,16),(32,32),(48,48),(64,64)])\n    save_png(ImageOps.pad(logo,(800,300),color='white'),site/'share-logo.png')
     logo.thumbnail((920,307),Image.Resampling.LANCZOS)
     save_png(logo,site/'header-logo.png')
     raw=base64.b64encode((site/'brand-icon.png').read_bytes()).decode()
