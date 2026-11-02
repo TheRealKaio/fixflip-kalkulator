@@ -71,6 +71,8 @@ function selectTab(key){document.querySelectorAll('[role=tab]').forEach(t=>{cons
 form.noValidate=true;
 const tabs=Array.from(document.querySelectorAll('[role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
+// Content visibility switches take effect immediately and are persisted without an extra save click.
+form.addEventListener('change',e=>{if(e.target.matches?.('[id^="content-visible-"],[id^="content-guest-"]'))form.requestSubmit();});
 form.addEventListener('submit',async e=>{
  e.preventDefault();if(!validForm())return;
  const button=$('saveSettings');button.disabled=true;
