@@ -132,6 +132,16 @@ for page in SITE.rglob("*.html"):
         if "</head>" not in source:
             raise SystemExit(f"Content access head anchor missing: {page}")
         source = source.replace("</head>", prepaint + "</head>", 1)
+    if route_for(page, source) == "budget":
+        button_style = """<style id="nic-budget-suggestion-width">
+#budgetExpensesSection .budget-expenses-toolbar{
+  width:min(100%,48%);margin-left:auto;display:flex;justify-content:flex-end;align-items:center;gap:8px
+}
+#budgetExpensesSection .budget-expenses-toolbar .budget-apply-btn{flex:1;min-width:0}
+@media(max-width:650px){#budgetExpensesSection .budget-expenses-toolbar{width:100%}}
+</style>"""
+        if 'id="nic-budget-suggestion-width"' not in source:
+            source = source.replace("</head>", button_style + "</head>", 1)
     if "content-section-access.js" not in source:
         if "</body>" not in source:
             raise SystemExit(f"Content access body anchor missing: {page}")
