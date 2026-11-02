@@ -82,11 +82,11 @@ async function persistAccessChanges(){
   do{
    accessSaveRequested=false;
    const requested=collect();
-   if(!window.NICAccess?.enabled)throw Error('Keine aktive Serververbindung. Einstellungen wurden nicht veröffentlicht.');
-   status('Speichere Box-Einstellungen auf dem Server …');
+   const online=window.NICAccess?.enabled===true;
+   status(online?'Speichere Box-Einstellungen auf dem Server …':'Speichere Einstellungen lokal im Browser …');
    await S.saveGlobal(requested);
-   const confirmed=await window.NICAccess.loadSettings();
-   if(!confirmed)throw Error('Server konnte die Einstellungen nicht zurücklesen.');
+   const confirmed=online?await window.NICAccess.loadSettings():S.current;
+   if(!confirmed)throw Error('Gespeicherte Einstellungen konnten nicht zurückgelesen werden.');
    const actual=S.normalize(confirmed);
    const mismatch=contentSectionCatalog.find(item=>{
     const expected=requested.contentSections[item.key];
@@ -98,8 +98,8 @@ async function persistAccessChanges(){
    if(!accessSaveRequested){
     S.apply(actual);
     dirty=false;
-    $('saveState').textContent='Auf Server bestätigt';
-    status('Checkboxen dauerhaft gespeichert und vom Server zurückgelesen.');
+    $('saveState').textContent=online?'Auf Server bestätigt':'Lokal gespeichert';
+    status(online?'Checkboxen dauerhaft gespeichert und vom Server zurückgelesen.':'Lokal im Browser gespeichert. Für alle Besucher ist eine Server-Veröffentlichung erforderlich.');
    }
   }while(accessSaveRequested);
  }catch(err){
