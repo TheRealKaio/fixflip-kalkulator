@@ -137,6 +137,10 @@ body:not(.nic-admin) .own-budget-household-row,body:not(.nic-admin) .own-budget-
 body:not(.nic-admin) :is(.cost-row,.cost-row span,.cost-row strong,.cost-total,.cost-total span,.cost-total strong,.budget-rate-slider-head,.budget-rate-slider-head span,.budget-rate-slider-head strong,.budget-rate-slider-note,.budget-rate-slider-warning,.budget-rate-guidance,.budget-rate-guidance *,.rent-note,.rent-note *, .legend,.legend *){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) #rentSection .rent-note,body:not(.nic-admin) #rentSection .rent-note *{font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) .source,body:not(.nic-admin) .source *{font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) .status,body:not(.nic-admin) .status *{font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) .rate-actions button,body:not(.nic-admin) .rate-actions button *{font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) #scenarioDetails>summary{font-size:${l.hintSize}px!important}
+body:not(.nic-admin) .reno-note,body:not(.nic-admin) .reno-note *{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.card h2~p,.rent-finance-head h2~p,.section-intro h2~p,.section-heading h2~p,.flip-section-subtitle){font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
 body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,#applyTradeSuggestions,.nic-green-budget-transfer,.btn.primary){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important;border-color:var(--nic-green-bg)!important}
