@@ -3,6 +3,39 @@
 
   const message='Nur für registrierte Nutzer sichtbar.';
 
+  // The access controls must work even when no other stylesheet defines them.
+  const style=document.createElement('style');
+  style.id='nic-content-section-access-styles';
+  style.textContent=`
+    [data-nic-content-key].nic-content-box-hidden{display:none!important}
+    [data-nic-content-key].nic-content-box-guest-locked{
+      position:relative!important;
+      isolation:isolate;
+    }
+    [data-nic-content-key].nic-content-box-guest-locked > :not(.nic-content-box-guest-overlay){
+      pointer-events:none!important;
+      user-select:none!important;
+    }
+    [data-nic-content-key] > .nic-content-box-guest-overlay{
+      position:absolute!important;
+      inset:0!important;
+      z-index:100!important;
+      display:flex!important;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      box-sizing:border-box;
+      background:rgba(245,247,250,.84)!important;
+      color:#9aa3af!important;
+      font-size:var(--nic-subtext-size,14px);
+      font-weight:500;
+      text-align:center;
+      line-height:1.5;
+      cursor:not-allowed;
+    }
+  `;
+  (document.head||document.documentElement).appendChild(style);
+
   function apply(settings){
     if(!settings||!document.body)return;
     const loggedIn=!!window.NICAccess?.user;
