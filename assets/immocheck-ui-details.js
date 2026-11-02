@@ -27,35 +27,20 @@ decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
-/* Keep the desktop labels; show one consistent mobile label on red reset actions. */
-function labelMobileRecalculation(){
- document.querySelectorAll('.bottom-actions .bottom-primary').forEach(button=>{
-  if(button.dataset.nicMobileLabel==='1')return;
-  const original=document.createElement('span');
-  original.className='nic-desktop-reset-label';
-  while(button.firstChild)original.appendChild(button.firstChild);
-  const mobile=document.createElement('span');
-  mobile.className='nic-mobile-reset-label';
-  mobile.textContent='Neu kalkulieren';
-  button.append(original,mobile);
-  button.dataset.nicMobileLabel='1';
- });
-}
-labelMobileRecalculation();
-/* One shared action-bar presentation on all five routes; existing IDs/click handlers remain intact. */
+/* One shared action bar and one mobile label on every calculator route. */
 function unifyCalculatorActions(){
- const bar=document.querySelector('.bottom-actions');
- if(!bar)return;
- const primary=bar.querySelector('#newCalc, .bottom-primary');
- const share=bar.querySelector('#share, .bottom-pdf');
- const download=bar.querySelector('#download, .bottom-save');
- if(!primary||!share||!download)return;
- primary.classList.add('bottom-primary');
- share.classList.add('bottom-pdf');
- download.classList.add('bottom-save');
- primary.textContent='Neu kalkulieren';
- share.textContent='PDF teilen';
- bar.classList.add('nic-unified-calculator-actions');
+ document.querySelectorAll('.bottom-actions').forEach(bar=>{
+  const primary=bar.querySelector('#newCalc, .bottom-primary');
+  const share=bar.querySelector('#share, .bottom-pdf');
+  const download=bar.querySelector('#download, .bottom-save');
+  if(!primary||!share||!download)return;
+  primary.classList.add('bottom-primary');
+  share.classList.add('bottom-pdf');
+  download.classList.add('bottom-save');
+  primary.replaceChildren(document.createTextNode('Neu kalkulieren'));
+  share.replaceChildren(document.createTextNode('PDF teilen'));
+  bar.classList.add('nic-unified-calculator-actions');
+ });
 }
 unifyCalculatorActions();
 /* Put the existing calculator action bar in normal document flow above the footer. */
