@@ -366,7 +366,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   display:grid!important;
   grid-template-columns:24px minmax(0,1fr)!important;
   grid-template-rows:minmax(28px,auto) 1fr!important;
-  column-gap:9px!important;row-gap:8px!important;
+  column-gap:7px!important;row-gap:8px!important;
   align-content:start!important;align-items:center!important;
   min-width:0!important;box-sizing:border-box!important;
  }
