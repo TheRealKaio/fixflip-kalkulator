@@ -431,26 +431,29 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option small{
     font-size:13px!important;
   }
 }
-/* Phone: centered icon-and-title group, with description centered below. */
+/* Phone: balanced side tracks center the icon + title as ONE group.
+   Both outer columns have equal width, so the icon never sticks to the card's left edge. */
 @media(max-width:700px){
   body:not(.nic-embed) .deal-type-row > .deal-type-option{
-    grid-template-columns:20px minmax(0,max-content)!important;
+    grid-template-columns:minmax(0,1fr) 20px minmax(0,max-content) minmax(0,1fr)!important;
     grid-template-rows:auto auto!important;
-    column-gap:9px!important;
+    column-gap:0!important;
     row-gap:0!important;
-    justify-content:center!important;
+    justify-content:stretch!important;
   }
   body:not(.nic-embed) .deal-type-row > .deal-type-option > .nic-menu-icon{
-    grid-column:1!important;
+    grid-column:2!important;
     grid-row:1!important;
     width:20px!important;
     height:20px!important;
     margin:0!important;
   }
   body:not(.nic-embed) .deal-type-row > .deal-type-option strong{
-    grid-column:2!important;
+    grid-column:3!important;
     grid-row:1!important;
     width:auto!important;
+    max-width:100%!important;
+    margin-left:9px!important;
     font-size:14px!important;
     align-self:center!important;
   }
@@ -461,7 +464,7 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option small{
   }
 }
 @media(max-width:700px) and (orientation:landscape){
-  body:not(.nic-embed) .deal-type-row > .deal-type-option{grid-template-columns:22px minmax(0,max-content)!important}
+  body:not(.nic-embed) .deal-type-row > .deal-type-option{grid-template-columns:minmax(0,1fr) 22px minmax(0,max-content) minmax(0,1fr)!important}
   body:not(.nic-embed) .deal-type-row > .deal-type-option > .nic-menu-icon{width:22px!important;height:22px!important}
   body:not(.nic-embed) .deal-type-row > .deal-type-option strong{font-size:15px!important}
   body:not(.nic-embed) .deal-type-row > .deal-type-option small{font-size:13px!important}
