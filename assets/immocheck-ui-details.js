@@ -43,14 +43,25 @@ function setupCalculatorActions(){
    footer.before(bar);
    bar.classList.add('nic-actions-above-footer');
   }
-  // Central reset confirmation: Finance's original handler has no prompt.
-  // Other calculators retain their existing confirmation handlers.
-  if(reset.id==='newCalc' && reset.dataset.nicConfirmReset!=='1'){
+  // One confirmation for every calculator. Existing synchronous reset handlers
+  // keep their own actions; suppress any redundant legacy confirm for this click.
+  if(reset.dataset.nicConfirmReset!=='1'){
    reset.dataset.nicConfirmReset='1';
    reset.addEventListener('click',event=>{
-    if(!window.confirm('Möchtest du wirklich neu kalkulieren und deine bisherigen Eingaben löschen?')){
+    const confirmOriginal=window.confirm;
+    const accepted=confirmOriginal.call(window,'Möchtest du wirklich neu kalkulieren und deine bisherigen Eingaben löschen?');
+    if(!accepted){
      event.preventDefault();
      event.stopImmediatePropagation();
+     return;
+    }
+    try{
+     window.confirm=()=>true;
+     queueMicrotask(()=>{
+      if(window.confirm!==confirmOriginal)window.confirm=confirmOriginal;
+     });
+    }catch(_err){
+     // Reset still proceeds if this browser does not permit overriding confirm.
     }
    },true);
   }
