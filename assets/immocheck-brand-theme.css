@@ -22,15 +22,13 @@ body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{border
 body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-consent-settings,body:not(.nic-embed) .footer-note #nicConsentSettings{color:#fff!important;opacity:1!important}
 /* Retain the original card grid, padding, typography and dimensions. */
 .deal-type-option>input,.deal-type-option>.rent-radio-dot{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important}
-.nic-menu-icon{display:block;width:22px;height:30px;flex:0 0 22px;align-self:center;color:#075c55;pointer-events:none}
-.deal-type-option:has(input:checked) .nic-menu-icon,.deal-type-option[aria-pressed="true"] .nic-menu-icon,.deal-type-option.current .nic-menu-icon{color:#fff}
+.nic-menu-icon{display:block;width:20px;height:20px;flex:0 0 20px;align-self:start;color:#075c55;pointer-events:none}
 .deal-type-option:has(input:checked)::after,.deal-type-option[aria-pressed="true"]::after,.deal-type-option.current::after{content:"";position:absolute;bottom:-7px;left:50%;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:#075c55;border-right:2px solid #fff;border-bottom:2px solid #fff;pointer-events:none}
 .deal-type-option:focus-within,.nic-login-button:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
 @media(max-width:700px){.nic-brand-bar{flex-wrap:wrap;gap:10px;padding:12px 18px}.nic-brand-bar .brand-logo{width:170px!important}.nic-brand-description{order:3;flex-basis:100%;border-left:0;padding-left:0;font-size:13px}.nic-brand-bar a.nic-login-button{margin-left:auto;font-size:13px;padding:10px 12px!important}}
 @media(max-width:380px){.nic-brand-bar{padding-inline:12px;gap:6px}.nic-brand-bar .brand-logo{width:130px!important}.nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important;gap:5px}}
 body.nic-admin-open .app>.nic-brand-bar#nicBrandBar{display:grid!important}
 /* The icons occupy the former radio-control footprint, preserving tile height. */
-.nic-menu-icon{width:20px;height:20px;flex-basis:20px;align-self:start}
 .nic-brand-bar{display:grid;grid-template-columns:170px minmax(0,1fr) auto;gap:12px;padding:12px 16px}
 .nic-brand-bar .brand-logo-wrap{grid-column:1;grid-row:1;min-width:0}
 .nic-brand-bar .brand-logo{width:170px!important}
@@ -332,9 +330,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
  margin-bottom:0!important;
 }
 
-/* Unified navigation tiles for all five calculators.
-   One shared icon-title-description layout on every viewport; only sizes change. */
-/* Shared border and state styling for all five tiles, independent of navigation order. */
+/* One shared layout and state styling for all five calculator navigation tiles. */
 body:not(.nic-embed) .deal-type-row > .deal-type-option{
   position:relative!important;
   overflow:visible!important;
@@ -343,22 +339,6 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option{
   background:linear-gradient(#fff,#faf7f1)!important;
   color:#172e2b!important;
   box-shadow:0 2px 4px #33230d12!important;
-}
-body:not(.nic-embed) .deal-type-row > .deal-type-option small{
-  color:#425b62!important;
-  opacity:1!important;
-}
-body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current){
-  border:1px solid #075c55!important;
-  background:linear-gradient(135deg,#16867a,#075c55)!important;
-  color:#fff!important;
-}
-body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current) :is(strong,small,.nic-menu-icon){
-  color:#fff!important;
-  opacity:1!important;
-}
-
-body:not(.nic-embed) .deal-type-row > .deal-type-option{
   display:grid!important;
   grid-template-columns:minmax(0,1fr)!important;
   grid-template-rows:auto auto auto!important;
@@ -370,6 +350,16 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option{
   box-sizing:border-box!important;
   text-align:center!important;
 }
+body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current){
+  border:1px solid #075c55!important;
+  background:linear-gradient(135deg,#16867a,#075c55)!important;
+  color:#fff!important;
+}
+body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current) :is(strong,small,.nic-menu-icon){
+  color:#fff!important;
+  opacity:1!important;
+}
+
 body:not(.nic-embed) .deal-type-row > .deal-type-option > span:not(.rent-radio-dot){
   display:contents!important;
 }
@@ -415,6 +405,8 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option small{
   text-align:center!important;
   text-align-last:center!important;
   font-size:14px!important;
+  color:#425b62!important;
+  opacity:1!important;
   line-height:1.3!important;
   white-space:normal!important;
   overflow-wrap:break-word!important;
