@@ -518,7 +518,8 @@ body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) :is(span,div,nav,a,but
 }
 
 /* Central layout radius settings for the shared chrome and calculator actions. */
-body:not(.nic-embed) .nic-brand-bar{border-radius:0!important}
+body:not(.nic-embed) .nic-brand-bar{border-radius:0 0 var(--nic-brand-radius,22px) var(--nic-brand-radius,22px)!important}
+body:not(.nic-embed) .app>.hero{border-radius:0 0 var(--nic-brand-radius,22px) var(--nic-brand-radius,22px)!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option{border-radius:var(--nic-menu-radius,16px)!important}
 body:not(.nic-embed) .app>.footer-note,
 body:not(.nic-embed) .app>.nic-shared-footer,
