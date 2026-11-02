@@ -336,7 +336,10 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>.nic-action-2{
   grid-template-columns:minmax(0,1fr) max-content 48px!important;gap:6px!important
  }
  body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>button{
-  font-size:clamp(11px,3.1vw,14px)!important
+  font-size:14px!important;line-height:1.2!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>.nic-action-0{
+  font-size:14px!important;font-weight:650!important
  }
  body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>.nic-action-2{
   width:48px!important;min-width:48px!important;max-width:48px!important
