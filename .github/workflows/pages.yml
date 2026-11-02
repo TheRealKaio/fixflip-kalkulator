@@ -668,6 +668,7 @@ jobs:
           python scripts/unify_calculator_layout.py _site
           python scripts/initialize_calculator_routes.py _site
           python scripts/build_user_access.py _site
+          python scripts/patch_global_stats_hooks.py _site
           python scripts/patch_private_insights_v8348.py
           python scripts/apply_content_section_controls.py
           node --check _site/user-access.js
