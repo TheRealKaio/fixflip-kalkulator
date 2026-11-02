@@ -67,7 +67,7 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     const hint=String(layout.hintSize??12)+"px";
     section.style.setProperty("--nic-budget-subtext",sub);
     section.style.setProperty("--nic-budget-hint",hint);
-    original.style.setProperty("font-size",sub,"important");
+    original.style.setProperty("font-size",String(layout.bodySize??16)+"px","important");
     // Original budget rows contain multiple nested title/description elements.
     section.querySelectorAll(".budget-expense-name").forEach(function(group){
       group.style.setProperty("font-size",sub,"important");
