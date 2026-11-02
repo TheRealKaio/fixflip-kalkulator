@@ -5,7 +5,18 @@ const page=document.documentElement.dataset.nicPage||'website';
 let activePage=page;
 function social(s){let nav=document.getElementById('nicSocialLinks');const footer=document.querySelector('.footer-note')||document.querySelector('.public-footer');if(!footer)return;if(!nav){nav=document.createElement('nav');nav.id='nicSocialLinks';nav.setAttribute('aria-label','Social Media');nav.className='nic-social-links';footer.append(nav);}nav.replaceChildren();S.portals.forEach(([key,label])=>{const url=s.social[key];if(!url)return;const a=document.createElement('a');a.href=url;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';nav.append(a);});nav.hidden=!nav.childElementCount;}
 function company(s){if(/\/impressum\/?$/.test(location.pathname)&&!document.getElementById('heroTitle')){location.replace(new URL('#impressum',S.ROOT).href);return;}const root=document.getElementById('companyContent');if(!root)return;root.replaceChildren();const parts=S.imprint(s);if(!parts.length){const p=document.createElement('p');p.textContent='Die Anbieterangaben wurden noch nicht hinterlegt.';root.append(p);return;}for(const {label,value} of parts){const h=document.createElement('h2');h.textContent=label;const p=document.createElement('p');p.textContent=value;root.append(h,p);}}
-function apply(){if(!S.current)return;S.apply(S.current,activePage);social(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
+function apply(){if(!S.current)return;S.apply(S.current,activePage);syncCalculatorMenu();social(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
+// A single route-based selection for every navigation card, including financing.
+function syncCalculatorMenu(){
+ const selected={budget:'/budget/',own:'/eigennutzung/',rent:'/vermietung/',flip:'/fix-flip/',finance:'/finanzierungsrechner/'}[activePage];
+ document.querySelectorAll('.deal-type-row > .deal-type-option').forEach(card=>{
+  const href=card.dataset.href||card.getAttribute('href');
+  if(!href)return;
+  const isCurrent=!!selected&&new URL(href,location.href).pathname===selected;
+  card.classList.toggle('current',isCurrent);
+  if(isCurrent)card.setAttribute('aria-current','page');else card.removeAttribute('aria-current');
+ });
+}
 function modePage(){if(document.getElementById('dealTypeRent')?.getAttribute('aria-pressed')==='true')return 'rent';return document.querySelector('input[name="dealType"]:checked')?.value||'budget';}
 function updateMode(){activePage=modePage();try{localStorage.setItem('nic_last_calculator_v1',activePage);}catch(_){}const path=S.pages.find(p=>p[0]===activePage)?.[2];if(path!==undefined)history.replaceState(null,'',new URL(path,S.ROOT).pathname+location.search+(/^#(?:admin(?:-|$)|account$|impressum$|datenschutz$|agbs$|haftungsausschluss$|cookie-hinweis$)/.test(location.hash)?location.hash:''));apply();window.NICAnalytics?.changeSection(activePage);}
 function activate(key){if(key==='rent')document.getElementById('dealTypeRent')?.click();else{const id={budget:'dealTypeBudget',own:'dealTypeOwn',flip:'dealTypeFlip'}[key],el=document.getElementById(id);if(el){el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));}}}
