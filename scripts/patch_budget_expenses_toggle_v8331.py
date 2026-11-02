@@ -62,16 +62,25 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     if(target && original.previousElementSibling!==target){
       target.insertAdjacentElement("afterend",original);
     }
-    const settings=window.NICSettings?.current?.layout;
-    if(settings){
-      section.style.setProperty("--nic-budget-subtext",String(settings.subtextSize||14)+"px");
-      section.style.setProperty("--nic-budget-hint",String(settings.hintSize||12)+"px");
-      original.style.setProperty("font-size",String(settings.subtextSize||14)+"px","important");
-    }
+    const layout=window.NICSettings?.current?.layout||{};
+    const sub=String(layout.subtextSize??14)+"px";
+    const hint=String(layout.hintSize??12)+"px";
+    section.style.setProperty("--nic-budget-subtext",sub);
+    section.style.setProperty("--nic-budget-hint",hint);
+    original.style.setProperty("font-size",sub,"important");
+    // Original budget rows contain multiple nested title/description elements.
+    section.querySelectorAll(".budget-expense-name").forEach(function(group){
+      group.style.setProperty("font-size",sub,"important");
+      const nodes=group.querySelectorAll("strong,b,.name,.budget-expense-title");
+      nodes.forEach(node=>node.style.setProperty("font-size",sub,"important"));
+      group.querySelectorAll("small,.mini,.sub,.hint,.description,.budget-expense-description")
+        .forEach(node=>node.style.setProperty("font-size",hint,"important"));
+    });
   }
   positionGuidance();
   window.addEventListener("nic-settings-updated",positionGuidance);
   requestAnimationFrame(positionGuidance);
+  window.addEventListener("load",positionGuidance,{once:true});
     button.addEventListener("click",function(){
     const open=body.hidden;
     body.hidden=!open;
