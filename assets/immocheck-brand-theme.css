@@ -292,113 +292,26 @@ body:not(.nic-embed) .nic-shared-footer{
   padding-top:10px!important;padding-bottom:10px!important;
 }
 
-/* Three existing calculator actions between last information card and footer. */
-body:not(.nic-embed) .nic-actions-above-footer{
- position:relative!important;inset:auto!important;top:auto!important;right:auto!important;
- bottom:auto!important;left:auto!important;transform:none!important;
- box-sizing:border-box!important;width:100%!important;max-width:100%!important;
- margin:12px 0 14px!important;padding:0!important;z-index:auto!important
-}
-body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
- display:flex!important;box-sizing:border-box!important;width:100%!important;
- max-width:100%!important;min-width:0!important;gap:8px!important;flex-wrap:nowrap!important
-}
-body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>*{min-width:0!important}
-@media(max-width:650px){
- body:not(.nic-embed) .nic-actions-above-footer{margin:10px 0 12px!important}
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{gap:6px!important}
-}
-
-/* Action strip: match content-card width, transparent surface, sticky until footer. */
+/* Shared transparent sticky action strip: all five calculators. */
 body:not(.nic-embed) .nic-actions-above-footer{
  position:sticky!important;top:auto!important;bottom:0!important;left:auto!important;right:auto!important;
  z-index:30!important;box-sizing:border-box!important;
  width:calc(100% - 48px)!important;max-width:calc(100% - 48px)!important;
  margin:12px auto 19px!important;padding:0!important;
- background:transparent!important;background-color:transparent!important;
- background-image:none!important;border:0!important;box-shadow:none!important;
- backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
- transform:none!important
+ background:transparent!important;background-image:none!important;
+ border:0!important;box-shadow:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important
 }
 body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
- width:100%!important;max-width:100%!important;box-sizing:border-box!important;
- background:transparent!important;background-image:none!important;
- border:0!important;box-shadow:none!important;padding:0!important
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ box-sizing:border-box!important;background:transparent!important;
+ background-image:none!important;border:0!important;box-shadow:none!important;
+ padding:0!important
 }
 @media(max-width:650px){
  body:not(.nic-embed) .nic-actions-above-footer{
   width:calc(100% - 28px)!important;max-width:calc(100% - 28px)!important;
   margin:10px auto 17px!important
- }
-}
-
-/* Mobile: restore PDF/share widths and reserve remaining width for recalculation. */
-@media(max-width:650px){
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
-  display:flex!important;flex-wrap:nowrap!important;gap:6px!important;align-items:stretch!important
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf{
-  flex:0 0 auto!important;width:auto!important;max-width:none!important;
-  min-width:max-content!important;white-space:nowrap!important
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
-  flex:0 0 48px!important;width:48px!important;min-width:48px!important;
-  max-width:48px!important
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
-  flex:1 1 0!important;width:0!important;min-width:0!important;max-width:none!important;
-  padding-inline:6px!important;white-space:nowrap!important;font-size:clamp(11px,2.9vw,14px)!important
- }
-}
-
-/* Preserve existing desktop wording; use concise shared mobile wording. */
-body:not(.nic-embed) .bottom-primary .nic-mobile-reset-label{display:none!important}
-@media(max-width:650px){
- body:not(.nic-embed) .bottom-primary .nic-desktop-reset-label{display:none!important}
- body:not(.nic-embed) .bottom-primary .nic-mobile-reset-label{display:inline!important}
-}
-
-/* Uniform button typography and restore original share/download dimensions on landscape and desktop. */
-body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
- font-size:inherit!important;line-height:inherit!important;
-}
-@media(max-width:650px){
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
-  font-size:inherit!important;line-height:normal!important;
- }
-}
-@media(orientation:landscape), (min-width:651px){
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf,
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
-  flex:initial!important;width:auto!important;min-width:0!important;max-width:none!important;
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
-  font-size:inherit!important;line-height:normal!important;
- }
-}
-
-/* Landscape: restore full-size action buttons, overriding mobile portrait dimensions. */
-@media (orientation:landscape){
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
-  align-items:stretch!important;gap:10px!important;flex-wrap:nowrap!important
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary,
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf,
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
-  box-sizing:border-box!important;height:48px!important;min-height:48px!important;
-  max-height:none!important;font-size:16px!important;line-height:1.2!important;
-  padding:10px 14px!important;align-items:center!important;justify-content:center!important
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-primary{
-  flex:1 1 auto!important;width:auto!important;min-width:0!important;
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-pdf{
-  flex:0 0 auto!important;width:auto!important;min-width:max-content!important;
-  white-space:nowrap!important
- }
- body:not(.nic-embed) .nic-actions-above-footer .bottom-actions .bottom-save{
-  flex:0 0 56px!important;width:56px!important;min-width:56px!important;
-  max-width:56px!important;padding:8px!important
  }
 }
 
