@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const message='Nur für eingeloggte Nutzer sichtbar.';
+  const message='Nur für angemeldete Nutzer sichtbar.';
 
   // The access controls must work even when no other stylesheet defines them.
   const style=document.createElement('style');
@@ -25,7 +25,7 @@
       justify-content:center;
       padding:20px;
       box-sizing:border-box;
-      background:rgba(245,247,250,.84)!important;
+      background:rgba(245,247,250,.96)!important;
       color:#9aa3af!important;
       font-family:var(--nic-body-font-family,inherit)!important;
       font-size:var(--nic-body-font-size,16px)!important;
@@ -33,6 +33,14 @@
       text-align:center;
       line-height:1.5;
       cursor:not-allowed;
+      flex-direction:column;
+      gap:8px;
+    }
+    [data-nic-content-key].nic-content-box-guest-locked > :not(.nic-content-box-guest-overlay){
+      visibility:hidden!important;
+    }
+    html:not(.nic-content-ready) [data-nic-content-key]{
+      visibility:hidden!important;
     }
   `;
   (document.head||document.documentElement).appendChild(style);
@@ -56,7 +64,12 @@
           overlay.className='nic-content-box-guest-overlay';
           overlay.setAttribute('role','note');
           overlay.setAttribute('tabindex','0');
-          overlay.textContent=message;
+          const question=document.createElement('strong');
+          question.textContent='?';
+          question.style.fontSize='2.5em';
+          const note=document.createElement('span');
+          note.textContent=message;
+          overlay.append(question,note);
           box.append(overlay);
         }
       }else if(overlay){
@@ -83,7 +96,15 @@
     queueMicrotask(function(){pending=false;apply(window.NICSettings?.current);});
   });
   observer.observe(document.documentElement,{childList:true,subtree:true});
-  apply(window.NICSettings?.current);
   const settingsApi=window.NICSettings;
-  if(settingsApi?.init)settingsApi.init().then(settingsApi.apply).catch(function(error){console.warn('Zentrale Box-Einstellungen:',error.message);});
+  if(settingsApi?.init){
+    settingsApi.init().then(function(settings){
+      settingsApi.apply(settings);
+      apply(settings);
+      document.documentElement.classList.add('nic-content-ready');
+    }).catch(function(error){
+      console.warn('Zentrale Box-Einstellungen:',error.message);
+      // Do not reveal protected boxes when their access policy cannot be loaded.
+    });
+  }
 })();
