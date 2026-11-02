@@ -245,7 +245,7 @@ for page in SITE.rglob("*.html"):
     zero_script = """<script id="nic-empty-zero-amounts">
 (function(){
  'use strict';
- const excluded=/adults|children|kids|persons|people|guests|count|quantity|number|units|years|months|period|term|duration|age|zins|interest|repay|tilgung|percent|pct|rate|quote|faktor/i;
+ const excluded=/adults|children|kids|persons|people|guests|count|quantity|number|units|years|months|period|term|duration|age|zins|interest|repay|tilgung|percent|pct|quote|faktor/i;
  const numberZero=/^[+-]?(?:0+(?:[.,]0+)?|[.,]0+)$/;
  function allowed(el){
    if(!(el instanceof HTMLInputElement))return false;
@@ -285,10 +285,35 @@ for page in SITE.rglob("*.html"):
 </script>"""
     if 'id="nic-empty-zero-amounts"' not in source:
         source=source.replace("</body>",zero_script+"</body>",1)
+    # Remove obsolete paired bottom reset/apply controls, not unrelated apply buttons.
+    remove_buttons = """<script id="nic-remove-obsolete-reset-apply">
+(function(){
+  function removePair(){
+    document.querySelectorAll('button').forEach(function(red){
+      if(red.textContent.trim()!=='Auf 0 zurücksetzen')return;
+      const group=red.parentElement;
+      if(!group)return;
+      const green=Array.from(group.children).find(function(el){
+        return el.tagName==='BUTTON'&&el.textContent.trim()==='Übernehmen';
+      });
+      if(!green)return;
+      red.remove();green.remove();
+      if(!group.children.length)group.remove();
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',removePair,{once:true});
+  else removePair();
+  new MutationObserver(function(records){
+    if(records.some(r=>r.addedNodes.length))removePair();
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>"""
+    if 'id="nic-remove-obsolete-reset-apply"' not in source:
+        source=source.replace("</body>",remove_buttons+"</body>",1)
     if "content-section-access.js" not in source:
         if "</body>" not in source:
             raise SystemExit(f"Content access body anchor missing: {page}")
         source = source.replace("</body>", '<script defer src="/content-section-access.js"></script></body>', 1)
-        page.write_text(source, encoding="utf-8")
+    page.write_text(source, encoding="utf-8")
 
 print(f"Generated controls for {len(ordered)} H2 content boxes")
