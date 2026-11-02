@@ -8,13 +8,14 @@ function company(s){if(/\/impressum\/?$/.test(location.pathname)&&!document.getE
 function apply(){if(!S.current)return;S.apply(S.current,activePage);syncCalculatorMenu();social(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
 // A single route-based selection for every navigation card, including financing.
 function syncCalculatorMenu(){
- const selected={budget:'/budget/',own:'/eigennutzung/',rent:'/vermietung/',flip:'/fix-flip/',finance:'/finanzierungsrechner/'}[activePage];
- document.querySelectorAll('.deal-type-row > .deal-type-option').forEach(card=>{
-  const href=card.dataset.href||card.getAttribute('href');
-  if(!href)return;
-  const isCurrent=!!selected&&new URL(href,location.href).pathname===selected;
+ // Four embedded calculator modes have no href; the fifth card is a separate route.
+ const keys=['budget','own','rent','flip','finance'];
+ document.querySelectorAll('.deal-type-row > .deal-type-option').forEach((card,index)=>{
+  const key=card.id==='nicFinancingTab'?'finance':keys[index];
+  const isCurrent=key===activePage;
   card.classList.toggle('current',isCurrent);
   if(isCurrent)card.setAttribute('aria-current','page');else card.removeAttribute('aria-current');
+  if(card.matches('a'))card.setAttribute('aria-label',(card.querySelector('strong')?.textContent||'Rechner')+(isCurrent?' – aktiv':''));
  });
 }
 function modePage(){if(document.getElementById('dealTypeRent')?.getAttribute('aria-pressed')==='true')return 'rent';return document.querySelector('input[name="dealType"]:checked')?.value||'budget';}
