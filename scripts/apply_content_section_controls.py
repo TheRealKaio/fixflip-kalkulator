@@ -166,6 +166,29 @@ for page in SITE.rglob("*.html"):
 </script>"""
         if 'id="nic-budget-action-layout"' not in source:
             source = source.replace("</body>", width_script + "</body>", 1)
+    if route_for(page, source) == "budget":
+        reserve_hint = """<script id="nic-reserve-hint-typography">
+(function(){
+  function update(){
+    const size=window.NICSettings?.current?.layout?.subtextSize;
+    if(!size)return;
+    document.querySelectorAll('p,div,aside,small').forEach(function(el){
+      if(el.children.length && Array.from(el.children).some(child=>child.textContent?.includes('Der Finanzierungsreserve wird automatisch')))return;
+      if(el.textContent?.includes('Der Finanzierungsreserve wird automatisch aus dem frei verfügbaren Budget')){
+        el.style.setProperty('font-size',String(size)+'px','important');
+        el.style.setProperty('line-height','1.5','important');
+      }
+    });
+  }
+  window.addEventListener('nic-settings-updated',update);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',update,{once:true});else update();
+  new MutationObserver(function(records){
+    if(records.some(r=>Array.from(r.addedNodes).some(n=>n.nodeType===1&&n.textContent?.includes('Der Finanzierungsreserve wird automatisch'))))update();
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>"""
+        if 'id="nic-reserve-hint-typography"' not in source:
+            source=source.replace("</body>",reserve_hint+"</body>",1)
     if route_for(page, source) in ("own", "flip"):
         # Capture before calculator listeners are installed so manual typing is not
         # immediately reset by a recalculation. Reuse the existing renovation key.
