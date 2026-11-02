@@ -10,32 +10,31 @@ body:not(.nic-embed) .card{border-color:#e2e9e5}
 body:not(.nic-embed) .nic-account-link{background:#075c55;color:#fff}
 body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:#075c55!important;color:#fff!important}
 body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff!important}
-/* Separate white brand bar; the photograph header contains title and subtitle only. */
-.nic-brand-bar{display:flex;align-items:center;gap:18px;box-sizing:border-box;background:#fff;padding:12px 20px;color:#172e2b;border:1px solid #e9e1d6}
-.nic-brand-bar .brand-logo-wrap{flex:0 1 auto;padding:0!important;background:#fff;box-shadow:none}
-.nic-brand-bar .brand-logo{display:block;width:190px!important;max-width:100%!important;height:auto!important;max-height:none!important;object-fit:contain}
-.nic-brand-description{border-left:1px solid #8f9994;padding-left:18px;font:400 14px/1.4 system-ui,sans-serif;flex:1;min-width:0}
-.nic-brand-bar a.nic-login-button{position:static!important;display:inline-flex!important;align-items:center;justify-content:center;gap:8px;width:auto!important;height:auto!important;min-width:0!important;max-width:none!important;flex:0 0 auto;padding:10px 16px!important;border:1px solid #075c55;border-radius:16px;background:linear-gradient(135deg,#16867a,#075c55)!important;color:white!important;text-decoration:none;font:700 15px/1.2 system-ui,sans-serif}
+/* Shared brand-bar rules; the mobile breakpoints only adjust sizes and placement. */
+.nic-brand-bar{display:grid;grid-template-columns:170px minmax(0,1fr) auto;align-items:center;box-sizing:border-box;gap:12px;padding:12px 16px;background:#fff;color:#172e2b;border:1px solid #e9e1d6}
+.nic-brand-bar .brand-logo-wrap{grid-column:1;grid-row:1;flex:0 1 auto;min-width:0;padding:0!important;background:#fff;box-shadow:none}
+.nic-brand-bar .brand-logo{display:block;width:170px!important;max-width:100%!important;height:auto!important;max-height:none!important;object-fit:contain}
+.nic-brand-description{grid-column:2;grid-row:1;flex:1;min-width:0;border-left:1px solid #8f9994;padding-left:12px;font:400 13px/1.4 system-ui,sans-serif}
+.nic-brand-bar a.nic-login-button{grid-column:3;grid-row:1;position:static!important;display:inline-flex!important;align-items:center;justify-content:center;gap:8px;width:auto!important;height:auto!important;min-width:0!important;max-width:none!important;flex:0 0 auto;padding:10px 12px!important;border:1px solid #075c55;border-radius:16px;background:linear-gradient(135deg,#16867a,#075c55)!important;color:white!important;text-decoration:none;font:700 14px/1.2 system-ui,sans-serif}
 .nic-login-button svg{flex:0 0 24px}
 body.nic-admin-open .app>.nic-brand-bar{display:grid!important}
-body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{border-radius:0 0 22px 22px}
 body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-consent-settings,body:not(.nic-embed) .footer-note #nicConsentSettings{color:#fff!important;opacity:1!important}
-/* Retain the original card grid, padding, typography and dimensions. */
 .deal-type-option>input,.deal-type-option>.rent-radio-dot{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important}
 .nic-menu-icon{display:block;width:20px;height:20px;flex:0 0 20px;align-self:start;color:#075c55;pointer-events:none}
 .deal-type-option:has(input:checked)::after,.deal-type-option[aria-pressed="true"]::after,.deal-type-option.current::after{content:"";position:absolute;bottom:-7px;left:50%;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:#075c55;border-right:2px solid #fff;border-bottom:2px solid #fff;pointer-events:none}
 .deal-type-option:focus-within,.nic-login-button:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
-@media(max-width:700px){.nic-brand-bar{flex-wrap:wrap;gap:10px;padding:12px 18px}.nic-brand-bar .brand-logo{width:170px!important}.nic-brand-description{order:3;flex-basis:100%;border-left:0;padding-left:0;font-size:13px}.nic-brand-bar a.nic-login-button{margin-left:auto;font-size:13px;padding:10px 12px!important}}
-@media(max-width:380px){.nic-brand-bar{padding-inline:12px;gap:6px}.nic-brand-bar .brand-logo{width:130px!important}.nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important;gap:5px}}
+@media(max-width:700px){
+  .nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;flex-wrap:wrap;gap:8px;padding:12px}
+  .nic-brand-bar .brand-logo{width:150px!important}
+  .nic-brand-description{grid-column:1 / -1;grid-row:2;order:3;flex-basis:100%;border-left:0;padding:0;font-size:13px}
+  .nic-brand-bar a.nic-login-button{grid-column:2;grid-row:1;margin-left:auto;font-size:13px;padding:10px!important}
+}
+@media(max-width:380px){
+  .nic-brand-bar{gap:6px}
+  .nic-brand-bar .brand-logo{width:130px!important}
+  .nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important;gap:5px}
+}
 body.nic-admin-open .app>.nic-brand-bar#nicBrandBar{display:grid!important}
-/* The icons occupy the former radio-control footprint, preserving tile height. */
-.nic-brand-bar{display:grid;grid-template-columns:170px minmax(0,1fr) auto;gap:12px;padding:12px 16px}
-.nic-brand-bar .brand-logo-wrap{grid-column:1;grid-row:1;min-width:0}
-.nic-brand-bar .brand-logo{width:170px!important}
-.nic-brand-description{grid-column:2;grid-row:1;padding-left:12px;font-size:13px}
-.nic-brand-bar a.nic-login-button{grid-column:3;grid-row:1;font-size:14px;padding:10px 12px!important}
-@media(max-width:700px){.nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;padding:12px;gap:8px}.nic-brand-bar .brand-logo{width:150px!important}.nic-brand-description{grid-column:1 / -1;grid-row:2;padding:0}.nic-brand-bar a.nic-login-button{grid-column:2;grid-row:1;font-size:13px;padding:10px!important}}
-@media(max-width:380px){.nic-brand-bar .brand-logo{width:130px!important}.nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important}}
 
 /* November 2026 visible refinements to current (restored) UI. */
 body:not(.nic-embed) .footer-note,
