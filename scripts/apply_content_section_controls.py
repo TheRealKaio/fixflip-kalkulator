@@ -126,6 +126,12 @@ for page in SITE.rglob("*.html"):
     source = page.read_text(encoding="utf-8")
     if route_for(page, source) not in ORDER:
         continue
+    # Fail closed before JS and database access rules have loaded: no first-paint flash.
+    prepaint = '<style id="nic-content-prepaint">html:not(.nic-content-ready) [data-nic-content-key]{visibility:hidden!important}</style>'
+    if prepaint not in source:
+        if "</head>" not in source:
+            raise SystemExit(f"Content access head anchor missing: {page}")
+        source = source.replace("</head>", prepaint + "</head>", 1)
     if "content-section-access.js" not in source:
         if "</body>" not in source:
             raise SystemExit(f"Content access body anchor missing: {page}")
