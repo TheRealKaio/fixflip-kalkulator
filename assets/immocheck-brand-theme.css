@@ -350,12 +350,12 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option{
   text-align:center!important;
 }
 body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]){
-  border:1px solid #075c55!important;
-  background:linear-gradient(135deg,#16867a,#075c55)!important;
-  color:#fff!important;
+  border:1px solid var(--nic-green-bg,#075c55)!important;
+  background:var(--nic-green-bg,#075c55)!important;
+  color:var(--nic-green-text,#fff)!important;
 }
 body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]) :is(strong,small,.nic-menu-icon){
-  color:#fff!important;
+  color:var(--nic-green-text,#fff)!important;
   opacity:1!important;
 }
 
