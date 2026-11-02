@@ -510,3 +510,9 @@ body:not(.nic-embed) .deal-type-row > :is(a.deal-type-option,label.deal-type-opt
  border-color:var(--nic-green-bg,#075c55)!important;
  border-width:2px!important;
 }
+
+/* Footer typography inherits the centrally configured site/system font. */
+body:not(.nic-embed) :is(.footer-note,.nic-shared-footer),
+body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) :is(span,div,nav,a,button,.footer-version,.nic-consent-settings){
+  font-family:inherit!important;
+}
