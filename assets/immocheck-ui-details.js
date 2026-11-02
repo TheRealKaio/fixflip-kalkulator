@@ -84,8 +84,11 @@ function alignCalculatorActions(){
  bar.style.setProperty('box-sizing','border-box','important');
  bar.style.setProperty('width',rect.width+'px','important');
  bar.style.setProperty('max-width',rect.width+'px','important');
- bar.style.setProperty('margin-left',(rect.left-parent.left)+'px','important');
- bar.style.setProperty('margin-right','0','important');
+ // Reset the old horizontal position before measuring, so navigation never accumulates offsets.
+ bar.style.setProperty('margin-left','0px','important');
+ bar.style.setProperty('margin-right','0px','important');
+ const measured=bar.getBoundingClientRect();
+ bar.style.setProperty('margin-left',(rect.left-measured.left)+'px','important');
 }
 alignCalculatorActions();
 window.addEventListener('resize',alignCalculatorActions,{passive:true});
