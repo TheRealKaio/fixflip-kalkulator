@@ -20,13 +20,13 @@ replace_once(
 )
 replace_once(
     site / "pdf-reports.js",
-    "if(download){doc.save(name);return;}",
-    "if(download){doc.save(name);window.NICAnalytics?.track('pdf_download','finance');return;}",
+    "if(download){openReport(doc,name);return;}",
+    "if(download){openReport(doc,name);window.NICAnalytics?.track('pdf_download','finance');return;}",
 )
 replace_once(
     site / "pdf-reports.js",
-    "if(navigator.canShare?.({files:[file]})&&navigator.share)await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});else{if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;doc.save(name);}",
-    "if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});window.NICAnalytics?.track('pdf_share','finance',{method:'web_share'});}else{if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;doc.save(name);window.NICAnalytics?.track('pdf_download','finance',{method:'share_fallback'});}",
+    "if(navigator.canShare?.({files:[file]})&&navigator.share)await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});else{if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;openReport(doc,name);}",
+    "if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file],title:name.slice(0,-4),text:name.slice(0,-4)});window.NICAnalytics?.track('pdf_share','finance',{method:'web_share'});}else{if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;openReport(doc,name);window.NICAnalytics?.track('pdf_download','finance',{method:'share_fallback'});}",
 )
 replace_once(
     site / "user-access.js",
