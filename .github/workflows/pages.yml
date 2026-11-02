@@ -635,6 +635,7 @@ jobs:
           python scripts/build_immocheck_brand_assets.py _site
           python scripts/build_settings_pages.py _site
           python scripts/extract_finance_footer.py _site
+          python scripts/unify_finance_footer_markup.py _site
           python scripts/extract_finance_menu.py _site
           python scripts/extract_finance_header.py _site
           mkdir -p _site/finanzierungsrechner
