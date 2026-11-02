@@ -30,7 +30,7 @@ if(row)new MutationObserver(decorate).observe(row,{childList:true});
 /* One shared action bar and one mobile label on every calculator route. */
 function unifyCalculatorActions(){
  document.querySelectorAll('.bottom-actions').forEach(bar=>{
-  const primary=bar.querySelector('#newCalc, .bottom-primary');
+  const primary=bar.querySelector('#newCalc, #recalc, .bottom-primary');
   const share=bar.querySelector('#share, .bottom-pdf');
   const download=bar.querySelector('#download, .bottom-save');
   if(!primary||!share||!download)return;
