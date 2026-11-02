@@ -45,6 +45,7 @@ required_implementation = {
     "warning shows reserve without deviation": 'Finanzierungsreserve unterschritten · Finanzierungsreserve: "+eur(minimumReserve)',
     "slider uses requested label": '<span>Anteil am Haushaltsnetto</span>',
     "slider value shows percentage only": '$("budgetRateSliderValue").textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" %";',
+    "slider card matches highlight row width": '.budget-rate-slider-wrap{margin:10px -2px 0;box-sizing:border-box;',
     "warning explicit below branch": 'if(minimumBufferBelow){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
     "financing reserve markup starts blank": 'id="budgetSafetyReserve" inputmode="decimal" readonly aria-readonly="true"',
@@ -157,6 +158,8 @@ for removed_message in (
     'Abweichung: "+eur(bufferDeviation)',
     'textContent=eur(m.monthlyRate)+" · "+',
     '<span>Maximal tragbare Kreditrate</span>',
+    'id="budgetRateRatio"',
+    '(ca. " + new Intl.NumberFormat("de-DE"',
 ):
     if removed_message in html:
         raise SystemExit("Slider acceptance failed - removed budget-rate message remains: " + removed_message)
