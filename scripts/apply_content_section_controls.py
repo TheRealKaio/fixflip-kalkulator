@@ -132,19 +132,6 @@ for page in SITE.rglob("*.html"):
         if "</head>" not in source:
             raise SystemExit(f"Content access head anchor missing: {page}")
         source = source.replace("</head>", prepaint + "</head>", 1)
-    if route_for(page, source) == "budget":
-        button_style = """<style id="nic-budget-suggestion-width">
-#budgetExpensesSection .budget-expenses-toolbar{
-  width:48%!important;max-width:48%!important;margin-left:auto!important;
-  display:flex!important;justify-content:flex-end;align-items:center;gap:8px
-}
-#budgetExpensesSection .budget-expenses-toolbar .budget-apply-btn{
-  flex:1 1 auto!important;width:100%!important;min-width:0;max-width:100%!important
-}
-@media(max-width:650px){#budgetExpensesSection .budget-expenses-toolbar{width:100%!important;max-width:100%!important}}
-</style>"""
-        if 'id="nic-budget-suggestion-width"' not in source:
-            source = source.replace("</head>", button_style + "</head>", 1)
     if route_for(page, source) in ("own", "flip", "budget"):
         modern_script = """<script id="nic-modernization-edit">
 (function(){
