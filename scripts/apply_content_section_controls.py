@@ -290,30 +290,19 @@ for page in SITE.rglob("*.html"):
 </script>"""
     if 'id="nic-empty-zero-amounts"' not in source:
         source=source.replace("</body>",zero_script+"</body>",1)
-    # Mark the exact household net-income explanation, preserving other subtext styles.
-    # The central site-settings stylesheet owns its font-size.
-    income_hint = """<script id="nic-household-net-income-guidance">
-(function(){
-  const phrase='Grundlage ist dein tatsächlich verfügbares monatliches Haushaltsnettoeinkommen.';
-  function tag(){
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
-    let node;
-    while((node=walker.nextNode())){
-      if(!node.textContent.includes(phrase))continue;
-      const parent=node.parentElement;
-      if(!parent||parent.closest('.nic-household-net-income-guidance'))continue;
-      parent.classList.add('nic-household-net-income-guidance');
-      parent.classList.remove('sub','mini','hint');
-      parent.style.removeProperty('font-size');
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tag,{once:true});
-  else tag();
-  window.addEventListener('nic-settings-updated',tag);
-})();
-</script>"""
-    if 'id="nic-household-net-income-guidance"' not in source:
-        source=source.replace("</body>",income_hint+"</body>",1)
+    # Classify the actual hint in HTML during build; no DOM text walker or timing dependency.
+    income_phrase = "Grundlage ist dein tatsächlich verfügbares monatliches Haushaltsnettoeinkommen."
+    if income_phrase in source:
+        text_pos = source.index(income_phrase)
+        tag_start = source.rfind("<", 0, text_pos)
+        tag_end = source.find(">", tag_start)
+        tag = source[tag_start:tag_end + 1]
+        if not tag.startswith("<script") and "class=" in tag:
+            tag = re.sub(r'\\b(sub|mini|hint)\\b', '', tag)
+            tag = re.sub(r'class="([^"]*)"', lambda m: 'class="' + m.group(1).strip() + ' nic-household-net-income-guidance"', tag, count=1)
+            source = source[:tag_start] + tag + source[tag_end + 1:]
+        else:
+            raise SystemExit("Household income hint markup not safely identifiable")
     # Remove obsolete paired bottom reset/apply controls, not unrelated apply buttons.
     remove_buttons = """<script id="nic-remove-obsolete-reset-apply">
 (function(){
