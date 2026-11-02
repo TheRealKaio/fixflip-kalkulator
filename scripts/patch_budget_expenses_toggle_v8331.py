@@ -51,6 +51,7 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     const original=section.querySelector(".budget-section-title .sub, .budget-expense-guidance");
     if(!original)return;
     original.classList.remove("sub");
+    original.removeAttribute("style");
     original.classList.add("budget-expense-guidance");
     const total=document.getElementById("budgetSuggestionTotal");
     const toolbar=section.querySelector(".budget-expenses-toolbar");
