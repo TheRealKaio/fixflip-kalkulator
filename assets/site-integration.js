@@ -198,7 +198,7 @@ S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(pag
   }
   function markBudgetTransferButtons(){
     document.querySelectorAll('button,input[type="button"],input[type="submit"]').forEach(button=>{
-      const label=(button.tagName==='INPUT'?button.value:button.textContent||'').trim().replace(/\\s+/g,' ');
+      const label=(button.tagName==='INPUT'?button.value:button.textContent||'').trim().replace(/\s+/g,' ');
       if(/^Budgetwerte übernehmen$/i.test(label))button.classList.add('nic-green-budget-transfer');
     });
   }
