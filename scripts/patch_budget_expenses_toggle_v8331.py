@@ -21,7 +21,6 @@ s = s[:match.start()] + section + s[match.end():]
 style = '''<style id="budget-expenses-toggle-v8331">
 #budgetExpensesSection .budget-section-title{display:grid!important;grid-template-columns:minmax(0,1fr) 34px;gap:12px;align-items:center!important}
 #budgetExpensesSection .budget-section-title h2{margin:0}
-#budgetExpensesSection .budget-section-title .sub{margin:5px 0 0!important}
 #budgetExpensesToggle{justify-self:end;align-self:center}
 #budgetExpensesBody[hidden]{display:none!important}
 #budgetExpensesBody{margin-top:16px}
@@ -53,6 +52,7 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     if(!section)return;
     const original=section.querySelector(".budget-section-title .sub, .budget-expense-guidance");
     if(!original)return;
+    original.classList.remove("sub");
     original.classList.add("budget-expense-guidance");
     const total=document.getElementById("budgetSuggestionTotal");
     const toolbar=section.querySelector(".budget-expenses-toolbar");
@@ -67,7 +67,8 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     const hint=String(layout.hintSize??12)+"px";
     section.style.setProperty("--nic-budget-subtext",sub);
     section.style.setProperty("--nic-budget-hint",hint);
-    original.style.setProperty("font-size",String(layout.bodySize??16)+"px","important");
+    // Font size is controlled exclusively by the central site-settings layout stylesheet.
+    original.style.removeProperty("font-size");
     // Original budget rows contain multiple nested title/description elements.
     section.querySelectorAll(".budget-expense-name").forEach(function(group){
       group.style.setProperty("font-size",sub,"important");
