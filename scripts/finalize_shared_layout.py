@@ -91,6 +91,19 @@ body:not(.nic-admin) .budget-expenses-toolbar>:is(button,.nic-clear-reno):not(#b
  flex:0 0 36px!important;width:36px!important;min-width:36px!important;
  max-width:36px!important;margin:0!important;
 }
+/* Match the right-aligned renovation proposal group above its blue summary. */
+body:not(.nic-admin) #budgetExpensesSection .budget-expenses-toolbar{
+ width:48%!important;max-width:48%!important;margin-left:auto!important;margin-right:0!important;
+ justify-content:flex-end!important;
+}
+body:not(.nic-admin) #budgetExpensesSection #budgetApplySuggestions{
+ flex:1 1 0!important;width:100%!important;min-width:0!important;
+}
+@media(max-width:650px){
+ body:not(.nic-admin) #budgetExpensesSection .budget-expenses-toolbar{
+  width:100%!important;max-width:100%!important;
+ }
+}
 @media(max-width:420px){
  body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){max-width:100%!important}
 }
