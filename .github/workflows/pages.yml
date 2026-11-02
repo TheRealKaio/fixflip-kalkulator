@@ -662,6 +662,7 @@ jobs:
           node --check _site/pdf-reports.js
           python scripts/unify_calculator_header.py _site
           python scripts/unify_calculator_actions.py _site
+          python scripts/verify_shared_footer_actions.py _site
           python scripts/unify_calculator_layout.py _site
           python scripts/initialize_calculator_routes.py _site
           python scripts/build_user_access.py _site
