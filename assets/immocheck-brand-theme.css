@@ -492,3 +492,9 @@ body:not(.nic-embed) .nic-footer-cookie-pair .footer-version{
  margin:0!important;
  white-space:nowrap;
 }
+
+/* Financing: refinancing risk tile uses the admin warning highlight, independent of red action buttons. */
+body:not(.nic-embed) .refinance-grid .kpi:nth-child(3){
+ background:var(--nic-highlight-warning-bg,#FECACA)!important;
+ border-color:var(--nic-highlight-warning-bg,#FECACA)!important;
+}
