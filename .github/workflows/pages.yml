@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 11292)
+Total output lines: 722
+
 name: Deploy FixFlip to GitHub Pages
 
 on:
@@ -352,102 +355,7 @@ jobs:
               '  doc.setTextColor(255,255,255);',
               '  doc.setFont("helvetica","bold");',
               '  doc.setFontSize(20);',
-              '  doc.text(isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report", left, 16);',
-              '  doc.setFont("helvetica","normal");',
-              '  doc.setFontSize(9);',
-              '  doc.text(isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus dem Fix & Flip Deal Check", left, 23);',
-              '  doc.text(new Date().toLocaleDateString("de-DE"), right, 23, {align:"right"});',
-              '  doc.setTextColor(23,32,51);',
-              '  y = 43;'
-          ])
-          first_page_header_new = "\n".join([
-              '  drawPdfBrandHeader(',
-              '    doc,',
-              '    isOwnUse ? "Eigennutzung - Deal Report" : "Fix & Flip - Deal Report",',
-              '    isOwnUse ? "Erstellt aus der Eigennutzungs-Kalkulation" : "Erstellt aus der Fix & Flip Kalkulation",',
-              '    new Date().toLocaleDateString("de-DE")',
-              '  );',
-              '  y = 43;'
-          ])
-          if first_page_header_old in s:
-              s = s.replace(first_page_header_old, first_page_header_new, 1)
-
-          # Final safeguard: stamp the logo on every finished deal-report page.
-          footer_loop_old = "\n".join([
-              '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
-              '    doc.setPage(pageNo);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.236");',
-              '  }'
-          ])
-          footer_loop_new = "\n".join([
-              '  for(let pageNo = 1; pageNo <= totalPages; pageNo++){',
-              '    doc.setPage(pageNo);',
-              '    drawPdfBrandLogo(doc);',
-              '    drawPdfFooter(doc,pageNo,totalPages,"V8.236");',
-              '  }'
-          ])
-          if footer_loop_old in s:
-              s = s.replace(footer_loop_old, footer_loop_new, 1)
-
-          s = s.replace("V8.152","V8.236")
-          final_loop_old = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
-            doc.setPage(pageNo);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.236");
-          }'''
-          final_loop_new = '''  for(let pageNo = 1; pageNo <= totalPages; pageNo++){
-            doc.setPage(pageNo);
-            // Abschluss-Pass: Logo auf jeder Seite nochmals zeichnen, insbesondere Seite 1.
-            drawPdfBrandLogo(doc);
-            drawPdfFooter(doc,pageNo,totalPages,"V8.236");
-          }'''
-          if final_loop_old in s:
-              s = s.replace(final_loop_old,final_loop_new,1)
-          s = s.replace('    const doc = buildPdf();','    await preparePdfBrandLogo();' + chr(10) + '    const doc = buildPdf();',2)
-          s = s.replace('navigator.serviceWorker.register("./service-worker.js")','navigator.serviceWorker.register("./service-worker.js?v=8.236", {updateViaCache:"none"})')
-
-          p.write_text(s,encoding="utf-8")
-          PY
-          python scripts/patch_v8165.py _site/index.html
-          python scripts/patch_reno_suggestions.py
-          python scripts/patch_budget_placeholders_v8239.py
-          python scripts/patch_suggestion_totals_v8240.py
-          python scripts/patch_reno_state_v8241.py
-          python scripts/patch_budget_reno_v8242.py
-          python scripts/patch_buffer_hint.py
-          python scripts/patch_market_value_v8243.py
-          python scripts/patch_market_value_hint_v8244.py
-          python scripts/patch_own_sections_v8245.py
-          python scripts/patch_additional_financing_v8246.py
-          python scripts/patch_own_visuals_v8247.py
-          python scripts/patch_own_pdf_v8248.py
-          python scripts/patch_own_pdf_totals_v8249.py
-          python scripts/patch_flip_sections_v8250.py
-          python scripts/patch_visible_subtitles_v8251.py
-          python scripts/patch_subtitle_style_v8252.py
-          python scripts/patch_project_goals_subtitle_v8253.py
-          python scripts/patch_flip_sale_persistence_v8254.py
-          python scripts/patch_decouple_target_margin_v8255.py
-          python scripts/patch_goal_aware_sale_v8256.py
-          python scripts/patch_equity_liquidity_v8257.py
-          python scripts/patch_equity_waterfall_v8258.py
-          python scripts/patch_project_goal_hints_v8259.py
-          python scripts/patch_liquidity_hint_v8260.py
-          python scripts/patch_roi_zero_equity_v8261.py
-          python scripts/patch_full_equity_roi_v8262.py
-          python scripts/patch_sale_expectation_v8263.py
-          python scripts/patch_sale_benchmark_layout_v8264.py
-          python scripts/patch_dynamic_target_margin_v8265.py
-          python scripts/patch_goal_cost_reduction_hint_v8266.py
-          python scripts/patch_maxbuy_position_hint_v8267.py
-          python scripts/patch_financing_equity_shortfall_v8268.py
-          python scripts/patch_own_equity_shortfall_v8269.py
-          python scripts/patch_budget_mobile_expense_width_v8270.py
-          python scripts/patch_reset_interest_cleanup_v8271.py
-          python scripts/patch_budget_location_v8272.py
-          python scripts/patch_budget_ancillary_components_v8273.py
-          python scripts/patch_budget_equity_household_v8274.py
-          python scripts/patch_budget_ancillary_alignment_v8275.py
-          python scripts/patch_budget_assumption_spacing_v8276.py
+        …1292 tokens truncated…python scripts/patch_budget_assumption_spacing_v8276.py
           python scripts/patch_budget_field_spacing_v8277.py
           python scripts/patch_budget_remove_label_height_v8278.py
           python scripts/patch_budget_financing_reserve_card_v8279.py
@@ -525,6 +433,7 @@ jobs:
           python scripts/patch_budget_rate_card_v8371.py _site/index.html
           python scripts/patch_budget_rate_labels_v8372.py _site/index.html
           python scripts/patch_budget_rate_width_v8373.py _site/index.html
+          python scripts/patch_footer_regular_v8374.py _site
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
           python scripts/release_contract.py normalize _site

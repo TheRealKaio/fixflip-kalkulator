@@ -27,6 +27,6 @@ async function pdf(type,outcome){const calls=[],alerts=[];const buttons={sharePd
  result=await pdf(prefix+'-save','success');assert.equal(result.calls.length,1);assert.equal(result.calls[0][0],'pdf_download');
  result=await pdf(prefix+'-save','failure');assert.equal(result.calls.length,0);
  }
- assert(fs.readFileSync(site+'/statistics.css','utf8').includes('.footer-version{font-weight:400!important}'));assert(fs.readFileSync(site+'/statistics.css','utf8').includes('.footer-legal-links a{font-weight:700!important}'));assert(fs.readFileSync(site+'/admin.html','utf8').includes('id="tab-stats"'));
+ assert(fs.readFileSync(site+'/statistics.css','utf8').includes('.footer-version{font-weight:400!important}'));assert(!/\.footer-legal-links a\{[^}]*font-weight:700/.test(fs.readFileSync(site+'/statistics.css','utf8')));assert(!/\.public-footer a\{[^}]*font-weight:700/.test(fs.readFileSync(site+'/statistics.css','utf8')));assert(fs.readFileSync(site+'/admin.html','utf8').includes('id="tab-stats"'));
  console.log('Statistics passed: consent blocking, per-section tags, fallback routing, debounce, no financial data, date windows, devices, sources, PDF success/cancel/fallback/failure and footer typography.');
 })().catch(e=>{console.error(e);process.exit(1);});
