@@ -24,6 +24,29 @@ function decorate(){
  });
 }
 decorate();
+/* Safety fallback when an old/cached stylesheet leaves navigation SVGs unbounded. */
+function guardNavigationIcons(){
+ const icon=document.querySelector('.deal-type-row .nic-menu-icon');
+ if(!icon||document.getElementById('nic-nav-fallback'))return;
+ const size=icon.getBoundingClientRect();
+ if(size.width<=36&&size.height<=36)return;
+ const style=document.createElement('style');
+ style.id='nic-nav-fallback';
+ style.textContent=`
+ .deal-type-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+ .deal-type-row>.deal-type-option{display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;grid-template-rows:auto 1fr!important;column-gap:6px!important;row-gap:7px!important;align-items:center!important;box-sizing:border-box!important;min-width:0!important;padding:12px!important;border:1px solid #dcd8d2!important;border-radius:16px!important;background:#fff!important}
+ .deal-type-row>.deal-type-option:last-child{grid-column:1/-1!important}
+ .deal-type-row>.deal-type-option.current{background:#087065!important;color:white!important}
+ .deal-type-row>.deal-type-option>span{display:contents!important}
+ .deal-type-row>.deal-type-option>.nic-menu-icon{grid-column:1!important;grid-row:1!important;display:block!important;width:20px!important;height:20px!important;max-width:20px!important;max-height:20px!important}
+ .deal-type-row>.deal-type-option strong{grid-column:2!important;grid-row:1!important;min-width:0!important;font-size:clamp(12px,1.15vw,17px)!important;overflow-wrap:anywhere!important}
+ .deal-type-row>.deal-type-option small{grid-column:1/-1!important;grid-row:2!important;min-width:0!important;font-size:clamp(11px,1vw,14px)!important}
+ .deal-type-row>.deal-type-option>input[type=radio]{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important}
+ @media(max-width:700px){.deal-type-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+ `;
+ document.head.append(style);
+}
+guardNavigationIcons();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
