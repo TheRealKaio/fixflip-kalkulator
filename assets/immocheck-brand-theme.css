@@ -407,3 +407,38 @@ body:not(.nic-embed) .footer-note .footer-legal-links,
 body:not(.nic-embed) .nic-shared-footer .footer-legal-links{
  font-size:calc(1em + 1px)!important;
 }
+
+/* Common financing-style action layout for all five calculators. */
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions{
+ display:flex!important;align-items:stretch!important;justify-content:stretch!important;
+ flex-wrap:nowrap!important;gap:8px!important;width:100%!important;
+ max-width:100%!important;min-width:0!important;background:transparent!important;
+ padding:0!important;margin:0!important;box-sizing:border-box!important
+}
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions :is(.bottom-primary,.bottom-pdf,.bottom-save){
+ box-sizing:border-box!important;height:48px!important;min-height:48px!important;max-height:48px!important;
+ font-size:16px!important;font-weight:650!important;line-height:1.2!important;
+ align-items:center!important;justify-content:center!important;
+ margin:0!important;white-space:nowrap!important
+}
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions .bottom-primary{
+ flex:1 1 0!important;width:0!important;min-width:0!important;max-width:none!important;
+ padding:8px 10px!important
+}
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions .bottom-pdf{
+ flex:0 0 auto!important;width:auto!important;min-width:max-content!important;max-width:none!important;
+ padding:8px 14px!important
+}
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions .bottom-save{
+ flex:0 0 56px!important;width:56px!important;min-width:56px!important;max-width:56px!important;
+ padding:8px!important
+}
+@media(max-width:650px) and (orientation:portrait){
+ body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions{gap:6px!important}
+ body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions .bottom-save{
+  flex:0 0 48px!important;width:48px!important;min-width:48px!important;max-width:48px!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions :is(.bottom-primary,.bottom-pdf,.bottom-save){
+  font-size:clamp(12px,3.3vw,16px)!important
+ }
+}
