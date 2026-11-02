@@ -133,7 +133,7 @@ body:not(.nic-admin) .nic-content-box-guest-locked{position:relative!important;i
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) #budgetExpensesSection .budget-expense-guidance,body:not(.nic-admin) #budgetExpensesSection .budget-expense-guidance *{font-size:var(--nic-body-font-size, ${l.bodySize}px)!important;line-height:1.5!important}
 body:not(.nic-admin) .nic-household-net-income-guidance,body:not(.nic-admin) .nic-household-net-income-guidance *{font-size:var(--nic-body-font-size, ${l.bodySize}px)!important;line-height:1.5!important}
-body:not(.nic-admin) :is(.budget-suggestion-actions .suggestion-total,.reno-head-actions .suggestion-total){font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(#budgetSuggestionTotal,.budget-suggestion-actions .suggestion-total,.reno-head-actions .suggestion-total){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name :is(strong,b,.name,.budget-expense-title),body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name > :first-child{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name :is(small,.mini,.sub,.hint,.description,.budget-expense-description),body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name > :not(:first-child){font-size:${l.hintSize}px!important;line-height:1.5}
