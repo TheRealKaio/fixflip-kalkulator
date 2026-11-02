@@ -27,64 +27,34 @@ decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
-/* One shared action bar and one mobile label on every calculator route. */
-function unifyCalculatorActions(){
- document.querySelectorAll('.bottom-actions').forEach(bar=>{
-  const buttons=Array.from(bar.querySelectorAll('button'));
-  const primary=bar.querySelector('#newCalc, #recalc, .bottom-primary')||buttons[0];
-  const share=bar.querySelector('#share, .bottom-pdf')||buttons[1];
-  const download=bar.querySelector('#download, .bottom-save')||buttons[2];
-  if(!primary||!share||!download)return;
-  primary.classList.add('bottom-primary');
-  share.classList.add('bottom-pdf');
-  download.classList.add('bottom-save');
-  primary.textContent='Neu kalkulieren';
-  share.textContent='PDF teilen';
-  bar.classList.add('nic-unified-calculator-actions');
-  [primary,share,download].forEach((el,index)=>{
-   el.classList.add('nic-action-'+index);
-   el.style.removeProperty('width');
-   el.style.removeProperty('min-width');
-  });
- });
-}
-unifyCalculatorActions();
-/* Some legacy calculator code rewrites reset captions after initialization. */
-const actionsObserver=new MutationObserver(()=>{
- document.querySelectorAll('.bottom-actions').forEach(bar=>{
-  const buttons=Array.from(bar.querySelectorAll('button'));
-  const primary=bar.querySelector('#newCalc, #recalc, .bottom-primary')||buttons[0];
-  if(primary && primary.textContent.trim()!=='Neu kalkulieren')primary.textContent='Neu kalkulieren';
-  const share=bar.querySelector('#share, .bottom-pdf')||buttons[1];
-  if(share && share.textContent.trim()!=='PDF teilen')share.textContent='PDF teilen';
- });
-});
-document.querySelectorAll('.bottom-actions').forEach(bar=>{
- actionsObserver.observe(bar,{subtree:true,characterData:true,childList:true});
-});
-/* Put the existing calculator action bar in normal document flow above the footer. */
-function positionCalculatorActions(){
+/* Shared action bar: one initialization, with original calculator event handlers retained. */
+function setupCalculatorActions(){
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
- const bar=document.querySelector('.app > .bottom, .bottom');
- if(!footer||!bar||bar===footer||bar.dataset.nicPositioned==='1')return;
- footer.before(bar);
- bar.dataset.nicPositioned='1';
- bar.classList.add('nic-actions-above-footer');
+ document.querySelectorAll('.bottom-actions').forEach(actions=>{
+  const bar=actions.closest('.bottom');
+  const buttons=Array.from(actions.querySelectorAll('button'));
+  if(!bar||!footer||buttons.length<3)return;
+  const [reset,share,download]=buttons;
+  reset.classList.add('bottom-primary','nic-action-0');
+  share.classList.add('bottom-pdf','nic-action-1');
+  download.classList.add('bottom-save','nic-action-2');
+  actions.classList.add('nic-unified-calculator-actions');
+  if(!bar.classList.contains('nic-actions-above-footer')){
+   footer.before(bar);
+   bar.classList.add('nic-actions-above-footer');
+  }
+  const normalize=()=>{
+   if(reset.textContent.trim()!=='Neu kalkulieren')reset.textContent='Neu kalkulieren';
+   if(share.textContent.trim()!=='PDF teilen')share.textContent='PDF teilen';
+  };
+  normalize();
+  // Legacy calculator code can reset captions on mode changes. Observe only labels.
+  const observer=new MutationObserver(normalize);
+  observer.observe(reset,{subtree:true,childList:true,characterData:true});
+  observer.observe(share,{subtree:true,childList:true,characterData:true});
+ });
 }
-positionCalculatorActions();
-/* Shared action bar: native centered layout, no viewport translations or stored offsets. */
-function alignCalculatorActions(){
- const bar=document.querySelector('.nic-actions-above-footer');
- if(!bar)return;
- bar.style.removeProperty('transform');
- bar.style.removeProperty('left');
- bar.style.removeProperty('right');
- bar.style.removeProperty('width');
- bar.style.removeProperty('max-width');
- bar.style.removeProperty('margin-left');
- bar.style.removeProperty('margin-right');
-}
-alignCalculatorActions();
+setupCalculatorActions();
 /* All five calculators: align the footer to the visible shared brand header. */
 function alignSharedFooter(){
  const header=document.querySelector('.app > .nic-brand-bar')||document.querySelector('.app > .hero');
