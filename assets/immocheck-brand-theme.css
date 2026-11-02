@@ -362,7 +362,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   display:block!important;align-self:center!important;
   width:100%!important;margin:0!important;min-width:0!important;
   box-sizing:border-box!important;padding-right:12px!important;
-  font-size:clamp(12px,1vw,16px)!important;letter-spacing:-.025em!important;
+  font-size:clamp(14px,calc(1vw + 2px),18px)!important;letter-spacing:-.025em!important;
   text-align:left!important;line-height:1.25!important;
   max-width:100%!important;white-space:normal!important;
   overflow-wrap:anywhere!important;word-break:normal!important;hyphens:auto!important
@@ -372,6 +372,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   display:block!important;margin:0!important;padding:0!important;
   width:100%!important;min-width:0!important;
   text-align:left!important;text-align-last:left!important;
+  font-size:clamp(13px,calc(.65vw + 7px),16px)!important;
   line-height:1.35!important;hyphens:auto!important
  }
 }
@@ -384,4 +385,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   box-sizing:border-box!important;
  }
  body:not(.nic-embed) .deal-type-row>.deal-type-option{column-gap:9px!important}
+ /* Large desktop keeps the same readable hierarchy as tablets. */
+ body:not(.nic-embed) .deal-type-row>.deal-type-option strong{font-size:clamp(14px,calc(1vw + 2px),18px)!important}
+ body:not(.nic-embed) .deal-type-row>.deal-type-option small{font-size:clamp(13px,calc(.65vw + 7px),16px)!important}
 }
