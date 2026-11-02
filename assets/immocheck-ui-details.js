@@ -77,18 +77,21 @@ function alignCalculatorActions(){
  const bar=document.querySelector('.nic-actions-above-footer');
  const cards=Array.from(document.querySelectorAll('main .card, .section > .card'));
  const card=cards.find(el=>el.getBoundingClientRect().width>0);
- if(!bar||!card||!bar.parentElement)return;
+ if(!bar||!card)return;
  const rect=card.getBoundingClientRect();
- const parent=bar.parentElement.getBoundingClientRect();
  if(rect.width<100)return;
+ // All positions are measured in viewport coordinates. Avoid mixing parent-relative
+ // margin offsets with viewport coordinates (which shifted Finance off-screen).
  bar.style.setProperty('box-sizing','border-box','important');
  bar.style.setProperty('width',rect.width+'px','important');
  bar.style.setProperty('max-width',rect.width+'px','important');
- // Reset the old horizontal position before measuring, so navigation never accumulates offsets.
- bar.style.setProperty('margin-left','0px','important');
- bar.style.setProperty('margin-right','0px','important');
- const measured=bar.getBoundingClientRect();
- bar.style.setProperty('margin-left',(rect.left-measured.left)+'px','important');
+ bar.style.setProperty('margin-left','auto','important');
+ bar.style.setProperty('margin-right','auto','important');
+ bar.style.setProperty('left','auto','important');
+ bar.style.setProperty('right','auto','important');
+ bar.style.removeProperty('transform');
+ const own=bar.getBoundingClientRect();
+ bar.style.setProperty('transform','translateX('+(rect.left-own.left)+'px)','important');
 }
 alignCalculatorActions();
 window.addEventListener('resize',alignCalculatorActions,{passive:true});
