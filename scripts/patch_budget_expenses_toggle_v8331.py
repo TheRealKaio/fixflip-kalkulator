@@ -23,9 +23,9 @@ if note_at < 0:
 tag_start = section.rfind('<', 0, note_at)
 tag_end = section.find('>', tag_start)
 tag = section[tag_start:tag_end+1]
-if not re.search(r'\\bsub\\b', tag):
+if not re.search(r'\bsub\b', tag):
     raise SystemExit('Legacy guidance class not found')
-new_tag = re.sub(r'\\bsub\\b', 'budget-expense-guidance', tag)
+new_tag = re.sub(r'\bsub\b', 'budget-expense-guidance', tag)
 section = section[:tag_start] + new_tag + section[tag_end+1:]
 section = section.replace('<div class="budget-expense-list">', '<div id="budgetExpensesBody" hidden>\n<div class="budget-expenses-toolbar">' + button + '</div>\n<div class="budget-expense-list">', 1)
 section = section.replace('</section>', '</div>\n</section>', 1)
