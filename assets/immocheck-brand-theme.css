@@ -366,7 +366,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   display:grid!important;
   grid-template-columns:24px minmax(0,1fr)!important;
   grid-template-rows:minmax(28px,auto) 1fr!important;
-  column-gap:7px!important;row-gap:8px!important;
+  column-gap:5px!important;row-gap:8px!important;
   align-content:start!important;align-items:center!important;
   min-width:0!important;box-sizing:border-box!important;
  }
@@ -382,6 +382,8 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   grid-column:2!important;grid-row:1!important;
   display:block!important;align-self:center!important;
   width:100%!important;margin:0!important;min-width:0!important;
+  box-sizing:border-box!important;padding-right:9px!important;
+  font-size:clamp(15px,1.55vw,19px)!important;letter-spacing:-.025em!important;
   text-align:left!important;line-height:1.25!important;
   overflow-wrap:normal!important;hyphens:none!important
  }
