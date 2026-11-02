@@ -486,7 +486,7 @@ required=[
   'function applyCurrentSuggestions()',
   'if(manualTrades.has(t.key)) return;',
   'syncAutoTrades=function()',
-  'const totalWithBuffer=Math.round(base*(1+pct("buffer")));',
+  'const totalWithBuffer=manual!==null && Number.isFinite(Number(manual))',
   'loadRenoState(target,false);',
   'V8.241',
   'service-worker.js?v=8.241'
