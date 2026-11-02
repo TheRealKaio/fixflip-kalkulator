@@ -143,7 +143,7 @@ body:not(.nic-admin) #rentSection .rent-note,body:not(.nic-admin) #rentSection .
 body:not(.nic-admin) .source,body:not(.nic-admin) .source *{font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) .status,body:not(.nic-admin) .status *{font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) .rate-actions button,body:not(.nic-admin) .rate-actions button *{font-size:${l.hintSize}px!important;line-height:1.5}
-body:not(.nic-admin) #scenarioDetails>summary{font-size:${l.hintSize}px!important}
+body:not(.nic-admin) #scenarioDetails>summary{font-size:${l.bodySize}px!important}
 body:not(.nic-admin) .reno-note,body:not(.nic-admin) .reno-note *{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.card h2~p,.rent-finance-head h2~p,.section-intro h2~p,.section-heading h2~p,.flip-section-subtitle){font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
