@@ -132,24 +132,57 @@ for page in SITE.rglob("*.html"):
         if "</head>" not in source:
             raise SystemExit(f"Content access head anchor missing: {page}")
         source = source.replace("</head>", prepaint + "</head>", 1)
-    if route_for(page, source) in ("own", "flip", "budget"):
+    if route_for(page, source) in ("own", "flip"):
+        # Capture before calculator listeners are installed so manual typing is not
+        # immediately reset by a recalculation. Reuse the existing renovation key.
         modern_script = """<script id="nic-modernization-edit">
 (function(){
- const field=document.getElementById('reno');
- if(!field)return;
- function unlock(){
-   if(field.readOnly)field.readOnly=false;
-   if(field.disabled)field.disabled=false;
-   field.removeAttribute('readonly');
-   field.removeAttribute('disabled');
- }
- unlock();
- new MutationObserver(unlock).observe(field,{attributes:true,attributeFilter:['readonly','disabled']});
- field.style.cursor='text';
+  var mode=document.documentElement.getAttribute('data-nic-page');
+  if(mode!=='own'&&mode!=='flip')return;
+  var key='ff_'+mode+'_reno_manual_total';
+  function amount(raw){
+    var text=String(raw||'').trim().replace(/\\s/g,'');
+    if(text.includes(','))text=text.replace(/\\./g,'').replace(',','.');
+    var parsed=Number(text);
+    return Number.isFinite(parsed)?Math.max(0,parsed):0;
+  }
+  function unlock(){
+    var field=document.getElementById('reno');
+    if(!field)return;
+    field.readOnly=false;
+    field.disabled=false;
+    field.removeAttribute('readonly');
+    field.removeAttribute('disabled');
+    return field;
+  }
+  document.addEventListener('input',function(event){
+    if(event.target.id==='reno'){
+      localStorage.setItem(key,String(amount(event.target.value)));
+      // The legacy input handlers must not replace the value during typing.
+      event.stopImmediatePropagation();
+    }else if(event.target.matches('.trade-amount,.trade-area')){
+      localStorage.removeItem(key);
+    }
+  },true);
+  document.addEventListener('change',function(event){
+    if(event.target.id==='reno')localStorage.setItem(key,String(amount(event.target.value)));
+  },true);
+  document.addEventListener('click',function(event){
+    if(event.target.closest('#applyTradeSuggestions,#resetTrades'))localStorage.removeItem(key);
+  },true);
+  function ready(){
+    var field=unlock();
+    if(!field)return;
+    var stored=localStorage.getItem(key);
+    if(stored!==null)field.value=stored;
+    new MutationObserver(unlock).observe(field,{attributes:true,attributeFilter:['readonly','disabled']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});
+  else ready();
 })();
 </script>"""
         if 'id="nic-modernization-edit"' not in source:
-            source = source.replace("</body>", modern_script + "</body>", 1)
+            source = source.replace("</head>", modern_script + "</head>", 1)
     if "content-section-access.js" not in source:
         if "</body>" not in source:
             raise SystemExit(f"Content access body anchor missing: {page}")
