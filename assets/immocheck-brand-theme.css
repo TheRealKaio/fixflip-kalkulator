@@ -468,3 +468,6 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option small{
   body:not(.nic-embed) .deal-type-row > .deal-type-option strong{font-size:15px!important}
   body:not(.nic-embed) .deal-type-row > .deal-type-option small{font-size:13px!important}
 }
+
+/* Container canvas is independent from the outer browser background. */
+body:not(.nic-embed):not(.nic-admin) .app{background:var(--bg,#F5F7FB)}
