@@ -128,6 +128,8 @@ body:not(.nic-admin) .deal-type-row>.deal-type-option{border-radius:${scaledRadi
 body:not(.nic-admin) .nic-brand-bar .nic-login-button{border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-admin) :is(.info-btn,.nic-menu-icon){border-radius:50%!important}
 body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .section-summary-title{font-size:${l.h2}px!important}body:not(.nic-admin) .section-summary-subtitle{font-size:${l.bodySize}px!important;line-height:1.5}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
+body:not(.nic-admin) .nic-content-box-guest-overlay{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;border-radius:inherit;background:rgba(248,250,252,.82);color:#94a3b8;text-align:center;font-size:${l.subtextSize}px!important;line-height:1.5;cursor:not-allowed;backdrop-filter:blur(1px)}
+body:not(.nic-admin) .nic-content-box-guest-locked{position:relative!important;isolation:isolate}
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint,.field label .hint,.metric-box .metric-label){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-card p,.tip-box p,.equity-capital-note){font-size:${l.subtextSize}px!important;line-height:1.5}
@@ -224,4 +226,5 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
+  window.dispatchEvent(new Event('nic-settings-ready'));
 })();
