@@ -132,6 +132,40 @@ for page in SITE.rglob("*.html"):
         if "</head>" not in source:
             raise SystemExit(f"Content access head anchor missing: {page}")
         source = source.replace("</head>", prepaint + "</head>", 1)
+    if route_for(page, source) == "budget":
+        # The clear button is inserted dynamically. Size its actual shared parent,
+        # rather than an assumed CSS class which other generated styles can override.
+        width_script = """<script id="nic-budget-action-layout">
+(function(){
+ function arrange(){
+   const green=document.getElementById('budgetApplySuggestions');
+   if(!green||!green.parentElement)return;
+   const group=green.parentElement;
+   group.style.setProperty('display','flex','important');
+   group.style.setProperty('justify-content','flex-end','important');
+   group.style.setProperty('align-items','center','important');
+   group.style.setProperty('gap','8px','important');
+   group.style.setProperty('box-sizing','border-box','important');
+   group.style.setProperty('width','min(100%, 520px)','important');
+   group.style.setProperty('max-width','520px','important');
+   group.style.setProperty('margin-left','auto','important');
+   group.style.setProperty('margin-right','0','important');
+   green.style.setProperty('flex','1 1 auto','important');
+   green.style.setProperty('width','auto','important');
+   green.style.setProperty('min-width','0','important');
+   green.style.setProperty('white-space','nowrap','important');
+   Array.from(group.children).filter(el=>el!==green&&el.tagName==='BUTTON').forEach(el=>{
+     el.style.setProperty('flex','0 0 36px','important');
+     el.style.setProperty('width','36px','important');
+   });
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',arrange,{once:true});
+ else arrange();
+ new MutationObserver(arrange).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>"""
+        if 'id="nic-budget-action-layout"' not in source:
+            source = source.replace("</body>", width_script + "</body>", 1)
     if route_for(page, source) in ("own", "flip"):
         # Capture before calculator listeners are installed so manual typing is not
         # immediately reset by a recalculation. Reuse the existing renovation key.
