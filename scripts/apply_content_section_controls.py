@@ -142,6 +142,24 @@ for page in SITE.rglob("*.html"):
 </style>"""
         if 'id="nic-budget-suggestion-width"' not in source:
             source = source.replace("</head>", button_style + "</head>", 1)
+    if route_for(page, source) in ("own", "flip", "budget"):
+        modern_script = """<script id="nic-modernization-edit">
+(function(){
+ const field=document.getElementById('reno');
+ if(!field)return;
+ function unlock(){
+   if(field.readOnly)field.readOnly=false;
+   if(field.disabled)field.disabled=false;
+   field.removeAttribute('readonly');
+   field.removeAttribute('disabled');
+ }
+ unlock();
+ new MutationObserver(unlock).observe(field,{attributes:true,attributeFilter:['readonly','disabled']});
+ field.style.cursor='text';
+})();
+</script>"""
+        if 'id="nic-modernization-edit"' not in source:
+            source = source.replace("</body>", modern_script + "</body>", 1)
     if "content-section-access.js" not in source:
         if "</body>" not in source:
             raise SystemExit(f"Content access body anchor missing: {page}")
