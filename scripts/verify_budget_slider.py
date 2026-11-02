@@ -33,22 +33,18 @@ required_implementation = {
     "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
     "UI recalculated immediately": 'renderBudget();',
-    "remaining surplus note text": 'Verbleibender Monatsüberschuss: "+eur(m.remainingMonthlySurplus)+" · Finanzierungsreserve: "+eur(m.minimumReserve)',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
+    "warning hidden unless reserve is below minimum": '$("budgetRateSliderWarning").hidden=!minimumBufferBelow;',
     "financing guidance intro": 'Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten.',
     "raw reserve exposed": 'const rawReserve=freeBudget-monthlyRate;',
     "current buffer uses raw reserve": 'const currentBuffer=Number.isFinite(Number(m.rawReserve)) ? Number(m.rawReserve) : 0;',
     "signed deviation calculated": 'const bufferDeviation=currentBuffer-minimumReserve;',
     "under minimum threshold": 'const minimumBufferBelow=bufferDeviation<-0.005;',
-    "exact minimum threshold": 'const minimumBufferReached=Math.abs(bufferDeviation)<=0.005;',
-    "warning has explicit above-minimum state": 'const minimumBufferAbove=bufferDeviation>0.005;',
-    "warning hidden only above minimum": '$("budgetRateSliderWarning").hidden=minimumBufferAbove;',
     "signed deviation shown in warning": 'Finanzierungsreserve unterschritten · Abweichung: "+eur(bufferDeviation)',
     "warning explicit below branch": 'if(minimumBufferBelow){',
-    "warning exact-minimum branch": '}else if(minimumBufferReached){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
     "financing reserve markup starts blank": 'id="budgetSafetyReserve" inputmode="decimal" readonly aria-readonly="true"',
-    "shared zero-field normalizer is loaded": 'src="/blank-zero-calculator-inputs.js?v=8.368"',
+    "shared zero-field normalizer is loaded": 'src="/blank-zero-calculator-inputs.',
     "safety buffer auto label": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>',
     "terminology financing reserve": 'Finanzierungsreserve',
     "terminology remaining monthly surplus": 'Verbleibender Monatsüberschuss',
@@ -99,7 +95,6 @@ required_implementation = {
     "reset financing reserve to zero": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value="0";',
     "capture phase enabled": '},true);',
     "warning message": 'Finanzierungsreserve unterschritten. Bitte Einnahmen oder Ausgaben prüfen.',
-    "warning at exact minimum": 'Finanzierungsreserve erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.',
     "slider excluded from global input listener": ':not(#budgetRateSlider),select\')',
     "financing assumptions included": 'const budgetFinancingAssumptionIds=new Set([',
     "financing assumption fields": '"budgetInterest","budgetRepayment","budgetEquity","budgetState","budgetNotaryPct","budgetBuyBrokerPct","budgetExtraCostsPct"',
@@ -150,6 +145,14 @@ if legacy_found:
 missing = [name for name, token in required_implementation.items() if token not in html]
 if missing:
     raise SystemExit("Slider acceptance failed - implementation missing: " + ", ".join(missing))
+
+for removed_message in (
+    'id="budgetRateSliderNote"',
+    'Verbleibender Monatsüberschuss: "+eur(m.remainingMonthlySurplus)',
+    'Finanzierungsreserve erreicht: "+eur(minimumReserve)',
+):
+    if removed_message in html:
+        raise SystemExit("Slider acceptance failed - removed budget-rate message remains: " + removed_message)
 
 
 def model(net, child_benefit, expenses, entered_reserve, selected_pct=None):
@@ -493,27 +496,21 @@ adjusted_rate = max(0, new_rate_cap)
 if adjusted_rate != 700:
     raise SystemExit("Slider acceptance failed - expense change must replace prior manual rate")
 
-# 38) Warning display states: above hidden, equal reached, below undershot.
+# 38) Only a real reserve shortfall shows a warning; reaching the threshold is silent.
 def warning_state(current_buffer, minimum_reserve):
     deviation = current_buffer - minimum_reserve
     below = deviation < -0.005
-    reached = abs(deviation) <= 0.005
-    above = deviation > 0.005
-    if above:
-        return ("hidden", deviation)
     if below:
         return ("below", deviation)
-    if reached:
-        return ("reached", deviation)
-    return ("clear", deviation)
+    return ("hidden", deviation)
 
 state, deviation = warning_state(350, 300)
 if state != "hidden":
     raise SystemExit("Slider acceptance failed - display state above minimum hidden")
 
 state, deviation = warning_state(300, 300)
-if state != "reached":
-    raise SystemExit("Slider acceptance failed - exact minimum must show reached warning")
+if state != "hidden":
+    raise SystemExit("Slider acceptance failed - exact minimum should not show a warning")
 
 state, deviation = warning_state(250, 300)
 if not (state == "below" and deviation == -50):
