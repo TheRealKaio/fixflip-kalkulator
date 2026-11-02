@@ -296,8 +296,8 @@ body:not(.nic-embed) .nic-shared-footer{
 body:not(.nic-embed) .nic-actions-above-footer{
  position:sticky!important;bottom:0!important;top:auto!important;left:auto!important;right:auto!important;
  transform:none!important;z-index:30!important;box-sizing:border-box!important;
- width:calc(100vw - 48px)!important;max-width:calc(100vw - 48px)!important;min-width:0!important;
- margin:12px 0 19px calc(50% - 50vw + 24px)!important;padding:0!important;
+ width:calc(100% - 48px)!important;max-width:calc(100% - 48px)!important;min-width:0!important;
+ margin:12px auto 19px!important;padding:0!important;
  background:transparent!important;border:0!important;box-shadow:none!important;
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important
 }
@@ -330,7 +330,7 @@ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>.nic-action-2{
 }
 @media(max-width:650px) and (orientation:portrait){
  body:not(.nic-embed) .nic-actions-above-footer{
-  width:calc(100vw - 28px)!important;max-width:calc(100vw - 28px)!important;margin:10px 0 17px calc(50% - 50vw + 14px)!important
+  width:calc(100% - 28px)!important;max-width:calc(100% - 28px)!important;margin:10px auto 17px!important
  }
  body:not(.nic-embed) .nic-actions-above-footer .bottom-actions{
   grid-template-columns:minmax(0,1fr) max-content 48px!important;gap:6px!important
