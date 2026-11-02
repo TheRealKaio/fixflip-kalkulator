@@ -529,3 +529,6 @@ body:not(.nic-embed) :is(.nic-actions-above-footer .bottom-actions>button,.botto
 /* Cookie settings link is underlined only while hovered. */
 body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) :is(.nic-consent-settings,#nicConsentSettings){text-decoration:none!important}
 body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) :is(.nic-consent-settings,#nicConsentSettings):hover{text-decoration:underline!important}
+
+/* Center shared renovation guidance across calculators. */
+body:not(.nic-embed) .reno-note{text-align:center}
