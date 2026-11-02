@@ -37,8 +37,6 @@ style = '''<style id="budget-expenses-toggle-v8331">
  margin:14px 0 0!important;padding:0 0 13px!important;
  border-bottom:1px solid #e2e8f0!important;line-height:1.5!important;
 }
-#budgetExpensesSection .budget-expense-list .budget-expense-name{font-size:var(--nic-budget-subtext,14px)!important}
-#budgetExpensesSection .budget-expense-list .budget-expense-name .mini{font-size:var(--nic-budget-hint,12px)!important}
 
 @media(max-width:420px){#budgetExpensesSection .budget-section-title{gap:8px}}
 </style>'''
@@ -62,21 +60,10 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     if(target && original.previousElementSibling!==target){
       target.insertAdjacentElement("afterend",original);
     }
-    const layout=window.NICSettings?.current?.layout||{};
-    const sub=String(layout.subtextSize??14)+"px";
-    const hint=String(layout.hintSize??12)+"px";
-    section.style.setProperty("--nic-budget-subtext",sub);
-    section.style.setProperty("--nic-budget-hint",hint);
-    // Font size is controlled exclusively by the central site-settings layout stylesheet.
-    original.style.removeProperty("font-size");
-    // Original budget rows contain multiple nested title/description elements.
-    section.querySelectorAll(".budget-expense-name").forEach(function(group){
-      group.style.setProperty("font-size",sub,"important");
-      const nodes=group.querySelectorAll("strong,b,.name,.budget-expense-title");
-      nodes.forEach(node=>node.style.setProperty("font-size",sub,"important"));
-      group.querySelectorAll("small,.mini,.sub,.hint,.description,.budget-expense-description")
-        .forEach(node=>node.style.setProperty("font-size",hint,"important"));
-    });
+    // Typography belongs solely to the central site-settings stylesheet.
+    // Remove inline legacy font-size declarations from this component.
+    section.querySelectorAll(".budget-expense-name,.budget-expense-name *")
+      .forEach(node=>node.style.removeProperty("font-size"));
   }
   positionGuidance();
   window.addEventListener("nic-settings-updated",positionGuidance);
