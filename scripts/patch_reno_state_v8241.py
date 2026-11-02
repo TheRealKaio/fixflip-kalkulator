@@ -170,6 +170,7 @@ js=r"""
     if(!mode) return;
 
     if(force){
+      localStorage.removeItem(stateKey(mode,"manual_total"));
       initializeNamespace(mode,false);
       manualTrades.clear();
       trades.forEach(function(t){
@@ -228,7 +229,7 @@ js=r"""
     const totalWithBuffer=manual!==null && Number.isFinite(Number(manual))
       ? Math.max(0,Number(manual))
       : Math.round(base*(1+pct("buffer")));
-    if($("reno")) $("reno").value=String(totalWithBuffer);
+    if($("reno") && document.activeElement!==$("reno")) $("reno").value=String(totalWithBuffer);
     if($("renoSheetTotal")) $("renoSheetTotal").textContent=eur(totalWithBuffer);
     updateRenoProposalStatus();
   };
@@ -248,7 +249,15 @@ js=r"""
       if($("renoSheetTotal"))$("renoSheetTotal").textContent=eur(amount);
       // Preserve the typed amount; other input listeners handle recalculation.
     },true);
-    manualTotalInput.addEventListener("change",function(){try{render();}catch(_err){};});
+    manualTotalInput.addEventListener("change",function(){
+      const mode=renoMode();
+      if(mode){
+        const amount=Math.max(0,parseLocalizedNumber(manualTotalInput.value,false));
+        localStorage.setItem(stateKey(mode,"manual_total"),String(amount));
+      }
+      syncRenoTotal();
+      try{render();}catch(_err){}
+    });
   }
   document.addEventListener("input",function(event){
     if(!event.target.matches?.(".trade-amount,.trade-area"))return;
