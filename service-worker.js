@@ -1,4 +1,4 @@
-const CACHE_VERSION = "neustart-immocheck-v8.320";
+const CACHE_VERSION = "neustart-immocheck-favicon-20261102";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -20,7 +20,7 @@ self.addEventListener("fetch", event => {
       // A network-first service worker still uses the browser HTTP cache unless
       // it explicitly bypasses it. Fresh HTML must reference the current assets.
       const fresh = request.method === "GET" && url.origin === self.location.origin
-        && (request.mode === "navigate" || ["document", "iframe", "frame", "script", "style"].includes(request.destination));
+        && (request.mode === "navigate" || ["document", "iframe", "frame", "script", "style", "image"].includes(request.destination));
       return fetch(request, fresh ? {cache:"no-store"} : undefined)
         .catch(() => caches.match(request));
     })()
