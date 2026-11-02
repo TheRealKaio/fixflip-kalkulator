@@ -498,3 +498,15 @@ body:not(.nic-embed) .refinance-grid .kpi:nth-child(3){
  background:var(--nic-highlight-warning-bg,#FECACA)!important;
  border-color:var(--nic-highlight-warning-bg,#FECACA)!important;
 }
+
+/* Navigation parity: the fifth card is a link on the main routes, a label on finance. */
+body:not(.nic-embed) .deal-type-row > :is(a.deal-type-option,label.deal-type-option){
+ border-style:solid!important;
+ border-width:2px!important;
+ border-color:#dce8e2!important;
+ text-decoration:none!important;
+}
+body:not(.nic-embed) .deal-type-row > :is(a.deal-type-option,label.deal-type-option):is(.current,[aria-current="page"],[aria-pressed="true"],:has(input:checked)){
+ border-color:var(--nic-green-bg,#075c55)!important;
+ border-width:2px!important;
+}
