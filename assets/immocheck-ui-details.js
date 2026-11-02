@@ -42,6 +42,22 @@ function labelMobileRecalculation(){
  });
 }
 labelMobileRecalculation();
+/* One shared action-bar presentation on all five routes; existing IDs/click handlers remain intact. */
+function unifyCalculatorActions(){
+ const bar=document.querySelector('.bottom-actions');
+ if(!bar)return;
+ const primary=bar.querySelector('#newCalc, .bottom-primary');
+ const share=bar.querySelector('#share, .bottom-pdf');
+ const download=bar.querySelector('#download, .bottom-save');
+ if(!primary||!share||!download)return;
+ primary.classList.add('bottom-primary');
+ share.classList.add('bottom-pdf');
+ download.classList.add('bottom-save');
+ primary.textContent='Neu kalkulieren';
+ share.textContent='PDF teilen';
+ bar.classList.add('nic-unified-calculator-actions');
+}
+unifyCalculatorActions();
 /* Put the existing calculator action bar in normal document flow above the footer. */
 function positionCalculatorActions(){
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
