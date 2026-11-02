@@ -38,6 +38,7 @@
     "h2": 18,
     "h3": 22,
     "h4": 16,
+    "cornerRadius": 22,
     "background": "#F5F7FB",
     "text": "#172033",
     "buttonBackground": "#0F172A",
@@ -128,5 +129,7 @@
     "calculators": true,
     "pdfDownload": true,
     "pdfShare": true
+  },
+  "contentSections": {
   }
 }

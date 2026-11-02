@@ -1,0 +1,135 @@
+from html.parser import HTMLParser
+from pathlib import Path
+import html
+import json
+import re
+import unicodedata
+
+SITE = Path("_site")
+ORDER = ["budget", "own", "rent", "flip", "finance"]
+LABELS = {
+    "budget": "Budget",
+    "own": "Eigennutzung",
+    "rent": "Vermietung",
+    "flip": "Fix & Flip",
+    "finance": "Finanzierungsrechner",
+}
+
+
+def slug(value):
+    value = value.lower().replace("&", " und ")
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", value).strip("-")[:70] or "box"
+
+
+class CardParser(HTMLParser):
+    def __init__(self, source):
+        super().__init__(convert_charrefs=True)
+        self.source = source
+        self.line_offsets = [0]
+        for match in re.finditer("\n", source):
+            self.line_offsets.append(match.end())
+        self.stack = []
+        self.heading = None
+        self.cards = []
+
+    def offset(self):
+        line, column = self.getpos()
+        return self.line_offsets[line - 1] + column
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        cls = attrs.get("class", "").split()
+        item = {"tag": tag, "class": cls, "id": attrs.get("id", ""), "start": self.offset(), "heading": ""}
+        self.stack.append(item)
+        if tag == "h2":
+            self.heading = {"text": [], "stack": list(self.stack)}
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_data(self, data):
+        if self.heading is not None:
+            self.heading["text"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "h2" and self.heading is not None:
+            title = re.sub(r"\s+", " ", " ".join(self.heading["text"])).strip()
+            card = next((item for item in reversed(self.heading["stack"][:-1])
+                         if item["tag"] in ("section", "div", "article")
+                         and "card" in item["class"]
+                         and not ({"menu", "deal-type-card"} & set(item["class"]))), None)
+            if card and title and not any(x in card["class"] for x in ("nic-admin", "legal-editor-card")):
+                card["ancestor_ids"] = [item["id"] for item in self.heading["stack"] if item["id"]]
+                card["ancestor_classes"] = [item["class"] for item in self.heading["stack"]]
+                card["heading"] = title
+                self.cards.append(card)
+            self.heading = None
+        for i in range(len(self.stack) - 1, -1, -1):
+            if self.stack[i]["tag"] == tag:
+                self.stack = self.stack[:i]
+                break
+
+
+def route_for(page, source):
+    match = re.search(r'<html\b[^>]*\bdata-nic-page="(budget|own|rent|flip|finance)"', source)
+    if match:
+        return match.group(1)
+    if "finanzierungsrechner" in page.parts:
+        return "finance"
+    if page == SITE / "index.html":
+        return "budget"
+    return None
+
+
+catalog = {}
+for page in SITE.rglob("*.html"):
+    source = page.read_text(encoding="utf-8")
+    route = route_for(page, source)
+    if route not in ORDER:
+        continue
+    parser = CardParser(source)
+    parser.feed(source)
+    used = {}
+    edits = []
+    for card in parser.cards:
+        is_root = page == SITE / "index.html"
+        if is_root and "budgetSection" not in card.get("ancestor_ids", []):
+            continue
+        if not is_root and any("mode-hidden" in classes for classes in card.get("ancestor_classes", [])):
+            continue
+        if route != "flip" and any("flip-section-card" in classes for classes in card.get("ancestor_classes", [])):
+            continue
+        # Boxes hidden for another calculator are already excluded above.
+        title_slug = slug(card["heading"])
+        used[title_slug] = used.get(title_slug, 0) + 1
+        suffix = "" if used[title_slug] == 1 else f"-{used[title_slug]}"
+        key = f"{route}.{title_slug}{suffix}"
+        catalog.setdefault(key, {"key": key, "title": card["heading"], "calculator": route, "calculatorLabel": LABELS[route], "order": len(catalog)})
+        start = card["start"]
+        end = source.find(">", start)
+        opening = source[start:end + 1]
+        if "data-nic-content-key=" not in opening:
+            edits.append((start, end + 1, opening[:-1] + f' data-nic-content-key="{html.escape(key, quote=True)}">'))
+    for start, end, replacement in reversed(edits):
+        source = source[:start] + replacement + source[end:]
+    page.write_text(source, encoding="utf-8")
+
+ordered = sorted(catalog.values(), key=lambda item: (ORDER.index(item["calculator"]), item["order"]))
+for item in ordered:
+    item.pop("order", None)
+(SITE / "content-sections.json").write_text(json.dumps(ordered, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+(SITE / "content-section-access.js").write_text(Path("assets/content-section-access.js").read_text(encoding="utf-8"), encoding="utf-8")
+
+for page in SITE.rglob("*.html"):
+    source = page.read_text(encoding="utf-8")
+    if route_for(page, source) not in ORDER:
+        continue
+    if "content-section-access.js" not in source:
+        if "</body>" not in source:
+            raise SystemExit(f"Content access body anchor missing: {page}")
+        source = source.replace("</body>", '<script defer src="/content-section-access.js"></script></body>', 1)
+        page.write_text(source, encoding="utf-8")
+
+print(f"Generated controls for {len(ordered)} H2 content boxes")

@@ -34,3 +34,17 @@ CREATE TABLE IF NOT EXISTS nic_audit (
  actor_id CHAR(32) NULL, action VARCHAR(50) NOT NULL, target_id CHAR(32) NULL,
  created_at DATETIME NOT NULL, INDEX(created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS nic_statistics_daily (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ stat_date DATE NOT NULL,
+ event_name VARCHAR(24) NOT NULL,
+ dimension_hash CHAR(64) NOT NULL,
+ section_name VARCHAR(16) NOT NULL DEFAULT '',
+ calculator VARCHAR(16) NOT NULL DEFAULT '',
+ device VARCHAR(32) NOT NULL DEFAULT '',
+ operating_system VARCHAR(40) NOT NULL DEFAULT '',
+ source VARCHAR(120) NOT NULL DEFAULT '',
+ hits BIGINT UNSIGNED NOT NULL DEFAULT 0,
+ UNIQUE KEY nic_statistics_event_bucket (stat_date,event_name,dimension_hash),
+ INDEX(stat_date), INDEX(event_name,stat_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

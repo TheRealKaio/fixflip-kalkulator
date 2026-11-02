@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const EVENTS={page_view:'nic_page_view',calculator_use:'nic_calculator_use',calculate:'nic_calculate',pdf_download:'nic_pdf_download',pdf_share:'nic_pdf_share'};
-const CALCULATORS=['budget','own','rent','flip'],SECTIONS=['website','company',...CALCULATORS];
+const CALCULATORS=['budget','own','rent','flip','finance'],SECTIONS=['website','company','budget','own','rent','flip'];
 function dayKey(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-');}
 function empty(){return {version:1,startedAt:null,days:{}};}
 function blankTotals(){return {events:Object.fromEntries(Object.keys(EVENTS).map(k=>[k,0])),calculators:Object.fromEntries(CALCULATORS.map(k=>[k,Object.fromEntries(Object.keys(EVENTS).map(e=>[e,0]))])),devices:{},systems:{},sources:{}};}

@@ -88,7 +88,7 @@ try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues(
 window.addEventListener('DOMContentLoaded',()=>{
  const S=window.NICSettings;
  const apply=()=>S.init().then(settings=>{S.apply(settings,'finance');window.NICHeader?.refresh();});
- const start=()=>window.NICAnalytics?.start({section:'website',calculator:null});
+ const start=()=>window.NICAnalytics?.start({section:'flip',calculator:'finance'});
  if(S){apply().then(start).catch(err=>{console.error(err);start();});window.addEventListener('storage',e=>{if(e.key===S.KEY)apply().catch(console.error);});window.addEventListener('pageshow',e=>{if(e.persisted)apply().catch(console.error);});}
  else start();
 });

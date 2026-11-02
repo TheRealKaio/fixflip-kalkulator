@@ -25,7 +25,7 @@
     }
     if(key==='impressum')return operatorTemplate(true);
     if(key==='haftungsausschluss')return disclaimer;
-    if(key==='cookie-hinweis')return '<p>Du hast die Wahl: Unsere Kalkulatoren funktionieren auch ohne optionale Cookies. Mit „Zustimmen“ erlaubst du Cookies und ähnliche Speichertechniken für unsere freiwillige Nutzungsstatistik. Damit sehen wir, welche Seiten, Kalkulatoren und PDF-Funktionen genutzt werden. Erfasst werden Aufrufe, Berechnungen, PDF-Downloads und Teilen-Aktionen sowie Geräteart, Betriebssystem und erkennbare Herkunft.</p>\n<p>Sofern Google Analytics eingerichtet ist, werden diese Nutzungsdaten nach deiner Zustimmung auch von Google verarbeitet. Dabei können Online-Kennungen und Länderinformationen verarbeitet und Daten in die USA übermittelt werden. Deine eingegebenen Finanz- und Objektdaten werden nicht an Google übermittelt.</p>\n<p>Mit „Ablehnen“ bleiben die optionale Statistik und Google Analytics ausgeschaltet. Deine Auswahl merken wir bis zu 180 Tage. Du kannst deine Einwilligung jederzeit unten über „Cookie-Hinweis“ mit Wirkung für die Zukunft widerrufen oder ändern.</p>';
+    if(key==='cookie-hinweis')return '<p>Du hast die Wahl: Unsere Kalkulatoren funktionieren auch ohne optionale Statistik. Mit „Zustimmen“ erlaubst du, Nutzungszahlen in zusammengefasster Form auf unserem Server zu speichern. Erfasst werden Seiten- und Rechneraufrufe, Berechnungen, PDF-Downloads und Teilen-Aktionen sowie bei Seitenaufrufen Geräteart, Betriebssystem und erkennbare Herkunft. Deine Finanz- und Objektdaten werden nicht erfasst.</p>\n<p>Sofern Google Analytics eingerichtet ist, werden diese Nutzungsdaten nach deiner Zustimmung auch von Google verarbeitet. Dabei können Online-Kennungen und Länderinformationen verarbeitet und Daten in die USA übermittelt werden. Deine eingegebenen Finanz- und Objektdaten werden nicht an Google übermittelt.</p>\n<p>Mit „Ablehnen“ bleiben die optionale Statistik und Google Analytics ausgeschaltet. Deine Auswahl merken wir bis zu 180 Tage. Du kannst deine Einwilligung jederzeit unten über „Cookie-Hinweis“ mit Wirkung für die Zukunft widerrufen oder ändern.</p>';
     const heading=key==='datenschutz'?'Verantwortlicher':'Anbieter';
     return '<h2>'+heading+'</h2>\n'+operatorTemplate(false)+'\n<h2>Inhalt noch nicht hinterlegt</h2>\n<p>'+(key==='datenschutz'?'Die vollständige Datenschutzerklärung wird noch erstellt. Die hier angezeigten Betreiberangaben ersetzen keine vollständige Datenschutzerklärung.':'Ein vollständiger AGB-Text wurde noch nicht hinterlegt. Die hier angezeigten Anbieterangaben stellen keine Allgemeinen Geschäftsbedingungen dar.')+'</p>';
   }
@@ -47,7 +47,7 @@
   const portals=[['instagram','Instagram'],['facebook','Facebook'],['youtube','YouTube'],['linkedin','LinkedIn'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X'],['threads','Threads'],['xing','XING'],['whatsapp','WhatsApp']];
   const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/'],['finance','Finanzierungsrechner','finanzierungsrechner/']];
   const fonts={system:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif',trebuchet:'"Trebuchet MS",Arial,sans-serif'};
-  const layoutDefaults={font:'system',bodySize:16,h1:30,h2:18,h3:22,h4:16,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',highlightBackground:'#FDE68A',highlightGoodBackground:'#F0FDF4',highlightWarningBackground:'#FECACA',outerBackground:'#F6F1E9'};
+  const layoutDefaults={font:'system',bodySize:16,h1:30,h2:18,h3:22,h4:16,cornerRadius:22,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',highlightBackground:'#FDE68A',highlightGoodBackground:'#F0FDF4',highlightWarningBackground:'#FECACA',outerBackground:'#F6F1E9'};
   let published=null,current=null;
   const text=(v,max=2000)=>typeof v==='string'?v.trim().slice(0,max):'';
   function httpUrl(v){try{const u=new URL(text(v));return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(_){return '';}}
@@ -63,7 +63,7 @@
     for(const [k,v] of Object.entries(layoutDefaults)){
       const x=raw.layout?.[k];
       if(k==='font')s.layout[k]=Object.hasOwn(fonts,x)?x:v;
-      else if(typeof v==='number'){const n=Number(x);s.layout[k]=Number.isFinite(n)&&n>=10&&n<=72?n:v;}
+      else if(typeof v==='number'){const n=Number(x);const min=k==='cornerRadius'?0:10,max=k==='cornerRadius'?40:72;s.layout[k]=Number.isFinite(n)&&n>=min&&n<=max?n:v;}
       else s.layout[k]=/Text$/.test(k)&&x==='AUTO'?'AUTO':/^#[0-9a-f]{6}$/i.test(x)?x.toUpperCase():v;
     }
     portals.forEach(([k])=>s.social[k]=httpUrl(raw.social?.[k]));
@@ -72,7 +72,10 @@
     const propertyId=text(raw.reporting?.propertyId,20),clientId=text(raw.reporting?.clientId,200);
     s.reporting={propertyId:/^[0-9]{1,20}$/.test(propertyId)?propertyId:'',clientId:/^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(clientId)?clientId:''};
     s.legal={};for(const key of Object.keys(legalLabels)){const value=raw.legal?.[key];if(value!==undefined&&typeof value!=='string')throw new Error('Ungültiger HTML-Text: '+legalLabels[key]);if(value?.length>100000)throw new Error('HTML-Text zu lang (maximal 100.000 Zeichen): '+legalLabels[key]);s.legal[key]=value||'';}
-    s.access={};for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare']){const value=raw.access?.[key];if(value!==undefined&&typeof value!=='boolean')throw new Error('Ungültige Zugangsregel: '+key);s.access[key]=value??!['registrationBlocked','loginBlocked'].includes(key);}
+    s.access={};for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare','budgetInsightsLoginRequired']){const value=raw.access?.[key];if(value!==undefined&&typeof value!=='boolean')throw new Error('Ungültige Zugangsregel: '+key);s.access[key]=value??!['registrationBlocked','loginBlocked','budgetInsightsLoginRequired'].includes(key);}
+    s.contentSections={};const sectionSettings=raw.contentSections??{};if(!sectionSettings||typeof sectionSettings!=='object'||Array.isArray(sectionSettings)||Object.keys(sectionSettings).length>200)throw new Error('Ungültige Box-Einstellungen.');
+    for(const [key,value] of Object.entries(sectionSettings)){if(!/^[a-z0-9][a-z0-9._-]{0,120}$/.test(key)||!value||typeof value!=='object'||Array.isArray(value))throw new Error('Ungültige Box-Einstellung: '+key);for(const field of ['visible','guestAllowed'])if(value[field]!==undefined&&typeof value[field]!=='boolean')throw new Error('Ungültige Box-Einstellung: '+key);s.contentSections[key]={visible:value.visible??true,guestAllowed:value.guestAllowed??true};}
+    if(raw.access?.budgetInsightsLoginRequired===true)for(const [key,field] of [['wo-geht-das-geld-hin','guestAllowed'],['szenario-was-ware-wenn','guestAllowed']]){const match=Object.keys(s.contentSections).find(k=>k.includes(key));if(match)s.contentSections[match][field]=false;}
     return s;
   }
   function pageMeta(s,key){const m=s.meta[key]||{};return {title:m.title||s.meta.website.title||'Neustart ImmoCheck',description:m.description||s.meta.website.description||''};}
@@ -104,11 +107,13 @@
     let style=document.getElementById('nic-custom-layout');if(!style){style=document.createElement('style');style.id='nic-custom-layout';document.head.append(style);}
     const contrastText=(bg,choice)=>{if(choice!=='AUTO')return choice;const rgb=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722>.179?'#000000':'#FFFFFF';};
     const greenText=contrastText(l.greenBackground,l.greenText),blackText=contrastText(l.buttonBackground,l.buttonText),redText=contrastText(l.redBackground,l.redText);
+    const scaledRadius=original=>Math.round(l.cornerRadius*original/22);
     style.textContent=`:root{--bg:${l.background};--ink:${l.text};--nic-outer-bg:${l.outerBackground};--nic-green-bg:${l.greenBackground};--nic-green-text:${greenText};--nic-black-bg:${l.buttonBackground};--nic-black-text:${blackText};--nic-red-bg:${l.redBackground};--nic-red-text:${redText};--nic-highlight-bg:${l.highlightBackground};--nic-highlight-good-bg:${l.highlightGoodBackground};--nic-highlight-warning-bg:${l.highlightWarningBackground};--nic-body-font-size:${l.bodySize}px;--nic-body-font-family:${fonts[l.font]};--nic-header-h1-max:${l.h1}px;--nic-menu-title-size:${l.h2}px;--nic-button-bg:${l.buttonBackground};--nic-button-text:${blackText}}body:not(.nic-admin){font-family:${fonts[l.font]};font-size:${l.bodySize}px;color:${l.text};background:${l.outerBackground}!important}body:not(.nic-admin),body:not(.nic-admin) *{font-family:${fonts[l.font]}!important}
 body:not(.nic-admin) :is(p,li,td,th,label,button,input,select,textarea,.mini,.hint,.nic-consent,.nic-cookie-custom,.public-footer,.nic-brand-description,.footer-note,.footer-note *,.nic-legal-card,.nic-legal-card *:not(h1):not(h2):not(h3):not(h4),.legal-page-card p,.legal-page-card li){font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(p,li,.footer-note,.nic-legal-card){overflow-wrap:anywhere}
 body:not(.nic-admin) .footer-note{height:auto!important;min-height:0!important}
 body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}
+body:not(.nic-admin) :is(.card,.form-card,.budget-summary,.scenario-card){border-radius:${l.cornerRadius}px!important}body:not(.nic-admin) :is(input,select,textarea,button,.nic-clear-reno){border-radius:${scaledRadius(10)}px!important}body:not(.nic-admin) :is(.deal-type-option,.budget-result-card){border-radius:${scaledRadius(16)}px!important}body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
 body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
 body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,#applyTradeSuggestions,.nic-green-budget-transfer,.btn.primary){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important;border-color:var(--nic-green-bg)!important}
 body:not(.nic-admin) :is(.nic-clear-reno,.bottom-primary,#newCalc){background:var(--nic-red-bg)!important;color:var(--nic-red-text)!important;border-color:var(--nic-red-bg)!important}
@@ -130,11 +135,13 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
       }
     }
     applyLogo(current.websiteLogo,current.imageAlts.websiteLogo);
+    window.NICContentSections?.apply(current);
     setMeta('meta[property="og:image:alt"]',{property:'og:image:alt'},current.imageAlts.sharing);
     setMeta('meta[name="twitter:image:alt"]',{name:'twitter:image:alt'},current.imageAlts.sharing);
     if(key)applyMeta(current,key);
     window.NICHeader?.refresh();
   }
+  window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});
   // Shared five-tile active state for all calculator routes.
   const calculatorKeys=['budget','own','rent','flip','finance'];
   function syncCalculatorMenu(active){

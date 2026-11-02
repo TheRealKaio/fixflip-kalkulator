@@ -68,6 +68,9 @@ function nic_admin(PDO $db, array $c): array {
 function nic_audit(PDO $db, ?string $actor, string $action, ?string $target = null): void {
     nic_query($db, 'INSERT INTO nic_audit(actor_id,action,target_id,created_at) VALUES (?,?,?,?)', [$actor,$action,$target,nic_now()]);
 }
+function nic_statistics_table(PDO $db): void {
+    $db->exec("CREATE TABLE IF NOT EXISTS nic_statistics_daily (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,stat_date DATE NOT NULL,event_name VARCHAR(24) NOT NULL,dimension_hash CHAR(64) NOT NULL,section_name VARCHAR(16) NOT NULL DEFAULT '',calculator VARCHAR(16) NOT NULL DEFAULT '',device VARCHAR(32) NOT NULL DEFAULT '',operating_system VARCHAR(40) NOT NULL DEFAULT '',source VARCHAR(120) NOT NULL DEFAULT '',hits BIGINT UNSIGNED NOT NULL DEFAULT 0,UNIQUE KEY nic_statistics_event_bucket(stat_date,event_name,dimension_hash),INDEX(stat_date),INDEX(event_name,stat_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
 function nic_remove_account(PDO $db, string $id): void {
     nic_query($db,'UPDATE nic_settings SET updated_by=NULL WHERE updated_by=?',[$id]);
     nic_query($db,'UPDATE nic_audit SET actor_id=NULL WHERE actor_id=?',[$id]);
@@ -115,16 +118,27 @@ function nic_auth_settings(PDO $db): array {
 }
 function nic_clean_settings(mixed $raw): array {
     if (!is_array($raw) || ($raw['version'] ?? null) !== 1) nic_fail('Ungültige Einstellungen.');
-    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access'];
+    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections'];
     $s = array_intersect_key($raw, array_flip($keys));
     foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
     $s['access'] = $s['access'] ?? [];
-    foreach (['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'] as $key) {
-        $value = $s['access'][$key] ?? !in_array($key,['registrationBlocked','loginBlocked'],true);
+    foreach (['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare','budgetInsightsLoginRequired'] as $key) {
+        $value = $s['access'][$key] ?? !in_array($key,['registrationBlocked','loginBlocked','budgetInsightsLoginRequired'],true);
         if (array_key_exists($key,$s['access']) && !is_bool($s['access'][$key])) nic_fail('Ungültige Zugangsregel.');
         $s['access'][$key] = $value;
     }
-    $s['access'] = array_intersect_key($s['access'], array_flip(['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare']));
+    $s['access'] = array_intersect_key($s['access'], array_flip(['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare','budgetInsightsLoginRequired']));
+    $sections = $s['contentSections'] ?? [];
+    if (!is_array($sections) || count($sections) > 200) nic_fail('Ungültige Box-Einstellungen.');
+    foreach ($sections as $key => $rule) {
+        if (!is_string($key) || !preg_match('/^[a-z0-9][a-z0-9._-]{0,120}$/', $key) || !is_array($rule)) nic_fail('Ungültige Box-Einstellung.');
+        foreach (['visible','guestAllowed'] as $field) {
+            if (array_key_exists($field,$rule) && !is_bool($rule[$field])) nic_fail('Ungültige Box-Einstellung.');
+            $rule[$field] = $rule[$field] ?? true;
+        }
+        $sections[$key] = array_intersect_key($rule, array_flip(['visible','guestAllowed']));
+    }
+    $s['contentSections'] = $sections;
     // Inputs are public website settings, never server configuration or account data.
     $check = function (mixed $v, int $depth = 0) use (&$check): void {
         if ($depth > 5) nic_fail('Einstellungen zu tief verschachtelt.');
@@ -321,7 +335,30 @@ function nic_run(): void {
         $db->commit();
         setcookie('__Host-nic_session','',['expires'=>1,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);nic_reply(['ok'=>true]);
     }
+    if ($route==='statistics-event' && $method==='POST') {
+        $event=$input['event']??'';$section=$input['section']??'';$calculator=$input['calculator']??'';
+        $events=['page_view','calculator_use','calculate','pdf_download','pdf_share'];$sections=['website','company','budget','own','rent','flip'];$calculators=['budget','own','rent','flip','finance'];
+        if(!is_string($event)||!in_array($event,$events,true)||!is_string($section)||!in_array($section,$sections,true))nic_fail('Ungültiges Statistikereignis.');
+        if($calculator!==null&&$calculator!==''&&(!is_string($calculator)||!in_array($calculator,$calculators,true)))nic_fail('Ungültiger Kalkulator.');
+        $calculator=is_string($calculator)?$calculator:'';
+        $dimension=static function(mixed $value,int $max,string $fallback):string{if(!is_string($value)||!preg_match('//u',$value))return $fallback;$value=trim($value);if($value===''||strlen($value)>$max||preg_match('/[\\x00-\\x1f\\x7f]/u',$value))return $fallback;return $value;};
+        $device=$event==='page_view'?$dimension($input['device']??null,32,'Unbekannt'):'';$system=$event==='page_view'?$dimension($input['system']??null,40,'Unbekannt'):'';$source=$event==='page_view'?$dimension($input['source']??null,120,'Direkt / unbekannt'):'';
+        nic_limit($db,$c,'statistics-event',$_SERVER['REMOTE_ADDR']??'',60,120);nic_statistics_table($db);$today=(new DateTimeImmutable('now',new DateTimeZone('Europe/Berlin')))->format('Y-m-d');
+        $dimensionHash=hash('sha256',json_encode([$section,$calculator,$device,$system,$source],JSON_THROW_ON_ERROR));nic_query($db,'INSERT INTO nic_statistics_daily(stat_date,event_name,dimension_hash,section_name,calculator,device,operating_system,source,hits) VALUES (?,?,?,?,?,?,?,?,1) ON DUPLICATE KEY UPDATE hits=hits+1',[$today,$event,$dimensionHash,$section,$calculator,$device,$system,$source]);
+        nic_reply(['ok'=>true]);
+    }
     $admin=nic_admin($db,$c);
+    if ($route==='statistics' && $method==='GET') {
+        nic_statistics_table($db);$days=(int)($_GET['days']??30);if(!in_array($days,[7,30,90],true))nic_fail('Ungültiger Statistikzeitraum.');
+        $today=new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin'));$from=$today->modify('-'.($days-1).' days')->format('Y-m-d');
+        $rows=nic_query($db,'SELECT event_name,calculator,device,operating_system,source,SUM(hits) AS hits FROM nic_statistics_daily WHERE stat_date>=? AND stat_date<=? GROUP BY event_name,calculator,device,operating_system,source',[$from,$today->format('Y-m-d')])->fetchAll(PDO::FETCH_ASSOC);
+        $events=['page_view'=>0,'calculator_use'=>0,'calculate'=>0,'pdf_download'=>0,'pdf_share'=>0];$calculators=[];foreach(['budget','own','rent','flip','finance'] as $key)$calculators[$key]=['calculator_use'=>0,'calculate'=>0,'pdf_download'=>0,'pdf_share'=>0];$breakdowns=['devices'=>[],'systems'=>[],'sources'=>[]];
+        foreach($rows as $row){$event=$row['event_name'];$count=(int)$row['hits'];if(array_key_exists($event,$events))$events[$event]+=$count;$key=$row['calculator'];if(isset($calculators[$key][$event]))$calculators[$key][$event]+=$count;if($event==='page_view'){foreach(['device'=>'devices','operating_system'=>'systems','source'=>'sources'] as $field=>$target){$value=$row[$field];if($value!=='')$breakdowns[$target][$value]=($breakdowns[$target][$value]??0)+$count;}}}
+        nic_reply(['events'=>$events,'calculators'=>$calculators,'devices'=>$breakdowns['devices'],'systems'=>$breakdowns['systems'],'sources'=>$breakdowns['sources'],'from'=>$from,'through'=>$today->format('Y-m-d')]);
+    }
+    if ($route==='statistics-reset' && $method==='POST') {
+        nic_statistics_table($db);$db->beginTransaction();nic_query($db,'SELECT id FROM nic_settings WHERE id=1 FOR UPDATE');$deleted=$db->exec('DELETE FROM nic_statistics_daily');nic_audit($db,$admin['id'],'statistics-reset');$db->commit();nic_reply(['ok'=>true,'deleted'=>max(0,(int)$deleted)]);
+    }
     if ($route==='settings' && $method==='POST') {
         $s=nic_clean_settings($input['settings']??null);$revision=$input['revision']??null;
         if(!is_int($revision)||$revision<1)nic_fail('Versionsnummer fehlt.');

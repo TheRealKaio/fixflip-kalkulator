@@ -2,12 +2,13 @@
 'use strict';
 const C=window.NICStatsCore,$=id=>document.getElementById(id),STORAGE='nic_statistics_v1';
 if(!C||!$('statsSource'))return;
-const labels={budget:'Budget',own:'Eigennutzung',rent:'Vermietung',flip:'Fix & Flip'};
+const labels={budget:'Budget',own:'Eigennutzung',rent:'Vermietung',flip:'Fix & Flip',finance:'↳ Finanzierungsrechner'};
 const metrics=[['page_view','Seitenaufrufe'],['calculator_use','Rechner-Nutzungen'],['calculate','Kalkulationen'],['pdf_download','PDF-Downloads'],['pdf_share','PDF geteilt']];
 let token='',expires=0,requestSerial=0,identityPromise=null,authorizedClient='';
 function counter(n){return n==null?'—':new Intl.NumberFormat('de-DE').format(n);}
 function authStatus(text){$('statsAuthStatus').textContent=text;}
 function source(){return $('statsSource').value;}
+function updateResetVisibility(){const b=$('statsReset');if(b)b.hidden=source()!=='database'||!window.NICAccess?.enabled||$('panel-stats').hidden;}
 function drawDimension(id,values,empty='Noch keine erfassten Aufrufe.'){
  const root=$(id);root.replaceChildren();const rows=Object.entries(values||{}).sort((a,b)=>b[1]-a[1]).slice(0,10);
  if(!rows.length){const p=document.createElement('p');p.className='stats-empty';p.textContent=empty;root.append(p);return;}
@@ -21,6 +22,7 @@ function render(data,notice,countries=null){
  drawDimension('statsDevices',data?.devices,data?'Noch keine erfassten Aufrufe.':'Keine verbundenen Daten.');drawDimension('statsSystems',data?.systems,data?'Noch keine erfassten Aufrufe.':'Keine verbundenen Daten.');drawDimension('statsSources',data?.sources,data?'Noch keine erfassten Aufrufe.':'Keine verbundenen Daten.');drawDimension('statsCountries',countries,source()==='local'?'Länder sind in der lokalen Vorschau nicht ermittelbar. Verbinde Google Analytics für eine Länder-Auswertung.':'Noch keine Länder-Daten verfügbar.');
 }
 function local(){let data=C.empty();try{const s=JSON.parse(localStorage.getItem(STORAGE));if(s?.version===1&&s.days)data=s;}catch(_){}const since=data.startedAt?' Erfassung seit '+new Date(data.startedAt).toLocaleDateString('de-DE')+'.':'';render(C.summary(data,Number($('statsDays').value)),'Lokale Vorschau · nur dieser Browser nach Statistik-Zustimmung. Keine Gesamtbesucherzahlen.'+since);}
+async function database(serial){if(!window.NICAccess?.enabled){render(null,'Die zentrale Statistik benötigt die aktivierte Server-Anbindung.');return;}render(null,'Zentrale Statistik wird geladen …');const data=await window.NICAccess.loadStatistics(Number($('statsDays').value));if(serial!==requestSerial||source()!=='database')return;render(data,'Gesamte Website · zentrale Datenbank · nur Nutzungen nach Statistik-Zustimmung. Zeitraum '+data.from+' bis '+data.through+'.');authStatus('Zentrale Statistik · zuletzt geladen um '+new Date().toLocaleTimeString('de-DE'));}
 function credentials(){const property=$('statsPropertyId').value.trim(),client=$('statsClientId').value.trim();if(!/^[0-9]{1,20}$/.test(property))throw new Error('Bitte die numerische GA4-Property-ID hinterlegen.');if(!/^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/.test(client))throw new Error('Bitte eine gültige Google-OAuth-Client-ID für eine Webanwendung hinterlegen.');return {property,client};}
 function body(dimensions,onlyViews=false){return {dateRanges:[{startDate:(Number($('statsDays').value)-1)+'daysAgo',endDate:'today'}],dimensions:dimensions.map(name=>({name})),metrics:[{name:'eventCount'}],dimensionFilter:{filter:{fieldName:'eventName',inListFilter:{values:onlyViews?[C.EVENTS.page_view]:Object.values(C.EVENTS)}}},limit:'10000'};}
 async function report(property,dimensions,onlyViews=false){
@@ -37,14 +39,14 @@ async function googleData(serial){
  const [overview,calculators,devices,systems,countries,sources]=results.map(r=>r.value),data=C.blankTotals();
  const reverse=Object.fromEntries(Object.entries(C.EVENTS).map(([k,v])=>[v,k]));
  rows(overview).forEach(r=>{const event=reverse[r.dimensions[0]];if(event)data.events[event]+=r.count;});
- const paths={'budget':'budget','eigennutzung':'own','vermietung':'rent','fix-flip':'flip'};
+ const paths={'budget':'budget','eigennutzung':'own','vermietung':'rent','fix-flip':'flip','finanzierungsrechner':'finance'};
  rows(calculators).forEach(r=>{const key=paths[r.dimensions[0].replace(/^\/+|\/+$/g,'')],event=reverse[r.dimensions[1]];if(key&&event)data.calculators[key][event]+=r.count;});
  for(const [key,result] of [['devices',devices],['systems',systems],['sources',sources]])rows(result).forEach(r=>Object.defineProperty(data[key],r.dimensions[0],{value:r.count,enumerable:true,configurable:true}));
  const countryValues={};rows(countries).forEach(r=>Object.defineProperty(countryValues,r.dimensions[0],{value:r.count,enumerable:true,configurable:true}));
  render(data,'Gesamte Website · Google Analytics · Property '+property+' · nur erfasste Nutzung mit Statistik-Zustimmung. Google-Daten können zeitversetzt erscheinen.',countryValues);
  const incomplete=results.some(r=>r.value.metadata?.subjectToThresholding||r.value.metadata?.dataLossFromOtherRow);authStatus('Verbunden · Berichte zuletzt geladen um '+new Date().toLocaleTimeString('de-DE')+(incomplete?' · Google meldet Schwellenwerte oder zusammengefasste Daten.':''));
 }
-async function refresh(){const serial=++requestSerial;if(source()==='local'){local();return;}try{await googleData(serial);}catch(err){if(serial===requestSerial){render(null,err.message);authStatus(err.message);}}}
+async function refresh(){const serial=++requestSerial;if(source()==='local'){local();return;}try{if(source()==='database'){await database(serial);return;}await googleData(serial);}catch(err){if(serial===requestSerial){render(null,err.message);authStatus(err.message);}}}
 function loadIdentity(){if(window.google?.accounts?.oauth2)return Promise.resolve();if(identityPromise)return identityPromise;identityPromise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://accounts.google.com/gsi/client';script.async=true;script.onload=()=>resolve();script.onerror=()=>{identityPromise=null;script.remove();reject(new Error('Google-Anmeldung konnte nicht geladen werden. Prüfe Verbindung und Inhaltsblocker.'));};document.head.append(script);});return identityPromise;}
 $('statsConnect').addEventListener('click',async()=>{
  try{const {client}=credentials();if(!window.google?.accounts?.oauth2){authStatus('Google-Anmeldung wird vorbereitet …');await loadIdentity();authStatus('Google-Anmeldung ist bereit. Klicke erneut auf „Mit Google verbinden“, um die Kontowahl zu öffnen.');return;}
@@ -54,7 +56,8 @@ $('statsConnect').addEventListener('click',async()=>{
  }catch(err){authStatus(err.message);$('statsConnection').open=true;}
 });
 $('statsDisconnect').addEventListener('click',()=>{token='';expires=0;authorizedClient='';$('statsDisconnect').hidden=true;authStatus('Verbindung auf dieser Seite getrennt. Es werden keine weiteren Berichte abgefragt.');refresh();});
-['statsSource','statsDays'].forEach(id=>$(id).addEventListener('change',refresh));$('statsRefresh').addEventListener('click',refresh);
-window.addEventListener('storage',e=>{if(e.key===STORAGE&&source()==='local')refresh();});window.addEventListener('nic:statistics-updated',()=>{if(source()==='local')refresh();});
+['statsSource','statsDays'].forEach(id=>$(id).addEventListener('change',()=>{updateResetVisibility();refresh();}));$('statsRefresh').addEventListener('click',refresh);
+$('statsReset').addEventListener('click',async()=>{if(!window.NICAccess?.enabled)return;if(!confirm('Alle in der zentralen Datenbank gespeicherten Statistikdaten werden endgültig gelöscht. Fortfahren?'))return;const button=$('statsReset');button.disabled=true;authStatus('Statistikdaten werden gelöscht …');try{const result=await window.NICAccess.resetStatistics();await refresh();authStatus('Statistikdaten gelöscht ('+new Intl.NumberFormat('de-DE').format(result.deleted)+' Datensätze).');}catch(error){authStatus('Löschen fehlgeschlagen: '+error.message);}finally{button.disabled=false;}});
+updateResetVisibility();window.addEventListener('storage',e=>{if(e.key===STORAGE&&source()==='local')refresh();});window.addEventListener('nic:statistics-updated',()=>{if(source()==='local')refresh();});
 refresh();
 })();
