@@ -226,5 +226,5 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
-  window.dispatchEvent(new Event('nic-settings-ready'));
+  if(typeof window.dispatchEvent==='function'&&typeof Event==='function')window.dispatchEvent(new Event('nic-settings-ready'));
 })();
