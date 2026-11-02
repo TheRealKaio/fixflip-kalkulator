@@ -26,6 +26,15 @@ style = '''<style id="budget-expenses-toggle-v8331">
 #budgetExpensesBody[hidden]{display:none!important}
 #budgetExpensesBody{margin-top:16px}
 .budget-expenses-toolbar{display:flex;justify-content:flex-end;margin-bottom:12px}
+#budgetExpensesSection .budget-expense-guidance{
+ display:block!important;position:static!important;width:100%!important;max-width:none!important;
+ text-align:center!important;color:#667085;
+ margin:14px 0 0!important;padding:0 0 13px!important;
+ border-bottom:1px solid #e2e8f0!important;line-height:1.5!important;
+}
+#budgetExpensesSection .budget-expense-list .budget-expense-name{font-size:var(--nic-budget-subtext,14px)!important}
+#budgetExpensesSection .budget-expense-list .budget-expense-name .mini{font-size:var(--nic-budget-hint,12px)!important}
+
 @media(max-width:420px){#budgetExpensesSection .budget-section-title{gap:8px}}
 </style>'''
 s = s.replace('</head>', style + '\n</head>', 1)
@@ -33,7 +42,29 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
 (function(){
   const button=document.getElementById("budgetExpensesToggle");
   const body=document.getElementById("budgetExpensesBody");
-  button.addEventListener("click",function(){
+  function positionGuidance(){
+    const section=document.getElementById("budgetExpensesSection");
+    if(!section)return;
+    const original=section.querySelector(".budget-section-title .sub, .budget-expense-guidance");
+    if(!original)return;
+    original.classList.add("budget-expense-guidance");
+    const total=document.getElementById("budgetSuggestionTotal");
+    const toolbar=section.querySelector(".budget-expenses-toolbar");
+    const target=total?.parentElement || toolbar;
+    if(target && original.previousElementSibling!==target){
+      target.insertAdjacentElement("afterend",original);
+    }
+    const settings=window.NICSettings?.current?.layout;
+    if(settings){
+      section.style.setProperty("--nic-budget-subtext",String(settings.subtextSize||14)+"px");
+      section.style.setProperty("--nic-budget-hint",String(settings.hintSize||12)+"px");
+      original.style.setProperty("font-size",String(settings.subtextSize||14)+"px","important");
+    }
+  }
+  positionGuidance();
+  window.addEventListener("nic-settings-updated",positionGuidance);
+  requestAnimationFrame(positionGuidance);
+    button.addEventListener("click",function(){
     const open=body.hidden;
     body.hidden=!open;
     button.textContent=open ? "−" : "+";
