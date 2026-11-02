@@ -42,7 +42,9 @@ required_implementation = {
     "current buffer uses raw reserve": 'const currentBuffer=Number.isFinite(Number(m.rawReserve)) ? Number(m.rawReserve) : 0;',
     "signed deviation calculated": 'const bufferDeviation=currentBuffer-minimumReserve;',
     "under minimum threshold": 'const minimumBufferBelow=bufferDeviation<-0.005;',
-    "signed deviation shown in warning": 'Finanzierungsreserve unterschritten · Abweichung: "+eur(bufferDeviation)',
+    "warning shows reserve without deviation": 'Finanzierungsreserve unterschritten · Finanzierungsreserve: "+eur(minimumReserve)',
+    "slider uses requested label": '<span>Anteil am Haushaltsnetto</span>',
+    "slider value shows percentage only": '$("budgetRateSliderValue").textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" %";',
     "warning explicit below branch": 'if(minimumBufferBelow){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
     "financing reserve markup starts blank": 'id="budgetSafetyReserve" inputmode="decimal" readonly aria-readonly="true"',
@@ -152,6 +154,9 @@ for removed_message in (
     'id="budgetRateSliderNote"',
     'Verbleibender Monatsüberschuss: "+eur(m.remainingMonthlySurplus)',
     'Finanzierungsreserve erreicht: "+eur(minimumReserve)',
+    'Abweichung: "+eur(bufferDeviation)',
+    'textContent=eur(m.monthlyRate)+" · "+',
+    '<span>Maximal tragbare Kreditrate</span>',
 ):
     if removed_message in html:
         raise SystemExit("Slider acceptance failed - removed budget-rate message remains: " + removed_message)

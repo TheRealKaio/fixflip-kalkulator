@@ -523,6 +523,7 @@ jobs:
           python scripts/patch_budget_rate_notes_v8369.py _site/index.html
           python scripts/patch_reno_note_area_v8370.py _site/index.html
           python scripts/patch_budget_rate_card_v8371.py _site/index.html
+          python scripts/patch_budget_rate_labels_v8372.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
           python scripts/release_contract.py normalize _site
