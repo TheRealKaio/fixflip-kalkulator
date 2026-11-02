@@ -17,6 +17,12 @@ for(const [width,height]of [[390,844],[1440,900]]){
   if(Math.abs(header-d.querySelector('.hero').getBoundingClientRect().height)>.5)throw Error('Header height changed '+target);
   const page=d.documentElement.dataset.nicPage,active=d.getElementById('dealTypeRent').getAttribute('aria-pressed')==='true'?'rent':d.querySelector('input[name="dealType"]:checked').value;
   if(page!==active)throw Error('Wrong initial calculator '+page+' / '+active);
+  const menu=[...d.querySelectorAll('.deal-type-row > .deal-type-option')];
+  if(menu.length!==5)throw Error('Expected five calculator tiles '+target+'; got '+menu.length);
+  const selected=menu.filter(tile=>tile.getAttribute('aria-current')==='page');
+  if(selected.length!==1||new URL(selected[0].dataset.href||selected[0].href,w.location.href).pathname!==w.location.pathname)throw Error('Active tile not retained '+target);
+  for(const tile of menu){const style=w.getComputedStyle(tile);if(style.borderTopStyle==='none'||parseFloat(style.borderTopWidth)<1)throw Error('Missing tile border '+target+' '+(tile.dataset.href||tile.href));}
+
   rows.push(width+' × '+height+': Finanzierung → '+page+' PASS; scroll '+w.scrollY+'px, header '+header+'px');output.textContent=rows.join('\n');
  }
  f.remove();
