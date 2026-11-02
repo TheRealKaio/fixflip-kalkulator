@@ -30,16 +30,22 @@ if(row)new MutationObserver(decorate).observe(row,{childList:true});
 /* One shared action bar and one mobile label on every calculator route. */
 function unifyCalculatorActions(){
  document.querySelectorAll('.bottom-actions').forEach(bar=>{
-  const primary=bar.querySelector('#newCalc, #recalc, .bottom-primary');
-  const share=bar.querySelector('#share, .bottom-pdf');
-  const download=bar.querySelector('#download, .bottom-save');
+  const buttons=Array.from(bar.querySelectorAll('button'));
+  const primary=bar.querySelector('#newCalc, #recalc, .bottom-primary')||buttons[0];
+  const share=bar.querySelector('#share, .bottom-pdf')||buttons[1];
+  const download=bar.querySelector('#download, .bottom-save')||buttons[2];
   if(!primary||!share||!download)return;
   primary.classList.add('bottom-primary');
   share.classList.add('bottom-pdf');
   download.classList.add('bottom-save');
-  primary.replaceChildren(document.createTextNode('Neu kalkulieren'));
-  share.replaceChildren(document.createTextNode('PDF teilen'));
+  primary.textContent='Neu kalkulieren';
+  share.textContent='PDF teilen';
   bar.classList.add('nic-unified-calculator-actions');
+  [primary,share,download].forEach((el,index)=>{
+   el.classList.add('nic-action-'+index);
+   el.style.setProperty('width','100%','important');
+   el.style.setProperty('min-width','0','important');
+  });
  });
 }
 unifyCalculatorActions();
