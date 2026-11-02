@@ -71,39 +71,56 @@ function selectTab(key){document.querySelectorAll('[role=tab]').forEach(t=>{cons
 form.noValidate=true;
 const tabs=Array.from(document.querySelectorAll('[role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
-// Content visibility switches take effect immediately and are persisted without an extra save click.
-form.addEventListener('change',e=>{if(e.target.matches?.('[id^="content-visible-"],[id^="content-guest-"]'))form.requestSubmit();});
-form.addEventListener('submit',async e=>{
- e.preventDefault();if(!validForm())return;
- const button=$('saveSettings');button.disabled=true;
+// Serialize checkbox saves: a second click must never overwrite an in-flight edit.
+let savingAccess=false,accessSaveRequested=false;
+async function persistAccessChanges(){
+ if(savingAccess){accessSaveRequested=true;return;}
+ savingAccess=true;
+ const button=$('saveSettings');
+ button.disabled=true;
  try{
-  const requested=collect();
-  const saved=await S.saveGlobal(requested);
-  if(window.NICAccess?.enabled){
-   // Do not claim success merely because the POST returned HTTP 200.
-   // Independently reload the persisted database state and compare each box rule.
+  do{
+   accessSaveRequested=false;
+   const requested=collect();
+   if(!window.NICAccess?.enabled)throw Error('Keine aktive Serververbindung. Einstellungen wurden nicht veröffentlicht.');
+   status('Speichere Box-Einstellungen auf dem Server …');
+   await S.saveGlobal(requested);
    const confirmed=await window.NICAccess.loadSettings();
-   if(!confirmed)throw new Error('Die Server-Einstellungen konnten nicht erneut geladen werden.');
+   if(!confirmed)throw Error('Server konnte die Einstellungen nicht zurücklesen.');
    const actual=S.normalize(confirmed);
    const mismatch=contentSectionCatalog.find(item=>{
     const expected=requested.contentSections[item.key];
-    const received=actual.contentSections[item.key];
-    return !received||received.visible!==expected.visible||received.guestAllowed!==expected.guestAllowed;
+    const found=actual.contentSections[item.key];
+    return !found||found.visible!==expected.visible||found.guestAllowed!==expected.guestAllowed;
    });
-   if(mismatch)throw new Error('Die Einstellung für „'+mismatch.title+'“ wurde vom Server nicht dauerhaft übernommen.');
-   S.apply(actual);fill(actual);
-   status('Gespeichert und durch erneutes Laden aus der Server-Datenbank bestätigt.');
-   $('saveState').textContent='Server-Speicherung bestätigt';
-  }else{
-   S.apply(saved);
-   status('Nur lokal im Browser gespeichert. Die Server-Verbindung ist nicht aktiv.',true);
-   $('saveState').textContent='Nur lokal gespeichert';
-  }
-  dirty=false;
+   if(mismatch)throw Error('Server hat die Box „'+mismatch.title+'“ nicht übernommen.');
+   // Do not reset checkboxes while further changes are waiting.
+   if(!accessSaveRequested){
+    S.apply(actual);
+    dirty=false;
+    $('saveState').textContent='Auf Server bestätigt';
+    status('Checkboxen dauerhaft gespeichert und vom Server zurückgelesen.');
+   }
+  }while(accessSaveRequested);
  }catch(err){
-  $('saveState').textContent='Speicherung nicht bestätigt';
-  status('Speichern fehlgeschlagen: '+err.message,true);
- }finally{button.disabled=false;}
+  dirty=true;
+  $('saveState').textContent='Nicht gespeichert';
+  status('Server-Speicherung fehlgeschlagen: '+err.message,true);
+ }finally{
+  button.disabled=false;
+  savingAccess=false;
+ }
+}
+form.addEventListener('change',e=>{
+ if(e.target.matches?.('[id^="content-visible-"],[id^="content-guest-"]')){
+  markDirty();
+  persistAccessChanges();
+ }
+});
+form.addEventListener('submit',async e=>{
+ e.preventDefault();if(!validForm())return;
+ if(savingAccess){accessSaveRequested=true;return;}
+ await persistAccessChanges();
 });
 $('exportSettings').addEventListener('click',()=>{if(!validForm())return;const blob=new Blob([JSON.stringify(collect(),null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='site-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Konfiguration exportiert. Die Veröffentlichung ist ein separater Schritt.');});
 $('importSettings').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>4000000)throw new Error('Datei ist zu groß (maximal 4 MB).');if(dirty&&!confirm('Ungespeicherte Änderungen durch die importierte Konfiguration ersetzen?'))return;const s=S.normalize(JSON.parse(await file.text()));fill(s);markDirty();status('Importiert. Prüfe die Angaben und speichere den Entwurf lokal.');}catch(err){status('Import fehlgeschlagen: '+err.message,true);}finally{e.target.value='';}});
