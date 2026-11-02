@@ -42,6 +42,13 @@ const assert=require('node:assert/strict');
    await page.locator('#nicAccountLink').click();
    await page.locator('#nicLoginTitle').waitFor({state:'visible'});
    await page.getByRole('button',{name:'Abbrechen',exact:true}).click();
+   for(const legal of ['impressum','agbs','datenschutz','haftungsausschluss']){
+    await page.locator(`[data-legal-placeholder="${legal}"]`).click();
+    await page.locator('#nicLegalPanel').waitFor({state:'visible'});
+    assert((await page.locator('.nic-legal-card').innerText()).trim().length>0,'Legal content must exist on every route');
+    await page.getByRole('button',{name:'← Zu den Kalkulatoren',exact:true}).click();
+   }
+   assert.equal(await page.locator('.nic-footer-cookie-pair #nicConsentSettings').count(),1,'Shared version/cookie layout must exist');
    if(slug==='finanzierungsrechner'){
     await page.evaluate(()=>{for(const [id,value] of Object.entries({loan:300000,interest:4,repay:2,extra:5,years:10})){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}});
     let expected=300000;const r=.04/12,f=Math.pow(1+r,12);

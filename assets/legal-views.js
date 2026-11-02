@@ -19,6 +19,7 @@ function render(){
  }else if(active==='haftungsausschluss'){
   const source=document.querySelector('#legalDisclaimerPage .legal-page-card');
   if(source)for(const child of source.children){if(child.tagName==='H1')continue;article.append(child.cloneNode(true));}
+  else {const defaults=JSON.parse(document.getElementById('nic-pdf-defaults')?.textContent||'{}');if(defaults.disclaimer)article.append(S.legalFragment(defaults.disclaimer,S.current));}
  }else{
   operator();
   node('h2','Inhalt noch nicht hinterlegt',article);

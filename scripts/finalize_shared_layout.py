@@ -2,7 +2,7 @@
 Protected compressed calculator sources and standalone originals stay byte-identical.
 """
 from pathlib import Path
-import re,sys
+import re,sys,shutil
 from urllib.parse import urlsplit
 from unify_calculator_header import split
 from unify_finance_footer_markup import FooterParser,extract_footer
@@ -21,6 +21,7 @@ def element(source,classname):
  if parser.start is None or parser.end is None:raise ValueError('Missing '+classname)
  return source[parser.start:parser.end],parser.start,parser.end
 
+shutil.copyfile('assets/calculator-shell.js',site/'calculator-shell.js')
 root=site/'index.html'
 menu,_,_=element(root.read_text(),'deal-type-card')
 menu=menu.replace('class="card deal-type-card"','class="menu card deal-type-card"',1)
@@ -63,7 +64,8 @@ for p in site.rglob('*.html'):
   app=AppParser(s);app.feed(s)
   if app.end is None:raise SystemExit('App container missing: '+str(p))
   end=s.rfind('</',app.start,app.end);s=s[:end]+footer+s[end:]
-  s=s.replace('</head>','<link rel="stylesheet" href="/calculator-shell.css"></head>',1)
+  if 'legal-views.js' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/legal-views.css"><script defer src="/legal-views.js"></script></head>',1)
+  s=s.replace('</head>','<link rel="stylesheet" href="/calculator-shell.css"><script defer src="/calculator-shell.js"></script></head>',1)
  p.write_text(s)
 rules.append('body:not(.nic-embed) .deal-type-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}body:not(.nic-embed) .deal-type-row>.deal-type-option{grid-column:auto!important}@media(max-width:700px){body:not(.nic-embed) .deal-type-row{grid-template-columns:minmax(0,1fr)!important}}')
 rules.append('body:not(.nic-admin) :is(.field,.input-wrap,.finance-check-label,.finance-check-label>span){min-width:0!important;max-width:100%!important}body:not(.nic-admin) label{white-space:normal!important;overflow-wrap:anywhere}body:not(.nic-admin) .finance-check-label{flex-wrap:wrap}body:not(.nic-admin) .field input{max-width:100%;box-sizing:border-box}')
