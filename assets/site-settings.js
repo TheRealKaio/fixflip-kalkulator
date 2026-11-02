@@ -112,7 +112,10 @@ body:not(.nic-admin) :is(.footer-note,.nic-shared-footer){background:var(--nic-g
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(a,.footer-version,.nic-consent-settings){color:var(--nic-green-text)!important}
 body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]){background:var(--nic-green-bg)!important;border-color:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
 body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]) :is(strong,small,.nic-menu-icon){color:var(--nic-green-text)!important}
-body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"])::after{background:var(--nic-green-bg)!important}`;
+body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"])::after{background:var(--nic-green-bg)!important}
+body:not(.nic-embed) .deal-type-row>.deal-type-option{box-sizing:border-box!important;border:2px solid #dce8e2!important;border-radius:16px!important}
+body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active{border:2px solid var(--nic-green-bg,#075c55)!important;background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
+body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong,small){color:var(--nic-green-text,#fff)!important}`;
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
       for(const rel of ['icon','apple-touch-icon']){
@@ -128,6 +131,22 @@ body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="tru
     if(key)applyMeta(current,key);
     window.NICHeader?.refresh();
   }
+  // Shared five-tile active state for all calculator routes.
+  const calculatorKeys=['budget','own','rent','flip','finance'];
+  function syncCalculatorMenu(active){
+    document.querySelectorAll('.deal-type-row > .deal-type-option').forEach((tile,index)=>{
+      const key=tile.dataset.calculator||calculatorKeys[index];
+      const selected=key===active;
+      tile.dataset.calculator=key;
+      tile.classList.toggle('current',selected);
+      tile.classList.toggle('nic-tile-active',selected);
+      if(selected)tile.setAttribute('aria-current','page');
+      else tile.removeAttribute('aria-current');
+      tile.querySelectorAll('input[type="radio"]').forEach(input=>{
+        if(input.name!=='dealType')input.checked=selected;
+      });
+    });
+  }
   function readLocal(){try{const raw=localStorage.getItem(KEY);return raw?normalize(JSON.parse(raw)):null;}catch(_){return null;}}
   async function init(){
     const response=await fetch(new URL('site-settings.json',ROOT),{cache:'no-store'});
@@ -140,7 +159,7 @@ body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="tru
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,syncCalculatorMenu,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
