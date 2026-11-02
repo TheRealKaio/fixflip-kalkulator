@@ -147,7 +147,8 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
       const forceFont=(selector,size)=>publicBody.querySelectorAll(selector).forEach(el=>el.style.setProperty('font-size',size+'px','important'));
       forceFont('.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-box div,.info-card p,.tip-box p,.equity-capital-note',l.subtextSize);
       forceFont('.mini,.hint,.note,.info-text,.helper,.metric-label,.rent-maintenance-status,.field label .hint,.kpi .note',l.hintSize);
-      forceFont('.flip-section-subtitle',l.bodySize);
+      forceFont('h2,.flip-section-card .advanced>summary',l.h2);
+      forceFont('.flip-section-subtitle,#rentFinanceCard .rent-finance-head h2 + p,#rentFinanceCard .rent-finance-head .sub',l.bodySize);
       publicBody.querySelectorAll('h2').forEach(heading=>{let paragraph=heading.nextElementSibling;while(paragraph&&paragraph.tagName==='P'){paragraph.style.setProperty('font-size',l.bodySize+'px','important');paragraph=paragraph.nextElementSibling;}});
     }
     // Preserve semantic red reset buttons and the green/amber/red result indicators.

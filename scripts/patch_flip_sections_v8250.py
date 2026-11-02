@@ -15,7 +15,6 @@ style=r"""
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  font-size:18px;
   line-height:1.2;
   font-weight:700;
   letter-spacing:-.02em;
@@ -49,7 +48,6 @@ style=r"""
 .flip-section-subtitle{
   margin:6px 0 14px!important;
   color:#94a3b8!important;
-  font-size:12px!important;
   line-height:1.45!important;
   font-weight:400!important;
 }
