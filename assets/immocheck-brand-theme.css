@@ -442,3 +442,38 @@ body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions .
   font-size:clamp(12px,3.3vw,16px)!important
  }
 }
+
+/* Final common action grid: the four legacy calculators and Finance use identical tracks. */
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions,
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) max-content 56px!important;
+ grid-template-rows:48px!important;
+ align-items:stretch!important;justify-content:stretch!important;
+ column-gap:8px!important;row-gap:0!important;
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ box-sizing:border-box!important;
+}
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>button,
+body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions>button{
+ box-sizing:border-box!important;min-width:0!important;max-width:100%!important;
+ width:100%!important;height:48px!important;min-height:48px!important;
+ max-height:48px!important;margin:0!important;
+ font-size:16px!important;line-height:1.2!important;
+}
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>:is(#recalc,#newCalc,.bottom-primary){grid-column:1!important;grid-row:1!important;flex:none!important}
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>:is(#share,.bottom-pdf){grid-column:2!important;grid-row:1!important;flex:none!important;width:auto!important;min-width:max-content!important;max-width:none!important;padding-inline:14px!important}
+body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>:is(#download,.bottom-save){grid-column:3!important;grid-row:1!important;flex:none!important;width:56px!important;min-width:56px!important;max-width:56px!important}
+@media(max-width:650px) and (orientation:portrait){
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions,
+ body:not(.nic-embed) .nic-actions-above-footer .nic-unified-calculator-actions{
+  grid-template-columns:minmax(0,1fr) max-content 48px!important;
+  column-gap:6px!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>:is(#download,.bottom-save){
+  width:48px!important;min-width:48px!important;max-width:48px!important
+ }
+ body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>button{
+  font-size:clamp(12px,3.3vw,16px)!important
+ }
+}
