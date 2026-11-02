@@ -8,8 +8,8 @@ body:not(.nic-embed) .hero>h1{color:#075c55!important;opacity:1!important}
 body:not(.nic-embed) .hero>p{color:#263b3a!important;opacity:1!important}
 body:not(.nic-embed) .card{border-color:#e2e9e5}
 body:not(.nic-embed) .nic-account-link{background:#075c55;color:#fff}
-body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:#075c55!important;color:#fff!important}
-body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff!important}
+body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
+body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:var(--nic-green-text,#fff)!important}
 /* Shared brand-bar rules; the mobile breakpoints only adjust sizes and placement. */
 .nic-brand-bar{display:grid;grid-template-columns:170px minmax(0,1fr) auto;align-items:center;box-sizing:border-box;gap:12px;padding:12px 16px;background:#fff;color:#172e2b;border:1px solid #e9e1d6}
 .nic-brand-bar .brand-logo-wrap{grid-column:1;grid-row:1;flex:0 1 auto;min-width:0;padding:0!important;background:#fff;box-shadow:none}
@@ -18,7 +18,7 @@ body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{co
 .nic-brand-bar a.nic-login-button{grid-column:3;grid-row:1;position:static!important;display:inline-flex!important;align-items:center;justify-content:center;gap:8px;width:auto!important;height:auto!important;min-width:0!important;max-width:none!important;flex:0 0 auto;padding:10px 12px!important;border:1px solid #075c55;border-radius:16px;background:linear-gradient(135deg,#16867a,#075c55)!important;color:white!important;text-decoration:none;font:700 14px/1.2 system-ui,sans-serif}
 .nic-login-button svg{flex:0 0 24px}
 body.nic-admin-open .app>.nic-brand-bar{display:grid!important}
-body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-consent-settings,body:not(.nic-embed) .footer-note #nicConsentSettings{color:#fff!important;opacity:1!important}
+body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-consent-settings,body:not(.nic-embed) .footer-note #nicConsentSettings{color:var(--nic-green-text,#fff)!important;opacity:1!important}
 .deal-type-option>input,.deal-type-option>.rent-radio-dot{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important}
 .nic-menu-icon{display:block;width:20px;height:20px;flex:0 0 20px;align-self:start;color:#075c55;pointer-events:none}
 .deal-type-option:has(input:checked)::after,.deal-type-option[aria-pressed="true"]::after,.deal-type-option.current::after,.deal-type-option[aria-current="page"]::after{content:"";position:absolute;bottom:-7px;left:50%;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:#075c55;border-right:2px solid #fff;border-bottom:2px solid #fff;pointer-events:none}
@@ -40,7 +40,7 @@ body.nic-admin-open .app>.nic-brand-bar#nicBrandBar{display:grid!important}
 body:not(.nic-embed) .footer-note,
 body:not(.nic-embed) .nic-shared-footer{
   border-radius:0 0 14px 14px!important;
-  color:#fff!important;
+  color:var(--nic-green-text,#fff)!important;
   padding-top:5px!important;
 }
 body:not(.nic-embed) .footer-note *,
@@ -48,15 +48,15 @@ body:not(.nic-embed) .nic-shared-footer *{color:inherit}
 body:not(.nic-embed) .footer-note a,
 body:not(.nic-embed) .nic-shared-footer a,
 body:not(.nic-embed) .footer-version,
-body:not(.nic-embed) .nic-consent-settings{color:#fff!important;opacity:1!important}
+body:not(.nic-embed) .nic-consent-settings{color:var(--nic-green-text,#fff)!important;opacity:1!important}
 body:not(.nic-embed) .bottom,
 body:not(.nic-embed) .bottom-actions{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
 body:not(.nic-embed) .bottom-actions>*{min-width:0}
 body:not(.nic-embed) .budget-apply-btn,
 body:not(.nic-embed) #applyTradeSuggestions,
-body:not(.nic-embed) .save-reno-btn{background:#16867a!important;border-color:#075c55!important;color:#fff!important}
+body:not(.nic-embed) .save-reno-btn{background:var(--nic-green-bg,#075c55)!important;border-color:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
 body:not(.nic-embed) #applyTradeSuggestions{max-width:calc(100% - 52px);min-width:0}
-body:not(.nic-embed) .nic-clear-reno{width:42px;min-width:42px;min-height:42px;border-radius:10px;background:#b42318!important;border:1px solid #b42318!important;color:#fff!important}
+body:not(.nic-embed) .nic-clear-reno{width:42px;min-width:42px;min-height:42px;border-radius:10px;background:var(--nic-red-bg,#b42318)!important;border:1px solid var(--nic-red-bg,#b42318)!important;color:var(--nic-red-text,#fff)!important}
 
 /* Screenshot corrections: footer spacing and scoped renovation controls. */
 body:not(.nic-embed) .footer-note,
@@ -71,13 +71,13 @@ body:not(.nic-embed) .nic-reno-action-row #applyTradeSuggestions{
  display:block;flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
  box-sizing:border-box;white-space:normal!important;overflow-wrap:anywhere!important;
  line-height:1.2!important;padding:10px 12px!important;text-align:center;
- background:#16867a!important;border-color:#075c55!important;color:#fff!important
+ background:var(--nic-green-bg,#075c55)!important;border-color:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important
 }
 body:not(.nic-embed) .nic-reno-action-row .nic-clear-reno{
  display:inline-flex!important;flex:0 0 42px!important;align-items:center;justify-content:center;
  width:42px!important;min-width:42px!important;height:42px;min-height:42px;
- padding:0!important;margin:0!important;background:#b42318!important;border:1px solid #b42318!important;
- color:#fff!important;border-radius:10px
+ padding:0!important;margin:0!important;background:var(--nic-red-bg,#b42318)!important;border:1px solid var(--nic-red-bg,#b42318)!important;
+ color:var(--nic-red-text,#fff)!important;border-radius:10px
 }
 @media(orientation:landscape) and (max-height:600px){
  body:not(.nic-embed) .nic-reno-action-row #applyTradeSuggestions{font-size:14px!important;padding:8px!important}
@@ -93,7 +93,7 @@ body:not(.nic-embed) .nic-reno-action-row :is(#applyTradeSuggestions,#budgetAppl
   flex:1 1 0!important;box-sizing:border-box!important;width:0!important;min-width:0!important;max-width:none!important;
   height:40px!important;min-height:40px!important;max-height:40px!important;
   padding:4px 9px!important;margin:0!important;border-radius:12px!important;
-  background:#16867a!important;border:1px solid #075c55!important;color:#fff!important;
+  background:var(--nic-green-bg,#075c55)!important;border:1px solid var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important;
   font-size:clamp(12px,1.9vw,15px)!important;line-height:1.13!important;
   text-align:center!important;white-space:normal!important;overflow-wrap:anywhere!important
 }
