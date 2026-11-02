@@ -21,7 +21,7 @@ body.nic-admin-open .app>.nic-brand-bar{display:grid!important}
 body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-consent-settings,body:not(.nic-embed) .footer-note #nicConsentSettings{color:#fff!important;opacity:1!important}
 .deal-type-option>input,.deal-type-option>.rent-radio-dot{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important}
 .nic-menu-icon{display:block;width:20px;height:20px;flex:0 0 20px;align-self:start;color:#075c55;pointer-events:none}
-.deal-type-option:has(input:checked)::after,.deal-type-option[aria-pressed="true"]::after,.deal-type-option.current::after{content:"";position:absolute;bottom:-7px;left:50%;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:#075c55;border-right:2px solid #fff;border-bottom:2px solid #fff;pointer-events:none}
+.deal-type-option:has(input:checked)::after,.deal-type-option[aria-pressed="true"]::after,.deal-type-option.current::after,.deal-type-option[aria-current="page"]::after{content:"";position:absolute;bottom:-7px;left:50%;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:#075c55;border-right:2px solid #fff;border-bottom:2px solid #fff;pointer-events:none}
 .deal-type-option:focus-within,.nic-login-button:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
 @media(max-width:700px){
   .nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;flex-wrap:wrap;gap:8px;padding:12px}
@@ -349,12 +349,12 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option{
   box-sizing:border-box!important;
   text-align:center!important;
 }
-body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current){
+body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]){
   border:1px solid #075c55!important;
   background:linear-gradient(135deg,#16867a,#075c55)!important;
   color:#fff!important;
 }
-body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current) :is(strong,small,.nic-menu-icon){
+body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]) :is(strong,small,.nic-menu-icon){
   color:#fff!important;
   opacity:1!important;
 }
