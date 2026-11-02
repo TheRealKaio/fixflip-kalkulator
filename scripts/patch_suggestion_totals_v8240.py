@@ -6,15 +6,13 @@ s = path.read_text(encoding="utf-8")
 style = r"""
 <style>
 .budget-section-title>div:first-child{min-width:0;flex:1}
-.budget-section-title .sub{font-size:10.5px;line-height:1.3;max-width:560px}
 .budget-suggestion-actions,.reno-head-actions{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:0 0 auto}
 #budgetApplySuggestions,.reno-suggestion-btn{white-space:nowrap;flex:0 0 auto}
-.suggestion-total{font-size:10.5px;font-weight:400;color:#a6aebb;line-height:1.2;text-align:right;white-space:nowrap}
+.suggestion-total{font-weight:400;color:#a6aebb;line-height:1.2;text-align:right;white-space:nowrap}
 .suggestion-total.applied{color:#2563eb}
 @media(max-width:520px){
   .budget-section-title{align-items:flex-start}
-  .budget-section-title .sub{font-size:10px;line-height:1.25}
-  #budgetApplySuggestions,.reno-suggestion-btn{font-size:11px;padding-left:9px;padding-right:9px;white-space:nowrap}
+  #budgetApplySuggestions,.reno-suggestion-btn{padding-left:9px;padding-right:9px;white-space:nowrap}
   .reno-head-actions{max-width:none}
 }
 </style>
