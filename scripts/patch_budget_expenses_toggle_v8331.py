@@ -27,6 +27,12 @@ style = '''<style id="budget-expenses-toggle-v8331">
 #budgetExpensesBody{margin-top:16px}
 .budget-expenses-toolbar{display:flex;justify-content:flex-end;margin-bottom:12px}
 #budgetExpensesSection .budget-expense-guidance{
+ grid-column:1 / -1!important;
+ flex:0 0 100%!important;
+ align-self:stretch!important;
+ margin-left:0!important;margin-right:0!important;
+ left:auto!important;right:auto!important;
+
  display:block!important;position:static!important;width:100%!important;max-width:none!important;
  text-align:center!important;color:#667085;
  margin:14px 0 0!important;padding:0 0 13px!important;
@@ -50,9 +56,11 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     original.classList.add("budget-expense-guidance");
     const total=document.getElementById("budgetSuggestionTotal");
     const toolbar=section.querySelector(".budget-expenses-toolbar");
-    const target=total?.parentElement || toolbar;
+    const target=section.querySelector("#budgetExpensesBody") || section;
+    // Move the note outside the narrow action/total group.
+    // This keeps both the text and its bottom border full-width.
     if(target && original.previousElementSibling!==target){
-      target.insertAdjacentElement("afterend",original);
+      target.insertAdjacentElement("afterbegin",original);
     }
     const settings=window.NICSettings?.current?.layout;
     if(settings){
