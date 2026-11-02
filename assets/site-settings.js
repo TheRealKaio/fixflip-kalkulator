@@ -131,6 +131,9 @@ body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}bo
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint,.field label .hint,.metric-box .metric-label){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-card p,.tip-box p,.equity-capital-note){font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) .budget-result-card .name{font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(.budget-result-card:has(#budgetLoan),.budget-result-card:has(#budgetEquityResult),.budget-result-card:has(#budgetAllIn),.budget-result-card:has(#budgetAncillaryAmount),.budget-result-card:has(#budgetExtraCostsAmount),.budget-result-card:has(#budgetPropertyPrice)) .name{font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(.budget-summary-row,.budget-summary-row span,.budget-summary-row strong){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) .own-budget-transfer-copy>.name{font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) .own-budget-transfer-copy>.note{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) .own-budget-transfer-status{font-size:${l.hintSize}px!important;line-height:1.5}
