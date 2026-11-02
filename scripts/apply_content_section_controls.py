@@ -298,7 +298,7 @@ for page in SITE.rglob("*.html"):
         tag_end = source.find(">", tag_start)
         tag = source[tag_start:tag_end + 1]
         if not tag.startswith("<script") and "class=" in tag:
-            tag = re.sub(r'\\b(sub|mini|hint)\\b', '', tag)
+            tag = re.sub(r'\b(sub|mini|hint)\b', '', tag)
             tag = re.sub(r'class="([^"]*)"', lambda m: 'class="' + m.group(1).strip() + ' nic-household-net-income-guidance"', tag, count=1)
             source = source[:tag_start] + tag + source[tag_end + 1:]
         else:
