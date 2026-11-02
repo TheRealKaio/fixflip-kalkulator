@@ -523,5 +523,5 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option{border-radius:var(--nic-me
 body:not(.nic-embed) .app>.footer-note,
 body:not(.nic-embed) .app>.nic-shared-footer,
 body:not(.nic-embed) .footer-note,
-body:not(.nic-embed) .nic-shared-footer{border-radius:var(--nic-footer-radius,22px 22px 0 0)!important}
+body:not(.nic-embed) .nic-shared-footer{border-radius:var(--nic-footer-radius,22px)!important}
 body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>button{border-radius:var(--nic-bottom-button-radius,17px)!important}
