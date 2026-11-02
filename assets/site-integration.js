@@ -20,16 +20,9 @@ function company(s){if(/\/impressum\/?$/.test(location.pathname)&&!document.getE
 function apply(){if(!S.current)return;S.apply(S.current,activePage);syncCalculatorMenu();social(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();alignFooterVersion();}
 // A single route-based selection for every navigation card, including financing.
 function syncCalculatorMenu(){
- // Four embedded calculator modes have no href; the fifth card is a separate route.
- const keys=['budget','own','rent','flip','finance'];
- document.querySelectorAll('.deal-type-row > .deal-type-option').forEach((card,index)=>{
-  const key=card.id==='nicFinancingTab'?'finance':keys[index];
-  const isCurrent=key===activePage;
-  card.classList.toggle('current',isCurrent);
-  if(isCurrent)card.setAttribute('aria-current','page');else card.removeAttribute('aria-current');
-  if(card.matches('a'))card.setAttribute('aria-label',(card.querySelector('strong')?.textContent||'Rechner')+(isCurrent?' – aktiv':''));
- });
+ S.syncCalculatorMenu(activePage);
 }
+
 function modePage(){if(document.getElementById('dealTypeRent')?.getAttribute('aria-pressed')==='true')return 'rent';return document.querySelector('input[name="dealType"]:checked')?.value||'budget';}
 function updateMode(){activePage=modePage();try{localStorage.setItem('nic_last_calculator_v1',activePage);}catch(_){}const path=S.pages.find(p=>p[0]===activePage)?.[2];if(path!==undefined)history.replaceState(null,'',new URL(path,S.ROOT).pathname+location.search+(/^#(?:admin(?:-|$)|account$|impressum$|datenschutz$|agbs$|haftungsausschluss$|cookie-hinweis$)/.test(location.hash)?location.hash:''));apply();window.NICAnalytics?.changeSection(activePage);}
 function activate(key){if(key==='rent')document.getElementById('dealTypeRent')?.click();else{const id={budget:'dealTypeBudget',own:'dealTypeOwn',flip:'dealTypeFlip'}[key],el=document.getElementById(id);if(el){el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));}}}
@@ -81,11 +74,11 @@ if(account&&hero){
  tab.id='nicFinancingTab';
  tab.className='deal-type-option';
  tab.href=new URL('finanzierungsrechner/',S.ROOT).href;
- tab.innerHTML='<input type="radio" name="nicFinancingMenuSelect" aria-label="Finanzierungsrechner auswählen" tabindex="-1"><span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span>';
+ tab.innerHTML='<span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span>';
  // The fifth option uses the exact same direct-child structure and the original
  // .deal-type-option typography, spacing and input-radio rules as the first four.
  tab.style.cssText='text-decoration:none;cursor:pointer;';
- tab.querySelector('input').addEventListener('click',event=>{event.preventDefault();location.href=tab.href;});
+ tab.dataset.calculator='finance';
 
  row.append(tab);
  // Shared row-layout rule: any unpaired final calculator card spans both columns.
