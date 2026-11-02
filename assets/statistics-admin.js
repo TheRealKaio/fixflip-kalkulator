@@ -2,7 +2,7 @@
 'use strict';
 const C=window.NICStatsCore,$=id=>document.getElementById(id),STORAGE='nic_statistics_v1';
 if(!C||!$('statsSource'))return;
-const labels={budget:'Budget',own:'Eigennutzung',rent:'Vermietung',flip:'Fix & Flip',finance:'↳ Finanzierungsrechner'};
+const labels={budget:'Budget',own:'Eigennutzung',rent:'Vermietung',flip:'Fix & Flip',finance:'Finanzierungsrechner'};
 const metrics=[['page_view','Seitenaufrufe'],['calculator_use','Rechner-Nutzungen'],['calculate','Kalkulationen'],['pdf_download','PDF-Downloads'],['pdf_share','PDF geteilt']];
 let token='',expires=0,requestSerial=0,identityPromise=null,authorizedClient='';
 function counter(n){return n==null?'—':new Intl.NumberFormat('de-DE').format(n);}
