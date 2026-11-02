@@ -245,8 +245,8 @@ js=r"""
       const amount=Math.max(0,parseLocalizedNumber(manualTotalInput.value,false));
       localStorage.setItem(stateKey(mode,"manual_total"),String(amount));
       if($("renoSheetTotal"))$("renoSheetTotal").textContent=eur(amount);
-      try{render();}catch(_err){}
-    });
+      // Preserve the typed amount; other input listeners handle recalculation.
+    },true);
   }
   document.addEventListener("input",function(event){
     if(!event.target.matches?.(".trade-amount,.trade-area"))return;
