@@ -47,7 +47,7 @@
   const portals=[['instagram','Instagram'],['facebook','Facebook'],['youtube','YouTube'],['linkedin','LinkedIn'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X'],['threads','Threads'],['xing','XING'],['whatsapp','WhatsApp']];
   const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/'],['finance','Finanzierungsrechner','finanzierungsrechner/']];
   const fonts={system:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif',trebuchet:'"Trebuchet MS",Arial,sans-serif'};
-  const layoutDefaults={font:'system',bodySize:16,h1:30,h2:18,h3:22,h4:16,cornerRadius:22,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',highlightBackground:'#FDE68A',highlightGoodBackground:'#F0FDF4',highlightWarningBackground:'#FECACA',outerBackground:'#F6F1E9'};
+  const layoutDefaults={font:'system',bodySize:16,subtextSize:14,hintSize:12,h1:30,h2:18,h3:22,h4:16,cornerRadius:22,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',highlightBackground:'#FDE68A',highlightGoodBackground:'#F0FDF4',highlightWarningBackground:'#FECACA',outerBackground:'#F6F1E9'};
   let published=null,current=null;
   const text=(v,max=2000)=>typeof v==='string'?v.trim().slice(0,max):'';
   function httpUrl(v){try{const u=new URL(text(v));return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(_){return '';}}
@@ -109,11 +109,13 @@
     const greenText=contrastText(l.greenBackground,l.greenText),blackText=contrastText(l.buttonBackground,l.buttonText),redText=contrastText(l.redBackground,l.redText);
     const scaledRadius=original=>Math.round(l.cornerRadius*original/22);
     style.textContent=`:root{--bg:${l.background};--ink:${l.text};--nic-outer-bg:${l.outerBackground};--nic-green-bg:${l.greenBackground};--nic-green-text:${greenText};--nic-black-bg:${l.buttonBackground};--nic-black-text:${blackText};--nic-red-bg:${l.redBackground};--nic-red-text:${redText};--nic-highlight-bg:${l.highlightBackground};--nic-highlight-good-bg:${l.highlightGoodBackground};--nic-highlight-warning-bg:${l.highlightWarningBackground};--nic-body-font-size:${l.bodySize}px;--nic-body-font-family:${fonts[l.font]};--nic-header-h1-max:${l.h1}px;--nic-menu-title-size:${l.h2}px;--nic-button-bg:${l.buttonBackground};--nic-button-text:${blackText}}body:not(.nic-admin){font-family:${fonts[l.font]};font-size:${l.bodySize}px;color:${l.text};background:${l.outerBackground}!important}body:not(.nic-admin),body:not(.nic-admin) *{font-family:${fonts[l.font]}!important}
-body:not(.nic-admin) :is(p,li,td,th,label,button,input,select,textarea,.mini,.hint,.nic-consent,.nic-cookie-custom,.public-footer,.nic-brand-description,.footer-note,.footer-note *,.nic-legal-card,.nic-legal-card *:not(h1):not(h2):not(h3):not(h4),.legal-page-card p,.legal-page-card li){font-size:${l.bodySize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(p,li,td,th,label,button,input,select,textarea,.mini,.hint,.nic-consent,.nic-cookie-custom,.public-footer,.nic-brand-description,.footer-note,.footer-note *,.nic-legal-card,.nic-legal-card :where(:not(h1,h2,h3,h4)),.legal-page-card p,.legal-page-card li){font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(p,li,.footer-note,.nic-legal-card){overflow-wrap:anywhere}
 body:not(.nic-admin) .footer-note{height:auto!important;min-height:0!important}
 body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}
 body:not(.nic-admin) :is(.card,.form-card,.budget-summary,.scenario-card){border-radius:${l.cornerRadius}px!important}body:not(.nic-admin) :is(input,select,textarea,button,.nic-clear-reno){border-radius:${scaledRadius(10)}px!important}body:not(.nic-admin) :is(.deal-type-option,.budget-result-card){border-radius:${scaledRadius(16)}px!important}body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
+body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.info-box p,.info-box,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
 body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,#applyTradeSuggestions,.nic-green-budget-transfer,.btn.primary){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important;border-color:var(--nic-green-bg)!important}
 body:not(.nic-admin) :is(.nic-clear-reno,.bottom-primary,#newCalc){background:var(--nic-red-bg)!important;color:var(--nic-red-text)!important;border-color:var(--nic-red-bg)!important}
@@ -139,22 +141,29 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
     setMeta('meta[property="og:image:alt"]',{property:'og:image:alt'},current.imageAlts.sharing);
     setMeta('meta[name="twitter:image:alt"]',{name:'twitter:image:alt'},current.imageAlts.sharing);
     if(key)applyMeta(current,key);
+    syncCalculatorMenu(key);
     window.NICHeader?.refresh();
   }
   if(typeof window.addEventListener==='function')window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});
   // Shared five-tile active state for all calculator routes.
   const calculatorKeys=['budget','own','rent','flip','finance'];
   function syncCalculatorMenu(active){
+    if(!calculatorKeys.includes(active)){
+      const route={'/budget/':'budget','/eigennutzung/':'own','/vermietung/':'rent','/fix-flip/':'flip','/finanzierungsrechner/':'finance'}[window.location?.pathname];
+      const page=route||document.documentElement?.dataset?.nicPage;
+      active=calculatorKeys.includes(page)?page:document.getElementById('dealTypeRent')?.getAttribute('aria-pressed')==='true'?'rent':document.querySelector('input[name="dealType"]:checked')?.value||'budget';
+    }
     document.querySelectorAll('.deal-type-row > .deal-type-option').forEach((tile,index)=>{
       const key=tile.dataset.calculator||calculatorKeys[index];
       const selected=key===active;
       tile.dataset.calculator=key;
+      if(tile.hasAttribute?.('aria-pressed'))tile.setAttribute('aria-pressed',String(selected));
       tile.classList.toggle('current',selected);
       tile.classList.toggle('nic-tile-active',selected);
       if(selected)tile.setAttribute('aria-current','page');
       else tile.removeAttribute('aria-current');
       tile.querySelectorAll('input[type="radio"]').forEach(input=>{
-        if(input.name!=='dealType')input.checked=selected;
+        input.checked=selected;
       });
     });
   }

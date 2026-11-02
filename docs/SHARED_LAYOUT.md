@@ -48,3 +48,7 @@ Bestands-Builder aufgerufen; keine nachgebauten Berichtsmodelle.
 
 Lokale Browserprüfungen bedienen Assets direkt aus `_site`, damit getrennte
 Netzwerk-Namensräume keine falschen HTTP-Verbindungsfehler erzeugen.
+
+## V8.365
+
+Unter Admin → Layout → Typografie sind Untertexte (Standard 14 px) und Hinweistexte (Standard 12 px) unabhängig von der Grundschriftgröße einstellbar. Bestehende Konfigurationen erhalten diese Standardwerte automatisch. Die PDF-Druckskala berücksichtigt Untertexte und kleine Hinweise ebenfalls getrennt. Alle fünf Navigationskacheln werden bei jeder Layoutanwendung aus der aktuellen Route synchronisiert; aktive Radios und Button-Zustände stimmen mit der gemeinsamen 2-px-Rahmenregel überein. Browserprüfungen testen die tatsächlichen Rechnerwechsel sowie Speichern und Neuladen der neuen Admin-Felder.

@@ -11,7 +11,8 @@ s=s.replace(needle,needle+'''
  // H2 governs report section titles independently from body text.
  doc.setFontSize=value=>{
   const heading=/bold/i.test(doc.getFont().fontStyle);
-  return originalSize(value*(heading?(s.layout?.h2||18)/18:(s.layout?.bodySize||16)/16));
+  const factor=heading?(s.layout?.h2||18)/18:value<=8?(s.layout?.hintSize||12)/12:value<9?(s.layout?.subtextSize||14)/14:(s.layout?.bodySize||16)/16;
+  return originalSize(value*factor);
  };
 ''',1)
 # Legal blocks own their pagination: measure using the actual configured font and size.

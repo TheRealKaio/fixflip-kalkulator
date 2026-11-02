@@ -7,6 +7,8 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
 (async()=>{
  const s=await S.init();assert.equal(S.portals.length,10);assert.equal(S.pages.length,7);assert.equal(S.companyFields.length,29);
+ assert.equal(s.layout.subtextSize,14);assert.equal(s.layout.hintSize,12);
+ const secondary=S.normalize({...s,layout:{...s.layout,subtextSize:17,hintSize:11}});S.save(secondary);assert.equal((await S.init()).layout.subtextSize,17);assert.equal((await S.init()).layout.hintSize,11);S.discard();
  const accessKeys=['calculators','pdfDownload','pdfShare'];
  for(const key of accessKeys){
   assert.equal(s.access[key],true,'published defaults keep public access');
