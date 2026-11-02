@@ -141,7 +141,7 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
     if(key)applyMeta(current,key);
     window.NICHeader?.refresh();
   }
-  window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});
+  if(typeof window.addEventListener==='function')window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});
   // Shared five-tile active state for all calculator routes.
   const calculatorKeys=['budget','own','rent','flip','finance'];
   function syncCalculatorMenu(active){
