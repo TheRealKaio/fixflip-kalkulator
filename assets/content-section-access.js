@@ -42,7 +42,7 @@
       position:relative!important;
     }
     [data-nic-content-key].nic-content-box-guest-locked .nic-masked-value::after{
-      content:"?"!important;
+      content:"████" !important;
       color:#94a3b8!important;
       position:absolute;
       inset:0;
@@ -78,7 +78,7 @@
           overlay.setAttribute('role','note');
           overlay.setAttribute('tabindex','0');
           const question=document.createElement('strong');
-          question.textContent='?';
+          question.textContent='';
           question.style.fontSize='2.5em';
           const note=document.createElement('span');
           note.textContent=message;
