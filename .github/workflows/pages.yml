@@ -526,6 +526,7 @@ jobs:
           python scripts/patch_budget_rate_labels_v8372.py _site/index.html
           python scripts/patch_budget_rate_width_v8373.py _site/index.html
           python scripts/patch_footer_regular_v8374.py _site
+          python scripts/patch_footer_subtext_v8375.py _site
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
           python scripts/release_contract.py normalize _site

@@ -103,6 +103,10 @@ const assert=require('node:assert/strict');
  await admin.locator('#layout-subtextSize').waitFor({state:'visible'});
  assert.equal(await admin.locator('#layout-subtextSize').inputValue(),'17');
  assert.equal(await admin.locator('#layout-hintSize').inputValue(),'11');
- console.log('PASS admin: secondary typography fields, save and reload');
+ await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
+ await page.locator('.footer-note').waitFor({state:'visible'});
+ assert.equal(await page.locator('.footer-note').evaluate(e=>getComputedStyle(e).fontSize),'17px');
+ assert.equal(await page.locator('.footer-note a').first().evaluate(e=>getComputedStyle(e).fontSize),'17px');
+ console.log('PASS admin: secondary typography fields, save and reload; footer follows subtext size');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
