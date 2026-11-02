@@ -34,6 +34,8 @@
   "layout": {
     "font": "system",
     "bodySize": 16,
+    "subtextSize": 14,
+    "hintSize": 12,
     "h1": 45,
     "h2": 18,
     "h3": 22,
