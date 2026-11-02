@@ -43,6 +43,7 @@
       const rule=settings.contentSections?.[box.dataset.nicContentKey]||{};
       const hidden=rule.visible===false;
       const locked=!hidden&&!loggedIn&&rule.guestAllowed===false;
+      box.style.setProperty('--nic-subtext-size',String(settings.layout?.subtextSize||14)+'px');
       box.classList.toggle('nic-content-box-hidden',hidden);
       box.classList.toggle('nic-content-box-guest-locked',locked);
       box.hidden=hidden;
