@@ -7,10 +7,6 @@ body:not(.nic-embed) .brand-logo-wrap{box-shadow:none!important}
 body:not(.nic-embed) .hero>h1{color:#075c55!important;opacity:1!important}
 body:not(.nic-embed) .hero>p{color:#263b3a!important;opacity:1!important}
 body:not(.nic-embed) .card{border-color:#e2e9e5}
-body:not(.nic-embed) .deal-type-option{background:#fff;color:#172e2b;border-color:#dce8e2}
-body:not(.nic-embed) .deal-type-option small{color:#425b62;opacity:1}
-body:not(.nic-embed) .deal-type-option:has(input:checked),body:not(.nic-embed) .deal-type-option.current{background:linear-gradient(135deg,#16867a,#075c55)!important;border-color:#075c55;color:#fff!important}
-body:not(.nic-embed) .deal-type-option:has(input:checked) *,body:not(.nic-embed) .deal-type-option.current *{color:#fff!important;opacity:1!important}
 body:not(.nic-embed) .nic-account-link{background:#075c55;color:#fff}
 body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{background:#075c55!important;color:#fff!important}
 body:not(.nic-embed) .footer-note a,body:not(.nic-embed) .nic-shared-footer a{color:#fff!important}
@@ -25,7 +21,6 @@ body.nic-admin-open .app>.nic-brand-bar{display:grid!important}
 body:not(.nic-embed) .footer-note,body:not(.nic-embed) .nic-shared-footer{border-radius:0 0 22px 22px}
 body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-consent-settings,body:not(.nic-embed) .footer-note #nicConsentSettings{color:#fff!important;opacity:1!important}
 /* Retain the original card grid, padding, typography and dimensions. */
-body:not(.nic-embed) .deal-type-option{position:relative;overflow:visible!important;border-color:#e0d8cf;border-radius:16px;background:linear-gradient(#fff,#faf7f1);box-shadow:0 2px 4px #33230d12}
 .deal-type-option>input,.deal-type-option>.rent-radio-dot{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important}
 .nic-menu-icon{display:block;width:22px;height:30px;flex:0 0 22px;align-self:center;color:#075c55;pointer-events:none}
 .deal-type-option:has(input:checked) .nic-menu-icon,.deal-type-option[aria-pressed="true"] .nic-menu-icon,.deal-type-option.current .nic-menu-icon{color:#fff}
@@ -34,8 +29,6 @@ body:not(.nic-embed) .deal-type-option{position:relative;overflow:visible!import
 @media(max-width:700px){.nic-brand-bar{flex-wrap:wrap;gap:10px;padding:12px 18px}.nic-brand-bar .brand-logo{width:170px!important}.nic-brand-description{order:3;flex-basis:100%;border-left:0;padding-left:0;font-size:13px}.nic-brand-bar a.nic-login-button{margin-left:auto;font-size:13px;padding:10px 12px!important}}
 @media(max-width:380px){.nic-brand-bar{padding-inline:12px;gap:6px}.nic-brand-bar .brand-logo{width:130px!important}.nic-brand-bar a.nic-login-button{font-size:12px;padding:9px!important;gap:5px}}
 body.nic-admin-open .app>.nic-brand-bar#nicBrandBar{display:grid!important}
-body:not(.nic-embed) .deal-type-option[aria-pressed="true"]{background:linear-gradient(135deg,#16867a,#075c55)!important;border-color:#075c55;color:#fff!important}
-body:not(.nic-embed) .deal-type-option[aria-pressed="true"] *{color:#fff!important;opacity:1!important}
 /* The icons occupy the former radio-control footprint, preserving tile height. */
 .nic-menu-icon{width:20px;height:20px;flex-basis:20px;align-self:start}
 .nic-brand-bar{display:grid;grid-template-columns:170px minmax(0,1fr) auto;gap:12px;padding:12px 16px}
@@ -341,6 +334,30 @@ body:not(.nic-embed) .app>.nic-shared-footer{
 
 /* Unified navigation tiles for all five calculators.
    One shared icon-title-description layout on every viewport; only sizes change. */
+/* Shared border and state styling for all five tiles, independent of navigation order. */
+body:not(.nic-embed) .deal-type-row > .deal-type-option{
+  position:relative!important;
+  overflow:visible!important;
+  border:1px solid #dce8e2!important;
+  border-radius:16px!important;
+  background:linear-gradient(#fff,#faf7f1)!important;
+  color:#172e2b!important;
+  box-shadow:0 2px 4px #33230d12!important;
+}
+body:not(.nic-embed) .deal-type-row > .deal-type-option small{
+  color:#425b62!important;
+  opacity:1!important;
+}
+body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current){
+  border:1px solid #075c55!important;
+  background:linear-gradient(135deg,#16867a,#075c55)!important;
+  color:#fff!important;
+}
+body:not(.nic-embed) .deal-type-row > .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current) :is(strong,small,.nic-menu-icon){
+  color:#fff!important;
+  opacity:1!important;
+}
+
 body:not(.nic-embed) .deal-type-row > .deal-type-option{
   display:grid!important;
   grid-template-columns:minmax(0,1fr)!important;
