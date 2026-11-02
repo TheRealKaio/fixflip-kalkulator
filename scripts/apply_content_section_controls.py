@@ -249,14 +249,19 @@ for page in SITE.rglob("*.html"):
  const numberZero=/^[+-]?(?:0+(?:[.,]0+)?|[.,]0+)$/;
  function allowed(el){
    if(!(el instanceof HTMLInputElement))return false;
-   if(el.disabled||el.readOnly||el.type==='hidden'||el.type==='checkbox'||el.type==='radio'||el.type==='range')return false;
-   if(el.type!=='number'&&el.type!=='text'&&el.getAttribute('inputmode')!=='decimal'&&el.getAttribute('inputmode')!=='numeric')return false;
-   if(excluded.test(el.id||'')||excluded.test(el.name||''))return false;
-   const wrap=el.closest('.input-wrap');
+   if(el.disabled||el.readOnly||['hidden','checkbox','radio','range','date','email','password','search'].includes(el.type))return false;
+   const wrap=el.closest('.input-wrap,.field,.budget-expense-row,.rent-field,.form-group');
    const unit=wrap?.querySelector('.unit')?.textContent?.trim()||'';
+   const name=(el.id||'')+' '+(el.name||'');
+   // A unit marker wins over a naming convention. Monetary inputs in Vermietung
+   // often have no inputmode and are otherwise missed by the old heuristic.
+   if(unit.includes('€'))return true;
    if(unit.includes('%')||/^(?:Jahre?|Monate?|Personen?|Stk\\.?|m²)$/i.test(unit))return false;
-   // A monetary field must explicitly use euros or have a recognizable financial id.
-   return unit.includes('€')||/income|expense|cost|price|equity|loan|reno|modern|budget|rent|miete|kauf|verkauf|cash|reserve|fee|amount|betrag|salary|saving|puffer|holding|trade/i.test(el.id||'');
+   if(/adults|children|kids|persons|people|guests|count|quantity|number|units|years|months|period|term|duration|age|zins|interest|repay|tilgung|percent|pct|quote|faktor/i.test(name))return false;
+   if(!['text','number','tel'].includes(el.type))return false;
+   const label=el.labels?.[0]?.textContent||wrap?.querySelector('label')?.textContent||'';
+   if(/€|Euro|EUR|Miete|Kosten|Betrag|Preis|Hausgeld|Instandhaltung|Rücklage|Nebenkosten|Cashflow|Darlehen|Kredit|Eigenkapital/i.test(label))return true;
+   return /income|expense|cost|price|equity|loan|reno|modern|budget|rent|miete|kauf|verkauf|cash|reserve|fee|amount|betrag|salary|saving|puffer|holding|trade/i.test(name);
  }
  function normalize(el){
    if(!allowed(el)||document.activeElement===el)return;
