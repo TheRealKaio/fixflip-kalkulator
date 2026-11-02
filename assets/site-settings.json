@@ -41,7 +41,12 @@
     "background": "#F5F7FB",
     "text": "#172033",
     "buttonBackground": "#0F172A",
-    "buttonText": "#FFFFFF"
+    "buttonText": "AUTO",
+    "greenBackground": "#075C55",
+    "greenText": "AUTO",
+    "redBackground": "#B42318",
+    "redText": "AUTO",
+    "outerBackground": "#F6F1E9"
   },
   "social": {
     "instagram": "",
