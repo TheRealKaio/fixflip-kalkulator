@@ -132,6 +132,9 @@ body:not(.nic-admin) .nic-content-box-guest-overlay{position:absolute;inset:0;z-
 body:not(.nic-admin) .nic-content-box-guest-locked{position:relative!important;isolation:isolate}
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) #budgetExpensesSection .budget-expense-guidance{font-size:${l.bodySize}px!important;line-height:1.5}
+body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name{font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name :is(strong,b,.name,.budget-expense-title),body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name > :first-child{font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name :is(small,.mini,.sub,.hint,.description,.budget-expense-description),body:not(.nic-admin) #budgetExpensesSection .budget-expense-list .budget-expense-name > :not(:first-child){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint,.field label .hint,.metric-box .metric-label){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-card p,.tip-box p,.equity-capital-note){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) .budget-result-card .name{font-size:${l.hintSize}px!important;line-height:1.5}
