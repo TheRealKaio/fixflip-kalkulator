@@ -7,10 +7,13 @@ def run(site):
         source=page.read_text()
         scripts=re.findall(r"<script\b[^>]*>.*?</script>",source,flags=re.S)
         source=re.sub(r'<svg class="brand-logo".*?</svg>|<img class="brand-logo"[^>]*>',r'<img class="brand-logo" src="/header-logo.png" width="920" height="307" alt="Neustart ImmoCheck – Haus mit vier Fenstern und gelber Welle">',source,flags=re.S)
-        source=re.sub(r'<link[^>]*rel="(?:shortcut )?icon"[^>]*>', '', source)
-        source=source.replace('</head>','<link rel="icon" type="image/svg+xml" href="/icon.svg"><link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png"></head>',1)
-        if 'rel="apple-touch-icon"' not in source:
-            source=source.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"></head>',1)
+        # Remove all legacy icon declarations, including Apple icons, regardless of attribute order.
+        source=re.sub(r'<link\\b(?=[^>]*\\brel\\s*=\\s*["\\\'](?:shortcut\\s+icon|icon|apple-touch-icon)["\\\'])[^>]*>', '', source, flags=re.I)
+        icons=('<link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png?v=20261102">'
+               '<link rel="icon" type="image/svg+xml" href="/icon.svg?v=20261102">'
+               '<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=20261102">'
+               '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261102">')
+        source=source.replace('</head>',icons+'</head>',1)
         # Move the existing account hook into the separate white brand bar.
         def brand_bar(match):
             top=match[2]
