@@ -47,6 +47,7 @@
     "redBackground": "#B42318",
     "redText": "AUTO",
     "highlightBackground": "#FDE68A",
+    "highlightGoodBackground": "#F0FDF4",
     "highlightWarningBackground": "#FECACA",
     "outerBackground": "#F6F1E9"
   },
