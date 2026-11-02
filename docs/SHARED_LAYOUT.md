@@ -10,7 +10,7 @@ bestehende Originalvergleich im Build erzwingt dies weiterhin.
 vor dem Asset-Fingerprinting. Es übernimmt die tatsächliche CSS-Reihenfolge
 der Hauptseite in `calculator-shell.css` und entfernt die entsprechenden
 Selektoren aus den anderen generierten Stylesheets und Inline-Blöcken.
-Alle fünf Rechnerrouten laden dieselbe Datei. Der Footer steht überall im
+Alle fünf Rechnerrouten laden dieselbe Datei. Auch die fünfteilige Navigation wird aus einer einzigen Hauptseitenvorlage erzeugt; die separate Laufzeit-Erzeugung der fünften Kachel ist entfernt. Der Footer steht überall im
 selben App-Container. Seine Breite benötigt keine JavaScript-Messung mehr.
 
 Alle fünf Navigationskacheln verwenden dieselbe Raster-, Größen- und

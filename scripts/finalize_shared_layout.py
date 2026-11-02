@@ -12,7 +12,37 @@ class AppParser(FooterParser):
   attrs=[(k, "footer-note" if k=="class" and "app" in v.split() else v) for k,v in attrs]
   super().handle_starttag(tag,attrs)
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
+def element(source,classname):
+ class Parser(FooterParser):
+  def handle_starttag(self,tag,attrs):
+   attrs=[(k,'footer-note' if k=='class' and classname in v.split() else '' if k=='class' else v) for k,v in attrs]
+   super().handle_starttag(tag,attrs)
+ parser=Parser(source);parser.feed(source)
+ if parser.start is None or parser.end is None:raise ValueError('Missing '+classname)
+ return source[parser.start:parser.end],parser.start,parser.end
+
 root=site/'index.html'
+menu,_,_=element(root.read_text(),'deal-type-card')
+menu=menu.replace('class="card deal-type-card"','class="menu card deal-type-card"',1)
+for mode,slug in [('budget','budget'),('own','eigennutzung'),('rent','vermietung'),('flip','fix-flip')]:
+ if mode=='rent':menu=menu.replace('id="dealTypeRent"','id="dealTypeRent" data-href="/'+slug+'/"',1)
+ else:
+  ident={'budget':'Budget','own':'Own','flip':'Flip'}[mode]
+  menu=menu.replace('for="dealType'+ident+'"','for="dealType'+ident+'" data-href="/'+slug+'/"',1)
+anchor='<a id="nicFinancingTab" class="deal-type-option" data-calculator="finance" data-href="/finanzierungsrechner/" href="/finanzierungsrechner/"><span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span></a>'
+if 'id="nicFinancingTab"' not in menu:
+ end=menu.rfind('</div>');menu=menu[:end]+anchor+menu[end:]
+for slug in ['', 'budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner']:
+ p=site/slug/'index.html';source=p.read_text();_,a,b=element(source,'deal-type-card');shared=menu
+ if slug=='finanzierungsrechner':
+  shared=re.sub(r'\schecked(?:="[^"]*")?','',shared)
+  shared=shared.replace('id="nicFinancingTab"','id="nicFinancingTab" aria-current="page"',1)
+ else:
+  mode={'eigennutzung':'own','fix-flip':'flip','vermietung':'rent'}.get(slug,'budget')
+  shared=re.sub(r'\schecked(?:="[^"]*")?','',shared)
+  shared=shared.replace('value="'+mode+'"','value="'+mode+'" checked',1)
+ p.write_text(source[:a]+shared+source[b:])
+
 pattern=re.compile(r'\.(?:hero(?:-top)?|brand-logo(?:-wrap)?|deal-type-(?:row|option|card|title)|nic-menu-icon|footer-(?:note|meta|version|legal-links)|nic-footer-cookie-pair|bottom(?:-actions|-primary|-pdf|-save|-share)?|save-arrow)(?![\w-])|#(?:recalc|nicFinancingTab)(?![\w-])')
 # Follow the actual cascade once. Shared selectors are removed from their sources.
 rules=[]
