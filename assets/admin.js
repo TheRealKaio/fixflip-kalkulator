@@ -71,7 +71,38 @@ function selectTab(key){document.querySelectorAll('[role=tab]').forEach(t=>{cons
 form.noValidate=true;
 const tabs=Array.from(document.querySelectorAll('[role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
-form.addEventListener('submit',async e=>{e.preventDefault();if(!validForm())return;try{const s=await S.saveGlobal(collect());S.apply(s);dirty=false;$('saveState').textContent=window.NICAccess?.enabled?'Global gespeichert':'Lokal gespeichert';status(window.NICAccess?.enabled?'Die Einstellungen gelten jetzt für alle Besucher.':'Gilt in diesem Browser. Für alle Besucher ist eine Veröffentlichung erforderlich.');}catch(err){status('Speichern fehlgeschlagen: '+err.message,true);}});
+form.addEventListener('submit',async e=>{
+ e.preventDefault();if(!validForm())return;
+ const button=$('saveSettings');button.disabled=true;
+ try{
+  const requested=collect();
+  const saved=await S.saveGlobal(requested);
+  if(window.NICAccess?.enabled){
+   // Do not claim success merely because the POST returned HTTP 200.
+   // Independently reload the persisted database state and compare each box rule.
+   const confirmed=await window.NICAccess.loadSettings();
+   if(!confirmed)throw new Error('Die Server-Einstellungen konnten nicht erneut geladen werden.');
+   const actual=S.normalize(confirmed);
+   const mismatch=contentSectionCatalog.find(item=>{
+    const expected=requested.contentSections[item.key];
+    const received=actual.contentSections[item.key];
+    return !received||received.visible!==expected.visible||received.guestAllowed!==expected.guestAllowed;
+   });
+   if(mismatch)throw new Error('Die Einstellung für „'+mismatch.title+'“ wurde vom Server nicht dauerhaft übernommen.');
+   S.apply(actual);fill(actual);
+   status('Gespeichert und durch erneutes Laden aus der Server-Datenbank bestätigt.');
+   $('saveState').textContent='Server-Speicherung bestätigt';
+  }else{
+   S.apply(saved);
+   status('Nur lokal im Browser gespeichert. Die Server-Verbindung ist nicht aktiv.',true);
+   $('saveState').textContent='Nur lokal gespeichert';
+  }
+  dirty=false;
+ }catch(err){
+  $('saveState').textContent='Speicherung nicht bestätigt';
+  status('Speichern fehlgeschlagen: '+err.message,true);
+ }finally{button.disabled=false;}
+});
 $('exportSettings').addEventListener('click',()=>{if(!validForm())return;const blob=new Blob([JSON.stringify(collect(),null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='site-settings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Konfiguration exportiert. Die Veröffentlichung ist ein separater Schritt.');});
 $('importSettings').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>4000000)throw new Error('Datei ist zu groß (maximal 4 MB).');if(dirty&&!confirm('Ungespeicherte Änderungen durch die importierte Konfiguration ersetzen?'))return;const s=S.normalize(JSON.parse(await file.text()));fill(s);markDirty();status('Importiert. Prüfe die Angaben und speichere den Entwurf lokal.');}catch(err){status('Import fehlgeschlagen: '+err.message,true);}finally{e.target.value='';}});
 $('discardSettings').addEventListener('click',()=>{if(!confirm('Lokale Einstellungen verwerfen und den veröffentlichten Stand laden?'))return;try{fill(S.discard());S.apply(S.published);dirty=false;$('saveState').textContent='Veröffentlichter Stand geladen';status('Der lokale Entwurf wurde entfernt.');}catch(err){status('Zurücksetzen fehlgeschlagen: '+err.message,true);}});
