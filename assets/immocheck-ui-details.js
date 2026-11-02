@@ -43,8 +43,8 @@ function unifyCalculatorActions(){
   bar.classList.add('nic-unified-calculator-actions');
   [primary,share,download].forEach((el,index)=>{
    el.classList.add('nic-action-'+index);
-   el.style.setProperty('width','100%','important');
-   el.style.setProperty('min-width','0','important');
+   el.style.removeProperty('width');
+   el.style.removeProperty('min-width');
   });
  });
 }
