@@ -12,6 +12,7 @@ It translates the product requirement into explicit acceptance criteria:
 """
 from pathlib import Path
 import sys
+import re
 
 index_path = Path(sys.argv[1] if len(sys.argv) > 1 else "_site/index.html")
 html = index_path.read_text(encoding="utf-8")
