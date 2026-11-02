@@ -15,6 +15,18 @@ if section.count(button) != 1:
 section = section.replace('<section class="card">', '<section class="card" id="budgetExpensesSection">', 1)
 section = section.replace(button, '<button type="button" class="plus-btn" id="budgetExpensesToggle" aria-expanded="false" aria-controls="budgetExpensesBody" aria-label="Feste monatliche Ausgaben öffnen">+</button>', 1)
 section = section.replace('Die Vorschläge passen sich automatisch an Erwachsene und Kinder an. Manuell geänderte Werte bleiben erhalten.', 'Richtwerte nach Haushaltsgröße. Erst mit „Vorschläge übernehmen“ werden sie als echte Werte berechnet.', 1)
+# Assign semantics before initial paint: no JS class substitution needed.
+note_text = 'Richtwerte nach Haushaltsgröße. Erst mit „Vorschläge übernehmen“ werden sie als echte Werte berechnet.'
+note_at = section.find(note_text)
+if note_at < 0:
+    raise SystemExit('Budget guidance missing')
+tag_start = section.rfind('<', 0, note_at)
+tag_end = section.find('>', tag_start)
+tag = section[tag_start:tag_end+1]
+if not re.search(r'\\bsub\\b', tag):
+    raise SystemExit('Legacy guidance class not found')
+new_tag = re.sub(r'\\bsub\\b', 'budget-expense-guidance', tag)
+section = section[:tag_start] + new_tag + section[tag_end+1:]
 section = section.replace('<div class="budget-expense-list">', '<div id="budgetExpensesBody" hidden>\n<div class="budget-expenses-toolbar">' + button + '</div>\n<div class="budget-expense-list">', 1)
 section = section.replace('</section>', '</div>\n</section>', 1)
 s = s[:match.start()] + section + s[match.end():]
@@ -48,11 +60,8 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
   function positionGuidance(){
     const section=document.getElementById("budgetExpensesSection");
     if(!section)return;
-    const original=section.querySelector(".budget-section-title .sub, .budget-expense-guidance");
+    const original=section.querySelector(".budget-expense-guidance");
     if(!original)return;
-    original.classList.remove("sub");
-    original.removeAttribute("style");
-    original.classList.add("budget-expense-guidance");
     const total=document.getElementById("budgetSuggestionTotal");
     const toolbar=section.querySelector(".budget-expenses-toolbar");
     const target=toolbar || section.querySelector("#budgetExpensesBody");
@@ -63,8 +72,7 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     }
     // Typography belongs solely to the central site-settings stylesheet.
     // Remove inline legacy font-size declarations from this component.
-    section.querySelectorAll(".budget-expense-name,.budget-expense-name *")
-      .forEach(node=>node.style.removeProperty("font-size"));
+
   }
   positionGuidance();
   window.addEventListener("nic-settings-updated",positionGuidance);
