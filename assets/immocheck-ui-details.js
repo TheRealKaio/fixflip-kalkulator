@@ -49,6 +49,19 @@ function unifyCalculatorActions(){
  });
 }
 unifyCalculatorActions();
+/* Some legacy calculator code rewrites reset captions after initialization. */
+const actionsObserver=new MutationObserver(()=>{
+ document.querySelectorAll('.bottom-actions').forEach(bar=>{
+  const buttons=Array.from(bar.querySelectorAll('button'));
+  const primary=bar.querySelector('#newCalc, #recalc, .bottom-primary')||buttons[0];
+  if(primary && primary.textContent.trim()!=='Neu kalkulieren')primary.textContent='Neu kalkulieren';
+  const share=bar.querySelector('#share, .bottom-pdf')||buttons[1];
+  if(share && share.textContent.trim()!=='PDF teilen')share.textContent='PDF teilen';
+ });
+});
+document.querySelectorAll('.bottom-actions').forEach(bar=>{
+ actionsObserver.observe(bar,{subtree:true,characterData:true,childList:true});
+});
 /* Put the existing calculator action bar in normal document flow above the footer. */
 function positionCalculatorActions(){
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
