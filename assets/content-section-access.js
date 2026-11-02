@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const message='Nur für registrierte Nutzer sichtbar.';
+  const message='Nur für eingeloggte Nutzer sichtbar.';
 
   // The access controls must work even when no other stylesheet defines them.
   const style=document.createElement('style');
@@ -27,7 +27,8 @@
       box-sizing:border-box;
       background:rgba(245,247,250,.84)!important;
       color:#9aa3af!important;
-      font-size:var(--nic-subtext-size,14px);
+      font-family:var(--nic-body-font-family,inherit)!important;
+      font-size:var(--nic-body-font-size,16px)!important;
       font-weight:500;
       text-align:center;
       line-height:1.5;
@@ -43,7 +44,6 @@
       const rule=settings.contentSections?.[box.dataset.nicContentKey]||{};
       const hidden=rule.visible===false;
       const locked=!hidden&&!loggedIn&&rule.guestAllowed===false;
-      box.style.setProperty('--nic-subtext-size',String(settings.layout?.subtextSize||14)+'px');
       box.classList.toggle('nic-content-box-hidden',hidden);
       box.classList.toggle('nic-content-box-guest-locked',locked);
       box.hidden=hidden;
@@ -74,7 +74,14 @@
   window.NICContentSections={apply};
   window.addEventListener('nic-auth-changed',function(){apply(window.NICSettings?.current);});
   window.addEventListener('nic-settings-updated',function(){apply(window.NICSettings?.current);});
-  const observer=new MutationObserver(function(){apply(window.NICSettings?.current);});
+  // React only to newly added content boxes. Overlay insertion must not recursively
+  // trigger a full pass, which can cause needless DOM changes and repainting.
+  let pending=false;
+  const observer=new MutationObserver(function(records){
+    if(pending||!records.some(function(record){return Array.from(record.addedNodes).some(function(node){return node.nodeType===1&&(node.matches?.('[data-nic-content-key]')||node.querySelector?.('[data-nic-content-key]'));});}))return;
+    pending=true;
+    queueMicrotask(function(){pending=false;apply(window.NICSettings?.current);});
+  });
   observer.observe(document.documentElement,{childList:true,subtree:true});
   apply(window.NICSettings?.current);
   const settingsApi=window.NICSettings;
