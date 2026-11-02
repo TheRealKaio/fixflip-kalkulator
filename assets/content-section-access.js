@@ -43,4 +43,6 @@
   const observer=new MutationObserver(function(){apply(window.NICSettings?.current);});
   observer.observe(document.documentElement,{childList:true,subtree:true});
   apply(window.NICSettings?.current);
+  const settingsApi=window.NICSettings;
+  if(settingsApi?.init)settingsApi.init().then(settingsApi.apply).catch(function(error){console.warn('Zentrale Box-Einstellungen:',error.message);});
 })();
