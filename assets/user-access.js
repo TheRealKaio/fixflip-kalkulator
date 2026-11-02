@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const ROOT=new URL('.',document.currentScript.src);
-let config=null,boot=null,user=null,csrf=null,revision=null,authPending=null,requestPending=false,authControlsVersion=0,contentSectionsVersion=0;
+let config=null,boot=null,user=null,csrf=null,revision=null,authPending=null,requestPending=false,authControlsVersion=0;
 async function api(route,body,query=''){
  const url=new URL(config.apiUrl);url.searchParams.set('r',route);if(query)for(const [k,v]of new URLSearchParams(query))url.searchParams.set(k,v);
  const headers={'X-NIC-Request':'1'};if(body!==undefined){headers['Content-Type']='application/json';if(csrf)headers['X-NIC-CSRF']=csrf;}
@@ -47,8 +47,8 @@ async function requireAdmin(){
  if(user?.role!=='admin'){message('Dieser Bereich ist nur für Administratoren verfügbar.');return false;}
  return true;
 }
-async function loadSettings(){if(!await init())return null;const data=await api('settings');revision=data.revision;authControlsVersion=data.authControlsVersion||0;contentSectionsVersion=data.contentSectionsVersion||0;return data.settings;}
-async function saveSettings(settings){if(Object.keys(settings.contentSections||{}).length&&contentSectionsVersion<1)throw Error('Auf STRATO läuft eine veraltete PHP-API. Bitte server/webspace/immocheck-private/app.php aktualisieren (contentSectionsVersion fehlt). Die Checkboxen wurden nicht gespeichert.');if((settings.access?.registrationBlocked||settings.access?.loginBlocked)&&authControlsVersion<1)throw Error('Bitte zuerst die aktualisierte app.php auf STRATO hochladen. Die Sperren wurden nicht gespeichert.');if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');return api('settings',{settings,revision}).then(data=>{revision=data.revision;return data.settings;});}
+async function loadSettings(){if(!await init())return null;const data=await api('settings');revision=data.revision;authControlsVersion=data.authControlsVersion||0;return data.settings;}
+async function saveSettings(settings){if((settings.access?.registrationBlocked||settings.access?.loginBlocked)&&authControlsVersion<1)throw Error('Bitte zuerst die aktualisierte app.php auf STRATO hochladen. Die Sperren wurden nicht gespeichert.');if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');return api('settings',{settings,revision}).then(data=>{revision=data.revision;return data.settings;});}
 async function logout(){await api('logout',{});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));const destination=new URL('.',ROOT);destination.searchParams.set('logged-out','1');window.top.location.replace(destination.href);}
 async function profile(){
  if(!await init())return;
