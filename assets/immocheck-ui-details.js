@@ -72,30 +72,19 @@ function positionCalculatorActions(){
  bar.classList.add('nic-actions-above-footer');
 }
 positionCalculatorActions();
-/* Use the real information-card edges on every route, not each app's legacy padding. */
+/* Shared action bar: native centered layout, no viewport translations or stored offsets. */
 function alignCalculatorActions(){
  const bar=document.querySelector('.nic-actions-above-footer');
- const cards=Array.from(document.querySelectorAll('main .card, .section > .card'));
- const card=cards.find(el=>el.getBoundingClientRect().width>0);
- if(!bar||!card)return;
- const rect=card.getBoundingClientRect();
- if(rect.width<100)return;
- // All positions are measured in viewport coordinates. Avoid mixing parent-relative
- // margin offsets with viewport coordinates (which shifted Finance off-screen).
- bar.style.setProperty('box-sizing','border-box','important');
- bar.style.setProperty('width',rect.width+'px','important');
- bar.style.setProperty('max-width',rect.width+'px','important');
- bar.style.setProperty('margin-left','auto','important');
- bar.style.setProperty('margin-right','auto','important');
- bar.style.setProperty('left','auto','important');
- bar.style.setProperty('right','auto','important');
+ if(!bar)return;
  bar.style.removeProperty('transform');
- const own=bar.getBoundingClientRect();
- bar.style.setProperty('transform','translateX('+(rect.left-own.left)+'px)','important');
+ bar.style.removeProperty('left');
+ bar.style.removeProperty('right');
+ bar.style.removeProperty('width');
+ bar.style.removeProperty('max-width');
+ bar.style.removeProperty('margin-left');
+ bar.style.removeProperty('margin-right');
 }
 alignCalculatorActions();
-window.addEventListener('resize',alignCalculatorActions,{passive:true});
-window.addEventListener('orientationchange',alignCalculatorActions,{passive:true});
 /* All five calculators: align the footer to the visible shared brand header. */
 function alignSharedFooter(){
  const header=document.querySelector('.app > .nic-brand-bar')||document.querySelector('.app > .hero');
