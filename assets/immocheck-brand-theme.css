@@ -478,3 +478,17 @@ body:not(.nic-embed) .rent-grade-red{background:var(--nic-highlight-warning-bg,#
 
 /* Shared, admin-controlled positive result highlight. */
 body:not(.nic-embed) .rent-grade-green{background:var(--nic-highlight-good-bg,#F0FDF4)!important}
+
+/* Version and cookie notice form one compact line across all calculator footers. */
+body:not(.nic-embed) .nic-footer-cookie-pair{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ gap:8px!important;
+ flex-wrap:nowrap!important;
+ white-space:nowrap;
+}
+body:not(.nic-embed) .nic-footer-cookie-pair .footer-version{
+ margin:0!important;
+ white-space:nowrap;
+}
