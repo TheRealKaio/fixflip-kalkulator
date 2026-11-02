@@ -72,29 +72,27 @@ rules.append('body:not(.nic-admin) :is(.field,.input-wrap,.finance-check-label,.
 rules.append('body:not(.nic-admin) :is(.kpis,.kpi,.kpi>*,.rent-kpi-value-row){min-width:0!important;max-width:100%!important;box-sizing:border-box}body:not(.nic-admin) .kpi{overflow-wrap:anywhere}body:not(.nic-admin) .rent-kpi-value-row{flex-wrap:wrap}')
 rules.append('body:not(.nic-embed) .app>.footer-note{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin:0!important;transform:none!important;border-radius:16px!important}')
 rules.append('body:not(.nic-embed) .deal-type-row>:is(label,#dealTypeRent,#nicFinancingTab,.deal-type-option){border:2px solid #dce8e2!important;box-sizing:border-box!important}body:not(.nic-embed) .deal-type-row>:is(label,#dealTypeRent,#nicFinancingTab,.deal-type-option).nic-tile-active{border:2px solid var(--nic-green-bg,#075c55)!important;background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}')
-# Single authoritative action-toolbar rule, shared by renovation and Budget.
-# Fixed-width close button; the green button fills the remaining space.
+# Single final action sizing rule for Budget and modernization proposal controls.
+# Exclude the separate renovation reset/save toolbar.
 rules.append("""
-body:not(.nic-admin) :is(.reno-inline-panel .reno-suggestion-actions,.reno-inline-panel .reno-actions,.budget-expenses-toolbar){
-  display:flex!important;align-items:center!important;gap:8px!important;
-  width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:flex-end!important;gap:8px!important;box-sizing:border-box!important;
+ width:100%!important;max-width:100%!important;min-width:0!important;
 }
-body:not(.nic-admin) :is(.reno-inline-panel .reno-suggestion-actions,.reno-inline-panel .reno-actions,.budget-expenses-toolbar)
-:is(#applyTradeSuggestions,#budgetApplySuggestions,.budget-apply-btn,.save-reno-btn){
-  flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;
-  white-space:nowrap!important;overflow-wrap:normal!important;
-  box-sizing:border-box!important;
+body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar)
+:is(#applyTradeSuggestions,#budgetApplySuggestions){
+ flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
+ margin:0!important;white-space:nowrap!important;overflow-wrap:normal!important;
+ line-height:1.2!important;box-sizing:border-box!important;
 }
-body:not(.nic-admin) :is(.reno-inline-panel .reno-suggestion-actions,.reno-inline-panel .reno-actions,.budget-expenses-toolbar)
-:is(.nic-clear-reno,.budget-clear-btn,.clear-btn,.reset-btn){
-  flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;
+body:not(.nic-admin) .reno-head-actions{flex:1 1 auto!important}
+body:not(.nic-admin) .budget-expenses-toolbar>:is(button,.nic-clear-reno):not(#budgetApplySuggestions){
+ flex:0 0 36px!important;width:36px!important;min-width:36px!important;
+ max-width:36px!important;margin:0!important;
 }
-body:not(.nic-admin) #budgetExpensesSection .budget-expenses-toolbar{
-  width:100%!important;max-width:100%!important;
-}
-body:not(.nic-admin) #budgetExpensesSection #budgetApplySuggestions{
-  flex:1 1 0!important;width:auto!important;max-width:none!important;margin:0!important;
-  white-space:nowrap!important;
+@media(max-width:420px){
+ body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){max-width:100%!important}
 }
 """)
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
