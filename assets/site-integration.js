@@ -4,8 +4,20 @@ const S=window.NICSettings;if(!S)return;
 const page=document.documentElement.dataset.nicPage||'website';
 let activePage=page;
 function social(s){let nav=document.getElementById('nicSocialLinks');const footer=document.querySelector('.footer-note')||document.querySelector('.public-footer');if(!footer)return;if(!nav){nav=document.createElement('nav');nav.id='nicSocialLinks';nav.setAttribute('aria-label','Social Media');nav.className='nic-social-links';footer.append(nav);}nav.replaceChildren();S.portals.forEach(([key,label])=>{const url=s.social[key];if(!url)return;const a=document.createElement('a');a.href=url;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';nav.append(a);});nav.hidden=!nav.childElementCount;}
+// Keep the version immediately before the cookie notice in the shared footer.
+function alignFooterVersion(){
+ const footer=document.querySelector('.footer-note, .nic-shared-footer, .public-footer');
+ if(!footer)return;
+ const version=footer.querySelector('.footer-version');
+ const cookie=footer.querySelector('#nicConsentSettings, .nic-consent-settings, a[href*="cookie-hinweis"], button[data-cookie-settings]');
+ if(!version||!cookie||version.closest('.nic-footer-cookie-pair'))return;
+ const pair=document.createElement('span');
+ pair.className='nic-footer-cookie-pair';
+ cookie.parentNode.insertBefore(pair,cookie);
+ pair.append(version,cookie);
+}
 function company(s){if(/\/impressum\/?$/.test(location.pathname)&&!document.getElementById('heroTitle')){location.replace(new URL('#impressum',S.ROOT).href);return;}const root=document.getElementById('companyContent');if(!root)return;root.replaceChildren();const parts=S.imprint(s);if(!parts.length){const p=document.createElement('p');p.textContent='Die Anbieterangaben wurden noch nicht hinterlegt.';root.append(p);return;}for(const {label,value} of parts){const h=document.createElement('h2');h.textContent=label;const p=document.createElement('p');p.textContent=value;root.append(h,p);}}
-function apply(){if(!S.current)return;S.apply(S.current,activePage);syncCalculatorMenu();social(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
+function apply(){if(!S.current)return;S.apply(S.current,activePage);syncCalculatorMenu();social(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();alignFooterVersion();}
 // A single route-based selection for every navigation card, including financing.
 function syncCalculatorMenu(){
  // Four embedded calculator modes have no href; the fifth card is a separate route.
@@ -26,6 +38,7 @@ document.querySelectorAll('input[name="dealType"]').forEach(el=>el.addEventListe
 document.getElementById('dealTypeRent')?.addEventListener('click',updateMode);
 window.addEventListener('storage',e=>{if(e.key===S.KEY)S.init().then(apply).catch(()=>{});});
 window.addEventListener('nic-settings-updated',apply);
+window.addEventListener('load',alignFooterVersion);
 window.addEventListener('pageshow',()=>{if(S.current)S.init().then(apply).catch(()=>{});});
 // Keep the calculator header and state while opening administration below it.
 const account=document.getElementById('nicAccountLink'),hero=document.querySelector('.app > .hero');
