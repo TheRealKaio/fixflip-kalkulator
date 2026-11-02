@@ -25,7 +25,7 @@
       justify-content:center;
       padding:20px;
       box-sizing:border-box;
-      background:rgba(245,247,250,.96)!important;
+      background:rgba(245,247,250,.72)!important;
       color:#9aa3af!important;
       font-family:var(--nic-body-font-family,inherit)!important;
       font-size:var(--nic-body-font-size,16px)!important;
@@ -36,8 +36,20 @@
       flex-direction:column;
       gap:8px;
     }
-    [data-nic-content-key].nic-content-box-guest-locked > :not(.nic-content-box-guest-overlay){
-      visibility:hidden!important;
+    [data-nic-content-key].nic-content-box-guest-locked .nic-masked-value{
+      color:transparent!important;
+      text-shadow:none!important;
+      position:relative!important;
+    }
+    [data-nic-content-key].nic-content-box-guest-locked .nic-masked-value::after{
+      content:"?"!important;
+      color:#94a3b8!important;
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font:inherit;
     }
     html:not(.nic-content-ready) [data-nic-content-key]{
       visibility:hidden!important;
@@ -54,6 +66,7 @@
       const locked=!hidden&&!loggedIn&&rule.guestAllowed===false;
       box.classList.toggle('nic-content-box-hidden',hidden);
       box.classList.toggle('nic-content-box-guest-locked',locked);
+      box.querySelectorAll('.value,.amount,.kpi-value,.result-value,.result-amount,.metric-value,.budget-result-value,.stat-value').forEach(function(el){el.classList.toggle('nic-masked-value',locked);});
       box.hidden=hidden;
       box.inert=hidden;
 
