@@ -56,11 +56,11 @@ script = '''<script id="budget-expenses-toggle-script-v8331">
     original.classList.add("budget-expense-guidance");
     const total=document.getElementById("budgetSuggestionTotal");
     const toolbar=section.querySelector(".budget-expenses-toolbar");
-    const target=section.querySelector("#budgetExpensesBody") || section;
+    const target=toolbar || section.querySelector("#budgetExpensesBody");
     // Move the note outside the narrow action/total group.
     // This keeps both the text and its bottom border full-width.
     if(target && original.previousElementSibling!==target){
-      target.insertAdjacentElement("afterbegin",original);
+      target.insertAdjacentElement("afterend",original);
     }
     const settings=window.NICSettings?.current?.layout;
     if(settings){
