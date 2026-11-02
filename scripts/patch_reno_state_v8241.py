@@ -239,7 +239,8 @@ js=r"""
   if(manualTotalInput){
     manualTotalInput.removeAttribute("readonly");
     manualTotalInput.readOnly=false;
-    manualTotalInput.addEventListener("input",function(){
+    manualTotalInput.addEventListener("input",function(event){
+      event.stopImmediatePropagation();
       const mode=renoMode();
       if(!mode)return;
       const amount=Math.max(0,parseLocalizedNumber(manualTotalInput.value,false));
@@ -247,6 +248,7 @@ js=r"""
       if($("renoSheetTotal"))$("renoSheetTotal").textContent=eur(amount);
       // Preserve the typed amount; other input listeners handle recalculation.
     },true);
+    manualTotalInput.addEventListener("change",function(){try{render();}catch(_err){};});
   }
   document.addEventListener("input",function(event){
     if(!event.target.matches?.(".trade-amount,.trade-area"))return;
