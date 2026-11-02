@@ -46,6 +46,8 @@
     "greenText": "AUTO",
     "redBackground": "#B42318",
     "redText": "AUTO",
+    "highlightBackground": "#FDE68A",
+    "highlightWarningBackground": "#FECACA",
     "outerBackground": "#F6F1E9"
   },
   "social": {
