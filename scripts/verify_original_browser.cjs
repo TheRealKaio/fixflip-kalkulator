@@ -65,7 +65,7 @@ const assert=require('node:assert/strict');
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1?[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1}).map(e=>({tag:e.tagName,id:e.id,c:e.className,w:e.getBoundingClientRect().width,right:e.getBoundingClientRect().right})).slice(0,12):[]);
    assert.deepEqual(overflow,[],'No horizontal page overflow');
    assert.equal(await page.locator('.mini').first().evaluate(e=>getComputedStyle(e).fontSize),'12px');
-   const sub=page.locator('.sub,.subtitle,.card>h2+p:not(.mini)').first();if(await sub.count())assert.equal(await sub.evaluate(e=>getComputedStyle(e).fontSize),'14px');
+   const sub=page.locator('.sub,.subtitle,.card>h2+p:not(.mini)').first();if(await sub.count())assert.equal(await sub.evaluate(e=>getComputedStyle(e).fontSize),await page.evaluate(()=>NICSettings.current.layout.bodySize+'px'));
    await page.screenshot({path:`tmp/${width}-${slug}.png`,fullPage:true});
    await page.evaluate(()=>{NICSettings.discard();});
    assert.deepEqual(errors,[]);page.removeListener('pageerror',listener);
