@@ -46,7 +46,8 @@ required_implementation = {
     "warning explicit below branch": 'if(minimumBufferBelow){',
     "warning exact-minimum branch": '}else if(minimumBufferReached){',
     "warning clears fallback": '$("budgetRateSliderWarning").textContent="";',
-    "financing reserve zero markup": 'id="budgetSafetyReserve" inputmode="decimal" value="0" readonly aria-readonly="true"',
+    "financing reserve markup starts blank": 'id="budgetSafetyReserve" inputmode="decimal" readonly aria-readonly="true"',
+    "shared zero-field normalizer is loaded": 'src="/blank-zero-calculator-inputs.js?v=8.368"',
     "safety buffer auto label": '<div class="mini budget-calculated-subtitle">Automatisch berechnet</div>',
     "terminology financing reserve": 'Finanzierungsreserve',
     "terminology remaining monthly surplus": 'Verbleibender Monatsüberschuss',
@@ -597,15 +598,16 @@ between = html[expenses_pos + len(expenses_row):reserve_pos]
 if "<div class=\"budget-summary-row" in between:
     raise SystemExit("Slider acceptance failed - financing reserve must be directly below fixed expenses")
 
-# 48) All fixed monthly expense inputs start at zero.
+# 48) All fixed monthly expense inputs have no visible zero default.
 expense_ids = [
     "budgetFood","budgetMobility","budgetInsurance","budgetTelecom",
     "budgetLeisure","budgetChildCosts","budgetExistingLoans","budgetOther"
 ]
 for expense_id in expense_ids:
-    token = f'id="{expense_id}" inputmode="decimal" value="0"'
-    if token not in html:
-        raise SystemExit("Slider acceptance failed - all fixed expense markup defaults are zero: " + expense_id)
+    token = f'id="{expense_id}" inputmode="decimal"'
+    input_tag = re.search(r'<input\b[^>]*' + re.escape(token) + r'[^>]*>', html)
+    if not input_tag or re.search(r'\b(?:value|placeholder)="0(?:[.,]0+)?"', input_tag.group(0)):
+        raise SystemExit("Slider acceptance failed - fixed expense input should start blank: " + expense_id)
 
 # 49) Financing reserve stays zero until positive household net income exists.
 def financing_reserve(net, income, expenses):

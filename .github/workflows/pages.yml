@@ -40,6 +40,7 @@ jobs:
           base64 -d /tmp/index.b64 > /tmp/index.html.gz
           gunzip -c /tmp/index.html.gz > _site/index.html
           cp service-worker.js _site/service-worker.js
+          cp assets/blank-zero-calculator-inputs.js _site/blank-zero-calculator-inputs.js
           printf 'www.neustart-immocheck.de\n' > _site/CNAME
 
           python - <<'PY'
@@ -518,6 +519,7 @@ jobs:
           python scripts/patch_legal_heading_focus_v8346.py _site/index.html
           python scripts/patch_legal_editor_v8347.py _site/index.html
           python scripts/add_wordpress_embed.py _site/index.html
+          python scripts/patch_blank_zero_inputs_v8368.py _site/index.html
 
           # One release source for HTML, PDFs, Service Worker and all verifiers.
           python scripts/release_contract.py normalize _site
