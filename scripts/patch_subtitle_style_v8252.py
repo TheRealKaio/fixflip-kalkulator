@@ -24,7 +24,7 @@ s=s.replace("V8.251","V8.252")
 s=s.replace("service-worker.js?v=8.251","service-worker.js?v=8.252")
 
 required=[
-  'V8.252: Subtitel wie beim Eigennutzung Kaufpreis-Check',
+  'V8.252: Untertitel folgen der zentralen Grundschriftgröße',
   'color:var(--muted)!important;',
   'font-size:var(--nic-body-font-size,16px)!important;',
   'line-height:1.45!important;',
