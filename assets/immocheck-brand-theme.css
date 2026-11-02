@@ -475,3 +475,6 @@ body:not(.nic-embed):not(.nic-admin) .app{background:var(--bg,#F5F7FB)}
 /* Configurable result traffic-light backgrounds; keep the green result grade unchanged. */
 body:not(.nic-embed) :is(.rent-grade-orange,.rent-grade-lime){background:var(--nic-highlight-bg,#FDE68A)!important}
 body:not(.nic-embed) .rent-grade-red{background:var(--nic-highlight-warning-bg,#FECACA)!important}
+
+/* Shared, admin-controlled positive result highlight. */
+body:not(.nic-embed) .rent-grade-green{background:var(--nic-highlight-good-bg,#F0FDF4)!important}
