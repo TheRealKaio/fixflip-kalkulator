@@ -202,7 +202,7 @@ function nic_run(): void {
     if ($route==='settings' && $method==='GET') {
         $row=nic_query($db,'SELECT payload,revision FROM nic_settings WHERE id=1')->fetch(PDO::FETCH_ASSOC);
         if (!$row) nic_fail('Die Einrichtung ist noch nicht abgeschlossen.',503);
-        nic_reply(['settings'=>json_decode($row['payload'],true,16,JSON_THROW_ON_ERROR),'revision'=>(int)$row['revision'],'authControlsVersion'=>1]);
+        nic_reply(['settings'=>json_decode($row['payload'],true,16,JSON_THROW_ON_ERROR),'revision'=>(int)$row['revision'],'authControlsVersion'=>1,'contentSectionsVersion'=>1]);
     }
     if ($route==='me' && $method==='GET') {
         $u=nic_session($db,$c,false);
