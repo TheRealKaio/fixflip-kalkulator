@@ -518,10 +518,10 @@ body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) :is(span,div,nav,a,but
 }
 
 /* Central layout radius settings for the shared chrome and calculator actions. */
-body:not(.nic-embed) .nic-brand-bar{border-radius:var(--nic-brand-radius,22px)!important}
+body:not(.nic-embed) .nic-brand-bar{border-radius:0!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option{border-radius:var(--nic-menu-radius,16px)!important}
 body:not(.nic-embed) .app>.footer-note,
 body:not(.nic-embed) .app>.nic-shared-footer,
 body:not(.nic-embed) .footer-note,
-body:not(.nic-embed) .nic-shared-footer{border-radius:var(--nic-footer-radius,22px)!important}
+body:not(.nic-embed) .nic-shared-footer{border-radius:var(--nic-footer-radius,22px) var(--nic-footer-radius,22px) 0 0!important}
 body:not(.nic-embed) .nic-actions-above-footer .bottom-actions>button{border-radius:var(--nic-bottom-button-radius,17px)!important}

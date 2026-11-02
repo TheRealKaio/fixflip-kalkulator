@@ -126,7 +126,7 @@ body:not(.nic-admin) .nic-actions-above-footer .bottom-actions>button{border-rad
 body:not(.nic-admin) .deal-type-row>.deal-type-option{border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-admin) .nic-brand-bar .nic-login-button{border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-admin) :is(.info-btn,.nic-menu-icon){border-radius:50%!important}
-body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
+body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}body:not(.nic-admin) .section-summary-title{font-size:${l.h2}px!important}body:not(.nic-admin) .section-summary-subtitle{font-size:${l.bodySize}px!important;line-height:1.5}body:not(.nic-admin) .flip-section-card .advanced>summary:after{border-radius:${scaledRadius(11)}px!important}.nic-content-box-hidden{display:none!important}
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint,.field label .hint,.metric-box .metric-label){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-card p,.tip-box p,.equity-capital-note){font-size:${l.subtextSize}px!important;line-height:1.5}

@@ -5,10 +5,10 @@ s=path.read_text(encoding="utf-8")
 
 style=r"""
 <style>
-/* V8.252: Subtitel wie beim Eigennutzung Kaufpreis-Check */
+/* V8.252: Untertitel folgen der zentralen Grundschriftgröße */
 .section-summary-subtitle{
   color:var(--muted)!important;
-  font-size:13px!important;
+  font-size:var(--nic-body-font-size,16px)!important;
   line-height:1.45!important;
   font-weight:400!important;
   letter-spacing:normal!important;
@@ -26,7 +26,7 @@ s=s.replace("service-worker.js?v=8.251","service-worker.js?v=8.252")
 required=[
   'V8.252: Subtitel wie beim Eigennutzung Kaufpreis-Check',
   'color:var(--muted)!important;',
-  'font-size:13px!important;',
+  'font-size:var(--nic-body-font-size,16px)!important;',
   'line-height:1.45!important;',
   'font-weight:400!important;',
   'V8.252',
