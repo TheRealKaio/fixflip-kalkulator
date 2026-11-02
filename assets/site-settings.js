@@ -122,7 +122,7 @@ body:not(.nic-admin) .equity-capital-note{border-radius:${scaledRadius(12)}px!im
 body:not(.nic-admin) :is(.finance-full-warning,.equity-shortfall-warning){border-radius:${scaledRadius(10)}px!important}
 body:not(.nic-admin) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),select,textarea,button,.button,.btn,[role="button"],.import-label,.nic-clear-reno,.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,.nic-green-budget-transfer){border-radius:${scaledRadius(10)}px!important}
 body:not(.nic-admin) :is(.deal-type-option,.budget-result-card){border-radius:${scaledRadius(16)}px!important}
-body:not(.nic-admin) .nic-actions-above-footer .bottom-actions>button{border-radius:var(--nic-bottom-button-radius,17px)!important}
+body:not(.nic-admin) :is(.nic-actions-above-footer .bottom-actions>button,.bottom .bottom-actions>button,.bottom-actions>button){border-radius:var(--nic-bottom-button-radius,17px)!important}
 body:not(.nic-admin) .deal-type-row>.deal-type-option{border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-admin) .nic-brand-bar .nic-login-button{border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-admin) :is(.info-btn,.nic-menu-icon){border-radius:50%!important}
