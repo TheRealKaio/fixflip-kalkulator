@@ -130,6 +130,10 @@ body:not(.nic-admin) .flip-section-card summary{font-size:${l.h2}px!important}bo
 body:not(.nic-admin) :is(.sub,.subtitle,.card>h2+p,.card>h3+p,.section-subtitle,.nic-brand-description){font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.mini,.hint,.note,.info-text,.tip,.helper,.rent-maintenance-status,.kpi .note,.field .mini,.field .hint,.field label .hint,.metric-box .metric-label){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.kpi .name,.kpi .value,.metric-box .metric-value,.info-box,.info-box p,.info-box strong,.info-box span,.info-box label,.info-card p,.tip-box p,.equity-capital-note){font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) .own-budget-transfer-copy>.name{font-size:${l.bodySize}px!important;line-height:1.5}
+body:not(.nic-admin) .own-budget-transfer-copy>.note{font-size:${l.subtextSize}px!important;line-height:1.5}
+body:not(.nic-admin) .own-budget-transfer-status{font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) .own-budget-household-row,body:not(.nic-admin) .own-budget-household-row strong{font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.card h2~p,.rent-finance-head h2~p,.section-intro h2~p,.section-heading h2~p,.flip-section-subtitle){font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
 body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,#applyTradeSuggestions,.nic-green-budget-transfer,.btn.primary){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important;border-color:var(--nic-green-bg)!important}
