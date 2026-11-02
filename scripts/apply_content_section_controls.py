@@ -240,6 +240,51 @@ for page in SITE.rglob("*.html"):
 </script>"""
         if 'id="nic-modernization-edit"' not in source:
             source = source.replace("</head>", modern_script + "</head>", 1)
+    # Visual-only normalization of zero monetary amounts. Calculators continue to
+    # interpret blank fields as numeric zero; count/select/percentage fields are excluded.
+    zero_script = """<script id="nic-empty-zero-amounts">
+(function(){
+ 'use strict';
+ const excluded=/adults|children|kids|persons|people|guests|count|quantity|number|units|years|months|period|term|duration|age|zins|interest|repay|tilgung|percent|pct|rate|quote|faktor/i;
+ const numberZero=/^[+-]?(?:0+(?:[.,]0+)?|[.,]0+)$/;
+ function allowed(el){
+   if(!(el instanceof HTMLInputElement))return false;
+   if(el.disabled||el.readOnly||el.type==='hidden'||el.type==='checkbox'||el.type==='radio'||el.type==='range')return false;
+   if(el.type!=='number'&&el.type!=='text'&&el.getAttribute('inputmode')!=='decimal'&&el.getAttribute('inputmode')!=='numeric')return false;
+   if(excluded.test(el.id||'')||excluded.test(el.name||''))return false;
+   const wrap=el.closest('.input-wrap');
+   const unit=wrap?.querySelector('.unit')?.textContent?.trim()||'';
+   if(unit.includes('%')||/^(?:Jahre?|Monate?|Personen?|Stk\\.?|m²)$/i.test(unit))return false;
+   // A monetary field must explicitly use euros or have a recognizable financial id.
+   return unit.includes('€')||/income|expense|cost|price|equity|loan|reno|modern|budget|rent|miete|kauf|verkauf|cash|reserve|fee|amount|betrag|salary|saving|puffer|holding|trade/i.test(el.id||'');
+ }
+ function normalize(el){
+   if(!allowed(el)||document.activeElement===el)return;
+   if(numberZero.test(el.value.trim()))el.value='';
+ }
+ function sweep(){document.querySelectorAll('input').forEach(normalize);}
+ document.addEventListener('input',e=>{if(allowed(e.target)&&numberZero.test(e.target.value.trim())){ /* keep editable during typing */ }},true);
+ document.addEventListener('change',e=>{if(allowed(e.target)&&numberZero.test(e.target.value.trim()))e.target.value='';},false);
+ document.addEventListener('focusout',e=>normalize(e.target),false);
+ document.addEventListener('click',e=>{
+   if(e.target.closest('button,[role=button],input[type=reset]')){
+     setTimeout(sweep,0);setTimeout(sweep,80);setTimeout(sweep,350);
+   }
+ },true);
+ const observer=new MutationObserver(records=>{
+   if(records.some(r=>r.addedNodes.length))requestAnimationFrame(sweep);
+ });
+ observer.observe(document.body||document.documentElement,{childList:true,subtree:true});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sweep,{once:true});
+ else sweep();
+ window.addEventListener('pageshow',sweep);
+ // Calculation scripts update input.value programmatically, not DOM attributes.
+ // A lightweight periodic check also catches reset and restore after async renders.
+ setInterval(()=>{if(!document.hidden)sweep();},700);
+})();
+</script>"""
+    if 'id="nic-empty-zero-amounts"' not in source:
+        source=source.replace("</body>",zero_script+"</body>",1)
     if "content-section-access.js" not in source:
         if "</body>" not in source:
             raise SystemExit(f"Content access body anchor missing: {page}")
