@@ -43,6 +43,17 @@ function setupCalculatorActions(){
    footer.before(bar);
    bar.classList.add('nic-actions-above-footer');
   }
+  // Central reset confirmation: Finance's original handler has no prompt.
+  // Other calculators retain their existing confirmation handlers.
+  if(reset.id==='newCalc' && reset.dataset.nicConfirmReset!=='1'){
+   reset.dataset.nicConfirmReset='1';
+   reset.addEventListener('click',event=>{
+    if(!window.confirm('Möchtest du wirklich neu kalkulieren und deine bisherigen Eingaben löschen?')){
+     event.preventDefault();
+     event.stopImmediatePropagation();
+    }
+   },true);
+  }
   const normalize=()=>{
    if(reset.textContent.trim()!=='Neu kalkulieren')reset.textContent='Neu kalkulieren';
    if(share.textContent.trim()!=='PDF teilen')share.textContent='PDF teilen';
