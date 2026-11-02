@@ -345,7 +345,7 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   display:grid!important;
   grid-template-columns:20px minmax(0,1fr)!important;
   grid-template-rows:minmax(28px,auto) 1fr!important;
-  column-gap:4px!important;row-gap:8px!important;
+  column-gap:9px!important;row-gap:8px!important;
   align-content:start!important;align-items:center!important;
   min-width:0!important;box-sizing:border-box!important;
  }
@@ -374,4 +374,14 @@ body:not(.nic-embed) .app>.nic-shared-footer{
   text-align:left!important;text-align-last:left!important;
   line-height:1.35!important;hyphens:auto!important
  }
+}
+
+/* Tablet/desktop: provide 20px more horizontal room across the calculator shell. */
+@media(min-width:701px){
+ body:not(.nic-embed) .app{
+  max-width:calc(var(--nic-app-max-width, 1200px) + 20px)!important;
+  width:calc(100% - 20px)!important;
+  box-sizing:border-box!important;
+ }
+ body:not(.nic-embed) .deal-type-row>.deal-type-option{column-gap:9px!important}
 }
