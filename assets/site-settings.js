@@ -47,7 +47,7 @@
   const portals=[['instagram','Instagram'],['facebook','Facebook'],['youtube','YouTube'],['linkedin','LinkedIn'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X'],['threads','Threads'],['xing','XING'],['whatsapp','WhatsApp']];
   const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/'],['finance','Finanzierungsrechner','finanzierungsrechner/']];
   const fonts={system:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif',trebuchet:'"Trebuchet MS",Arial,sans-serif'};
-  const layoutDefaults={font:'system',bodySize:16,h1:30,h2:18,h3:22,h4:16,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'#FFFFFF'};
+  const layoutDefaults={font:'system',bodySize:16,h1:30,h2:18,h3:22,h4:16,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',outerBackground:'#F6F1E9'};
   let published=null,current=null;
   const text=(v,max=2000)=>typeof v==='string'?v.trim().slice(0,max):'';
   function httpUrl(v){try{const u=new URL(text(v));return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(_){return '';}}
@@ -64,7 +64,7 @@
       const x=raw.layout?.[k];
       if(k==='font')s.layout[k]=Object.hasOwn(fonts,x)?x:v;
       else if(typeof v==='number'){const n=Number(x);s.layout[k]=Number.isFinite(n)&&n>=10&&n<=72?n:v;}
-      else s.layout[k]=/^#[0-9a-f]{6}$/i.test(x)?x.toUpperCase():v;
+      else s.layout[k]=/Text$/.test(k)&&x==='AUTO'?'AUTO':/^#[0-9a-f]{6}$/i.test(x)?x.toUpperCase():v;
     }
     portals.forEach(([k])=>s.social[k]=httpUrl(raw.social?.[k]));
     if(!raw.meta?.finance)raw={...raw,meta:{...raw.meta,finance:{"title": "Finanzierungsrechner: Rate & Restschuld | Neustart ImmoCheck", "description": "Berechne deine monatliche Kreditrate, Zinsen, Tilgung und Restschuld. Vergleiche Laufzeiten und prüfe, wie Sondertilgungen deine Finanzierung verändern.", "googleTag": ""}}};
@@ -102,7 +102,17 @@
   function apply(s,key){
     current=normalize(s);const l=current.layout;
     let style=document.getElementById('nic-custom-layout');if(!style){style=document.createElement('style');style.id='nic-custom-layout';document.head.append(style);}
-    style.textContent=`:root{--bg:${l.background};--ink:${l.text};--nic-header-h1-max:${l.h1}px;--nic-menu-title-size:${l.h2}px;--nic-button-bg:${l.buttonBackground};--nic-button-text:${l.buttonText}}body:not(.nic-admin){font-family:${fonts[l.font]};font-size:${l.bodySize}px;color:${l.text};background:${l.background}}body:not(.nic-admin) :is(button,input,select,textarea){font-family:inherit}body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,.btn.primary,.save-reno-btn,.budget-apply-btn){background:${l.buttonBackground}!important;color:${l.buttonText}!important}`;
+    const contrastText=(bg,choice)=>{if(choice!=='AUTO')return choice;const rgb=[1,3,5].map(i=>parseInt(bg.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722>.179?'#000000':'#FFFFFF';};
+    const greenText=contrastText(l.greenBackground,l.greenText),blackText=contrastText(l.buttonBackground,l.buttonText),redText=contrastText(l.redBackground,l.redText);
+    style.textContent=`:root{--bg:${l.background};--ink:${l.text};--nic-outer-bg:${l.outerBackground};--nic-green-bg:${l.greenBackground};--nic-green-text:${greenText};--nic-black-bg:${l.buttonBackground};--nic-black-text:${blackText};--nic-red-bg:${l.redBackground};--nic-red-text:${redText};--nic-header-h1-max:${l.h1}px;--nic-menu-title-size:${l.h2}px;--nic-button-bg:${l.buttonBackground};--nic-button-text:${blackText}}body:not(.nic-admin){font-family:${fonts[l.font]};font-size:${l.bodySize}px;color:${l.text};background:${l.outerBackground}!important}body:not(.nic-admin) :is(button,input,select,textarea){font-family:inherit}body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}
+body:not(.nic-admin) :is(.bottom-pdf,.bottom-save,#share,#downloadPDF,.bottom-share){background:var(--nic-black-bg)!important;color:var(--nic-black-text)!important;border-color:var(--nic-black-bg)!important}
+body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.save-reno-btn,#applyTradeSuggestions,.btn.primary){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important;border-color:var(--nic-green-bg)!important}
+body:not(.nic-admin) :is(.nic-clear-reno,.bottom-primary,#newCalc){background:var(--nic-red-bg)!important;color:var(--nic-red-text)!important;border-color:var(--nic-red-bg)!important}
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(a,.footer-version,.nic-consent-settings){color:var(--nic-green-text)!important}
+body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]){background:var(--nic-green-bg)!important;border-color:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
+body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]) :is(strong,small,.nic-menu-icon){color:var(--nic-green-text)!important}
+body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"])::after{background:var(--nic-green-bg)!important}`;
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
       for(const rel of ['icon','apple-touch-icon']){
