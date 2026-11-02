@@ -40,5 +40,24 @@ for page in site.rglob('*.html'):
   s=s.replace('<html lang="de" ', '<html lang="de" data-nic-release="'+payload['version'][1:]+'" ',1)
  page.write_text(s)
 shutil.copyfile('assets/pdf-reports.js',site/'pdf-reports.js')
+# Apply PDF viewer changes to generated output only. The archived original is immutable.
+pdf_asset=site/'pdf-reports.js'
+pdf_js=pdf_asset.read_text(encoding='utf-8')
+viewer="""function openReport(doc,name){
+ const url=URL.createObjectURL(doc.output('blob'));
+ const tab=window.open(url,'_blank','noopener,noreferrer');
+ if(!tab){
+   const link=document.createElement('a');
+   link.href=url;link.target='_blank';link.rel='noopener noreferrer';
+   document.body.appendChild(link);link.click();link.remove();
+ }
+ setTimeout(()=>URL.revokeObjectURL(url),120000);
+}
+"""
+if 'function openReport(doc,name)' not in pdf_js:
+    pdf_js=pdf_js.replace('async function exportFinance(values,download){',viewer+'async function exportFinance(values,download){')
+pdf_js=pdf_js.replace('doc.save(name)', 'openReport(doc,name)')
+pdf_js=pdf_js.replace('exportFinance,model,legalBlocks','exportFinance,openReport,model,legalBlocks')
+pdf_asset.write_text(pdf_js,encoding='utf-8')
 shutil.copyfile('scripts/pdf_reports_browser_check.html',site/'_checks'/'pdf-reports.html')
 print('All five reports share pdf-reports.js, live branding/settings and a separate final disclaimer section')
