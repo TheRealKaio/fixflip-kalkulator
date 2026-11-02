@@ -72,6 +72,24 @@ function positionCalculatorActions(){
  bar.classList.add('nic-actions-above-footer');
 }
 positionCalculatorActions();
+/* Use the real information-card edges on every route, not each app's legacy padding. */
+function alignCalculatorActions(){
+ const bar=document.querySelector('.nic-actions-above-footer');
+ const cards=Array.from(document.querySelectorAll('main .card, .section > .card'));
+ const card=cards.find(el=>el.getBoundingClientRect().width>0);
+ if(!bar||!card||!bar.parentElement)return;
+ const rect=card.getBoundingClientRect();
+ const parent=bar.parentElement.getBoundingClientRect();
+ if(rect.width<100)return;
+ bar.style.setProperty('box-sizing','border-box','important');
+ bar.style.setProperty('width',rect.width+'px','important');
+ bar.style.setProperty('max-width',rect.width+'px','important');
+ bar.style.setProperty('margin-left',(rect.left-parent.left)+'px','important');
+ bar.style.setProperty('margin-right','0','important');
+}
+alignCalculatorActions();
+window.addEventListener('resize',alignCalculatorActions,{passive:true});
+window.addEventListener('orientationchange',alignCalculatorActions,{passive:true});
 /* All five calculators: align the footer to the visible shared brand header. */
 function alignSharedFooter(){
  const header=document.querySelector('.app > .nic-brand-bar')||document.querySelector('.app > .hero');
