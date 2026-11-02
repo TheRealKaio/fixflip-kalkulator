@@ -33,14 +33,14 @@ class CardParser(HTMLParser):
         self.heading = None
         self.cards = []
 
-    def offset(self):
+    def source_offset(self):
         line, column = self.getpos()
         return self.line_offsets[line - 1] + column
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         cls = attrs.get("class", "").split()
-        item = {"tag": tag, "class": cls, "id": attrs.get("id", ""), "start": self.offset(), "heading": ""}
+        item = {"tag": tag, "class": cls, "id": attrs.get("id", ""), "start": self.source_offset(), "heading": ""}
         self.stack.append(item)
         if tag == "h2":
             self.heading = {"text": [], "stack": list(self.stack)}
