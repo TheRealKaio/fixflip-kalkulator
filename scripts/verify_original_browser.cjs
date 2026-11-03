@@ -117,7 +117,7 @@ const assert=require('node:assert/strict');
      await page.locator('#reno').fill('15000');
      await page.locator('#reno').press('Tab');
      const at15000=await total.innerText();
-     assert.match(await renovation.innerText(),/15\\.000/,'Manual renovation value appears in the cost breakdown');
+     assert.match(await renovation.innerText(),/15\.000/,'Manual renovation value appears in the cost breakdown');
      await page.locator('#reno').fill('20000');
      await page.locator('#reno').press('Tab');
      const at20000=await total.innerText();
