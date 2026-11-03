@@ -65,6 +65,10 @@ html body:not(.nic-admin) :is(
 ) {
   font-size: var(--nic-hint-font-size, 12px) !important;
 }
+/* The 'i' help control is a typographic icon, sized with Hinweistexte. */
+html body:not(.nic-admin) .info-btn {
+  font-size: var(--nic-hint-font-size, 12px) !important;
+}
 /* Explicit subtexts inside hinted wrappers retain the admin subtext scale. */
 html body:not(.nic-admin) :is(.sub,.subtitle,.section-subtitle) :where(*) {
   font-size: var(--nic-subtext-font-size, 14px) !important;
