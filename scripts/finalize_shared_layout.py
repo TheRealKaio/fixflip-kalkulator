@@ -91,7 +91,7 @@ for p in site.rglob('*.html'):
   r'(<span class="hint" id="equityInputHint">.*?</span>)'
   r'(</label>\\s*<div class="input-wrap">.*?</div>)',re.S
  )
- def move_equity_hint(match):
+   def move_equity_hint(match):
    hint=re.sub(r'^<span\b','<div',match.group(2),count=1)
    hint=re.sub(r'</span>$','</div>',hint,count=1)
    return match.group(1)+match.group(3)+hint
