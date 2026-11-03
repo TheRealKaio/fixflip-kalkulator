@@ -60,6 +60,25 @@ const assert=require('node:assert/strict');
     assert(Math.abs(fields.total.left-fields.interest.left)<1&&Math.abs(fields.total.right-fields.repayment.right)<1,'Acquisition total spans both mobile columns');
     await page.locator('#interest').evaluate((el,open)=>{el.closest('details').open=open;},originalOpen);
    }
+   if(width===390&&slug==='budget'){
+    const incomeIds=['budgetIncomeEmployment','budgetIncomePension','budgetIncomeSupport','budgetIncomeSide','budgetIncomeRent','budgetIncomeOther','budgetChildBenefit'];
+    const expenseIds=['budgetFood','budgetMobility','budgetInsurance','budgetTelecom','budgetLeisure','budgetChildCosts','budgetExistingLoans','budgetOther'];
+    for(const id of [...incomeIds,...expenseIds])await page.locator('#'+id).fill('0');
+    await page.locator('#budgetIncomeEmployment').fill('4000');
+    await page.locator('#budgetFood').fill('2400');
+    const assertRate=async expected=>{
+     const state=await page.evaluate(()=>({value:Number(document.getElementById('budgetRateSlider').value),label:document.getElementById('budgetRateSliderValue').textContent,manual:localStorage.getItem('ff_budget_rateManualSelection')}));
+     assert(Math.abs(state.value-expected)<0.11,'Slider updates on input before blur: '+JSON.stringify(state)+' expected '+expected);
+     assert.equal(state.label,new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(expected)+' %','Visible percentage follows the thumb');
+     assert.equal(state.manual,'0','Cashflow edits reset the previous manual rate');
+    };
+    await assertRate(32.5);
+    // A previous manual selection must not keep the thumb at a stale value.
+    await page.locator('#budgetRateSlider').evaluate(el=>{el.value='10';el.dispatchEvent(new Event('input',{bubbles:true}));});
+    await page.locator('#budgetFood').fill('2600');await assertRate(27.5);
+    await page.locator('#budgetIncomeEmployment').fill('5000');await assertRate(42);
+    await page.locator('#budgetIncomeEmployment').fill('0');await assertRate(0);
+   }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
    assert(await page.locator('.deal-type-option').evaluateAll(els=>els.every(el=>Math.abs(el.getBoundingClientRect().height-els[0].getBoundingClientRect().height)<1)),'All five tile heights must be identical');
    assert(await page.locator('.nic-brand-bar').evaluate(bar=>[...bar.children].every(el=>{const r=el.getBoundingClientRect(),b=bar.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1})), 'Brand bar content must stay inside its width');
