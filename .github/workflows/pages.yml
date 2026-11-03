@@ -493,6 +493,7 @@ jobs:
           python scripts/patch_top_footer_layout_v8321.py _site/index.html
           python scripts/patch_reno_helper_text_v8322.py _site/index.html
           python scripts/patch_rental_buffer_row_v8401.py _site/index.html
+          python scripts/patch_reno_buffer_spacing_v8402.py _site/index.html
           python scripts/patch_own_heading_v8323.py _site/index.html
           python scripts/patch_rental_equity_shortfall_v8324.py _site/index.html
           python scripts/patch_admin_settings_v8325.py _site/index.html
