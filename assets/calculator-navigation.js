@@ -7,8 +7,12 @@ document.addEventListener('click',event=>{
  if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  const card=event.target.closest('[data-href],#nicFinancingTab');if(!card)return;
  const url=new URL(card.dataset.href||card.href,location.href);
- if(url.origin!==location.origin||!paths.has(url.pathname)||url.pathname===location.pathname)return;
- try{sessionStorage.setItem(key,JSON.stringify({path:url.pathname,y:window.scrollY,at:Date.now()}));}catch(_){}
+ // Some legacy scripts rewrite the finance tile to /Finanzierungsrechner/.
+ // Route comparisons and navigation must use the canonical lowercase path.
+ const canonicalPath=url.pathname.toLowerCase();
+ if(url.origin!==location.origin||!paths.has(canonicalPath)||canonicalPath===location.pathname.toLowerCase())return;
+ url.pathname=canonicalPath;
+ try{sessionStorage.setItem(key,JSON.stringify({path:canonicalPath,y:window.scrollY,at:Date.now()}));}catch(_){}
  // The financing tile is an anchor inside the legacy calculator menu. Its
  // delegated click handlers can cancel the anchor's normal navigation.
  if(card.id==='nicFinancingTab'){
