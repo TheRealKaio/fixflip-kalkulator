@@ -138,7 +138,7 @@ required=[
   'const BUDGET_ACTIVE_KEY="ff_budget_suggestions_active";',
   'if(!budgetExpenseManual[id] && $(id))',
   'const actualBase=Math.max(0,totalTrades());',
-  'const totalWithBuffer=actualBase>0',
+  'const totalWithBuffer=hasManual',
   '#renoSheetTotal{display:none!important}',
   'V8.242',
   'service-worker.js?v=8.242'
