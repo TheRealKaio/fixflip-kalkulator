@@ -3,6 +3,29 @@ from pathlib import Path
 path=Path("_site/index.html")
 s=path.read_text(encoding="utf-8")
 
+# The manual #reno amount is a final inclusive total, while detailed trade
+# amounts remain the base to which the renovation buffer is applied.
+reno_helper = r"""
+function calculatedRenoBase(){
+  const mode=typeof currentDealType==="function" ? currentDealType() : "";
+  if(mode!=="own" && mode!=="flip") return Math.max(0,totalTrades());
+  let manual=null;
+  try{ manual=localStorage.getItem("ff_"+mode+"_reno_manual_total"); }catch(_err){}
+  if(manual===null || manual.trim()==="" || !Number.isFinite(Number(manual))) return Math.max(0,totalTrades());
+  return Math.max(0,Number(manual))/(1+Math.max(0,pct("buffer")));
+}
+"""
+if "function calculatedRenoBase(){" not in s:
+    anchor='function calculateFlipTargetSale(){'
+    if anchor not in s: raise SystemExit("Manual renovation calculation anchor missing")
+    s=s.replace(anchor,reno_helper+"\n"+anchor,1)
+old_flip='const renoBase = Math.max(0, totalTrades());'
+if old_flip not in s: raise SystemExit("Flip sale renovation base anchor missing")
+s=s.replace(old_flip,'const renoBase = Math.max(0, calculatedRenoBase());',1)
+old_model='const renoBase = overrides.reno ?? totalTrades();'
+if old_model not in s: raise SystemExit("Project model renovation base anchor missing")
+s=s.replace(old_model,'const renoBase = overrides.reno ?? calculatedRenoBase();',1)
+
 style=r"""
 <style>
 #renoSheetTotal{display:none!important}
@@ -137,6 +160,9 @@ required=[
   'V8.242 budget suggestion refresh and renovation total correction',
   'const BUDGET_ACTIVE_KEY="ff_budget_suggestions_active";',
   'if(!budgetExpenseManual[id] && $(id))',
+  'function calculatedRenoBase(){',
+  'const renoBase = Math.max(0, calculatedRenoBase());',
+  'const renoBase = overrides.reno ?? calculatedRenoBase();',
   'const actualBase=Math.max(0,totalTrades());',
   'const totalWithBuffer=hasManual',
   '#renoSheetTotal{display:none!important}',
