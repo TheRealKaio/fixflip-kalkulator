@@ -821,6 +821,12 @@ jobs:
           NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_original_browser.cjs
           NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_all_reports.cjs
 
+      - name: Build and verify unified calculator navigation
+        run: |
+          python scripts/build_unified_navigation.py _site
+          python scripts/fingerprint_assets.py _site
+          NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
