@@ -86,3 +86,56 @@ html body:not(.nic-admin) :is(.sub,.subtitle,.section-subtitle,
     font-size: min(var(--nic-h1-font-size, 40px), clamp(26px, 7.5vw, var(--nic-h1-font-size, 40px))) !important;
   }
 }
+
+/* Responsive proportions: maintain Admin typography, adapt available space
+   instead of shrinking text to undocumented fixed mobile values. */
+html body:not(.nic-admin) :is(.app,.app .card,.app .hero,
+  .app .deal-type-row,.app .deal-type-option,
+  .app .section-summary-copy,.app .bottom-actions,
+  .app .field,.app .field label) {
+  min-width: 0;
+}
+html body:not(.nic-admin) .app :is(h1,h2,h3,h4,.section-summary-title,
+  .deal-type-option strong,.deal-type-option small,
+  .sub,.subtitle,.section-subtitle,.section-summary-subtitle,
+  .cost-row,.cost-total) {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
+}
+html body:not(.nic-admin) .app :is(h1,h2,h3,h4) {
+  line-height: 1.2;
+}
+@media (max-width: 700px) {
+  html body:not(.nic-admin) .app :is(.card,.hero,.deal-type-card) {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  html body:not(.nic-admin) .app :is(
+    .section-summary-title,.deal-type-title,
+    .deal-type-option strong,.cost-row,.cost-total) {
+    line-height: 1.35;
+  }
+}
+@media (max-width: 420px) {
+  /* With long translated button labels, use a second line rather than
+     crushing a control or allowing horizontal scrolling. */
+  html body:not(.nic-admin) .bottom .bottom-actions {
+    flex-wrap: wrap !important;
+  }
+  html body:not(.nic-admin) .bottom .bottom-actions > .bottom-primary {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  html body:not(.nic-admin) .bottom .bottom-actions > .bottom-pdf {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  html body:not(.nic-admin) .bottom .bottom-actions > :is(.bottom-primary,.bottom-pdf) {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    text-align: center !important;
+  }
+}
