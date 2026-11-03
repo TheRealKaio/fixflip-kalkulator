@@ -448,7 +448,13 @@ rules.append("""
  }
  body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv),
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.field:has(#rentMonths){
-  grid-column:1/-1!important;
+  grid-column:1/-1!important;order:4!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls) .field:has(#rentNotary){
+  order:5!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls) .field:has(#rentBroker){
+  order:6!important;
  }
  body:not(.nic-admin) #rentFinanceCard #rentFinancingControls{
   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
