@@ -326,6 +326,9 @@ rules.append("""
   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:14px 10px!important;grid-column:1/-1!important;min-width:0!important;
  }
+ body:not(.nic-admin) #ownFinanceCard .finance-rate-grid .field:has(#ltv){
+  grid-column:1/-1!important;
+ }
  body:not(.nic-admin) #ownFinanceCard .finance-duration-swap-v8403{
   grid-column:1/-1!important;
  }
