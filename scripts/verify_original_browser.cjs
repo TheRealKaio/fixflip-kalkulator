@@ -91,6 +91,27 @@ const assert=require('node:assert/strict');
        'Own-use tablet places financed to the right of repayment: '+JSON.stringify(fields));
      await page.setViewportSize({width,height:900});
     }
+    if(width===1440&&['eigennutzung','vermietung','fix-flip'].includes(slug)){
+     await page.setViewportSize({width:768,height:1024});
+     const tabletSelectors=slug==='vermietung'
+      ?{row:'#rentFinancingControls .finance-acq-row',total:'#rentFinancingControls .finance-acq-total',notary:'#rentFinanceCard .field:has(#rentNotary)'}
+      :slug==='eigennutzung'
+       ?{row:'#ownFinanceCard .finance-acq-row',total:'#ownFinanceCard .finance-acq-total',notary:'#ownFinanceCard .field:has(#notary)'}
+       :{row:'#finance-acq-row-swap-v8403',total:'#finance-acq-row-swap-v8403 .finance-acq-total',notary:'#flipFinanceCard .field:has(#notary)'};
+     const tabletWidths=await page.evaluate(selectors=>{
+      const row=document.querySelector(selectors.row),total=document.querySelector(selectors.total),notary=document.querySelector(selectors.notary);
+      if(!row||!total||!notary)return null;
+      const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,top:r.top};};
+      const option=row.querySelector('.finance-acq-option');
+      return {row:box(row),total:box(total),notary:box(notary),option:option?box(option):null};
+     },tabletSelectors);
+     assert(tabletWidths&&tabletWidths.option,'Tablet acquisition row exists for '+slug+': '+JSON.stringify(tabletWidths));
+     assert(Math.abs(tabletWidths.total.width-tabletWidths.notary.width)<2,
+       'Tablet acquisition costs match Notar + Grundbuch width on '+slug+': '+JSON.stringify(tabletWidths));
+     assert(Math.abs(tabletWidths.total.left-tabletWidths.notary.left)<2,
+       'Tablet acquisition costs align with Notar + Grundbuch on '+slug+': '+JSON.stringify(tabletWidths));
+     await page.setViewportSize({width,height:900});
+    }
     if(width===390&&slug==='vermietung'){
      const fields=await page.evaluate(()=>{
       const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
