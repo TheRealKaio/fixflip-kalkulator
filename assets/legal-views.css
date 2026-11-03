@@ -1,4 +1,7 @@
 body.nic-legal-open .app > :not(.nic-brand-bar):not(.hero):not(#nicLegalPanel):not(.footer-note):not(.nic-shared-footer){display:none!important}
+body.nic-admin-open #nicAdminPanel>.nic-admin-back{display:block;width:100%;margin:0 0 8px;box-sizing:border-box;text-align:left}
+html.nic-admin-open{scrollbar-width:none;-ms-overflow-style:none}
+html.nic-admin-open::-webkit-scrollbar{display:none}
 #nicLegalPanel[hidden]{display:none!important}
 #nicLegalPanel{padding:16px 0;min-width:0}
 body.nic-legal-open #nicLegalPanel>.nic-admin-back{display:block;width:calc(100% - 24px);margin:0 12px 8px;box-sizing:border-box;text-align:left}
