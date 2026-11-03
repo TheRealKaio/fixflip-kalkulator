@@ -35,7 +35,7 @@ if html.count(old_width) != 1:
     raise SystemExit("V8.373 slider card width rule not found")
 html = html.replace(old_width, new_width, 1)
 
-if "budgetRateRatio" in html or "(ca. " in html:
+if "budgetRateRatio" in html or '(ca. " + new Intl.NumberFormat' in html:
     raise SystemExit("V8.373 redundant inline rate ratio remains")
 
 path.write_text(html, encoding="utf-8")
