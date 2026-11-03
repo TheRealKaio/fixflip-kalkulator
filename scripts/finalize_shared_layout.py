@@ -127,7 +127,7 @@ rules.append('body:not(.nic-embed) .deal-type-row>:is(label,#dealTypeRent,#nicFi
 rules.append("""
 body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){
  display:flex!important;flex-direction:row!important;align-items:center!important;
- justify-content:flex-end!important;gap:8px!important;box-sizing:border-box!important;
+ justify-content:center!important;gap:8px!important;box-sizing:border-box!important;
  width:100%!important;max-width:100%!important;min-width:0!important;
 }
 body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar)
@@ -143,8 +143,11 @@ body:not(.nic-admin) .budget-expenses-toolbar>:is(button,.nic-clear-reno):not(#b
 }
 /* Match the right-aligned renovation proposal group above its blue summary. */
 body:not(.nic-admin) #budgetExpensesSection .budget-expenses-toolbar{
- width:48%!important;max-width:48%!important;margin-left:auto!important;margin-right:0!important;
- justify-content:flex-end!important;
+ width:48%!important;max-width:48%!important;margin-left:auto!important;margin-right:auto!important;
+ justify-content:center!important;
+}
+body:not(.nic-admin) #budgetExpensesSection #budgetSuggestionActions{
+ margin-left:auto!important;margin-right:auto!important;justify-content:center!important;text-align:center!important;
 }
 body:not(.nic-admin) #budgetExpensesSection #budgetApplySuggestions{
  flex:1 1 0!important;width:100%!important;min-width:0!important;
