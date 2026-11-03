@@ -53,7 +53,7 @@ html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.
   background: var(--nic-action-secondary) !important;
   color: var(--nic-action-color) !important;
   font: inherit !important;
-  font-size: 14px !important;
+  font-size: var(--nic-subtext-font-size, 14px) !important;
   font-weight: 700 !important;
   line-height: 1.15 !important;
   text-align: center !important;
@@ -106,7 +106,7 @@ html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.
 @media (max-width: 420px) {
   html body:not(.nic-admin) .bottom .bottom-actions { gap: 6px !important; }
   html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save) {
-    font-size: 12px !important;
+    font-size: var(--nic-subtext-font-size, 14px) !important;
     padding-inline: 7px !important;
   }
   html body:not(.nic-admin) .bottom .bottom-actions > .bottom-save {
