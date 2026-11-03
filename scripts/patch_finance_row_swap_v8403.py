@@ -108,8 +108,8 @@ css = '''<style id="finance-row-order-v8403">
   width:100%!important;
   grid-column:1/-1!important;
 }
-#finance-acq-row-swap-v8403>.finance-acq-total{grid-column:1!important}
-#finance-acq-row-swap-v8403>.finance-acq-option{grid-column:2!important}
+#finance-acq-row-swap-v8403 .finance-acq-total{grid-column:1!important;grid-row:1!important}
+#finance-acq-row-swap-v8403 .finance-acq-option{grid-column:2!important;grid-row:1!important}
 </style>'''
 if "</head>" not in s:
     raise SystemExit("V8.403 style insertion anchor missing")
