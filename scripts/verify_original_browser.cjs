@@ -69,6 +69,16 @@ const assert=require('node:assert/strict');
      assert.equal(size.padding,'0px','Finance checkbox excludes text-input padding');
     }
     await page.setViewportSize({width,height:900});
+    if(width===390&&slug==='eigennutzung'){
+     const fields=await page.evaluate(()=>{
+      const rect=selector=>{const el=document.querySelector(selector);const r=el.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
+      return {interest:rect('.field:has(#interest)'),repayment:rect('.field:has(#repayment)'),financed:rect('.field:has(#ltv)'),duration:rect('.finance-duration-swap-v8403'),total:rect('#ownFinanceCard .finance-acq-total'),option:rect('#ownFinanceCard .finance-acq-option'),row:rect('#ownFinanceCard .finance-acq-row')};
+     });
+     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Own-use mobile keeps interest and repayment together: '+JSON.stringify(fields));
+     assert(fields.financed.top>fields.interest.top&&fields.financed.width>fields.interest.width,'Own-use mobile gives financed a full-width row: '+JSON.stringify(fields));
+     assert(fields.duration.top>fields.financed.top&&fields.total.top>fields.duration.top,'Own-use mobile follows the desktop order through acquisition costs: '+JSON.stringify(fields));
+     assert(Math.abs(fields.total.top-fields.option.top)<1&&fields.total.top>fields.duration.top,'Own-use mobile aligns acquisition total and financing toggle on one row: '+JSON.stringify(fields));
+    }
     if(width===1440&&slug==='eigennutzung'){
      await page.setViewportSize({width:768,height:1024});
      const fields=await page.evaluate(()=>{
