@@ -81,11 +81,17 @@ js=r"""
   syncRenoTotal=function(){
     const actualBase=Math.max(0,totalTrades());
     const bufferRate=Math.max(0,pct("buffer"));
-    const totalWithBuffer=actualBase>0
-      ? Math.round(actualBase*(1+bufferRate))
-      : 0;
+    const mode=typeof currentDealType==="function" ? currentDealType() : "";
+    const manualKey=(mode==="own" || mode==="flip")
+      ? "ff_"+mode+"_reno_manual_total"
+      : "";
+    const manual=manualKey ? localStorage.getItem(manualKey) : null;
+    const hasManual=manual!==null && Number.isFinite(Number(manual));
+    const totalWithBuffer=hasManual
+      ? Math.max(0,Number(manual))
+      : (actualBase>0 ? Math.round(actualBase*(1+bufferRate)) : 0);
 
-    if($("reno")) $("reno").value=String(totalWithBuffer);
+    if($("reno") && document.activeElement!==$("reno")) $("reno").value=String(totalWithBuffer);
     if($("renoSheetTotal")) $("renoSheetTotal").textContent="";
     try{ updateRenoProposalStatus(); }catch(_err){}
   };
