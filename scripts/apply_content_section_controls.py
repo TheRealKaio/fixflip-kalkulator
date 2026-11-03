@@ -97,7 +97,9 @@ for page in SITE.rglob("*.html"):
         is_root = page == SITE / "index.html"
         if is_root and "budgetSection" not in card.get("ancestor_ids", []):
             continue
-        if not is_root and any("mode-hidden" in classes for classes in card.get("ancestor_classes", [])):
+        # Own-use reveals this card at runtime; its initial mode-hidden class is not an access rule.
+        own_price_check = route == "own" and card["id"] == "ownMarketCheckSection"
+        if not is_root and not own_price_check and any("mode-hidden" in classes for classes in card.get("ancestor_classes", [])):
             continue
         if route != "flip" and any("flip-section-card" in classes for classes in card.get("ancestor_classes", [])):
             continue
@@ -115,7 +117,10 @@ for page in SITE.rglob("*.html"):
         used[title_slug] = used.get(title_slug, 0) + 1
         suffix = "" if used[title_slug] == 1 else f"-{used[title_slug]}"
         key = f"{route}.{title_slug}{suffix}"
-        catalog.setdefault(key, {"key": key, "title": card["heading"], "calculator": route, "calculatorLabel": LABELS[route], "order": len(catalog)})
+        display_title = "2. Kaufpreis-Check" if own_price_check else card["heading"]
+        if card["id"] == "result":
+            display_title = "Ergebnis und Einschätzung"
+        catalog.setdefault(key, {"key": key, "title": display_title, "calculator": route, "calculatorLabel": LABELS[route], "order": len(catalog)})
         start = card["start"]
         end = source.find(">", start)
         opening = source[start:end + 1]

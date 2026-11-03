@@ -48,6 +48,15 @@ const assert=require('node:assert/strict');
     assert(masked.every(x=>x.width>0&&x.width<x.rowWidth*.5&&Math.abs(x.right-x.rowRight)<=1&&x.right<=x.contentRight+1),`Masked cost values must match their text width, align to the row edge and remain inside the card: ${JSON.stringify(masked)}`);
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
    }
+   if(slug==='eigennutzung'){
+    const key=await page.locator('#ownMarketCheckSection').getAttribute('data-nic-content-key');
+    assert.equal(key,'own.kaufpreis-check','Purchase price check has its own stable access rule');
+    const catalog=require('node:fs').readFileSync('_site/content-sections.json','utf8');
+    const entry=JSON.parse(catalog).find(item=>item.key===key);
+    assert.equal(entry.title,'2. Kaufpreis-Check');
+    assert.equal(await page.locator('#ownMarketCheckSection h2').evaluate(el=>getComputedStyle(el).fontSize),await page.evaluate(()=>NICSettings.current.layout.h2+'px'),'Purchase price title follows configured H2 size');
+    assert(JSON.parse(catalog).some(item=>item.key==='own.noch-prufen'&&item.title==='Ergebnis und Einschätzung'),'Result status has a stable admin label');
+   }
    if(width===390&&['eigennutzung','fix-flip'].includes(slug)){
     const originalOpen=await page.locator('#interest').evaluate(el=>{const d=el.closest('details');const open=d.open;d.open=true;return open;});
     const fields=await page.evaluate(()=>{
