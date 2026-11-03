@@ -734,6 +734,22 @@ jobs:
               raise SystemExit("Fix & Flip introduction not found; refusing to publish unchanged text")
           print(f"Fix & Flip introduction updated ({changes} occurrence(s))")
           PY
+          # Refresh SEO/GEO introduction of the financing calculator.
+          python - <<'PY'
+          from pathlib import Path
+          old = "Plane deine Immobilienfinanzierung und berechne, wie Tilgung und Sondertilgungen die Restschuld deines Darlehens beeinflussen."
+          new = "Berechne Deine Immobilienfinanzierung mit unserem Finanzierungsrechner für Hamburg und ganz Deutschland. Prüfe Kreditrate, Zinsen, Tilgung und Restschuld. Erfahre, wie Sondertilgungen und unterschiedliche Laufzeiten Deine Finanzierungskosten beeinflussen."
+          changes = 0
+          for path in Path("_site").rglob("*.html"):
+              source = path.read_text(encoding="utf-8")
+              occurrences = source.count(old)
+              if occurrences:
+                  path.write_text(source.replace(old, new), encoding="utf-8")
+                  changes += occurrences
+          if not changes:
+              raise SystemExit("Financing introduction not found; stopping deployment to avoid a false success")
+          print(f"Financing introduction updated ({changes} occurrence(s))")
+          PY
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
