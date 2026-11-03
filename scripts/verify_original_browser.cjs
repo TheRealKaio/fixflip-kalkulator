@@ -110,6 +110,21 @@ const assert=require('node:assert/strict');
     assert(masked.length>0,'Guest cost values should be masked');
     assert(masked.every(x=>x.width>0&&x.width<x.rowWidth*.5&&Math.abs(x.right-x.rowRight)<=1&&x.right<=x.contentRight+1),`Masked cost values must match their text width, align to the row edge and remain inside the card: ${JSON.stringify(masked)}`);
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
+    if(width===1440){
+     const renovation=page.locator('.cost-row').filter({hasText:'Modernisierung'});
+     const total=page.locator('.cost-total').filter({hasText:'Gesamt'});
+     const original=await page.locator('#reno').inputValue();
+     await page.locator('#reno').fill('15000');
+     await page.locator('#reno').press('Tab');
+     const at15000=await total.innerText();
+     assert.match(await renovation.innerText(),/15[.\\s\\u00a0]?000/,'Manual renovation value appears in the cost breakdown');
+     await page.locator('#reno').fill('20000');
+     await page.locator('#reno').press('Tab');
+     const at20000=await total.innerText();
+     assert.notEqual(at20000,at15000,'Changing manual renovation value recalculates the overall project cost');
+     await page.locator('#reno').fill(original);
+     await page.locator('#reno').press('Tab');
+    }
    }
    if(slug==='eigennutzung'){
     const key=await page.locator('#ownMarketCheckSection').getAttribute('data-nic-content-key');
