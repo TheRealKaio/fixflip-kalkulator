@@ -36,7 +36,7 @@ function open(next){
  panel.querySelectorAll('[data-nic-legal]').forEach(a=>{if(a.dataset.nicLegal===next)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');
  // Legal routes always begin at the top of the shared header, including the disclaimer sheet route.
- window.scrollTo(0,0);
+ if(typeof window.scrollTo==='function')window.scrollTo(0,0);
 }
 function route(){if(S.current)open(key());}
 // Close before the admin takes its header snapshot; open after it restores the calculator header.
