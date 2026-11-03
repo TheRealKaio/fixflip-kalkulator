@@ -19,7 +19,7 @@ replacements={
 for old,new in replacements.items():
  if old not in s:raise SystemExit("Finance default anchor missing: "+old)
  s=s.replace(old,new)
-s,n=re.subn(r'(<input\b[^>]*\bid="(?:buffer|rentRenoBuffer)"[^>]*\bvalue=")[^"]*(")',r'\1\2',s)
+s,n=re.subn(r'<input\b(?=[^>]*\bid="(?:buffer|rentRenoBuffer)")[^>]*>',lambda m:re.sub(r'\s+value="[^"]*"','',m[0]),s)
 if n!=2:raise SystemExit("Expected both renovation buffer inputs")
 old='function formatPercentInputField(el){\n  if(!el) return;'
 new=old+'\n  if(["buffer","rentRenoBuffer"].includes(el.id)&&parseLocalizedNumber(el.value,true)===0){el.value="";return;}'
