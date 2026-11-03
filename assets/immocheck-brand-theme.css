@@ -532,3 +532,33 @@ body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) :is(.nic-consent-setti
 
 /* Center shared renovation guidance across calculators. */
 body:not(.nic-embed) .reno-note{text-align:center}
+
+/* Shared result headings: symbol beside H2, description below across the card. */
+body:not(.nic-admin) .decision:has(>.light){
+ display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;
+ align-items:center!important;gap:8px 12px!important;text-align:left!important;
+ min-width:0;max-width:100%;box-sizing:border-box;
+}
+body:not(.nic-admin) .decision:has(>.light)>div:not(.light){display:contents}
+body:not(.nic-admin) .decision>.light{
+ grid-column:1;grid-row:1;width:50px;max-width:50px;min-width:0;
+ align-self:center;box-sizing:border-box;
+}
+body:not(.nic-admin) .decision:has(>.light) h2{
+ grid-column:2;grid-row:1;min-width:0;max-width:100%;
+ margin:0!important;text-align:left!important;overflow-wrap:break-word;
+}
+body:not(.nic-admin) .decision:has(>.light) p{
+ grid-column:1 / -1;box-sizing:border-box;width:100%;min-width:0;
+ max-width:none!important;margin:0!important;text-align:left!important;
+ font-size:var(--nic-body-font-size,16px)!important;line-height:1.5!important;
+}
+/* Expense total uses the existing 13px summary inset without extra row spacers. */
+body:not(.nic-admin) #budgetExpensesSection .budget-summary:has(#budgetExpensesTotal){
+ box-sizing:border-box;width:100%;max-width:100%;height:auto!important;min-height:0!important;
+ margin-left:0!important;margin-right:0!important;padding:13px!important;
+}
+body:not(.nic-admin) #budgetExpensesSection .budget-summary-row.total:has(#budgetExpensesTotal){
+ border-top:0!important;margin:0!important;padding:0!important;
+ min-height:0!important;height:auto!important;align-items:center;
+}
