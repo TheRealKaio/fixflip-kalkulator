@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 29331)
-Total output lines: 2437
-
 from pathlib import Path
 import sys
 import re
@@ -1015,7 +1012,373 @@ function resetBudgetCalculatorToDefaults(){
   if($("budgetFamilyStatus")) $("budgetFamilyStatus").value="single";
   if($("budgetAdults")) $("budgetAdults").value="1";
   if($("budgetChildren")) $("budgetChildren").value="0";
-  if($("budgetEqui…4331 tokens truncated…e Einnahmen oder Ausgaben prüfen.";
+  if($("budgetEquity")) $("budgetEquity").value="0";
+  if($("budgetAncillaryPct")) $("budgetAncillaryPct").value="12.00";
+  if($("budgetExtraCostsPct")) $("budgetExtraCostsPct").value="5.00";
+  if($("budgetIncomeEmployment")) $("budgetIncomeEmployment").value="0";
+  if($("budgetChildBenefit")) $("budgetChildBenefit").value="0";
+
+  // Nach einem echten Reset wird die erste Kreditrate erst nach der ersten
+  // abgeschlossenen Einkommenseingabe gesetzt. Danach gilt wieder die normale Logik.
+  budgetRateNeedsInitialValue=true;
+  budgetRateManualSelection=false;
+  localStorage.setItem("ff_budget_rateNeedsInitialValue","1");
+  localStorage.setItem("ff_budget_rateManualSelection","0");
+  localStorage.removeItem("ff_budget_rateSliderPct");
+
+  initTwoDecimalPercentFields();
+  initializeRepaymentDefaults();
+  renderBudget();
+  initializeReferenceInterest();
+}
+
+function resetDealCalculatorToDefaults(){
+  const mode=currentDealType();
+  const dealStorageIds=[
+    "purchase","sale","area","buildYear","plotArea","energyClass","energyDemand","months",
+    "interest","repayment","ltv","notary","buyBroker","sellBroker","otherSaleCosts","buffer",
+    "holding","targetProfit","targetMargin","maxEquity","targetRoi","personalTax",
+    "stressSalePct","stressRenoPct","marketLocation","marketPropertyType","marketCondition",
+    "comp1Price","comp1Area","comp2Price","comp2Area","comp3Price","comp3Area","flipSaleTarget"
+  ];
+  dealStorageIds.forEach(id=>localStorage.removeItem("ff_"+id));
+  [
+    "ff_state","ff_financeAcquisition","ff_interest_manual","ff_repayment_manual",
+    COMP1_OVERRIDE_KEY,PROPERTY_TYPE_SET_KEY,FLIP_SALE_OVERRIDE_KEY
+  ].forEach(key=>localStorage.removeItem(key));
+
+  if(mode==="own"){
+    localStorage.removeItem("ff_own_months");
+    localStorage.removeItem("ff_own_equity_input");
+  }else{
+    localStorage.removeItem("ff_flip_months");
+    localStorage.removeItem("ff_flip_equity_input");
+    dealGoalIds.forEach(id=>localStorage.removeItem("ff_flip_"+id));
+  }
+
+  trades.forEach(t=>{
+    localStorage.removeItem("ff_trade_"+t.key);
+    localStorage.removeItem("ff_trade_manual_"+t.key);
+  });
+  Object.keys(fixedTradeHints).forEach(name=>{
+    const hint=fixedTradeHints[name];
+    if(hint && hint.areaKey) localStorage.removeItem("ff_trade_area_"+hint.areaKey);
+  });
+
+  if($("dealCalculatorContent")){
+    $("dealCalculatorContent").querySelectorAll('input:not([name="dealType"]),select,textarea').forEach(resetControlToMarkupDefault);
+  }
+  stateEl.value="Hamburg";
+  comp1ManualOverride=false;
+  flipSaleManualOverride=false;
+  initializeTrades(true);
+  setSaleRecalculatedState(false);
+  collapseOwnMarketCheck();
+  setDealType(mode,false);
+  initTwoDecimalPercentFields();
+  initializeRepaymentDefaults();
+  render();
+  initializeReferenceInterest();
+}
+
+$("recalc").addEventListener("click",()=>{
+  const mode=currentDealType();
+  const label = mode==="budget"
+    ? "Budget-Rechner"
+    : (mode==="own" ? "Eigennutzungs-Rechner" : "Fix-&-Flip-Rechner");
+  const ok=confirm("Möchtest du wirklich alle Eingaben im " + label + " auf die initialen Standardwerte zurücksetzen?");
+  if(!ok) return;
+
+  if(mode==="budget"){
+    resetBudgetCalculatorToDefaults();
+  }else{
+    resetDealCalculatorToDefaults();
+  }
+});'''
+
+replace_once(old_recalc_handler, new_recalc_handler, "V8.236 recalc reset handler")
+
+
+# V8.236: Eigennutzung - feste Initial-/Reset-Standardwerte.
+own_defaults_helper = '''function applyOwnUseStandardValues(){
+  const ownDefaults={
+    purchase:"0",
+    area:"0",
+    months:"60",
+    ltv:"100.00",
+    ownEquityInput:"0",
+    buyBroker:"0",
+    buffer:"5",
+    holding:"0",
+    sellBroker:"0",
+    otherSaleCosts:"0"
+  };
+
+  Object.entries(ownDefaults).forEach(([id,value])=>{
+    const el=$(id);
+    if(el) el.value=value;
+  });
+  if($("financeAcquisition")) $("financeAcquisition").checked=true;
+
+  ["purchase","area","ltv","buyBroker","buffer","holding","sellBroker","otherSaleCosts"].forEach(id=>{
+    localStorage.setItem("ff_"+id,ownDefaults[id]);
+  });
+  localStorage.setItem("ff_own_months","60");
+  localStorage.setItem("ff_own_equity_input","0");
+  localStorage.setItem("ff_financeAcquisition","1");
+}'''
+
+if own_defaults_helper not in s:
+    target = 'function resetDealCalculatorToDefaults(){'
+    if target not in s:
+        raise SystemExit("V8.236 own defaults reset anchor not found")
+    s = s.replace(target, own_defaults_helper + '\n\n' + target, 1)
+
+own_switch_old = '''      zeroOwnUseGoals();
+      restoreModeMonths(true);
+      restoreModeEquity(true);'''
+own_switch_new = '''      zeroOwnUseGoals();
+      restoreModeMonths(true);
+      restoreModeEquity(true);
+      if(localStorage.getItem("ff_own_defaults_v8197")!=="1"){
+        applyOwnUseStandardValues();
+        localStorage.setItem("ff_own_defaults_v8197","1");
+      }'''
+if own_switch_old not in s:
+    raise SystemExit("V8.236 own setDealType anchor not found")
+s = s.replace(own_switch_old, own_switch_new, 1)
+
+own_reset_old = '''  stateEl.value="Hamburg";
+  comp1ManualOverride=false;'''
+own_reset_new = '''  if(mode==="own"){
+    applyOwnUseStandardValues();
+    localStorage.setItem("ff_own_defaults_v8197","1");
+  }
+
+  stateEl.value="Hamburg";
+  comp1ManualOverride=false;'''
+if own_reset_old not in s:
+    raise SystemExit("V8.236 own reset injection anchor not found")
+s = s.replace(own_reset_old, own_reset_new, 1)
+
+
+# V8.236: Fix & Flip - feste Initial-/Reset-Standardwerte und Reset-Pruefung.
+flip_defaults_helper = '''function applyFlipStandardValues(){
+  const flipDefaults={
+    purchase:"0",
+    area:"0",
+    months:"6",
+    ltv:"100.00",
+    flipEquityInput:"0",
+    buyBroker:"0",
+    buffer:"5",
+    holding:"0",
+    sellBroker:"0",
+    otherSaleCosts:"0",
+    personalTax:"42"
+  };
+
+  Object.entries(flipDefaults).forEach(([id,value])=>{
+    const el=$(id);
+    if(el) el.value=value;
+  });
+  if($("financeAcquisition")) $("financeAcquisition").checked=true;
+
+  ["purchase","area","ltv","buyBroker","buffer","holding","sellBroker","otherSaleCosts","personalTax"].forEach(id=>{
+    localStorage.setItem("ff_"+id,flipDefaults[id]);
+  });
+  localStorage.setItem("ff_flip_months","6");
+  localStorage.setItem("ff_flip_equity_input","0");
+  localStorage.setItem("ff_financeAcquisition","1");
+}'''
+
+if flip_defaults_helper not in s:
+    target = 'function resetDealCalculatorToDefaults(){'
+    if target not in s:
+        raise SystemExit("V8.236 flip defaults reset anchor not found")
+    s = s.replace(target, flip_defaults_helper + '\n\n' + target, 1)
+
+flip_switch_old = '''    } else {
+      restoreFlipGoals();
+      restoreModeMonths(false);
+      restoreModeEquity(false);
+    }'''
+flip_switch_new = '''    } else {
+      restoreFlipGoals();
+      restoreModeMonths(false);
+      restoreModeEquity(false);
+      if(localStorage.getItem("ff_flip_defaults_v8198")!=="1"){
+        applyFlipStandardValues();
+        localStorage.setItem("ff_flip_defaults_v8198","1");
+      }
+    }'''
+if flip_switch_old not in s:
+    raise SystemExit("V8.236 flip setDealType anchor not found")
+s = s.replace(flip_switch_old, flip_switch_new, 1)
+
+flip_reset_old = '''  if(mode==="own"){
+    applyOwnUseStandardValues();
+    localStorage.setItem("ff_own_defaults_v8197","1");
+  }
+
+  stateEl.value="Hamburg";'''
+flip_reset_new = '''  if(mode==="own"){
+    applyOwnUseStandardValues();
+    localStorage.setItem("ff_own_defaults_v8197","1");
+  }else{
+    applyFlipStandardValues();
+    localStorage.setItem("ff_flip_defaults_v8198","1");
+  }
+
+  stateEl.value="Hamburg";'''
+if flip_reset_old not in s:
+    raise SystemExit("V8.236 flip reset injection anchor not found")
+s = s.replace(flip_reset_old, flip_reset_new, 1)
+
+# Build-time guards: fail deployment if the requested Fix-&-Flip reset values are missing.
+required_flip_reset_tokens = [
+    'function applyFlipStandardValues(){',
+    'purchase:"0"',
+    'area:"0"',
+    'months:"6"',
+    'ltv:"100.00"',
+    'flipEquityInput:"0"',
+    'buyBroker:"0"',
+    'buffer:"5"',
+    'holding:"0"',
+    'sellBroker:"0"',
+    'otherSaleCosts:"0"',
+    'if($("financeAcquisition")) $("financeAcquisition").checked=true',
+    'localStorage.setItem("ff_flip_months","6")',
+    'localStorage.setItem("ff_flip_equity_input","0")',
+    'localStorage.setItem("ff_financeAcquisition","1")'
+]
+missing_flip_reset_tokens = [token for token in required_flip_reset_tokens if token not in s]
+if missing_flip_reset_tokens:
+    raise SystemExit("V8.236 Fix-&-Flip reset verification failed: " + ", ".join(missing_flip_reset_tokens))
+
+
+# V8.236: Dynamischer Kreditraten-Regler.
+# Der Regler arbeitet prozentual zum Netto-Haushaltseinkommen.
+# Links endet er bei 0 EUR Kreditrate. Rechts endet er dort, wo zuerst
+# entweder 45 % vom Netto oder 300 EUR Mindest-Sicherheitspuffer erreicht sind.
+slider_css = '''
+.budget-rate-slider-wrap{margin-top:10px;padding:11px 12px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc}
+.budget-rate-slider-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:7px;font-size:11px;color:#52627a}
+.budget-rate-slider-head strong{font-size:12px;color:#172033}
+#budgetRateSlider{width:100%;height:24px;min-height:24px;padding:0;border:0;background:transparent;accent-color:var(--rate-slider-color,#22c55e);cursor:pointer}
+#budgetRateSlider::-webkit-slider-runnable-track{height:7px;border-radius:999px;background:linear-gradient(to right,var(--rate-slider-color,#22c55e) 0 var(--rate-slider-fill,0%),#dbe3ec var(--rate-slider-fill,0%) 100%)}
+#budgetRateSlider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--rate-slider-color,#22c55e);border:3px solid #fff;box-shadow:0 1px 5px rgba(15,23,42,.22);margin-top:-6.5px}
+#budgetRateSlider::-moz-range-track{height:7px;border-radius:999px;background:#dbe3ec}
+#budgetRateSlider::-moz-range-progress{height:7px;border-radius:999px;background:var(--rate-slider-color,#22c55e)}
+#budgetRateSlider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--rate-slider-color,#22c55e);border:3px solid #fff;box-shadow:0 1px 5px rgba(15,23,42,.22)}
+.budget-rate-slider-note{margin-top:6px;font-size:10.5px;line-height:1.4;color:#64748b}
+.budget-rate-slider-warning{margin-top:7px;padding:8px 10px;border-radius:9px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:10.5px;font-weight:700;line-height:1.4}
+.budget-rate-slider-warning[hidden]{display:none}
+'''
+css_anchor = '.budget-rate-guidance{margin-top:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;color:#52627a;font-size:11px;line-height:1.45}'
+if slider_css.strip() not in s:
+    if css_anchor not in s:
+        raise SystemExit("V8.236 slider CSS anchor not found")
+    s=s.replace(css_anchor,css_anchor+slider_css,1)
+
+slider_markup = '''          <div class="budget-rate-slider-wrap">
+            <div class="budget-rate-slider-head">
+              <span>Maximal tragbare Kreditrate</span>
+              <strong id="budgetRateSliderValue">–</strong>
+            </div>
+            <input id="budgetRateSlider" type="range" min="0" max="45" step="0.1" value="0" aria-label="Maximal tragbare Kreditrate in Prozent vom Netto-Haushaltseinkommen">
+            <div class="budget-rate-slider-note" id="budgetRateSliderNote">Nach links sinkt die Kreditrate und der Sicherheitspuffer steigt. Nach rechts umgekehrt.</div>
+            <div class="budget-rate-slider-warning" id="budgetRateSliderWarning" hidden>Mindestpuffer unterschritten. Bitte Einnahmen oder Ausgaben prüfen.</div>
+          </div>
+'''
+guidance_anchor = '          <div class="budget-rate-guidance" id="budgetRateGuidance">Eine Finanzierung sollte eine Belastungsgrenze vom Haushalts-Nettoeinkommen nicht überschreiten. Orientierung: bis 30 % komfortabel · 30–35 % solide · über 35 % erhöhte Belastung.</div>'
+if slider_markup.strip() not in s:
+    if guidance_anchor not in s:
+        raise SystemExit("V8.236 slider markup anchor not found")
+    s=s.replace(guidance_anchor,slider_markup+guidance_anchor,1)
+
+state_anchor='let budgetIncomeAutoUpdating = false;'
+toast_state_block='''let budgetRateSliderSyncing = false;
+let budgetRateBeforeRecalc=null;
+let budgetInputValueBeforeRecalc=null;
+let budgetRateNeedsInitialValue=localStorage.getItem("ff_budget_rateNeedsInitialValue")==="1";
+let budgetRateManualSelection=localStorage.getItem("ff_budget_rateManualSelection")==="1";'''
+if toast_state_block not in s:
+    if state_anchor not in s:
+        raise SystemExit("V8.236 slider state anchor not found")
+    s=s.replace(state_anchor,state_anchor+'\n'+toast_state_block,1)
+
+old_budget_model='''  const reserve=Math.max(0,budgetVal("budgetSafetyReserve"));
+  const available=Math.max(0,income-expenses-reserve);
+  const rateCap=available;
+  const monthlyRate=available;'''
+new_budget_model='''  const freeBudget=income-expenses;
+  const ratePool=Math.max(0,freeBudget);
+  const minimumReserve=Math.max(300,freeBudget*0.10);
+  const maxRateByReserve=Math.max(0,ratePool-minimumReserve);
+  const maxRateByPct=Math.max(0,net*0.45);
+  const rateCap=Math.max(0,Math.min(maxRateByReserve,maxRateByPct));
+  const maxRatePct=net>0 ? (rateCap/net)*100 : 0;
+  const defaultRate=Math.max(0,ratePool-minimumReserve);
+  const defaultRatePct=net>0 ? (defaultRate/net)*100 : 0;
+  const storedRatePctRaw=localStorage.getItem("ff_budget_rateSliderPct");
+  const hasStoredRatePct=storedRatePctRaw!==null && Number.isFinite(Number(storedRatePctRaw));
+  const requestedRatePct=hasStoredRatePct ? Number(storedRatePctRaw) : defaultRatePct;
+  const requestedMonthlyRate=net>0 ? net*(Math.max(0,requestedRatePct)/100) : 0;
+  const monthlyRate=Math.max(0,Math.min(Math.max(0,freeBudget),requestedMonthlyRate));
+  const selectedRatePct=net>0 ? (monthlyRate/net)*100 : 0;
+  const rawReserve=freeBudget-monthlyRate;
+  const reserve=Math.max(0,rawReserve);
+  // Anzeige "Frei verfügbares Monatsbudget": Einnahmen minus Ausgaben minus Mindest-Sicherheitspuffer.
+  // Die Kreditraten-/Pufferlogik oben bleibt unverändert; der Puffer wird nicht doppelt abgezogen.
+  const available=freeBudget-minimumReserve;'''
+if old_budget_model not in s:
+    raise SystemExit("V8.236 budget model anchor not found")
+s=s.replace(old_budget_model,new_budget_model,1)
+
+old_return='''    net,childBenefit,income,expenses,reserve,available,rateCap,monthlyRate,
+    additionalBuffer:Math.max(0,available-monthlyRate),'''
+new_return='''    net,childBenefit,income,expenses,reserve,rawReserve,minimumReserve,ratePool,available,rateCap,monthlyRate,
+    maxMonthlyRate:rateCap,maxRatePct,selectedRatePct,
+    additionalBuffer:reserve,'''
+if old_return not in s:
+    raise SystemExit("V8.236 budget model return anchor not found")
+s=s.replace(old_return,new_return,1)
+
+old_rate_line='  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);'
+new_rate_line='''  if($("budgetRate")) $("budgetRate").textContent=eur(m.monthlyRate);
+  if($("budgetRateSlider")){
+    const slider=$("budgetRateSlider");
+    const selectedPct=Math.max(0,m.selectedRatePct||0);
+    const safeMaxPct=Math.max(0,m.maxRatePct||0);
+    const sliderMaxPct=Math.max(safeMaxPct,selectedPct);
+    slider.max=String(sliderMaxPct);
+    slider.value=String(selectedPct);
+    const fillPct=sliderMaxPct>0 ? Math.max(0,Math.min(100,(selectedPct/sliderMaxPct)*100)) : 0;
+    const sliderColor=selectedPct>=40 ? "#dc2626" : (selectedPct>=35 ? "#eab308" : "#16a34a");
+    slider.style.setProperty("--rate-slider-color",sliderColor);
+    slider.style.setProperty("--rate-slider-fill",fillPct+"%");
+    slider.setAttribute("aria-valuetext",eur(m.monthlyRate)+" · "+new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" % vom Netto-Haushaltseinkommen");
+    if($("budgetRateSliderValue")){
+      $("budgetRateSliderValue").textContent=eur(m.monthlyRate)+" · "+new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(selectedPct)+" %";
+    }
+    if($("budgetRateSliderNote")){
+      const limitingReserve=m.rateCap<=Math.max(0,m.ratePool-m.minimumReserve)+0.01 && Math.max(0,m.ratePool-m.minimumReserve)<=Math.max(0,m.net*0.45)+0.01;
+      const limitText=limitingReserve ? "Mindest-Sicherheitspuffer" : "45 % vom Netto-Haushaltseinkommen";
+      $("budgetRateSliderNote").textContent="Aktueller Sicherheitspuffer: "+eur(m.rawReserve)+" · Mindest-Sicherheitspuffer: "+eur(m.minimumReserve);
+      if($("budgetRateSliderWarning")){
+        const currentBuffer=Number.isFinite(Number(m.rawReserve)) ? Number(m.rawReserve) : 0;
+        const minimumReserve=Math.max(300,Number(m.minimumReserve)||300);
+        const bufferDeviation=currentBuffer-minimumReserve;
+        const minimumBufferBelow=bufferDeviation<-0.005;
+        const minimumBufferReached=Math.abs(bufferDeviation)<=0.005;
+        const minimumBufferAbove=bufferDeviation>0.005;
+        $("budgetRateSliderWarning").hidden=minimumBufferAbove;
+        if(minimumBufferBelow){
+          $("budgetRateSliderWarning").textContent="Mindestpuffer unterschritten · Abweichung: "+eur(bufferDeviation)+" · Mindestpuffer: "+eur(minimumReserve)+" · Aktueller Puffer: "+eur(currentBuffer)+" · Bitte Einnahmen oder Ausgaben prüfen.";
+        }else if(minimumBufferReached){
+          $("budgetRateSliderWarning").textContent="Mindestpuffer erreicht: "+eur(minimumReserve)+". Bitte Einnahmen oder Ausgaben prüfen.";
         }else{
           $("budgetRateSliderWarning").textContent="";
         }
