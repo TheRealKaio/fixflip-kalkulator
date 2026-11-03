@@ -86,12 +86,12 @@ for p in site.rglob('*.html'):
  s=p.read_text()
  # Put the equity helper under its input after all older patches have finished
  # editing the original label markup.
- equity_hint_pattern=re.compile(
-  r'(<label\\b[^>]*>(?:(?!</label>).)*?<span id="equityInputLabel">.*?</span>)\\s*'
+  equity_hint_pattern=re.compile(
+  r'(<label\b[^>]*>(?:(?!</label>).)*?<span id="equityInputLabel">.*?</span>)\s*'
   r'(<span class="hint" id="equityInputHint">.*?</span>)'
-  r'(</label>\\s*<div class="input-wrap">.*?</div>)',re.S
+  r'(</label>\s*<div class="input-wrap">.*?</div>)',re.S
  )
-   def move_equity_hint(match):
+  def move_equity_hint(match):
    hint=re.sub(r'^<span\b','<div',match.group(2),count=1)
    hint=re.sub(r'</span>$','</div>',hint,count=1)
    return match.group(1)+match.group(3)+hint
