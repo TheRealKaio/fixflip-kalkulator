@@ -18,7 +18,7 @@ js=r"""
     // Ohne Vergleichswerte immer den aktuellen kalkulatorischen Marktwert setzen:
     // Kaufpreis + Kaufnebenkosten + Sanierung inkl. Puffer, anschließend 10 % Wertpuffer.
     const purchase=Math.max(0,val("purchase"));
-    const renoBase=Math.max(0,totalTrades());
+    const renoBase=Math.max(0,calculatedRenoBase());
     const renoWithBuffer=renoBase*(1+pct("buffer"));
     const acquisitionCosts=
       purchase*(states[stateEl.value]/100)
