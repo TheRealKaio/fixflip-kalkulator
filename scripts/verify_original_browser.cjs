@@ -39,14 +39,13 @@ const assert=require('node:assert/strict');
      const style=getComputedStyle(section),box=section.getBoundingClientRect();
      const contentRight=box.right-parseFloat(style.borderRightWidth)-parseFloat(style.paddingRight);
      return [...section.querySelectorAll('.cost-row .nic-masked-value')].map(el=>({
-      display:getComputedStyle(el).display,right:el.getBoundingClientRect().right,
-      rowRight:el.closest('.cost-row').getBoundingClientRect().right,contentRight,
-      lockClass:el.closest('[data-nic-content-key]')?.className,inlineStyle:el.getAttribute('style'),
-      matchedDisplayRules:[...document.styleSheets].flatMap(sheet=>{try{return [...sheet.cssRules].filter(rule=>rule.selectorText&&el.matches(rule.selectorText)&&rule.style?.getPropertyValue('display')).map(rule=>({selector:rule.selectorText,value:rule.style.getPropertyValue('display'),important:rule.style.getPropertyPriority('display')}));}catch{return [];}})
+      width:el.getBoundingClientRect().width,right:el.getBoundingClientRect().right,
+      rowWidth:el.closest('.cost-row').getBoundingClientRect().width,
+      rowRight:el.closest('.cost-row').getBoundingClientRect().right,contentRight
      }));
     });
     assert(masked.length>0,'Guest cost values should be masked');
-    assert(masked.every(x=>x.display==='inline-block'&&x.right<=x.rowRight+1&&x.right<=x.contentRight+1),`Masked cost values must remain aligned and inside the card: ${JSON.stringify(masked)}`);
+    assert(masked.every(x=>x.width>0&&x.width<x.rowWidth*.5&&Math.abs(x.right-x.rowRight)<=1&&x.right<=x.contentRight+1),`Masked cost values must match their text width, align to the row edge and remain inside the card: ${JSON.stringify(masked)}`);
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
    }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
