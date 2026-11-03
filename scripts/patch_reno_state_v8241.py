@@ -241,13 +241,12 @@ js=r"""
     manualTotalInput.removeAttribute("readonly");
     manualTotalInput.readOnly=false;
     manualTotalInput.addEventListener("input",function(event){
-      event.stopImmediatePropagation();
       const mode=renoMode();
       if(!mode)return;
       const amount=Math.max(0,parseLocalizedNumber(manualTotalInput.value,false));
       localStorage.setItem(stateKey(mode,"manual_total"),String(amount));
       if($("renoSheetTotal"))$("renoSheetTotal").textContent=eur(amount);
-      // Preserve the typed amount; other input listeners handle recalculation.
+      // Allow the calculator's existing input listeners to recalculate from this value.
     },true);
     manualTotalInput.addEventListener("change",function(){
       const mode=renoMode();
