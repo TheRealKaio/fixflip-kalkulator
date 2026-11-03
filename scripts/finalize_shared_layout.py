@@ -346,28 +346,22 @@ rules.append("""
 }
 @media(max-width:700px){
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields{
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-  gap:14px!important;min-width:0!important;max-width:100%!important;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px 12px!important;min-width:0!important;max-width:100%!important;
  }
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields>.finance-rate-grid,
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields>.quick-grid{
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-  gap:14px!important;grid-column:1/-1!important;min-width:0!important;
+  display:contents!important;
  }
  body:not(.nic-admin) #ownFinanceCard .finance-duration-swap-v8403{
   grid-column:1/-1!important;
  }
  body:not(.nic-admin) #ownFinanceCard .finance-acq-row{
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-  gap:12px!important;align-items:start!important;grid-column:1/-1!important;min-width:0!important;
+  display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
+  gap:10px!important;align-items:end!important;grid-column:1/-1!important;min-width:0!important;
  }
- body:not(.nic-admin) #ownFinanceCard .finance-acq-total,
- body:not(.nic-admin) #ownFinanceCard .finance-acq-option{
-  grid-column:1/-1!important;width:100%!important;max-width:100%!important;
- }
- body:not(.nic-admin) #ownFinanceCard .finance-acq-option{
-  justify-self:end!important;text-align:right!important;
- }
+ body:not(.nic-admin) #ownFinanceCard .finance-acq-total{grid-column:1!important}
+ body:not(.nic-admin) #ownFinanceCard .finance-acq-option{grid-column:2!important}
  body:not(.nic-admin) #ownFinanceCard .sale-cost-grid{
   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
   gap:14px!important;min-width:0!important;
