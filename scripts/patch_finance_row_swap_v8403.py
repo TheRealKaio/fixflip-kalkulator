@@ -67,7 +67,9 @@ quick_inner = quick_block[opening_end:closing_start]
 if quick_inner.count(acq_block) != 1:
     raise SystemExit("V8.403 acquisition row is not uniquely inside the quick-grid")
 quick_inner = quick_inner.replace(acq_block, "", 1)
-term_block = term_block.replace('<div class="field">','<div class="field finance-duration-swap-v8403">',1)
+term_block, class_count = re.subn(r'<div class="([^"]*)"',lambda m: '<div class="'+m.group(1)+' finance-duration-swap-v8403"',term_block,count=1)
+if class_count != 1:
+    raise SystemExit("V8.403 duration field wrapper class missing")
 acq_block = acq_block.replace(
     '<div class="finance-acq-row">',
     '<div class="finance-acq-row" id="finance-acq-row-swap-v8403">',
