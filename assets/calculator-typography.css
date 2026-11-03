@@ -18,7 +18,7 @@ html body:not(.nic-admin) :is(h2,h2 :where(*),.section-summary-title,
 html body:not(.nic-admin) :is(h3,h3 :where(*),.nic-reno-split-h3) {
   font-size: var(--nic-h3-font-size, 20px) !important;
 }
-html body:not(.nic-admin) :is(h4,h4 :where(*)) {
+html body:not(.nic-admin) :is(h4,h4 :where(*),.deal-type-option strong) {
   font-size: var(--nic-h4-font-size, 14px) !important;
 }
 
