@@ -17,6 +17,21 @@ script=re.search(r'<script>\s*\(function\(\)\{\'use strict\';(.*?)window.addEven
 script=script[:script.rfind('})();')]
 script=re.sub(r"document.querySelectorAll\('\.menu.*?\n",'',script,count=1)
 script=script.replace('document.getElementById(id)','root.getElementById(id)')
+# Financing consumes the existing shared reference, not its historical chart series.
+script=script.replace('interest:4.01','interest:(window.NICReferenceInterest?.rate??4.0)')
+script=script.replace('let currentRate=4.01','let currentRate=window.NICReferenceInterest?.rate??4.0')
+script=script.replace("if(latest[key]){$('interest').value=", "if(latest[key]){localStorage.setItem('nic_financing_interest_manual_v1','1');$('interest').value=")
+script+="""
+function applyReferenceRate(rate){
+ if(!Number.isFinite(rate))return;
+ currentRate=rate;
+ if(localStorage.getItem('nic_financing_interest_manual_v1')!=='1'){
+  $('interest').value=rate;calculate();
+ }
+}
+window.addEventListener('nic-reference-interest',event=>applyReferenceRate(event.detail.rate));
+applyReferenceRate(window.NICReferenceInterest?.rate??4.0);
+"""
 factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
 nav=Path('assets/unified-calculator-navigation.js').read_text().replace('/* FINANCE_MODULE */',factory)
 (site/'calculator-navigation.js').write_text(nav)
@@ -33,6 +48,14 @@ base=base.replace('!["budget","own","flip"].includes(document.documentElement.da
 print('Unified five-calculator document and financing module built')
 for page in site.rglob('*.html'):
  s=page.read_text()
+ if 'async function initializeReferenceInterest()' in s:
+  anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
+  if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))
+  s=s.replace('async function initializeReferenceInterest(){','async function initializeReferenceInterest(){\n  installFinancingManualOverrideTracking();',1)
+  # Read the manual flags after the request, including edits made while it loads.
+  for flag,key in [('mainManual','ff_interest_manual'),('budgetManual','ff_budget_interest_manual'),('rentalManual','ff_rent_interest_manual')]:
+   s=s.replace('if(!'+flag+' &&', 'if(localStorage.getItem("'+key+'")!=="1" &&')
+  s=s.replace('  initializeRepaymentDefaults();\n  installFinancingManualOverrideTracking();', '  window.NICReferenceInterest={rate:Number(value),source:localStorage.getItem("ff_reference_interest_source")};\n  window.dispatchEvent(new CustomEvent("nic-reference-interest",{detail:window.NICReferenceInterest}));\n  initializeRepaymentDefaults();\n  installFinancingManualOverrideTracking();',1)
  def variants(match):
   items=json.loads(match[2])
   if finance_header not in items:items.append(finance_header)
