@@ -39,6 +39,10 @@ style.textContent=`
 html:not(.nic-content-ready) [data-nic-content-key]{visibility:hidden!important}
 `;
 (document.head||document.documentElement).appendChild(style);
+function queryAll(selector){
+ const shadow=document.getElementById('nicFinanceModule')?.shadowRoot;
+ return [...document.querySelectorAll(selector),...(shadow?shadow.querySelectorAll(selector):[])];
+}
 let resolved=null;
 let queued=false;
 const controlStates=new Map();
@@ -56,19 +60,26 @@ function enforceProperty(element,key,value,active){
 }
 const observerOptions={childList:true,subtree:true,characterData:true,attributes:true,
  attributeFilter:['class','hidden','inert','disabled','aria-disabled','style','data-nic-content-key']};
-function watch(){observer.observe(document.documentElement,observerOptions);}
+function watch(){
+ observer.observe(document.documentElement,observerOptions);
+ const shadow=document.getElementById('nicFinanceModule')?.shadowRoot;
+ if(shadow){
+  if(!shadow.getElementById(style.id))shadow.appendChild(style.cloneNode(true));
+  observer.observe(shadow,observerOptions);
+ }
+}
 function blocked(target){
  return target?.closest?.('.nic-content-box-hidden,.nic-content-box-guest-locked');
 }
 // Capture before calculator listeners, including keyboard and synthetic clicks.
 for(const type of ['click','dblclick','keydown','beforeinput','input','change','submit','reset']){
  document.addEventListener(type,event=>{
-   if(!blocked(event.target))return;
+   if(!blocked(event.composedPath?.()[0]||event.target))return;
    event.preventDefault();event.stopImmediatePropagation();
  },true);
 }
 function syncControls(){
- document.querySelectorAll('[data-nic-content-key] input,[data-nic-content-key] select,[data-nic-content-key] textarea,[data-nic-content-key] button').forEach(control=>{
+ queryAll('[data-nic-content-key] input,[data-nic-content-key] select,[data-nic-content-key] textarea,[data-nic-content-key] button').forEach(control=>{
    if(blocked(control)){
      if(!controlStates.has(control))controlStates.set(control,control.disabled);
      control.disabled=true;
@@ -100,7 +111,7 @@ function apply(settings){
  try{
  resolved=settings;
  const loggedIn=!!window.NICAccess?.user;
- document.querySelectorAll('[data-nic-content-key]').forEach(box=>{
+ queryAll('[data-nic-content-key]').forEach(box=>{
    const rule=settings.contentSections?.[box.dataset.nicContentKey]||{};
    const hidden=rule.visible===false;
    const locked=!hidden&&!loggedIn&&rule.guestAllowed===false;

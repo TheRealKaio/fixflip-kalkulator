@@ -7,6 +7,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
+   if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:''});
    if(u.hostname!=='localhost')return route.fulfill({status:200,json:{user:null,settings:require('../assets/site-settings.json'),csrf:'test'}});
    let name=u.pathname;if(name.endsWith('/'))name+='index.html';
    const file=path.join(process.cwd(),'_site',name);
@@ -28,6 +29,15 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goForward();await page.waitForFunction(()=>document.body.classList.contains('nic-finance-active'));
   await page.reload();await page.waitForSelector('#nicFinanceModule #loan');
   assert.equal(await page.locator('.nic-tile-active').getAttribute('data-calculator'),'finance');
+  await page.evaluate(()=>{
+   const root=document.getElementById('nicFinanceModule').shadowRoot;
+   const box=root.querySelector('[data-nic-content-key]');
+   if(!box)throw Error('Finance access rules missing');
+   const settings=NICSettings.current;
+   settings.contentSections[box.dataset.nicContentKey]={visible:false,guestAllowed:false};
+   NICContentSections.apply(settings);
+   if(!box.hidden||!box.inert)throw Error('Hidden finance content must stay inaccessible');
+  });
   assert.deepEqual(errors,[]);
   console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
   await page.close();

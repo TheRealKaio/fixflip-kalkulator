@@ -4,9 +4,9 @@ import json,re,sys
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 finance=(site/'finanzierungsrechner/index.html').read_text()
 source=Path('assets/financing.html').read_text()
-body=re.search(r'<section class="card"><h2>1\. Finanzierung einstellen</h2>(.*?)</main>',source,re.S)
+body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main>',finance,re.S)
 if not body:raise SystemExit('Finance content missing')
-markup='<section class="card"><h2>1. Finanzierung einstellen</h2>'+body[1]
+markup=body[1]
 style=re.search(r'<style>(.*?)</style>',source,re.S)[1]
 style=style.replace(':root',':host').replace('body',':host')
 style+=':host{display:block;font:inherit;color:inherit}.card{margin:17px 0}.bottom{display:none}'
