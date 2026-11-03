@@ -48,6 +48,18 @@ const assert=require('node:assert/strict');
     assert(masked.every(x=>x.width>0&&x.width<x.rowWidth*.5&&Math.abs(x.right-x.rowRight)<=1&&x.right<=x.contentRight+1),`Masked cost values must match their text width, align to the row edge and remain inside the card: ${JSON.stringify(masked)}`);
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
    }
+   if(width===390&&['eigennutzung','fix-flip'].includes(slug)){
+    const originalOpen=await page.locator('#interest').evaluate(el=>{const d=el.closest('details');const open=d.open;d.open=true;return open;});
+    const fields=await page.evaluate(()=>{
+     const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
+     return {interest:rect('.field:has(#interest)'),repayment:rect('.field:has(#repayment)'),financed:rect('.field:has(#ltv)'),option:rect('.finance-acq-option'),total:rect('.finance-acq-total')};
+    });
+    assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Zins and Tilgung share the first mobile row');
+    assert(Math.abs(fields.financed.top-fields.option.top)<1,'Finanziert and Mitfinanzieren share the second mobile row');
+    assert(fields.financed.top>fields.interest.top&&fields.total.top>fields.financed.top,'Acquisition total follows the financing choices');
+    assert(Math.abs(fields.total.left-fields.interest.left)<1&&Math.abs(fields.total.right-fields.repayment.right)<1,'Acquisition total spans both mobile columns');
+    await page.locator('#interest').evaluate((el,open)=>{el.closest('details').open=open;},originalOpen);
+   }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
    assert(await page.locator('.deal-type-option').evaluateAll(els=>els.every(el=>Math.abs(el.getBoundingClientRect().height-els[0].getBoundingClientRect().height)<1)),'All five tile heights must be identical');
    assert(await page.locator('.nic-brand-bar').evaluate(bar=>[...bar.children].every(el=>{const r=el.getBoundingClientRect(),b=bar.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1})), 'Brand bar content must stay inside its width');
