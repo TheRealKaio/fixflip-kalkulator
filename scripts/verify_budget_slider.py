@@ -80,7 +80,6 @@ required_implementation = {
     "budget financing title": '<h2>Wieviel Haus kann ich mir leisten?</h2>',
     "budget financing info text": 'Aus deinem Budget, Eigenkapital und den Finanzierungsannahmen ergibt sich hier deine mögliche Finanzierung.',
     "budget financing spacing": '.budget-financing-decision{margin-bottom:14px}',
-    "old VK subtitle removed": 'VK Projektziel • editierbar' not in html,
     "VK project button": 'class="flip-sale-benchmark" data-vk-source="project"',
     "VK breakeven button": 'class="flip-sale-benchmark" data-vk-source="breakeven"',
     "VK postreno button": 'class="flip-sale-benchmark" data-vk-source="postreno"',
@@ -128,6 +127,7 @@ forbidden_implementation = {
     "toast markup removed": 'id="budgetBufferToast"',
     "toast helper removed": 'showBudgetBufferToast(',
     "toast CSS removed": '.budget-buffer-toast',
+    "old VK subtitle removed": 'VK Projektziel • editierbar',
 }
 present_forbidden = [name for name, token in forbidden_implementation.items() if token in html]
 if present_forbidden:
