@@ -98,8 +98,10 @@ for p in site.rglob('*.html'):
  s,equity_hint_moves=equity_hint_pattern.subn(move_equity_hint,s,count=1)
  if 'id="equityInputHint"' in s and equity_hint_moves!=1:
   raise SystemExit('Could not move equity helper below its input: '+str(p))
+ # Tag the heading inside the calculator HTML string so it follows the admin body-size variable.
+ s=s.replace('<h3>Weitere Finanzierung berücksichtigen</h3>','<h3 class="nic-body-font-text">Weitere Finanzierung berücksichtigen</h3>')
  # Rename visible field captions after all route and presentation transformations.
- labels={"Energieeffizienzklasse":"Effizienzkl. EEK","Lfd. Kosten pro Monat":"Lfd. mtl. Kosten","Laufende Kosten pro Monat":"Lfd. mtl. Kosten"}
+ labels={"Energieeffizienzklasse":"Effizienzkl. EEK","Lfd. Kosten pro Monat":"Lfd. mtl. Kosten","Laufende Kosten pro Monat":"Lfd. mtl. Kosten","Kaufnebenkosten gesamt":"Kaufnebenkosten"}
  parts=re.split(r'(<script\b[^>]*>.*?</script>|<style\b[^>]*>.*?</style>)',s,flags=re.S|re.I)
  for i in range(0,len(parts),2):
   for old,new in labels.items():
