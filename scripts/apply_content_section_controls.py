@@ -165,14 +165,22 @@ for page in SITE.rglob("*.html"):
    if(!green||!green.parentElement)return;
    const group=green.parentElement;
    group.style.setProperty('display','flex','important');
-   group.style.setProperty('justify-content','flex-end','important');
+   const outer=green.closest('#budgetSuggestionActions');
+   if(outer){
+     outer.style.setProperty('display','flex','important');
+     outer.style.setProperty('justify-content','center','important');
+     outer.style.setProperty('align-items','center','important');
+     outer.style.setProperty('margin-left','auto','important');
+     outer.style.setProperty('margin-right','auto','important');
+   }
+   group.style.setProperty('justify-content','center','important');
    group.style.setProperty('align-items','center','important');
    group.style.setProperty('gap','8px','important');
    group.style.setProperty('box-sizing','border-box','important');
    group.style.setProperty('width','min(100%, 520px)','important');
    group.style.setProperty('max-width','520px','important');
    group.style.setProperty('margin-left','auto','important');
-   group.style.setProperty('margin-right','0','important');
+   group.style.setProperty('margin-right','auto','important');
    green.style.setProperty('flex','1 1 auto','important');
    green.style.setProperty('width','auto','important');
    green.style.setProperty('min-width','0','important');
