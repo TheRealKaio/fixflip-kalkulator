@@ -108,5 +108,30 @@ body:not(.nic-admin) #budgetExpensesSection #budgetApplySuggestions{
  body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){max-width:100%!important}
 }
 """)
+
+# Footer utility text follows the admin subtext size, including the cookie button.
+rules.append("""
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .footer-version,
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .nic-footer-cookie-pair,
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) #nicConsentSettings,
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .nic-consent-settings{
+ font-size:var(--nic-subtext-font-size,14px)!important;line-height:1.5!important;
+ font-weight:400!important;
+}
+@media(max-width:700px){
+ body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .nic-footer-cookie-pair{
+  display:flex!important;justify-content:center!important;align-items:center!important;
+  flex:1 0 100%!important;grid-column:1 / -1!important;justify-self:center!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  margin-left:auto!important;margin-right:auto!important;text-align:center!important;
+  gap:8px!important;flex-wrap:wrap!important;white-space:normal!important;
+ }
+ body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .nic-footer-cookie-pair .footer-version,
+ body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .nic-footer-cookie-pair #nicConsentSettings{
+  text-align:center!important;margin:0!important;
+ }
+}
+""")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
