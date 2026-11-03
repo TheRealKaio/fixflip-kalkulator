@@ -406,7 +406,7 @@ rules.append("""
  }
  body:not(.nic-admin) #rentFinanceCard .finance-acq-row{
   display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
-  gap:10px!important;align-items:end!important;grid-column:1/-1!important;min-width:0!important;
+  gap:10px!important;align-items:start!important;grid-column:1/-1!important;min-width:0!important;
  }
  body:not(.nic-admin) #rentFinanceCard .finance-acq-total{grid-column:1!important}
  body:not(.nic-admin) #rentFinanceCard .finance-acq-option{grid-column:2!important}
@@ -438,7 +438,7 @@ rules.append("""
  }
  body:not(.nic-admin) #rentFinanceCard .finance-acq-row{
   display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
-  gap:10px!important;align-items:end!important;grid-column:1/-1!important;min-width:0!important;
+  gap:10px!important;align-items:start!important;grid-column:1/-1!important;min-width:0!important;
  }
  body:not(.nic-admin) #rentFinanceCard .finance-acq-total{grid-column:1!important}
  body:not(.nic-admin) #rentFinanceCard .finance-acq-option{grid-column:2!important}
