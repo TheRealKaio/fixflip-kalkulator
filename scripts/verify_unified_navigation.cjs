@@ -23,7 +23,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
    assert.equal(await page.evaluate(()=>performance.timeOrigin),origin,'calculator changes must keep same document');
    assert.equal(await page.locator('.nic-tile-active').count(),1);
-   if(key==='finance')assert(await page.locator('#nicFinanceModule #loan').isVisible());
+   if(key==='finance'){assert(await page.locator('#nicFinanceModule #loan').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
   }
   await page.goBack();await page.waitForFunction(()=>!document.body.classList.contains('nic-finance-active'));
   await page.goForward();await page.waitForFunction(()=>document.body.classList.contains('nic-finance-active'));

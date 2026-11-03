@@ -16,6 +16,11 @@ function select(key,push=false){
  const host=document.getElementById('nicFinanceModule');if(host)host.hidden=key!=='finance';
  bypass=true;
  try{window.dispatchEvent(new CustomEvent('nic-select-calculator',{detail:key}));}finally{bypass=false;}
+ if(key==='finance'){
+  document.getElementById('heroTitle').innerHTML=financeHeader[0];
+  document.getElementById('heroText').textContent=financeHeader[1];
+ }
+ window.NICHeader?.refresh();
  active=key;
  const path=Object.keys(routes).find(p=>routes[p]===key);
  if(push){history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',path+location.search);}
