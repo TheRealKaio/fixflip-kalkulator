@@ -52,7 +52,7 @@ inline='''        <div class="reno-inline-panel" id="renoBackdrop">
               Pauschal- und Stückpositionen starten bei 0 €. Jeden Betrag kannst du überschreiben.
             </div>
             <div id="tradeList" class="trade-list"></div>
-            <div class="field reno-buffer-field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="buffer" inputmode="decimal" value="15"><span class="unit">%</span></div><div class="mini">Renovierungsaufschlag für unerwartetes</div></div>
+            <div class="trade-row trade-row-fixed reno-buffer-row"><div class="trade-top"><div class="trade-copy"><label class="trade-name" for="buffer">Sanierungs-Puffer</label><div class="trade-basis">Renovierungsaufschlag für Unerwartetes</div></div><div class="trade-inputs-inline"><div class="input-wrap trade-money-input"><input id="buffer" inputmode="decimal" value="15" aria-label="Sanierungs-Puffer in Prozent"><span class="unit">%</span></div></div></div></div>
             <div class="reno-actions">
               <button class="reset-btn" id="resetTrades" type="button">Standard zurücksetzen</button>
               <button class="save-reno-btn" id="saveTrades" type="button">Übernehmen</button>
@@ -72,7 +72,7 @@ replace_once(
 
 if s.count('id="buffer"') != 1:
     raise SystemExit("V8.282 Sanierungs-Puffer input duplicated or missing")
-if "class=\"field reno-buffer-field\"" not in s or "Renovierungsaufschlag für unerwartetes" not in s:
+if 'class="trade-row trade-row-fixed reno-buffer-row"' not in s or "Renovierungsaufschlag für Unerwartetes" not in s:
     raise SystemExit("V8.282 Sanierungs-Puffer field or helper text missing")
 
 # Accessibility: toggle communicates its expanded state.
