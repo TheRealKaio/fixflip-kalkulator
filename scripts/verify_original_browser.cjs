@@ -40,7 +40,9 @@ const assert=require('node:assert/strict');
      const contentRight=box.right-parseFloat(style.borderRightWidth)-parseFloat(style.paddingRight);
      return [...section.querySelectorAll('.cost-row .nic-masked-value')].map(el=>({
       display:getComputedStyle(el).display,right:el.getBoundingClientRect().right,
-      rowRight:el.closest('.cost-row').getBoundingClientRect().right,contentRight
+      rowRight:el.closest('.cost-row').getBoundingClientRect().right,contentRight,
+      lockClass:el.closest('[data-nic-content-key]')?.className,inlineStyle:el.getAttribute('style'),
+      matchedDisplayRules:[...document.styleSheets].flatMap(sheet=>{try{return [...sheet.cssRules].filter(rule=>rule.selectorText&&el.matches(rule.selectorText)&&rule.style?.getPropertyValue('display')).map(rule=>({selector:rule.selectorText,value:rule.style.getPropertyValue('display'),important:rule.style.getPropertyPriority('display')}));}catch{return [];}})
      }));
     });
     assert(masked.length>0,'Guest cost values should be masked');
