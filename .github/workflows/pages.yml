@@ -795,6 +795,7 @@ jobs:
           print("Rental calculator SEO/GEO text updated:", changes, "occurrence(s)")
           PY
           python scripts/centralize_expand_controls.py _site
+          python scripts/centralize_calculator_actions.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
