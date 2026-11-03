@@ -103,6 +103,15 @@ for page in SITE.rglob("*.html"):
             continue
         # Boxes hidden for another calculator are already excluded above.
         title_slug = slug(card["heading"])
+        # Keep the original identity when the public heading is renamed.
+        aliases = {
+            "wieviel-haus-kann-ich-mir-leisten": "deine-mogliche-finanzierung",
+            "3-was-kostet-eine-immobilie": "3-annahme-zur-moglichen-finanzierung",
+            "3-finanzierung-und-nebenkosten": "3-annahme-zur-moglichen-finanzierung",
+            "monatliche-tilgung-und-restschuld": "monatliche-belastung-und-restschuld",
+        }
+        if route == "budget":
+            title_slug = aliases.get(title_slug, title_slug)
         used[title_slug] = used.get(title_slug, 0) + 1
         suffix = "" if used[title_slug] == 1 else f"-{used[title_slug]}"
         key = f"{route}.{title_slug}{suffix}"
@@ -206,6 +215,7 @@ for page in SITE.rglob("*.html"):
   function unlock(){
     var field=document.getElementById('reno');
     if(!field)return;
+    if(field.closest('.nic-content-box-hidden,.nic-content-box-guest-locked'))return field;
     field.readOnly=false;
     field.disabled=false;
     field.removeAttribute('readonly');

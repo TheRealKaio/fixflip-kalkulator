@@ -662,6 +662,7 @@ jobs:
           node --check _site/site-integration.js
           node --check _site/admin.js
           node scripts/verify_site_settings.js _site
+          node scripts/verify_settings_startup.cjs
           node scripts/verify_embedded_admin.js
           node --check _site/stable-header.js
           node --check _site/legal-views.js

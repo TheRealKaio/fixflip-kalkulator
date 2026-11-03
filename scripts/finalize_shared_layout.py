@@ -65,6 +65,12 @@ for p in site.rglob('*.html'):
    parts[i]=re.sub(r'(?<=>)(\s*)'+re.escape(old)+r'(\s*)(?=<)',lambda m:m[1]+new+m[2],parts[i])
    parts[i]=parts[i].replace('aria-label="'+old+'"','aria-label="'+new+'"')
  s=''.join(parts)
+ # Group the existing finance fields without replacing inputs or their handlers.
+ rate_start=s.find('<div class="finance-rate-grid">')
+ if rate_start>=0 and 'class="nic-finance-mobile-fields"' not in s:
+  rate_end=s.find('<div class="sale-cost-grid">',rate_start)
+  if rate_end<0:raise SystemExit('Finance mobile grouping anchor missing: '+str(p))
+  s=s[:rate_start]+'<div class="nic-finance-mobile-fields">'+s[rate_start:rate_end]+'</div>'+s[rate_end:]
  s=re.sub(r'<link[^>]*href="/calculator-shell.css[^"]*"[^>]*>','',s)
  s=re.sub(r'(<style\b[^>]*>)(.*?)(</style>)',lambda m:m[1]+split(m[2],pattern)[0]+m[3],s,flags=re.S|re.I)
  if 'class="bottom-actions"' in s:
@@ -182,6 +188,25 @@ body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) :is(.trade-basis,.trade-a
 body:not(.nic-admin) #renoBackdrop :is(#renoSuggestionTotal,.reno-suggestion-total,.nic-reno-proposal-total),
 body:not(.nic-admin) #rentRenoPanel #rentRenoSheetTotal.nic-rental-proposal-total{
  font-size:var(--nic-hint-font-size,12px)!important;line-height:1.5!important;
+}
+""")
+
+# Mobile: rates, financing choices, then the full-width acquisition total.
+rules.append("""
+@media(max-width:700px){
+ body:not(.nic-admin) .nic-finance-mobile-fields{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px 12px!important;min-width:0!important;max-width:100%!important;
+ }
+ body:not(.nic-admin) .nic-finance-mobile-fields>.finance-rate-grid,
+ body:not(.nic-admin) .nic-finance-mobile-fields>.quick-grid,
+ body:not(.nic-admin) .nic-finance-mobile-fields>.quick-grid>.finance-acq-row{display:contents!important}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field{grid-column:auto!important;min-width:0!important;order:6}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(#interest){order:1}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(#repayment){order:2}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(#ltv){order:3}
+ body:not(.nic-admin) .nic-finance-mobile-fields .finance-acq-option{order:4}
+ body:not(.nic-admin) .nic-finance-mobile-fields .finance-acq-total{order:5;grid-column:1 / -1!important}
 }
 """)
 

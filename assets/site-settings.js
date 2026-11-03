@@ -49,6 +49,7 @@
   const fonts={system:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif',trebuchet:'"Trebuchet MS",Arial,sans-serif'};
   const layoutDefaults={font:'system',bodySize:16,subtextSize:14,hintSize:12,h1:30,h2:18,h3:22,h4:16,cornerRadius:22,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',highlightBackground:'#FDE68A',highlightGoodBackground:'#F0FDF4',highlightWarningBackground:'#FECACA',outerBackground:'#F6F1E9'};
   let published=null,current=null;
+  let settingsReady=false,initPending=null,settingsEpoch=0;
   const text=(v,max=2000)=>typeof v==='string'?v.trim().slice(0,max):'';
   function httpUrl(v){try{const u=new URL(text(v));return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(_){return '';}}
   function websiteUrl(v){const value=text(v);return httpUrl(/^[a-z0-9.-]+\.[a-z]{2,}(?:[/?#]|$)/i.test(value)?'https://'+value:value);}
@@ -75,6 +76,18 @@
     s.access={};for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare','budgetInsightsLoginRequired']){const value=raw.access?.[key];if(value!==undefined&&typeof value!=='boolean')throw new Error('Ungültige Zugangsregel: '+key);s.access[key]=value??!['registrationBlocked','loginBlocked','budgetInsightsLoginRequired'].includes(key);}
     s.contentSections={};const sectionSettings=raw.contentSections??{};if(!sectionSettings||typeof sectionSettings!=='object'||Array.isArray(sectionSettings)||Object.keys(sectionSettings).length>200)throw new Error('Ungültige Box-Einstellungen.');
     for(const [key,value] of Object.entries(sectionSettings)){if(!/^[a-z0-9][a-z0-9._-]{0,120}$/.test(key)||!value||typeof value!=='object'||Array.isArray(value))throw new Error('Ungültige Box-Einstellung: '+key);for(const field of ['visible','guestAllowed'])if(value[field]!==undefined&&typeof value[field]!=='boolean')throw new Error('Ungültige Box-Einstellung: '+key);s.contentSections[key]={visible:value.visible??true,guestAllowed:value.guestAllowed??true};}
+    // Preserve rules saved before visible heading changes; canonical keys stay permanent.
+    const sectionAliases={
+      'budget.deine-mogliche-finanzierung':['budget.wieviel-haus-kann-ich-mir-leisten'],
+      'budget.3-annahme-zur-moglichen-finanzierung':['budget.3-was-kostet-eine-immobilie','budget.3-finanzierung-und-nebenkosten'],
+      'budget.monatliche-belastung-und-restschuld':['budget.monatliche-tilgung-und-restschuld']
+    };
+    for(const [canonical,aliases] of Object.entries(sectionAliases)){
+      if(!s.contentSections[canonical]){
+        const previous=aliases.slice().reverse().find(key=>s.contentSections[key]);
+        if(previous)s.contentSections[canonical]={...s.contentSections[previous]};
+      }
+    }
     if(raw.access?.budgetInsightsLoginRequired===true)for(const [key,field] of [['wo-geht-das-geld-hin','guestAllowed'],['szenario-was-ware-wenn','guestAllowed']]){const match=Object.keys(s.contentSections).find(k=>k.includes(key));if(match)s.contentSections[match][field]=false;}
     return s;
   }
@@ -209,18 +222,29 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong
     });
   }
   function readLocal(){try{const raw=localStorage.getItem(KEY);return raw?normalize(JSON.parse(raw)):null;}catch(_){return null;}}
-  async function init(){
-    const response=await fetch(new URL('site-settings.json',ROOT),{cache:'no-store'});
-    if(!response.ok)throw new Error('Veröffentlichte Einstellungen konnten nicht geladen werden.');
-    published=normalize(await response.json());if(window.NICAccess){const cloud=await window.NICAccess.loadSettings();if(cloud){published=normalize(cloud);current=published;return current;}}current=readLocal()||published;return current;
+  function init(){
+    if(initPending)return initPending;
+    const epoch=settingsEpoch;
+    initPending=(async()=>{
+      const response=await fetch(new URL('site-settings.json',ROOT),{cache:'no-store'});
+      if(!response.ok)throw new Error('Veröffentlichte Einstellungen konnten nicht geladen werden.');
+      const bundled=normalize(await response.json());
+      const cloud=window.NICAccess?await window.NICAccess.loadSettings():null;
+      if(epoch!==settingsEpoch)return current;
+      published=cloud?normalize(cloud):bundled;
+      current=cloud?published:(readLocal()||published);
+      settingsReady=true;
+      return current;
+    })().finally(()=>{initPending=null;});
+    return initPending;
   }
-  function save(s){const safe=normalize(s);localStorage.setItem(KEY,JSON.stringify(safe));current=safe;return safe;}
-  async function saveGlobal(s){const safe=normalize(s);if(!window.NICAccess?.enabled)return save(safe);const result=normalize(await window.NICAccess.saveSettings(safe));localStorage.removeItem(KEY);published=current=result;return result;}
-  function discard(){localStorage.removeItem(KEY);current=published;return published;}
+  function save(s){const safe=normalize(s);localStorage.setItem(KEY,JSON.stringify(safe));settingsEpoch++;settingsReady=true;current=safe;return safe;}
+  async function saveGlobal(s){const safe=normalize(s);if(!window.NICAccess?.enabled)return save(safe);const result=normalize(await window.NICAccess.saveSettings(safe));localStorage.removeItem(KEY);settingsEpoch++;settingsReady=true;published=current=result;return result;}
+  function discard(){localStorage.removeItem(KEY);settingsEpoch++;current=published;return published;}
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,syncCalculatorMenu,get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}

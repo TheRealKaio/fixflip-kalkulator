@@ -95,7 +95,7 @@ function maskValues(box,locked){
  });
 }
 function apply(settings){
- if(!settings||!document.body)return;
+ if(!settings||!document.body||window.NICSettings?.ready===false)return;
  observer.disconnect();
  try{
  resolved=settings;
@@ -142,11 +142,26 @@ const observer=new MutationObserver(records=>{
 });
 watch();
 window.addEventListener('pageshow',()=>{if(resolved)apply(resolved);});
-const settingsApi=window.NICSettings;
-if(settingsApi?.init){
- settingsApi.init().then(settings=>{
+function loadRules(){
+ const settingsApi=window.NICSettings;
+ if(!settingsApi?.init)return;
+ return settingsApi.init().then(settings=>{
    settingsApi.apply(settings);
    apply(settings);
- }).catch(error=>console.warn('Zentrale Box-Einstellungen:',error.message));
+   document.getElementById('nic-content-settings-error')?.remove();
+ }).catch(error=>{
+   console.warn('Zentrale Box-Einstellungen:',error.message);
+   // Keep the prepaint gate closed until the authoritative rules are available.
+   if(resolved||document.getElementById('nic-content-settings-error')||!document.body)return;
+   const notice=document.createElement('div');
+   notice.id='nic-content-settings-error';notice.setAttribute('role','status');
+   notice.textContent='Die Anzeigeeinstellungen konnten nicht geladen werden. ';
+   const retry=document.createElement('button');retry.type='button';retry.textContent='Erneut laden';
+   retry.addEventListener('click',()=>{retry.disabled=true;Promise.resolve(loadRules()).finally(()=>{retry.disabled=false;});});
+   notice.appendChild(retry);
+   (document.querySelector('main,.section')||document.body).prepend(notice);
+ });
 }
+window.addEventListener('online',()=>loadRules());
+loadRules();
 })();

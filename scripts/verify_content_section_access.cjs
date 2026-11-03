@@ -12,6 +12,10 @@ const {chromium}=require('playwright');
  await page.evaluate(()=>{window.NICAccess={user:null};window.actions=0;document.querySelector('button').addEventListener('click',()=>window.actions++);});
  await page.addScriptTag({path:'assets/content-section-access.js'});
  const apply=async rule=>page.evaluate(rule=>{window.NICSettings={current:{contentSections:Object.fromEntries(['budget','own','rent','flip','finance'].map(key=>[key+'.test',rule]))}};window.NICContentSections.apply(window.NICSettings.current);},rule);
+ // A provisional bootstrap must never open the first-paint gate.
+ await page.evaluate(()=>{window.NICSettings={ready:false};window.NICContentSections.apply({contentSections:{}});});
+ assert.equal(await page.locator('section').first().evaluate(el=>getComputedStyle(el).visibility),'hidden');
+ assert.equal(await page.locator('html').evaluate(el=>el.classList.contains('nic-content-ready')),false);
  await apply({visible:false,guestAllowed:true});
  assert.equal(await page.locator('section').evaluateAll(els=>els.every(el=>el.hidden&&el.inert&&getComputedStyle(el).display==='none')),true);
  await page.evaluate(()=>document.querySelectorAll('section').forEach(el=>{el.hidden=false;el.inert=false;el.className='';el.querySelector('button').disabled=false;}));
