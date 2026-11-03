@@ -413,7 +413,6 @@ jobs:
           python scripts/patch_suggestion_totals_v8240.py
           python scripts/patch_reno_state_v8241.py
           python scripts/patch_budget_reno_v8242.py
-          python scripts/patch_buffer_hint.py
           python scripts/patch_market_value_v8243.py
           python scripts/patch_market_value_hint_v8244.py
           python scripts/patch_own_sections_v8245.py

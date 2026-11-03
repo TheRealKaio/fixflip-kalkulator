@@ -52,6 +52,7 @@ inline='''        <div class="reno-inline-panel" id="renoBackdrop">
               Pauschal- und Stückpositionen starten bei 0 €. Jeden Betrag kannst du überschreiben.
             </div>
             <div id="tradeList" class="trade-list"></div>
+            <div class="field reno-buffer-field"><label>Sanierungs-Puffer</label><div class="input-wrap"><input id="buffer" inputmode="decimal" value="15"><span class="unit">%</span></div><div class="mini">Renovierungsaufschlag für unerwartetes</div></div>
             <div class="reno-actions">
               <button class="reset-btn" id="resetTrades" type="button">Standard zurücksetzen</button>
               <button class="save-reno-btn" id="saveTrades" type="button">Übernehmen</button>
@@ -68,6 +69,11 @@ replace_once(
 '''+inline+'''      </div>''',
     "insert inline renovation panel"
 )
+
+if s.count('id="buffer"') != 1:
+    raise SystemExit("V8.282 Sanierungs-Puffer input duplicated or missing")
+if "class=\"field reno-buffer-field\"" not in s or "Renovierungsaufschlag für unerwartetes" not in s:
+    raise SystemExit("V8.282 Sanierungs-Puffer field or helper text missing")
 
 # Accessibility: toggle communicates its expanded state.
 replace_once(
