@@ -126,7 +126,7 @@ body:not(.nic-admin) :is(p,li,td,th,label,button,input,select,textarea,.mini,.hi
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer),body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) *{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) :is(p,li,.footer-note,.nic-legal-card){overflow-wrap:anywhere}
 body:not(.nic-admin) .footer-note{height:auto!important;min-height:0!important}
-body:not(.nic-admin) h1{font-size:${l.h1}px!important}body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3,body:not(.nic-admin) .nic-reno-split-h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}
+body:not(.nic-admin) h2{font-size:${l.h2}px!important}body:not(.nic-admin) h3,body:not(.nic-admin) .nic-reno-split-h3{font-size:${l.h3}px!important}body:not(.nic-admin) h4{font-size:${l.h4}px!important}
 body:not(.nic-admin) :is(.card,.form-card,.budget-summary,.scenario-card){border-radius:${l.cornerRadius}px!important}
 body:not(.nic-admin) .nic-brand-bar{border-radius:0!important}
 body:not(.nic-admin) .app>.hero{border-radius:0 0 var(--nic-brand-radius,22px) var(--nic-brand-radius,22px)!important}
