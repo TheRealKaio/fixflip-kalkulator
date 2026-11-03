@@ -19,6 +19,25 @@ const assert=require('node:assert/strict');
    const errors=[];const listener=e=>errors.push(e.message);page.on('pageerror',listener);
    const response=await page.goto('http://127.0.0.1:8766/'+slug+'/',{waitUntil:'domcontentloaded'});
    assert.equal(response.status(),200);await page.waitForTimeout(800);
+   // Verify the final CSS cascade, including any JavaScript-applied styling.
+   const actionStyle=await page.locator('.bottom-actions').evaluate(bar=>{
+    const inspect=selector=>{const el=bar.querySelector(selector);if(!el)return null;
+     const c=getComputedStyle(el),r=el.getBoundingClientRect();
+     return {height:r.height,width:r.width,bg:c.backgroundColor,radius:c.borderTopLeftRadius,display:c.display};
+    };
+    return {barWidth:bar.getBoundingClientRect().width,primary:inspect('.bottom-primary'),
+      pdf:inspect('.bottom-pdf'),download:inspect('.bottom-save')};
+   });
+   assert(actionStyle.primary&&actionStyle.pdf&&actionStyle.download,'All footer controls present');
+   for(const key of ['primary','pdf','download']){
+    assert.equal(actionStyle[key].height,44,'Unified footer button height: '+key);
+    assert.equal(actionStyle[key].radius,'9px','Unified footer button radius: '+key);
+    assert.equal(actionStyle[key].display,'inline-flex','Unified footer button alignment: '+key);
+   }
+   assert.equal(actionStyle.primary.bg,'rgb(175, 35, 28)','Primary restart control retains red');
+   assert.equal(actionStyle.pdf.bg,'rgb(17, 26, 46)','PDF share retains navy');
+   assert.equal(actionStyle.download.bg,'rgb(17, 26, 46)','PDF download retains navy');
+   assert(actionStyle.primary.width>0&&actionStyle.pdf.width>0&&actionStyle.download.width>0);
    // The shared stylesheet must win over legacy CSS and JS-applied visuals.
    const expandControls=await page.evaluate(()=>{
     const selectors=['.plus-btn','.market-check-toggle','.own-finance-card details.advanced>summary','.flip-section-card details.advanced>summary'];
