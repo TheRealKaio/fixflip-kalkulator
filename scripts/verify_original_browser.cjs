@@ -19,6 +19,24 @@ const assert=require('node:assert/strict');
    const errors=[];const listener=e=>errors.push(e.message);page.on('pageerror',listener);
    const response=await page.goto('http://127.0.0.1:8766/'+slug+'/',{waitUntil:'domcontentloaded'});
    assert.equal(response.status(),200);await page.waitForTimeout(800);
+   if(['eigennutzung','vermietung','fix-flip'].includes(slug)){
+    const id=slug==='vermietung'?'rentFinanceAcquisition':'financeAcquisition';
+    const box=page.locator('#'+id);
+    const summary=page.locator('details').filter({has:box}).locator(':scope > summary');
+    const wasOpen=await box.evaluate(el=>el.closest('details')?.open);
+    const rentalClosed=slug==='vermietung'&&await page.locator('#rentFinanceToggle').getAttribute('aria-expanded')==='false';
+    if(rentalClosed)await page.locator('#rentFinanceToggle').click();
+    if(wasOpen===false)await summary.click();
+    for(const viewport of [{width,height:900},{width:320,height:740},{width:844,height:390}]){
+     await page.setViewportSize(viewport);
+     const size=await box.evaluate(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return {width:r.width,height:r.height,padding:s.padding};});
+     assert(Math.abs(size.width-22.5)<.1&&Math.abs(size.height-22.5)<.1,'Finance checkbox stays 22.5px on '+slug+': '+JSON.stringify({viewport,size}));
+     assert.equal(size.padding,'0px','Finance checkbox excludes text-input padding');
+    }
+    await page.setViewportSize({width,height:900});
+    if(wasOpen===false)await summary.click();
+    if(rentalClosed)await page.locator('#rentFinanceToggle').click();
+   }
    assert.equal(await page.locator('.nic-step-nav').count(),0,'Redesign step navigation must be absent');
    await page.waitForFunction(()=>document.querySelector('.brand-logo')?.complete&&document.querySelector('.brand-logo')?.naturalWidth>0);
    assert(await page.locator('.brand-logo').evaluate(el=>el.tagName==='IMG'&&el.complete&&el.naturalWidth>0));

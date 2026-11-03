@@ -44,7 +44,7 @@ for slug in ['', 'budget','eigennutzung','vermietung','fix-flip','finanzierungsr
   shared=shared.replace('value="'+mode+'"','value="'+mode+'" checked',1)
  p.write_text(source[:a]+shared+source[b:])
 
-pattern=re.compile(r'\.(?:hero(?:-top)?|brand-logo(?:-wrap)?|deal-type-(?:row|option|card|title)|nic-menu-icon|footer-(?:note|meta|version|legal-links)|nic-footer-cookie-pair|bottom(?:-actions|-primary|-pdf|-save|-share)?|save-arrow)(?![\w-])|#(?:recalc|nicFinancingTab)(?![\w-])')
+pattern=re.compile(r'\.(?:hero(?:-top)?|brand-logo(?:-wrap)?|deal-type-(?:row|option|card|title)|nic-menu-icon|footer-(?:note|meta|version|legal-links)|nic-footer-cookie-pair|finance-check-box|bottom(?:-actions|-primary|-pdf|-save|-share)?|save-arrow)(?![\w-])|#(?:recalc|nicFinancingTab)(?![\w-])')
 # Follow the actual cascade once. Shared selectors are removed from their sources.
 rules=[]
 html=root.read_text()
@@ -53,6 +53,12 @@ for m in re.finditer(r'<style\b[^>]*>(.*?)</style>|<link\b[^>]*rel="stylesheet"[
  elif (p:=site/Path(urlsplit(m[2]).path).name).is_file():rules.extend(split(p.read_text(),pattern)[1])
 # Exact duplicates provide no further cascade behavior.
 rules=list(dict.fromkeys(rules))
+# Keep one shared checkbox rule. Override the generic input min-height and padding,
+# which otherwise expand the intended 22.5px control to a 50px input on every device.
+checkbox_rule='.finance-check-box input[type="checkbox"]'
+checkbox_matches=sum(rule.count(checkbox_rule+'{') for rule in rules)
+if checkbox_matches!=1:raise SystemExit('Expected one shared finance checkbox size rule')
+rules=[rule.replace(checkbox_rule+'{',checkbox_rule+'{min-width:22.5px;max-width:22.5px;min-height:22.5px;max-height:22.5px;padding:0;box-sizing:border-box;') for rule in rules]
 for p in site.glob('*.css'):
  p.write_text(split(p.read_text(),pattern)[0])
 for p in site.rglob('*.html'):
