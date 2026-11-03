@@ -595,5 +595,29 @@ if not any("@media (min-width:701px) and (max-width:1000px)" in rule and
            for rule in rules):
  raise SystemExit("Tablet acquisition-cost width rule is missing")
 
+
+# Desktop acquisition costs use the same half-row width as Notar + Grundbuch.
+rules.append("""
+@media (min-width:1001px){
+ body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard,#flipFinanceCard) .finance-acq-row{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;align-items:start!important;grid-column:1/-1!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard,#flipFinanceCard) .finance-acq-total{
+  grid-column:1!important;
+ }
+ body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard,#flipFinanceCard) .finance-acq-option{
+  grid-column:2!important;
+ }
+}
+""")
+if not any("@media (min-width:1001px)" in rule and
+           ":is(#ownFinanceCard,#rentFinanceCard,#flipFinanceCard) .finance-acq-row" in rule and
+           "grid-template-columns:repeat(2,minmax(0,1fr))!important" in rule
+           for rule in rules):
+ raise SystemExit("Desktop acquisition-cost width rule is missing")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
