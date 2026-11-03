@@ -67,7 +67,12 @@ quick_inner = quick_block[opening_end:closing_start]
 if quick_inner.count(acq_block) != 1:
     raise SystemExit("V8.403 acquisition row is not uniquely inside the quick-grid")
 quick_inner = quick_inner.replace(acq_block, "", 1)
-term_block, class_count = re.subn(r'<div class="([^"]*)"',lambda m: '<div class="'+m.group(1)+' finance-duration-swap-v8403"',term_block,count=1)
+term_block, class_count = re.subn(
+    r'<div class="([^"]*)"',
+    lambda m: '<div class="'+m.group(1)+' finance-duration-swap-v8403" style="grid-column:1 / -1!important"',
+    term_block,
+    count=1,
+)
 if class_count != 1:
     raise SystemExit("V8.403 duration field wrapper class missing")
 acq_block = acq_block.replace(
@@ -95,7 +100,16 @@ if s.count('id="financeAcquisition"') != 1:
     raise SystemExit("V8.403 verification failed: Mitfinanzieren control missing or duplicated")
 
 css = '''<style id="finance-row-order-v8403">
-.finance-duration-swap-v8403{grid-column:1/-1!important}
+#finance-acq-row-swap-v8403{
+  display:grid!important;
+  grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:end!important;
+  width:100%!important;
+  grid-column:1/-1!important;
+}
+#finance-acq-row-swap-v8403>.finance-acq-total{grid-column:1!important}
+#finance-acq-row-swap-v8403>.finance-acq-option{grid-column:2!important}
 </style>'''
 if "</head>" not in s:
     raise SystemExit("V8.403 style insertion anchor missing")
