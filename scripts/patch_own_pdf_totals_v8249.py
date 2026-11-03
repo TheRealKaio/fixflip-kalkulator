@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 path=Path("_site/index.html")
 s=path.read_text(encoding="utf-8")
@@ -83,27 +84,22 @@ if old_sale_lines not in s:
     raise SystemExit("V8.249 sale-cost PDF rows anchor missing")
 s=s.replace(old_sale_lines,new_sale_lines,1)
 
-old_cost_rows='''  const costRows = [
-    ["Kaufpreis", m.p],
-    ["Kaufnebenkosten", purchaseAncillary],
-    ["Modernisierung", m.reno],
-    ["Zinskosten", interestCosts],
-    ["Tilgung", repaymentCosts],
-    ["Laufende Kosten", m.holding],
-    ["Verkaufskosten", sellingCosts]
-  ];'''
-new_cost_rows='''  const costRows = [
-    ["Kaufpreis", m.p],
-    ["Kaufnebenkosten", purchaseAncillary],
-    ["Modernisierung", m.reno],
-    ["Zinskosten", interestCosts],
-    ["Tilgung", repaymentCosts],
-    ["Laufende Kosten", m.holding]
-  ];
-  if(!isOwnUse) costRows.push(["Verkaufskosten", sellingCosts]);'''
-if old_cost_rows not in s:
-    raise SystemExit("V8.249 sale-cost chart anchor missing")
-s=s.replace(old_cost_rows,new_cost_rows,1)
+# The visible source label can include an explanatory suffix. Preserve that label
+# for Fix & Flip and remove the row from Eigennutzung reports.
+cost_rows_match=re.search(r"  const costRows = \\[([\\s\\S]*?)\\n  \\];",s)
+if not cost_rows_match:
+    raise SystemExit("V8.249 costRows array anchor missing")
+sale_row_pattern=re.compile(r'(?m)^([ \\t]*)\\["(Verkaufskosten(?: \\(nur bei Verkauf\\))?)",\\s*sellingCosts\\](,?)\\s*$')
+sale_rows=list(sale_row_pattern.finditer(cost_rows_match.group(1)))
+if len(sale_rows)!=1:
+    raise SystemExit("V8.249 expected one sale-cost chart row, found "+str(len(sale_rows)))
+sale_label=sale_rows[0].group(2)
+clean_rows=sale_row_pattern.sub("",cost_rows_match.group(1),count=1)
+new_cost_rows=(
+  "  const costRows = ["+clean_rows+"\\n  ];"
+  + '\\n  if(!isOwnUse) costRows.push(["'+sale_label+'", sellingCosts]);'
+)
+s=s[:cost_rows_match.start()]+new_cost_rows+s[cost_rows_match.end():]
 
 s=s.replace("V8.248","V8.249")
 s=s.replace("service-worker.js?v=8.248","service-worker.js?v=8.249")
@@ -121,7 +117,8 @@ required=[
     'const repaymentCosts = isOwnUse ? pdfRepaymentCostsTotal : m.repayment;',
     'if(!isOwnUse){\\n    page2Line("Makler Verkauf", pdfMoney(m.sellBroker));',
     'page2Line("Weitere Kosten bei Verkauf", pdfMoney(m.fixedOther));',
-    'if(!isOwnUse) costRows.push(["Verkaufskosten", sellingCosts]);',
+    'if(!isOwnUse) costRows.push(["',
+    'sellingCosts]);',
     'V8.249',
     'service-worker.js?v=8.249'
 ]
