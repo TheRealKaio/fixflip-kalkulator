@@ -8,7 +8,7 @@ if html.count(header)!=1:
     raise SystemExit("Expected one budget financing header")
 html=html.replace(header,header+'\n          <div class="light" aria-hidden="true">💶</div>',1)
 replacements={
- '<h2>3. Annahme zur möglichen Finanzierung</h2>':'<h2>3. Was kostet eine Immobilie?</h2>',
+ '<h2>3. Annahme zur möglichen Finanzierung</h2>':'<h2>3. Finanzierung und Nebenkosten</h2>',
  '<h2>Monatliche Belastung & Restschuld</h2>':'<h2>Monatliche Tilgung- und Restschuld</h2>',
  '<h2>Deine mögliche Finanzierung</h2>':'<h2>Wieviel Haus kann ich mir leisten?</h2>',
 }
