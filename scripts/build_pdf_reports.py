@@ -43,15 +43,39 @@ shutil.copyfile('assets/pdf-reports.js',site/'pdf-reports.js')
 # Apply PDF viewer changes to generated output only. The archived original is immutable.
 pdf_asset=site/'pdf-reports.js'
 pdf_js=pdf_asset.read_text(encoding='utf-8')
-viewer="""function openReport(doc,name){
+viewer="""// One PDF viewing path for Budget, Eigennutzung, Vermietung, Fix & Flip and Finanzierung.
+let pendingPdfWindow=null;
+function preparePdfWindow(event){
+ const button=event.target.closest?.('button');
+ if(!button || !button.matches('.bottom-save,#download'))return;
+ if(pendingPdfWindow && !pendingPdfWindow.closed)return;
+ // Open synchronously from the user's click, before asynchronous access/PDF work.
+ const tab=window.open('about:blank','_blank');
+ if(!tab)return;
+ try{
+   tab.opener=null;
+   tab.document.title='PDF wird vorbereitet';
+   tab.document.body.textContent='Der PDF-Bericht wird vorbereitet …';
+ }catch(_err){}
+ pendingPdfWindow=tab;
+}
+document.addEventListener('click',preparePdfWindow,true);
+function openReport(doc,name){
  const url=URL.createObjectURL(doc.output('blob'));
- const tab=window.open(url,'_blank','noopener,noreferrer');
- if(!tab){
+ const tab=pendingPdfWindow && !pendingPdfWindow.closed ? pendingPdfWindow : window.open('about:blank','_blank');
+ pendingPdfWindow=null;
+ if(tab){
+   try{tab.opener=null;tab.location.replace(url);}catch(_err){tab.location.href=url;}
+ }else{
+   // Browser blocked a delayed popup: offer a normal user-activated viewing link.
    const link=document.createElement('a');
    link.href=url;link.target='_blank';link.rel='noopener noreferrer';
-   document.body.appendChild(link);link.click();link.remove();
+   link.textContent='PDF im neuen Tab öffnen';
+   link.style.cssText='position:fixed;z-index:2147483647;right:16px;bottom:16px;padding:14px 18px;background:#075c55;color:white;border-radius:10px;box-shadow:0 3px 14px #0003';
+   document.body.appendChild(link);
+   link.addEventListener('click',()=>{setTimeout(()=>link.remove(),500);},{once:true});
  }
- setTimeout(()=>URL.revokeObjectURL(url),120000);
+ setTimeout(()=>URL.revokeObjectURL(url),300000);
 }
 """
 if 'function openReport(doc,name)' not in pdf_js:
