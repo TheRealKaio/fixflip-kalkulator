@@ -69,6 +69,18 @@ const assert=require('node:assert/strict');
      assert.equal(size.padding,'0px','Finance checkbox excludes text-input padding');
     }
     await page.setViewportSize({width,height:900});
+    if(width===1440&&slug==='eigennutzung'){
+     await page.setViewportSize({width:768,height:1024});
+     const fields=await page.evaluate(()=>{
+      const rect=id=>{const r=document.querySelector('.field:has(#'+id+')').getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
+      return {interest:rect('interest'),repayment:rect('repayment'),financed:rect('ltv')};
+     });
+     assert(Math.abs(fields.interest.top-fields.repayment.top)<1&&Math.abs(fields.repayment.top-fields.financed.top)<1,
+       'Own-use tablet places interest, repayment and financed on one row: '+JSON.stringify(fields));
+     assert(fields.financed.left>fields.repayment.left&&fields.financed.width>0,
+       'Own-use tablet places financed to the right of repayment: '+JSON.stringify(fields));
+     await page.setViewportSize({width,height:900});
+    }
     if(width===390&&slug==='vermietung'){
      const fields=await page.evaluate(()=>{
       const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
