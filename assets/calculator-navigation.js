@@ -10,7 +10,12 @@ document.addEventListener('click',event=>{
  // Some legacy scripts rewrite the finance tile to /Finanzierungsrechner/.
  // Route comparisons and navigation must use the canonical lowercase path.
  const canonicalPath=url.pathname.toLowerCase();
- if(url.origin!==location.origin||!paths.has(canonicalPath)||canonicalPath===location.pathname.toLowerCase())return;
+ if(url.origin!==location.origin||!paths.has(canonicalPath))return;
+ // An active route must behave like the other selected tiles: keep the page in place.
+ if(canonicalPath===location.pathname.toLowerCase()){
+  if(card.matches('a[href]'))event.preventDefault();
+  return;
+ }
  url.pathname=canonicalPath;
  try{sessionStorage.setItem(key,JSON.stringify({path:canonicalPath,y:window.scrollY,at:Date.now()}));}catch(_){}
  // The financing tile is an anchor inside the legacy calculator menu. Its
