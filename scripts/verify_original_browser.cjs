@@ -221,11 +221,7 @@ const assert=require('node:assert/strict');
    const navigationTile=slug==='finanzierungsrechner'
     ? page.locator('#nicFinancingTab')
     : page.locator(`.deal-type-option[data-href="/${slug}/"]`);
-   const navBefore=await page.evaluate(()=>location.href);
-   const navTarget=await navigationTile.evaluate(el=>({tag:el.tagName,href:el.getAttribute('href'),dataHref:el.dataset.href,html:el.outerHTML.slice(0,220)}));
    await navigationTile.click();
-   await page.waitForTimeout(400);
-   console.log('NAV DEBUG',width,slug,JSON.stringify({navBefore,navTarget,navAfter:page.url()}));
    await page.waitForURL('http://127.0.0.1:8766/'+slug+'/',{waitUntil:'domcontentloaded'});
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
    assert.equal(await page.locator('.nic-tile-active').count(),1);
