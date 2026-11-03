@@ -310,12 +310,22 @@ const assert=require('node:assert/strict');
      const rows=[...chart.querySelectorAll('.cost-row')];
      const texts=rows.flatMap(row=>[...row.querySelectorAll('*')].filter(el=>el.children.length===0&&el.textContent.trim()&&getComputedStyle(el).display!=='none'));
      const total=[...chart.querySelectorAll('*')].find(el=>el.children.length===0&&el.textContent.trim()==='Gesamt');
-     return {rows:rows.length,fonts:texts.map(el=>getComputedStyle(el).fontSize),total:total?getComputedStyle(total).fontSize:null};
+     return {rows:rows.length,labels:rows.map(row=>row.innerText.trim()),fonts:texts.map(el=>getComputedStyle(el).fontSize),total:total?getComputedStyle(total).fontSize:null};
     });
-    assert(costTypography&&costTypography.rows>=7,'Cost breakdown rows exist');
-    assert(costTypography.fonts.length>=7&&costTypography.fonts.every(font=>font==='17px'),
+    const expectedCostRows=slug==='eigennutzung'?6:7;
+    assert(costTypography&&costTypography.rows>=expectedCostRows,'Cost breakdown rows exist');
+    assert(costTypography.fonts.length>=expectedCostRows&&costTypography.fonts.every(font=>font==='17px'),
       'Cost chart captions and amounts use Untertexte 17px: '+JSON.stringify(costTypography));
     assert.equal(costTypography.total,'17px','Cost chart overall total uses Untertexte');
+    const hasSaleCostRow=costTypography.labels.some(label=>label.includes('Verkaufskosten'));
+    assert.equal(hasSaleCostRow,slug==='fix-flip','Sale-cost chart row is shown only in Fix & Flip');
+    if(slug==='eigennutzung'){
+     const saleFieldsHidden=await page.evaluate(()=>['sellBroker','otherSaleCosts'].map(id=>{
+      const field=document.getElementById(id)?.closest('.field');
+      return !field||field.getClientRects().length===0;
+     }));
+     assert.deepEqual(saleFieldsHidden,[true,true],'Sale-cost inputs are hidden in own-use financing');
+    }
    }
    for(const selector of ['.bottom-actions>.bottom-primary','.bottom-actions>.bottom-pdf']){
     assert.equal(await page.locator(selector).first().evaluate(el=>getComputedStyle(el).fontSize),'17px','Action label follows Untertexte (px)');
