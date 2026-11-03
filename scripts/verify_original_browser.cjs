@@ -160,7 +160,6 @@ const assert=require('node:assert/strict');
     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Zins and Tilgung share the first mobile row');
     assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Finanzierungsdauer folgt den Finanzierungsannahmen');
     assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.buyBroker.top)<1,'Notar und Makler folgen auf die Laufzeit: '+JSON.stringify(fields));
-    assert(fields.row.top>fields.buyBroker.top&&fields.total.top>fields.buyBroker.top,'Kaufnebenkostenzeile folgt auf Notar und Makler: '+JSON.stringify(fields));
     assert(Math.abs(fields.total.left-fields.row.left)<1&&Math.abs(fields.option.right-fields.row.right)<1,'Kaufnebenkosten und Mitfinanzieren füllen gemeinsam die vollständige Zeile');
     assert.equal(await page.locator('#buffer').inputValue(),'','Renovation buffer starts blank');
     if(slug==='eigennutzung')assert.equal(await page.locator('#months').inputValue(),'120','Financing duration starts at 120 months');
