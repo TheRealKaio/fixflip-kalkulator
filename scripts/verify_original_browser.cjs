@@ -218,7 +218,10 @@ const assert=require('node:assert/strict');
   await page.setViewportSize({width,height:900});
   await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
   for(const [slug,key] of [['fix-flip','flip'],['finanzierungsrechner','finance'],['eigennutzung','own'],['vermietung','rent'],['budget','budget']]){
-   await page.locator(`.deal-type-option[data-href="/${slug}/"]`).click();
+   const navigationTile=slug==='finanzierungsrechner'
+    ? page.locator('#nicFinancingTab')
+    : page.locator(`.deal-type-option[data-href="/${slug}/"]`);
+   await navigationTile.click();
    await page.waitForURL('http://127.0.0.1:8766/'+slug+'/');
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
    assert.equal(await page.locator('.nic-tile-active').count(),1);
