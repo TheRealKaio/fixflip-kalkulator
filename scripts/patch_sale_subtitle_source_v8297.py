@@ -8,7 +8,7 @@ s=s.replace("service-worker.js?v=8.296","service-worker.js?v=8.297")
 
 required=[
     'const subtitleSourceKey="ff_flip_sale_after_reno_source";',
-    'hint.textContent=label+" • editierbar";',
+    'hint.textContent="geändert (bitte prüfen)";',
     'localStorage.setItem(subtitleSourceKey,source);',
     'updateSaleSubtitle(source);',
     'const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);',
