@@ -247,8 +247,12 @@ for page in SITE.rglob("*.html"):
   document.addEventListener('input',function(event){
     if(event.target.id==='reno'){
       localStorage.setItem(key,String(amount(event.target.value)));
-      // The legacy input handlers must not replace the value during typing.
+      // Preserve the manual total, but run the calculator render explicitly because
+      // stopImmediatePropagation prevents the legacy input listener from doing so.
       event.stopImmediatePropagation();
+      requestAnimationFrame(function(){
+        try { if(typeof render==='function') render(); } catch(_err){}
+      });
     }else if(event.target.matches('.trade-amount,.trade-area')){
       localStorage.removeItem(key);
     }
