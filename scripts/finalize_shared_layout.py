@@ -282,6 +282,19 @@ body:not(.nic-admin) .field-hint-below{
 }
 """)
 
+# These requested helper and introductory copy lines follow the admin body-text scale.
+rules.append("""
+body:not(.nic-admin) #dealCalculatorContent>.card:first-child>p.sub,
+body:not(.nic-admin) #ownMarketCheckSection .market-check-head p.sub,
+body:not(.nic-admin) #rentSection>section.card:nth-of-type(2)>p.sub,
+body:not(.nic-admin) #ownFinanceCard .section-summary-subtitle,
+body:not(.nic-admin) #flipFinanceCard .section-summary-subtitle,
+body:not(.nic-admin) #rentFinanceBody .rent-finance-head p.sub,
+body:not(.nic-admin) #costsPeriodHint{
+ font-size:var(--nic-body-font-size,16px)!important;
+}
+""")
+
 # Mobile: rates, financing choices, then the full-width acquisition total.
 rules.append("""
 @media(max-width:700px){
