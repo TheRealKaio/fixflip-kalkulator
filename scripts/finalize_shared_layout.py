@@ -491,7 +491,6 @@ rules.append("""
 }
 """)
 
-(site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 # Acquisition cost and financing checkbox share a row. Match the amount field
 # to one rate column; let the checkbox area use the remaining columns.
 rules.append("""
@@ -532,4 +531,6 @@ body:not(.nic-admin) #finance-acq-row-swap-v8403 .finance-acq-option{grid-column
 }
 """)
 
+
+(site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
