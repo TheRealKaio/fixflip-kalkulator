@@ -7,9 +7,8 @@ s = path.read_text(encoding="utf-8")
 
 def div_end(html, start):
     depth = 0
-    for match in re.finditer(r"</?div\b[^>]*>", html[start:]):
-        tag = match.group(0)
-        if tag.startswith("</"):
+    for match in re.finditer(r"</?div\\b[^>]*>", html[start:]):
+        if match.group(0).startswith("</"):
             depth -= 1
             if depth == 0:
                 return start + match.end()
@@ -18,17 +17,15 @@ def div_end(html, start):
     raise SystemExit("V8.403 unbalanced div while locating financing row")
 
 
-def block_at_class(html, class_name, before=None):
+def block_at_class(html, class_name):
     marker = f'class="{class_name}"'
-    end_limit = len(html) if before is None else before
-    pos = html.find(marker, 0, end_limit)
-    if pos < 0 or html.find(marker, pos + len(marker), end_limit) >= 0:
+    pos = html.find(marker)
+    if pos < 0 or html.find(marker, pos + len(marker)) >= 0:
         raise SystemExit(f"V8.403 expected one {class_name} marker")
     start = html.rfind("<div", 0, pos)
     if start < 0:
         raise SystemExit(f"V8.403 missing opening div for {class_name}")
-    end = div_end(html, start)
-    return start, end, html[start:end]
+    return start, div_end(html, start), html[start:div_end(html, start)]
 
 
 def field_at_label_id(html, label_id):
@@ -41,8 +38,6 @@ def field_at_label_id(html, label_id):
     if start < 0:
         raise SystemExit(f"V8.403 missing field wrapper for {label_id}")
     end = div_end(html, start)
-    if label_pos >= end:
-        raise SystemExit(f"V8.403 invalid field wrapper for {label_id}")
     return start, end, html[start:end]
 
 
@@ -56,47 +51,53 @@ if quick_start < 0:
     raise SystemExit("V8.403 acquisition row quick-grid missing")
 quick_end = div_end(s, quick_start)
 quick_block = s[quick_start:quick_end]
-
 if not (quick_start < acq_start < acq_end <= quick_end < term_start < term_end):
     raise SystemExit("V8.403 rows are not in the expected original order")
 if quick_block.count(acq_block) != 1:
     raise SystemExit("V8.403 acquisition row is not uniquely inside the quick-grid")
 
-quick_without_acq = quick_block.replace(acq_block, "", 1)
-between = s[quick_end:term_start]
-replacement = term_block + between + quick_without_acq + between + acq_block
-s = s[:quick_start] + replacement + s[term_end:]
+# Keep the purchase costs and Mitfinanzieren controls together in their original
+# quick-grid. Put the full-width duration field first, then Notar/Makler, then
+# the complete acquisition row at the duration's former position.
+opening_end = quick_block.find(">") + 1
+closing_start = quick_block.rfind("</div>")
+if opening_end <= 0 or closing_start <= opening_end:
+    raise SystemExit("V8.403 quick-grid boundaries are invalid")
+quick_inner = quick_block[opening_end:closing_start]
+if quick_inner.count(acq_block) != 1:
+    raise SystemExit("V8.403 acquisition row is not uniquely inside the quick-grid")
+quick_inner = quick_inner.replace(acq_block, "", 1)
+term_block = term_block.replace('<div class="field">','<div class="field finance-duration-swap-v8403">',1)
+acq_block = acq_block.replace(
+    '<div class="finance-acq-row">',
+    '<div class="finance-acq-row" id="finance-acq-row-swap-v8403">',
+    1,
+)
+new_quick = (
+    quick_block[:opening_end]
+    + term_block
+    + quick_inner
+    + acq_block
+    + quick_block[closing_start:]
+)
+s = s[:quick_start] + new_quick + s[term_end:]
 
 term_pos = s.find('id="monthsLabel"')
 notary_pos = s.find(">Notar + Grundbuch</label>")
 buy_broker_pos = s.find(">Makler beim Kauf</label>")
-acq_pos = s.find('class="finance-acq-row"')
+acq_pos = s.find('id="finance-acq-row-swap-v8403"')
 sale_cost_pos = s.find('<div class="sale-cost-grid">')
 if not (0 <= term_pos < notary_pos < buy_broker_pos < acq_pos < sale_cost_pos):
     raise SystemExit("V8.403 verification failed: rows are not in the requested order")
 if s.count('id="financeAcquisition"') != 1:
     raise SystemExit("V8.403 verification failed: Mitfinanzieren control missing or duplicated")
 
-s = s.replace(
-    '<div class="finance-acq-row">',
-    '<div class="finance-acq-row" id="finance-acq-row-swap-v8403">',
-    1,
-)
-css = '''<style id="finance-acq-row-swap-style-v8403">
-#finance-acq-row-swap-v8403{
-  display:grid!important;
-  grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
-  gap:10px!important;
-  align-items:end!important;
-  width:100%!important;
-  grid-column:1/-1!important;
-}
-#finance-acq-row-swap-v8403>.finance-acq-total{grid-column:1!important}
-#finance-acq-row-swap-v8403>.finance-acq-option{grid-column:2!important}
+css = '''<style id="finance-row-order-v8403">
+.finance-duration-swap-v8403{grid-column:1/-1!important}
 </style>'''
 if "</head>" not in s:
     raise SystemExit("V8.403 style insertion anchor missing")
 s = s.replace("</head>", css + "</head>", 1)
 
 path.write_text(s, encoding="utf-8")
-print("V8.403 financing rows swapped with the complete acquisition row kept in a two-column layout")
+print("V8.403 financing rows swapped while preserving the complete costs row layout")
