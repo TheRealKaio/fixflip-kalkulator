@@ -86,18 +86,18 @@ s=s.replace(old_sale_lines,new_sale_lines,1)
 
 # The visible source label can include an explanatory suffix. Preserve that label
 # for Fix & Flip and remove the row from Eigennutzung reports.
-cost_rows_match=re.search(r"  const costRows = \\[([\\s\\S]*?)\\n  \\];",s)
+cost_rows_match=re.search(r"  const costRows = \[([\s\S]*?)\n  \];",s)
 if not cost_rows_match:
     raise SystemExit("V8.249 costRows array anchor missing")
-sale_row_pattern=re.compile(r'(?m)^([ \\t]*)\\["(Verkaufskosten(?: \\(nur bei Verkauf\\))?)",\\s*sellingCosts\\](,?)\\s*$')
+sale_row_pattern=re.compile(r'(?m)^([ \t]*)\["(Verkaufskosten(?: \(nur bei Verkauf\))?)",\s*sellingCosts\](,?)\s*$')
 sale_rows=list(sale_row_pattern.finditer(cost_rows_match.group(1)))
 if len(sale_rows)!=1:
     raise SystemExit("V8.249 expected one sale-cost chart row, found "+str(len(sale_rows)))
 sale_label=sale_rows[0].group(2)
 clean_rows=sale_row_pattern.sub("",cost_rows_match.group(1),count=1)
 new_cost_rows=(
-  "  const costRows = ["+clean_rows+"\\n  ];"
-  + '\\n  if(!isOwnUse) costRows.push(["'+sale_label+'", sellingCosts]);'
+  "  const costRows = ["+clean_rows+"\n  ];"
+  + '\n  if(!isOwnUse) costRows.push(["'+sale_label+'", sellingCosts]);'
 )
 s=s[:cost_rows_match.start()]+new_cost_rows+s[cost_rows_match.end():]
 
