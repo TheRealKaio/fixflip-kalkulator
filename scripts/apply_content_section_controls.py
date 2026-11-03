@@ -244,21 +244,10 @@ for page in SITE.rglob("*.html"):
     field.removeAttribute('disabled');
     return field;
   }
+  // Leave #reno input/change events to the calculator's normal listeners.
+  // Capture only detail edits to clear the independent manual total.
   document.addEventListener('input',function(event){
-    if(event.target.id==='reno'){
-      localStorage.setItem(key,String(amount(event.target.value)));
-      // Preserve the manual total, but run the calculator render explicitly because
-      // stopImmediatePropagation prevents the legacy input listener from doing so.
-      event.stopImmediatePropagation();
-      requestAnimationFrame(function(){
-        try { if(typeof render==='function') render(); } catch(_err){}
-      });
-    }else if(event.target.matches('.trade-amount,.trade-area')){
-      localStorage.removeItem(key);
-    }
-  },true);
-  document.addEventListener('change',function(event){
-    if(event.target.id==='reno')localStorage.setItem(key,String(amount(event.target.value)));
+    if(event.target.matches('.trade-amount,.trade-area'))localStorage.removeItem(key);
   },true);
   document.addEventListener('click',function(event){
     if(event.target.closest('#applyTradeSuggestions,#resetTrades'))localStorage.removeItem(key);
