@@ -33,7 +33,7 @@ for page in site.rglob('*.html'):
   s=s.replace("      const u=URL.createObjectURL(blob),a=document.createElement('a');", "      if(window.NICAccess&&!await window.NICAccess.authorize('pdfDownload'))return;\n      const u=URL.createObjectURL(blob),a=document.createElement('a');",1)
  # Route generated document save actions through the shared PDF viewer.
  # Native sharing remains separate; only former download actions open a new tab.
- s=re.sub(r'\\bdoc\\.save\\(([^()]*)\\)',r'window.NICPDF.openReport(doc,\\1)',s)
+ s=re.sub(r'\bdoc\.save\(([^()]*)\)',r'window.NICPDF.openReport(doc,\1)',s)
  s=s.replace('</head>','<script type="application/json" id="nic-pdf-defaults">'+data+'</script><script src="/pdf-reports.js" defer></script></head>',1)
  if page.parent.name=='finanzierungsrechner':
   s=s.replace('</head>','<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script></head>',1)
