@@ -72,12 +72,13 @@ const assert=require('node:assert/strict');
     if(width===390&&slug==='vermietung'){
      const fields=await page.evaluate(()=>{
       const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
-      return {interest:rect('.field:has(#rentInterest)'),repayment:rect('.field:has(#rentRepayment)'),financed:rect('.field:has(#rentLtv)'),option:rect('#rentFinancingControls .finance-acq-option'),total:rect('#rentFinancingControls .finance-acq-total')};
+      return {interest:rect('.field:has(#rentInterest)'),repayment:rect('.field:has(#rentRepayment)'),financed:rect('.field:has(#rentLtv)'),duration:rect('.field:has(#rentMonths)'),notary:rect('.field:has(#rentNotary)'),broker:rect('.field:has(#rentBroker)'),option:rect('#rentFinancingControls .finance-acq-option'),total:rect('#rentFinancingControls .finance-acq-total'),row:rect('#rentFinancingControls .finance-acq-row')};
      });
-     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Rental interest and repayment share mobile row 1');
-     assert(Math.abs(fields.financed.top-fields.option.top)<1,'Rental financed share and checkbox share mobile row 2');
-     assert(fields.financed.top>fields.interest.top&&fields.total.top>fields.financed.top,'Rental acquisition total follows financing choices in row 3');
-     assert(Math.abs(fields.total.left-fields.interest.left)<1&&Math.abs(fields.total.right-fields.repayment.right)<1,'Rental acquisition total spans the available width');
+     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Rental interest and repayment share the first mobile row');
+     assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Rental financed share and duration follow the interest assumptions');
+     assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.broker.top)<1,'Rental notary and broker follow the duration on one row');
+     assert(fields.total.top>fields.broker.top&&Math.abs(fields.total.top-fields.option.top)<1,'Rental acquisition total and financing toggle form the final row');
+     assert(Math.abs(fields.total.left-fields.row.left)<1&&Math.abs(fields.option.right-fields.row.right)<1,'Rental acquisition row spans the available width');
     }
     if(wasOpen===false)await summary.click();
     if(rentalClosed)await page.locator('#rentFinanceToggle').click();
