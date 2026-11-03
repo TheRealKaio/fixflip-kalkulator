@@ -24,7 +24,7 @@ css = """/* Authoritative calculator action bar (all five routes).
   --nic-action-secondary: #111a2e;
   --nic-action-color: #fff;
 }
-body:not(.nic-admin) .bottom-actions {
+html body:not(.nic-admin) .bottom .bottom-actions {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
@@ -35,7 +35,7 @@ body:not(.nic-admin) .bottom-actions {
   min-width: 0 !important;
   box-sizing: border-box !important;
 }
-body:not(.nic-admin) .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save) {
+html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save) {
   appearance: none !important;
   -webkit-appearance: none !important;
   box-sizing: border-box !important;
@@ -49,7 +49,7 @@ body:not(.nic-admin) .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.b
   margin: 0 !important;
   padding: 0 12px !important;
   border: 0 !important;
-  border-radius: var(--nic-action-radius) !important;
+  border-radius: 9px !important;
   background: var(--nic-action-secondary) !important;
   color: var(--nic-action-color) !important;
   font: inherit !important;
@@ -63,20 +63,20 @@ body:not(.nic-admin) .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.b
   transform: none !important;
   cursor: pointer;
 }
-body:not(.nic-admin) .bottom-actions > .bottom-primary {
+html body:not(.nic-admin) .bottom .bottom-actions > .bottom-primary {
   background: var(--nic-action-primary) !important;
   flex: 1 1 0 !important;
   min-width: 0 !important;
   max-width: none !important;
   width: auto !important;
 }
-body:not(.nic-admin) .bottom-actions > .bottom-pdf {
+html body:not(.nic-admin) .bottom .bottom-actions > .bottom-pdf {
   background: var(--nic-action-secondary) !important;
   flex: 0 0 auto !important;
   min-width: max-content !important;
   width: auto !important;
 }
-body:not(.nic-admin) .bottom-actions > .bottom-save {
+html body:not(.nic-admin) .bottom .bottom-actions > .bottom-save {
   background: var(--nic-action-secondary) !important;
   flex: 0 0 52px !important;
   width: 52px !important;
@@ -84,7 +84,7 @@ body:not(.nic-admin) .bottom-actions > .bottom-save {
   max-width: 52px !important;
   padding: 0 !important;
 }
-body:not(.nic-admin) .bottom-actions .save-arrow {
+html body:not(.nic-admin) .bottom .bottom-actions .save-arrow {
   display: inline-flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -95,21 +95,21 @@ body:not(.nic-admin) .bottom-actions .save-arrow {
   transform: none !important;
   margin: 0 !important;
 }
-body:not(.nic-admin) .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save):focus-visible {
+html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save):focus-visible {
   outline: 2px solid var(--nic-action-primary) !important;
   outline-offset: 2px !important;
 }
-body:not(.nic-admin) .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save):disabled {
+html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save):disabled {
   opacity: .5 !important;
   cursor: not-allowed;
 }
 @media (max-width: 420px) {
-  body:not(.nic-admin) .bottom-actions { gap: 6px !important; }
-  body:not(.nic-admin) .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save) {
+  html body:not(.nic-admin) .bottom .bottom-actions { gap: 6px !important; }
+  html body:not(.nic-admin) .bottom .bottom-actions > :is(button,.bottom-primary,.bottom-pdf,.bottom-save) {
     font-size: 12px !important;
     padding-inline: 7px !important;
   }
-  body:not(.nic-admin) .bottom-actions > .bottom-save {
+  html body:not(.nic-admin) .bottom .bottom-actions > .bottom-save {
     width: 44px !important;
     min-width: 44px !important;
     max-width: 44px !important;
@@ -158,6 +158,14 @@ for page in paths:
     html = page.read_text(encoding="utf-8")
     if html.count('href="/' + file_name + '"') != 1:
         raise SystemExit(str(page) + ": expected exactly one shared action stylesheet")
+    # Make the authoritative stylesheet the final head stylesheet after all
+    # responsive/theme bundles, so same-specificity legacy rules cannot win.
+    link_pattern = re.compile(r'<link\\b[^>]*href="/' + re.escape(file_name) + r'"[^>]*>', re.I)
+    html, n = link_pattern.subn("", html)
+    if n != 1 or html.count("</head>") != 1:
+        raise SystemExit(str(page) + ": missing action CSS link or head")
+    html = html.replace("</head>", '<link rel="stylesheet" href="/' + file_name + '"></head>', 1)
+    page.write_text(html, encoding="utf-8")
     # Inline important style would win over the consolidated stylesheet.
     if re.search(r'<(?:button|a)\b[^>]*class="[^"]*bottom-(?:primary|pdf|save)[^"]*"[^>]*style="[^"]*!important',html,re.I):
         raise SystemExit(str(page) + ": action has inline !important styling")
