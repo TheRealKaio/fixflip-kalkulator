@@ -151,7 +151,29 @@ card_end=s.index('</section>',heading)+len('</section>')
 body_start=s.index('</p>',heading)+len('</p>')
 body=s[body_start:card_end-len('</section>')]
 body=body.replace('<label>Notar &amp; Grundbuch</label>','<label>Notar + Grundbuch</label>').replace('<label>Notar & Grundbuch</label>','<label>Notar + Grundbuch</label>')
-body+='''<div class="field"><label for="rentMonths">Laufzeit Finanzierung</label><div class="input-wrap"><input id="rentMonths" inputmode="numeric" value="120"><span class="unit">Mon.</span></div></div>'''
+term_field='''<div class="field"><label for="rentMonths">Laufzeit Finanzierung</label><div class="input-wrap"><input id="rentMonths" inputmode="numeric" value="120"><span class="unit">Mon.</span></div></div>'''
+body+=term_field
+
+# Exchange the complete existing duration field and acquisition-cost row.
+# Duration moves to the acquisition row's former position before purchase fees;
+# the acquisition row moves to the duration's former position after those fees.
+if body.count(controls)!=1 or body.count(term_field)!=1:
+    raise SystemExit("Rental financing row swap anchors are not unique")
+body=body.replace(controls,"",1).replace(term_field,"",1)
+quick_start=body.index('<div class="quick-grid">')
+depth=0
+quick_end=None
+for match in re.finditer(r"</?div\\b[^>]*>",body[quick_start:]):
+    if match.group(0).startswith("</"):
+        depth-=1
+        if depth==0:
+            quick_end=quick_start+match.end()
+            break
+    else:
+        depth+=1
+if quick_end is None:
+    raise SystemExit("Rental financing purchase-fee row is unbalanced")
+body=body[:quick_start]+term_field+body[quick_start:quick_end]+controls+body[quick_end:]
 card='''<section class="card" id="rentFinanceCard">
 <div class="rent-finance-head"><div><h2>3. Finanzierung und Nebenkosten</h2><p class="sub">Trage hier die Bedingungen deiner Finanzierung ein.</p></div><button type="button" class="plus-btn" id="rentFinanceToggle" aria-label="Finanzierung und Nebenkosten schließen" aria-controls="rentFinanceBody" aria-expanded="true">−</button></div>
 <div id="rentFinanceBody">'''+body+'''</div></section>'''
