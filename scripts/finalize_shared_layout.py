@@ -162,6 +162,27 @@ body:not(.nic-admin) #budgetExpensesSection #budgetApplySuggestions{
 }
 """)
 
+# Mobile project goals: one input per row, with available equity in position four.
+rules.append("""
+@media(max-width:700px){
+ body:not(.nic-admin) :is(
+  .field:has(#targetProfit),
+  .field:has(#targetMargin),
+  .field:has(#targetRoi),
+  .field:has(#maxEquity),
+  .field:has(#personalTax)
+ ){
+  grid-column:1 / -1!important;width:100%!important;max-width:100%!important;
+  min-width:0!important;box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) .field:has(#targetProfit){order:1!important}
+ body:not(.nic-admin) .field:has(#targetMargin){order:2!important}
+ body:not(.nic-admin) .field:has(#targetRoi){order:3!important}
+ body:not(.nic-admin) .field:has(#maxEquity){order:4!important}
+ body:not(.nic-admin) .field:has(#personalTax){order:5!important}
+}
+""")
+
 # Footer utility text follows the admin subtext size, including the cookie button.
 rules.append("""
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .footer-version,
