@@ -151,7 +151,9 @@ const assert=require('node:assert/strict');
     const originalOpen=await page.locator('#interest').evaluate(el=>{const d=el.closest('details');const open=d.open;d.open=true;return open;});
     const fields=await page.evaluate(()=>{
      const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
-     return {interest:rect('.field:has(#interest)'),repayment:rect('.field:has(#repayment)'),financed:rect('.field:has(#ltv)'),duration:rect('.field:has(#months)'),notary:rect('.field:has(#notary)'),buyBroker:rect('.field:has(#buyBroker)'),option:rect('.finance-acq-option'),total:rect('.finance-acq-total')};
+     const rectEl=el=>{const r=el.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
+     const acqRow=document.querySelector('.finance-acq-total').closest('.finance-acq-row');
+     return {interest:rect('.field:has(#interest)'),repayment:rect('.field:has(#repayment)'),financed:rect('.field:has(#ltv)'),duration:rect('.field:has(#months)'),notary:rect('.field:has(#notary)'),buyBroker:rect('.field:has(#buyBroker)'),option:rectEl(acqRow.querySelector('.finance-acq-option')),total:rectEl(acqRow.querySelector('.finance-acq-total'))};
     });
     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Zins and Tilgung share the first mobile row');
     assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Finanzierungsdauer folgt den Finanzierungsannahmen');
