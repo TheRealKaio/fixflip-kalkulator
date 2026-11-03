@@ -19,6 +19,19 @@ s=s.replace('<input id="maxEquity" inputmode="decimal" value="100000">',
 # Financing input is total available equity, not an amount blindly subtracted from debt.
 s=s.replace('<span id="equityInputLabel">Eigenkapital eingesetzt</span> <span class="hint" id="equityInputHint">reduziert die Kreditsumme</span>',
             '<span id="equityInputLabel">Eigenkapital</span> <span class="hint" id="equityInputHint">für Finanzierung & Projektreserve</span>',1)
+
+# Show the gray explanation below the amount field, aligned with its left edge.
+equity_hint_pattern = re.compile(
+    r'(<label\\b[^>]*>(?:(?!</label>).)*?<span id="equityInputLabel">.*?</span>)\\s*'
+    r'<span class="hint" id="equityInputHint">(.*?)</span>'
+    r'(</label>\\s*<div class="input-wrap">.*?</div>)',
+    re.S
+)
+s, equity_hint_matches = equity_hint_pattern.subn(
+    r'\\1\\3<div class="hint" id="equityInputHint">\\2</div>', s, count=1
+)
+if equity_hint_matches != 1:
+    raise SystemExit("Equity helper hint could not be moved below its input")
 s=s.replace(
     'Das eingesetzte Eigenkapital reduziert direkt die Kreditsumme. Nicht eingesetztes verfügbares Eigenkapital bleibt als Liquiditätsreserve für den Projektverlauf.',
     'Dein Eigenkapital deckt zuerst den Liquiditätsbedarf des Projekts. Nur der danach verbleibende Betrag reduziert die Kreditsumme.',
