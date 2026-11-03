@@ -19,6 +19,22 @@ const assert=require('node:assert/strict');
    const errors=[];const listener=e=>errors.push(e.message);page.on('pageerror',listener);
    const response=await page.goto('http://127.0.0.1:8766/'+slug+'/',{waitUntil:'domcontentloaded'});
    assert.equal(response.status(),200);await page.waitForTimeout(800);
+   // The shared stylesheet must win over legacy CSS and JS-applied visuals.
+   const expandControls=await page.evaluate(()=>{
+    const selectors=['.plus-btn','.market-check-toggle','.own-finance-card details.advanced>summary','.flip-section-card details.advanced>summary'];
+    return selectors.flatMap(selector=>[...document.querySelectorAll(selector)].map(el=>{
+     const pseudo=el.tagName==='SUMMARY';
+     const style=getComputedStyle(el,pseudo?'::after':null);
+     return {selector,width:style.width,height:style.height,bg:style.backgroundColor,
+       color:style.color,border:style.borderTopColor,content:pseudo?style.content:null};
+    }));
+   });
+   for(const item of expandControls){
+    assert.equal(item.width,'32px','Expand button width: '+JSON.stringify(item));
+    assert.equal(item.height,'32px','Expand button height: '+JSON.stringify(item));
+    assert.equal(item.bg,'rgb(237, 243, 255)','Expand button background: '+JSON.stringify(item));
+    assert.equal(item.color,'rgb(37, 99, 235)','Expand button color: '+JSON.stringify(item));
+   }
    if(['eigennutzung','vermietung','fix-flip'].includes(slug)){
     const id=slug==='vermietung'?'rentFinanceAcquisition':'financeAcquisition';
     const box=page.locator('#'+id);
