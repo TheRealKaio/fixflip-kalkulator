@@ -41,6 +41,46 @@ html:not(.nic-content-ready) [data-nic-content-key]{visibility:hidden!important}
 (document.head||document.documentElement).appendChild(style);
 let resolved=null;
 let queued=false;
+const controlStates=new Map();
+const propertyStates=new Map();
+function enforceProperty(element,key,value,active){
+ let state=propertyStates.get(element);
+ if(active){
+   if(!state){state={};propertyStates.set(element,state);}
+   if(!(key in state))state[key]=element[key];
+   element[key]=value;
+ }else if(state&&key in state){
+   element[key]=state[key];delete state[key];
+   if(!Object.keys(state).length)propertyStates.delete(element);
+ }
+}
+const observerOptions={childList:true,subtree:true,characterData:true,attributes:true,
+ attributeFilter:['class','hidden','inert','disabled','aria-disabled','style','data-nic-content-key']};
+function watch(){observer.observe(document.documentElement,observerOptions);}
+function blocked(target){
+ return target?.closest?.('.nic-content-box-hidden,.nic-content-box-guest-locked');
+}
+// Capture before calculator listeners, including keyboard and synthetic clicks.
+for(const type of ['click','dblclick','keydown','beforeinput','input','change','submit','reset']){
+ document.addEventListener(type,event=>{
+   if(!blocked(event.target))return;
+   event.preventDefault();event.stopImmediatePropagation();
+ },true);
+}
+function syncControls(){
+ document.querySelectorAll('[data-nic-content-key] input,[data-nic-content-key] select,[data-nic-content-key] textarea,[data-nic-content-key] button').forEach(control=>{
+   if(blocked(control)){
+     if(!controlStates.has(control))controlStates.set(control,control.disabled);
+     control.disabled=true;
+   }
+ });
+ for(const [control,disabled] of controlStates){
+   if(!control.isConnected||!blocked(control)){
+     control.disabled=disabled;
+     controlStates.delete(control);
+   }
+ }
+}
 function maskValues(box,locked){
  // Mask numbers not only inside named result classes, but also leaf-level text nodes.
  // Leave explanatory copy and headings readable.
@@ -56,6 +96,8 @@ function maskValues(box,locked){
 }
 function apply(settings){
  if(!settings||!document.body)return;
+ observer.disconnect();
+ try{
  resolved=settings;
  const loggedIn=!!window.NICAccess?.user;
  document.querySelectorAll('[data-nic-content-key]').forEach(box=>{
@@ -65,8 +107,8 @@ function apply(settings){
    box.classList.toggle('nic-content-box-hidden',hidden);
    box.classList.toggle('nic-content-box-guest-locked',locked);
    maskValues(box,locked);
-   box.hidden=hidden;
-   box.inert=hidden;
+   enforceProperty(box,'hidden',true,hidden);
+   enforceProperty(box,'inert',true,hidden||locked);
    let overlay=Array.from(box.children).find(el=>el.classList.contains('nic-content-box-guest-overlay'));
    if(locked&&!overlay){
      overlay=document.createElement('div');
@@ -75,22 +117,31 @@ function apply(settings){
      overlay.textContent=message;
      box.appendChild(overlay);
    }else if(!locked&&overlay)overlay.remove();
-   Array.from(box.children).forEach(child=>{if(child!==overlay)child.inert=locked;});
+
    if(locked)box.setAttribute('aria-disabled','true');
    else box.removeAttribute('aria-disabled');
  });
+ for(const [element] of propertyStates)if(!element.isConnected)propertyStates.delete(element);
+ syncControls();
  document.documentElement.classList.add('nic-content-ready');
+ }finally{watch();}
 }
 window.NICContentSections={apply};
 window.addEventListener('nic-auth-changed',()=>{if(resolved)apply(resolved);});
 window.addEventListener('nic-settings-updated',()=>{if(window.NICSettings?.current)apply(window.NICSettings.current);});
 const observer=new MutationObserver(records=>{
  if(!resolved||queued)return;
- if(!records.some(record=>record.type==='characterData'||Array.from(record.addedNodes).some(node=>node.nodeType===1&&node.closest?.('[data-nic-content-key]'))))return;
+ if(!records.some(record=>{
+   const target=record.target.nodeType===1?record.target:record.target.parentElement;
+   return target?.closest?.('[data-nic-content-key]')||
+     Array.from(record.addedNodes||[]).some(node=>node.nodeType===1&&
+       (node.closest?.('[data-nic-content-key]')||node.querySelector?.('[data-nic-content-key]')));
+ }))return;
  queued=true;
  queueMicrotask(()=>{queued=false;apply(resolved);});
 });
-observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+watch();
+window.addEventListener('pageshow',()=>{if(resolved)apply(resolved);});
 const settingsApi=window.NICSettings;
 if(settingsApi?.init){
  settingsApi.init().then(settings=>{
