@@ -8,9 +8,9 @@ css="""/* One visual language for the five calculators' expand/collapse controls
 :root{
   --nic-expand-size:32px;
   --nic-expand-radius:10px;
-  --nic-expand-border:#c7d8ff;
-  --nic-expand-bg:#edf3ff;
-  --nic-expand-ink:#2563eb;
+  --nic-expand-border:var(--nic-highlight-bg,#c7d8ff);
+  --nic-expand-bg:var(--nic-highlight-bg,#edf3ff);
+  --nic-expand-ink:var(--nic-highlight-text,#2563eb);
 }
 body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
   box-sizing:border-box!important;
