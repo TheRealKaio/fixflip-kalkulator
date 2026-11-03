@@ -1,7 +1,7 @@
 /* Central typography for public calculators.
    All seven sizes and the font family come from Admin > Layout.
    Do not use fixed px here: these are variable fallbacks only. */
-html body:not(.nic-admin) :where(.app, .app *):not(svg):not(svg *) {
+:where(html body:not(.nic-admin) .app, html body:not(.nic-admin) .app *:not(svg):not(svg *)) {
   font-family: var(--nic-body-font-family, system-ui, sans-serif) !important;
   font-size: var(--nic-body-font-size, 16px) !important;
 }
