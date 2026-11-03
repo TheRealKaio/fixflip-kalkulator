@@ -44,7 +44,7 @@ const assert=require('node:assert/strict');
      }));
     });
     assert(masked.length>0,'Guest cost values should be masked');
-    assert(masked.every(x=>x.display==='inline-block'&&x.right<=x.rowRight+1&&x.right<=x.contentRight+1),'Masked cost values must remain aligned and inside the card');
+    assert(masked.every(x=>x.display==='inline-block'&&x.right<=x.rowRight+1&&x.right<=x.contentRight+1),`Masked cost values must remain aligned and inside the card: ${JSON.stringify(masked)}`);
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
    }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
