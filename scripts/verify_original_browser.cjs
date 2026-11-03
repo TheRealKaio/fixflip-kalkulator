@@ -54,6 +54,12 @@ const assert=require('node:assert/strict');
     const catalog=require('node:fs').readFileSync('_site/content-sections.json','utf8');
     const entry=JSON.parse(catalog).find(item=>item.key===key);
     assert.equal(entry.title,'2. Kaufpreis-Check');
+    const financeKey=await page.locator('#ownFinanceCard').getAttribute('data-nic-content-key');
+    assert.equal(financeKey,'own.finanzierung-und-nebenkosten');
+    assert(JSON.parse(catalog).some(item=>item.key===financeKey&&item.title==='3. Finanzierung und Nebenkosten'),'Own-use finance card appears in admin catalog');
+    await page.evaluate(key=>NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,[key]:{visible:false,guestAllowed:false}}}),financeKey);
+    assert(await page.locator('#ownFinanceCard').isHidden(),'Admin rule hides runtime finance card');
+    await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
     assert.equal(await page.locator('#ownMarketCheckSection h2').evaluate(el=>getComputedStyle(el).fontSize),await page.evaluate(()=>NICSettings.current.layout.h2+'px'),'Purchase price title follows configured H2 size');
     assert(JSON.parse(catalog).some(item=>item.key==='own.noch-prufen'&&item.title==='Ergebnis und Einschätzung'),'Result status has a stable admin label');
    }

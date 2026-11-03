@@ -72,6 +72,7 @@ js=r"""
     financeCard=document.createElement("section");
     financeCard.id="ownFinanceCard";
     financeCard.className="card own-finance-card";
+    financeCard.setAttribute("data-nic-content-key","own.finanzierung-und-nebenkosten");
     market.insertAdjacentElement("afterend",financeCard);
   }
 

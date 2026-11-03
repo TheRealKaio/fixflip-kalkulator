@@ -130,6 +130,15 @@ for page in SITE.rglob("*.html"):
         source = source[:start] + replacement + source[end:]
     page.write_text(source, encoding="utf-8")
 
+# This own-use card is created by patch_own_sections_v8245 at runtime from a details/summary.
+# Its identity must exist in the admin catalog before any browser executes that transformation.
+finance_key = "own.finanzierung-und-nebenkosten"
+price_order = catalog.get("own.kaufpreis-check", {}).get("order", len(catalog))
+catalog.setdefault(finance_key, {
+    "key": finance_key, "title": "3. Finanzierung und Nebenkosten",
+    "calculator": "own", "calculatorLabel": LABELS["own"], "order": price_order + 0.5,
+})
+
 ordered = sorted(catalog.values(), key=lambda item: (ORDER.index(item["calculator"]), item["order"]))
 for item in ordered:
     item.pop("order", None)
