@@ -183,6 +183,7 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option{box-sizing:border-box!impo
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active{border:2px solid var(--nic-green-bg,#075c55)!important;background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong,small){color:var(--nic-green-text,#fff)!important}
 body:not(.nic-admin) .plus-btn{background:var(--nic-highlight-bg)!important;border-color:var(--nic-highlight-bg)!important;color:var(--nic-highlight-text)!important}
+body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
 body:not(.nic-admin) .flip-section-card .advanced>summary:after{background:var(--nic-highlight-bg)!important;border-color:var(--nic-highlight-bg)!important;color:var(--nic-highlight-text)!important}`;
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
