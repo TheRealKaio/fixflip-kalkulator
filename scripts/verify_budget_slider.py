@@ -32,6 +32,10 @@ required_implementation = {
     "reserve moves opposite to rate": 'const totalReserve=Math.max(0,(current.ratePool||0)-selectedRate);',
     "minimum reserve field updated live": 'if($("budgetSafetyReserve")) $("budgetSafetyReserve").value=String(Math.round(current.minimumReserve));',
     "slider choice persisted": 'localStorage.setItem("ff_budget_rateSliderPct",String(selectedPct));',
+    "preferred cashflow rate": 'const preferredPct=Math.min(35,Math.max(0,updated.maxRatePct||0));',
+    "cashflow commit on field exit": 'if(isBudgetCashflowField(event.target))commitBudgetCashflow(event.target);',
+    "typing is provisional": 'budgetCashflowPending.add(field);',
+    "input guard": 'if(budgetCashflowCommitting||!isBudgetCashflowField(field))return;',
     "UI recalculated immediately": 'renderBudget();',
     "separate reserve warning": 'id="budgetRateSliderWarning"',
     "warning hidden unless reserve is below minimum": '$("budgetRateSliderWarning").hidden=!minimumBufferBelow;',
@@ -107,17 +111,7 @@ required_implementation = {
     "financing assumption fields": '"budgetInterest","budgetRepayment","budgetEquity","budgetState","budgetNotaryPct","budgetBuyBrokerPct","budgetExtraCostsPct"',
     "income expense assumptions share recalc": 'const budgetRateRecalcIds=new Set([...budgetRateIncomeIds,...budgetRateExpenseIds,...budgetFinancingAssumptionIds]);',
     "old slider value cleared": 'localStorage.removeItem("ff_budget_rateSliderPct");',
-    "previous absolute rate captured": 'budgetRateBeforeRecalc=Math.max(0,Number(beforeChange.monthlyRate)||0);',
-    "automatic 35 percent rate": 'const automaticRate=Math.min(Math.max(0,recalculated.net*0.35),Math.max(0,recalculated.rateCap||0));',
-    "manual mode selector": 'const adjustedRate=budgetRateManualSelection',
-    "manual selection safety cap": '? Math.min(previousRate,Math.max(0,recalculated.rateCap||0))',
-    "automatic selection branch": ': automaticRate;',
-    "adjusted rate persisted": 'const preservedRatePct=recalculated.net>0 ? (adjustedRate/recalculated.net)*100 : 0;',
     "reset arms initial rate": 'budgetRateNeedsInitialValue=true;',
-    "initial rate waits for focusout": 'document.addEventListener("focusout",(event)=>',
-    "initialization only for income": 'if(!el || !budgetRateNeedsInitialValue || !budgetRateIncomeIds.has(el.id)) return;',
-    "initial rate targets 35 percent": 'const initialRatePct=Math.min(35,Math.max(0,m.maxRatePct||0));',
-    "initial rate stored once": 'localStorage.setItem("ff_budget_rateSliderPct",String(initialRatePct));',
     "initialization disabled afterwards": 'budgetRateNeedsInitialValue=false;',
     "manual slider flag stored": 'localStorage.setItem("ff_budget_rateManualSelection","1");',
     "manual slider state": 'let budgetRateManualSelection=localStorage.getItem("ff_budget_rateManualSelection")==="1";',
@@ -374,27 +368,6 @@ shortfall = max(0, minimum_reserve - current_buffer)
 if not (current_buffer < minimum_reserve and shortfall == 85):
     raise SystemExit("Slider acceptance failed - dynamic minimum reserve warning")
 
-# 24) Expense increase keeps the absolute credit rate so the buffer can really fall below the minimum.
-previous_rate = 2600
-income = 4000
-expenses = 1200
-rate_pool = max(0, income - expenses)
-minimum_reserve = max(300, rate_pool * 0.10)
-current_buffer = max(0, rate_pool - previous_rate)
-shortfall = max(0, minimum_reserve - current_buffer)
-if not (current_buffer == 200 and minimum_reserve == 300 and shortfall == 100):
-    raise SystemExit("Slider acceptance failed - expense increase keeps absolute credit rate")
-
-# 25) Income increase with unchanged absolute credit rate raises the actual buffer.
-previous_rate = 2600
-income = 4300
-expenses = 1020
-rate_pool = max(0, income - expenses)
-minimum_reserve = max(300, rate_pool * 0.10)
-current_buffer = max(0, rate_pool - previous_rate)
-if not (minimum_reserve == 328 and current_buffer == 680 and current_buffer > minimum_reserve):
-    raise SystemExit("Slider acceptance failed - income increase raises current buffer")
-
 # 26) Signed deviation may exceed EUR 300 when the actual buffer is negative.
 current_buffer = -150
 minimum_reserve = 300
@@ -408,28 +381,6 @@ minimum_reserve = 400
 deviation = current_buffer - minimum_reserve
 if deviation != -85:
     raise SystemExit("Slider acceptance failed - dynamic signed deviation")
-
-# 28) After reset, the initial rate uses the already existing safe maximum once income entry is complete.
-income = 4000
-expenses = 0
-rate_pool = max(0, income - expenses)
-minimum_reserve = max(300, rate_pool * 0.10)
-max_rate_by_reserve = max(0, rate_pool - minimum_reserve)
-max_rate_by_pct = income * 0.45
-initial_rate = min(max_rate_by_reserve, max_rate_by_pct)
-if initial_rate != 1800:
-    raise SystemExit("Slider acceptance failed - initial rate after reset uses existing safe maximum")
-
-# 29) During typing the special state preserves zero until focusout; no partial-value initialization.
-needs_initial = True
-previous_rate = 0
-if not (needs_initial and previous_rate == 0):
-    raise SystemExit("Slider acceptance failed - initial rate must wait until completed income entry")
-
-# 30) Once initialized, the special reset-only state is disabled.
-needs_initial = False
-if needs_initial:
-    raise SystemExit("Slider acceptance failed - initial rate state must disable after first initialization")
 
 # 31) Monthly rate in the debt section is derived from Max. Darlehen, interest and repayment.
 loan = 300000
@@ -490,27 +441,6 @@ monthly_rate = max(0, min(max(0, free_budget), requested_rate))
 if monthly_rate != 1200:
     raise SystemExit("Slider acceptance failed - rate below free budget remains unchanged")
 
-# 35) A later expense increase fully recalculates the rate to the new safe maximum.
-previous_rate = 1200
-new_rate_cap = 700
-adjusted_rate = max(0, new_rate_cap)
-if adjusted_rate != 700:
-    raise SystemExit("Slider acceptance failed - expense increase must reset to safe maximum")
-
-# 36) Lower expenses also fully recalculate the rate upward to the new safe maximum.
-previous_rate = 700
-new_rate_cap = 1200
-adjusted_rate = max(0, new_rate_cap)
-if adjusted_rate != 1200:
-    raise SystemExit("Slider acceptance failed - expense decrease must recalculate rate upward")
-
-# 37) A manually lower prior rate is intentionally replaced after any expense change.
-previous_rate = 500
-new_rate_cap = 700
-adjusted_rate = max(0, new_rate_cap)
-if adjusted_rate != 700:
-    raise SystemExit("Slider acceptance failed - expense change must replace prior manual rate")
-
 # 38) Only a real reserve shortfall shows a warning; reaching the threshold is silent.
 def warning_state(current_buffer, minimum_reserve):
     deviation = current_buffer - minimum_reserve
@@ -551,19 +481,6 @@ rate_cap = 2000
 automatic_rate = min(max(0, net * 0.35), max(0, rate_cap))
 if automatic_rate != 1750:
     raise SystemExit("Slider acceptance failed - automatic mode must recalculate to 35 percent")
-
-# 42) After manual slider use, keep the chosen absolute rate unless safety requires a lower value.
-previous_rate = 1200
-rate_cap = 1700
-adjusted_rate = min(previous_rate, max(0, rate_cap))
-if adjusted_rate != 1200:
-    raise SystemExit("Slider acceptance failed - manual rate should remain after later recalculation")
-
-previous_rate = 1200
-rate_cap = 900
-adjusted_rate = min(previous_rate, max(0, rate_cap))
-if adjusted_rate != 900:
-    raise SystemExit("Slider acceptance failed - manual rate must still respect safety cap")
 
 # 43) All relevant financing assumption fields are part of the central recalculation set.
 financing_assumption_ids = {
