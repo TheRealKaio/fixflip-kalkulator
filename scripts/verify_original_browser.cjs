@@ -92,6 +92,25 @@ const assert=require('node:assert/strict');
      await page.setViewportSize({width,height:900});
     }
     if(width===1440&&['eigennutzung','vermietung','fix-flip'].includes(slug)){
+     const desktopSelectors=slug==='vermietung'
+      ?{row:'#rentFinancingControls .finance-acq-row',total:'#rentFinancingControls .finance-acq-total',notary:'#rentFinanceCard .field:has(#rentNotary)'}
+      :slug==='eigennutzung'
+       ?{row:'#ownFinanceCard .finance-acq-row',total:'#ownFinanceCard .finance-acq-total',notary:'#ownFinanceCard .field:has(#notary)'}
+       :{row:'#finance-acq-row-swap-v8403',total:'#finance-acq-row-swap-v8403 .finance-acq-total',notary:'#flipFinanceCard .field:has(#notary)'};
+     const desktopWidths=await page.evaluate(selectors=>{
+      const row=document.querySelector(selectors.row),total=document.querySelector(selectors.total),notary=document.querySelector(selectors.notary);
+      if(!row||!total||!notary)return null;
+      const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
+      const option=row.querySelector('.finance-acq-option');
+      return {row:box(row),total:box(total),notary:box(notary),option:option?box(option):null};
+     },desktopSelectors);
+     assert(desktopWidths&&desktopWidths.option,'Desktop acquisition row exists for '+slug+': '+JSON.stringify(desktopWidths));
+     assert(Math.abs(desktopWidths.total.width-desktopWidths.notary.width)<2,
+       'Desktop acquisition costs match Notar + Grundbuch width on '+slug+': '+JSON.stringify(desktopWidths));
+     assert(Math.abs(desktopWidths.total.left-desktopWidths.notary.left)<2,
+       'Desktop acquisition costs align with Notar + Grundbuch on '+slug+': '+JSON.stringify(desktopWidths));
+    }
+    if(width===1440&&['eigennutzung','vermietung','fix-flip'].includes(slug)){
      await page.setViewportSize({width:768,height:1024});
      const tabletSelectors=slug==='vermietung'
       ?{row:'#rentFinancingControls .finance-acq-row',total:'#rentFinancingControls .finance-acq-total',notary:'#rentFinanceCard .field:has(#rentNotary)'}
