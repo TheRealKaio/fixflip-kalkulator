@@ -14,7 +14,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'})[path.extname(file)]||'text/plain'});
   });
   await page.goto('http://localhost/budget/');
-  await page.evaluate(()=>{document.querySelectorAll('dialog').forEach(d=>d.close());});
+  await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   const origin=await page.evaluate(()=>performance.timeOrigin);
   for(const key of ['finance','own','rent','flip','budget','finance']){
