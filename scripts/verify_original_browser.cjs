@@ -102,6 +102,21 @@ const assert=require('node:assert/strict');
      assert(fields.total.top>fields.broker.top&&Math.abs(fields.total.top-fields.option.top)<1,'Rental acquisition total and financing toggle form the final row: '+JSON.stringify(fields));
      assert(Math.abs(fields.total.left-fields.row.left)<1&&Math.abs(fields.option.right-fields.row.right)<1,'Rental acquisition row spans the available width');
     }
+    if(width===390&&['eigennutzung','vermietung','fix-flip'].includes(slug)){
+     const rowSelector=slug==='vermietung'?'#rentFinancingControls .finance-acq-row':slug==='eigennutzung'?'#ownFinanceCard .finance-acq-row':'#finance-acq-row-swap-v8403';
+     const rateSelector=slug==='vermietung'?'.field:has(#rentInterest)':'.field:has(#interest)';
+     const geometry=await page.evaluate(({rowSelector,rateSelector})=>{
+      const row=document.querySelector(rowSelector),rate=document.querySelector(rateSelector);
+      if(!row||!rate)return null;
+      const box=el=>{const r=el.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
+      return {row:box(row),rate:box(rate),total:box(row.querySelector('.finance-acq-total')),option:box(row.querySelector('.finance-acq-option'))};
+     },{rowSelector,rateSelector});
+     assert(geometry&&geometry.total&&geometry.option,'Acquisition row and both controls exist on '+slug);
+     assert(Math.abs(geometry.total.top-geometry.option.top)<1,'Acquisition total and checkbox share a row on '+slug+': '+JSON.stringify(geometry));
+     assert(Math.abs(geometry.total.left-geometry.rate.left)<2&&Math.abs(geometry.total.width-geometry.rate.width)<2,
+       'Acquisition total matches mobile interest field width on '+slug+': '+JSON.stringify(geometry));
+     assert(Math.abs(geometry.option.right-geometry.row.right)<2,'Financing checkbox occupies right side on '+slug+': '+JSON.stringify(geometry));
+    }
     if(wasOpen===false)await summary.click();
     if(rentalClosed)await page.locator('#rentFinanceToggle').click();
    }
