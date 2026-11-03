@@ -210,5 +210,15 @@ rules.append("""
 }
 """)
 
+
+# Keep additional sale costs on a separate full-width mobile row.
+rules.append("""
+@media(max-width:700px){
+ body:not(.nic-admin) .sale-cost-grid .field:has(#otherSaleCosts){
+  grid-column:1 / -1!important;min-width:0!important;
+ }
+}
+""")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')

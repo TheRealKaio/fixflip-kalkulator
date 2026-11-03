@@ -58,6 +58,15 @@ const assert=require('node:assert/strict');
     assert(Math.abs(fields.financed.top-fields.option.top)<1,'Finanziert and Mitfinanzieren share the second mobile row');
     assert(fields.financed.top>fields.interest.top&&fields.total.top>fields.financed.top,'Acquisition total follows the financing choices');
     assert(Math.abs(fields.total.left-fields.interest.left)<1&&Math.abs(fields.total.right-fields.repayment.right)<1,'Acquisition total spans both mobile columns');
+    assert.equal(await page.locator('#buffer').inputValue(),'','Renovation buffer starts blank');
+    if(slug==='eigennutzung')assert.equal(await page.locator('#months').inputValue(),'120','Financing duration starts at 120 months');
+    if(slug==='fix-flip'){
+     const sale=await page.locator('#otherSaleCosts').evaluate(el=>{const f=el.closest('.field'),row=f.closest('.sale-cost-grid');return {field:f.getBoundingClientRect().width,row:row.getBoundingClientRect().width};});
+     assert(Math.abs(sale.field-sale.row)<1,'Other sale costs span their own mobile row');
+    }
+    await page.evaluate(()=>resetDealCalculatorToDefaults());
+    assert.equal(await page.locator('#buffer').inputValue(),'','Reset keeps renovation buffer blank');
+    if(slug==='eigennutzung')assert.equal(await page.locator('#months').inputValue(),'120','Reset restores financing duration to 120 months');
     await page.locator('#interest').evaluate((el,open)=>{el.closest('details').open=open;},originalOpen);
    }
    if(width===390&&slug==='budget'){
