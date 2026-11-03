@@ -57,6 +57,14 @@ for p in site.glob('*.css'):
  p.write_text(split(p.read_text(),pattern)[0])
 for p in site.rglob('*.html'):
  s=p.read_text()
+ # Rename visible field captions after all route and presentation transformations.
+ labels={"Energieeffizienzklasse":"Effizienzkl. EEK","Lfd. Kosten pro Monat":"Lfd. mtl. Kosten","Laufende Kosten pro Monat":"Lfd. mtl. Kosten"}
+ parts=re.split(r'(<script\b[^>]*>.*?</script>|<style\b[^>]*>.*?</style>)',s,flags=re.S|re.I)
+ for i in range(0,len(parts),2):
+  for old,new in labels.items():
+   parts[i]=re.sub(r'(?<=>)(\s*)'+re.escape(old)+r'(\s*)(?=<)',lambda m:m[1]+new+m[2],parts[i])
+   parts[i]=parts[i].replace('aria-label="'+old+'"','aria-label="'+new+'"')
+ s=''.join(parts)
  s=re.sub(r'<link[^>]*href="/calculator-shell.css[^"]*"[^>]*>','',s)
  s=re.sub(r'(<style\b[^>]*>)(.*?)(</style>)',lambda m:m[1]+split(m[2],pattern)[0]+m[3],s,flags=re.S|re.I)
  if 'class="bottom-actions"' in s:
