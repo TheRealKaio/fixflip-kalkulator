@@ -111,6 +111,11 @@ const assert=require('node:assert/strict');
     assert(masked.every(x=>x.width>0&&x.width<x.rowWidth*.5&&Math.abs(x.right-x.rowRight)<=1&&x.right<=x.contentRight+1),`Masked cost values must match their text width, align to the row edge and remain inside the card: ${JSON.stringify(masked)}`);
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
     if(width===1440){
+     await page.evaluate(()=>{
+      const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?');
+      const key=section.dataset.nicContentKey;
+      NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,[key]:{visible:true,guestAllowed:true}}});
+     });
      const renovation=page.locator('.cost-row').filter({hasText:'Modernisierung'});
      const total=page.locator('.cost-total').filter({hasText:'Gesamt'});
      const original=await page.locator('#reno').inputValue();
@@ -124,6 +129,7 @@ const assert=require('node:assert/strict');
      assert.notEqual(at20000,at15000,'Changing manual renovation value recalculates the overall project cost');
      await page.locator('#reno').fill(original);
      await page.locator('#reno').press('Tab');
+     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
     }
    }
    if(slug==='eigennutzung'){
