@@ -16,10 +16,21 @@ style.textContent=`
 }
 [data-nic-content-key].nic-content-box-guest-locked .nic-masked-value{
  color:transparent!important;text-shadow:none!important;position:relative!important;
+ display:inline-block!important;width:fit-content!important;max-width:100%!important;
+ box-sizing:border-box!important;vertical-align:middle!important;
 }
 [data-nic-content-key].nic-content-box-guest-locked .nic-masked-value::after{
- content:"████"!important;color:#252525!important;position:absolute;inset:0;
- display:flex;align-items:center;justify-content:center;font:inherit;white-space:nowrap;
+ content:""!important;position:absolute;inset:1px 0;z-index:1;display:block!important;
+ max-width:100%;background:#252525!important;border-radius:2px;pointer-events:none;
+}
+[data-nic-content-key].nic-content-box-guest-locked .cost-row{
+ min-width:0!important;grid-template-columns:minmax(0,1fr) max-content!important;
+}
+[data-nic-content-key].nic-content-box-guest-locked .cost-row>span:first-child{
+ min-width:0!important;overflow-wrap:anywhere!important;
+}
+[data-nic-content-key].nic-content-box-guest-locked .cost-row>strong.nic-masked-value{
+ justify-self:end!important;
 }
 [data-nic-content-key].nic-content-box-guest-locked input:not([type=checkbox]):not([type=radio]),
 [data-nic-content-key].nic-content-box-guest-locked output{

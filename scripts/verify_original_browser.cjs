@@ -27,6 +27,25 @@ const assert=require('node:assert/strict');
    assert.equal(await page.locator('.hero #nicAccountLink').count(),0);
    assert.equal(await page.locator('.nic-menu-icon').count(),5);
    assert.equal(await page.locator('.nic-tile-active').count(),1,'Exactly one active tile on every route');
+   if(slug==='fix-flip'){
+    await page.evaluate(()=>{
+     const section=document.querySelector('#costsSection');
+     section.setAttribute('data-nic-content-key','test.costs');
+     NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,'test.costs':{visible:true,guestAllowed:false}}});
+    });
+    await page.waitForFunction(()=>document.querySelector('#costsSection .cost-row .nic-masked-value'));
+    const masked=await page.evaluate(()=>{
+     const section=document.querySelector('#costsSection'),style=getComputedStyle(section),box=section.getBoundingClientRect();
+     const contentRight=box.right-parseFloat(style.borderRightWidth)-parseFloat(style.paddingRight);
+     return [...section.querySelectorAll('.cost-row .nic-masked-value')].map(el=>({
+      display:getComputedStyle(el).display,right:el.getBoundingClientRect().right,
+      rowRight:el.closest('.cost-row').getBoundingClientRect().right,contentRight
+     }));
+    });
+    assert(masked.length>0,'Guest cost values should be masked');
+    assert(masked.every(x=>x.display==='inline-block'&&x.right<=x.rowRight+1&&x.right<=x.contentRight+1),'Masked cost values must remain aligned and inside the card');
+    await page.evaluate(()=>{const section=document.querySelector('#costsSection');NICContentSections.apply(NICSettings.current);section.removeAttribute('data-nic-content-key');});
+   }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
    assert(await page.locator('.deal-type-option').evaluateAll(els=>els.every(el=>Math.abs(el.getBoundingClientRect().height-els[0].getBoundingClientRect().height)<1)),'All five tile heights must be identical');
    assert(await page.locator('.nic-brand-bar').evaluate(bar=>[...bar.children].every(el=>{const r=el.getBoundingClientRect(),b=bar.getBoundingClientRect();return r.left>=b.left-1&&r.right<=b.right+1})), 'Brand bar content must stay inside its width');
