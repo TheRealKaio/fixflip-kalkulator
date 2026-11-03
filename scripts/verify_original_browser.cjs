@@ -257,6 +257,42 @@ const assert=require('node:assert/strict');
    for(const selector of ['.bottom-actions>.bottom-primary','.bottom-actions>.bottom-pdf']){
     assert.equal(await page.locator(selector).first().evaluate(el=>getComputedStyle(el).fontSize),'17px','Action label follows Untertexte (px)');
    }
+   // Comprehensive typography coverage: every visible text node must map to
+   // one of the seven Admin sizes, and Systemschrift must reach the node.
+   const typographyAudit=await page.evaluate(()=>{
+    const original=JSON.parse(JSON.stringify(NICSettings.current));
+    const preview=JSON.parse(JSON.stringify(original));
+    Object.assign(preview.layout,{font:'system',bodySize:21,subtextSize:25,
+      hintSize:13,h1:40,h2:29,h3:23,h4:17});
+    NICSettings.apply(preview);
+    const sizes=new Set(['21px','25px','13px','40px','29px','23px','17px']);
+    const failures=[],fontFailures=[];
+    let examined=0;
+    const skip=new Set(['SCRIPT','STYLE','NOSCRIPT','TEMPLATE','OPTION','SVG','PATH','TITLE']);
+    for(const el of document.querySelectorAll('.app *')){
+     if(skip.has(el.tagName)||el.closest('svg')||el.closest('.nic-admin-open'))continue;
+     if(!Array.from(el.childNodes).some(n=>n.nodeType===3&&n.textContent.trim()))continue;
+     const ownText=Array.from(el.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
+     if(!ownText||/^[+−×↓↑✓✔→←✕❮❯]$/.test(ownText))continue;
+     const cs=getComputedStyle(el),box=el.getBoundingClientRect();
+     if(cs.display==='none'||cs.visibility==='hidden'||!box.width||!box.height)continue;
+     examined++;
+     const info={text:ownText.slice(0,55),tag:el.tagName,id:el.id,
+       cls:typeof el.className==='string'?el.className.slice(0,90):'',
+       size:cs.fontSize};
+     const responsiveHero=el.matches('.hero.nic-responsive-header>h1');
+     if(!sizes.has(cs.fontSize)&&!responsiveHero&&failures.length<35)failures.push(info);
+     if(!cs.fontFamily.includes('Segoe UI')&&fontFailures.length<12)
+      fontFailures.push({...info,font:cs.fontFamily});
+    }
+    NICSettings.apply(original);
+    return {examined,failures,fontFailures};
+   });
+   if(typographyAudit.failures.length||typographyAudit.fontFailures.length)
+    console.log('TYPOGRAPHY_AUDIT',width,slug,JSON.stringify(typographyAudit));
+   assert(typographyAudit.examined>20,'No visible typography audited');
+   assert.deepEqual(typographyAudit.failures,[],'All text must map to an Admin font size');
+   assert.deepEqual(typographyAudit.fontFailures,[],'All text must follow Systemschrift');
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1?[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1}).map(e=>({tag:e.tagName,id:e.id,c:e.className,w:e.getBoundingClientRect().width,right:e.getBoundingClientRect().right})).slice(0,12):[]);
    assert.deepEqual(overflow,[],'No horizontal page overflow');
    assert.equal(await page.locator('.mini').first().evaluate(e=>getComputedStyle(e).fontSize),'12px');
