@@ -157,7 +157,7 @@ const assert=require('node:assert/strict');
     });
     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Zins and Tilgung share the first mobile row');
     assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Finanzierungsdauer folgt den Finanzierungsannahmen');
-    assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.buyBroker.top)<1,'Notar und Makler folgen auf die Laufzeit');
+    assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.buyBroker.top)<1,'Notar und Makler folgen auf die Laufzeit: '+JSON.stringify(fields));
     assert(fields.total.top>fields.buyBroker.top,'Kaufnebenkostenzeile folgt auf Notar und Makler: '+JSON.stringify(fields));
     assert(Math.abs(fields.total.top-fields.option.top)<1,'Kaufnebenkosten und Mitfinanzieren bleiben in derselben Zeile: '+JSON.stringify(fields));
     assert(Math.abs(fields.total.left-fields.interest.left)<1&&Math.abs(fields.total.right-fields.repayment.right)<1,'Kaufnebenkosten behalten die bisherige Zweispaltenbreite');
