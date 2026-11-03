@@ -532,5 +532,33 @@ body:not(.nic-admin) #finance-acq-row-swap-v8403 .finance-acq-option{grid-column
 """)
 
 
+
+# Fix & Flip phone layout: financed share fills its row, and purchase costs sit
+# beside the co-financing checkbox at the same width as one interest field.
+rules.append("""
+@media(max-width:700px){
+ body:not(.nic-admin) #flipFinanceCard .nic-finance-mobile-fields .finance-rate-grid .field:has(#ltv){
+  grid-column:1 / -1!important;order:3!important;width:100%!important;
+  max-width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .finance-acq-row{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;align-items:start!important;grid-column:1/-1!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .finance-acq-total{
+  grid-column:1!important;order:0!important;grid-row:1!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .finance-acq-option{
+  grid-column:2!important;order:0!important;grid-row:1!important;
+ }
+}
+""")
+if not any(" #flipFinanceCard .nic-finance-mobile-fields .finance-rate-grid .field:has(#ltv)" in rule for rule in rules):
+ raise SystemExit("Fix & Flip financed full-width mobile rule missing")
+if not any(" #flipFinanceCard .finance-acq-total" in rule and "grid-template-columns:repeat(2,minmax(0,1fr))!important" in rule for rule in rules):
+ raise SystemExit("Fix & Flip acquisition-cost/checkbox mobile row missing")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
