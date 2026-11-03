@@ -105,6 +105,9 @@ for p in site.rglob('*.html'):
   for old,new in labels.items():
    parts[i]=re.sub(r'(?<=>)(\s*)'+re.escape(old)+r'(\s*)(?=<)',lambda m:m[1]+new+m[2],parts[i])
    parts[i]=parts[i].replace('aria-label="'+old+'"','aria-label="'+new+'"')
+ for i in range(0,len(parts),2):
+  if 'Weitere Finanzierung berücksichtigen' in parts[i] and 'class="nic-body-font-text"' not in parts[i]:
+   parts[i]=parts[i].replace('Weitere Finanzierung berücksichtigen','<span class="nic-body-font-text">Weitere Finanzierung berücksichtigen</span>')
  s=''.join(parts)
  # Group the existing finance fields without replacing inputs or their handlers.
  rate_start=s.find('<div class="finance-rate-grid">')
@@ -286,6 +289,14 @@ body:not(.nic-admin) .field-hint-below{
 rules.append("""
 body:not(.nic-admin) .sub,
 body:not(.nic-admin) .section-summary-subtitle{
+ font-size:var(--nic-body-font-size,16px)!important;
+}
+""")
+
+# This financing section title follows the configurable base text size.
+rules.append("""
+body:not(.nic-admin) .nic-body-font-text,
+body:not(.nic-admin) .nic-body-font-text *{
  font-size:var(--nic-body-font-size,16px)!important;
 }
 """)
