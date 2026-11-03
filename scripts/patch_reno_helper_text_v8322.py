@@ -163,7 +163,7 @@ body=body.replace(controls,"",1).replace(term_field,"",1)
 quick_start=body.index('<div class="quick-grid">')
 depth=0
 quick_end=None
-for match in re.finditer(r"</?div\\b[^>]*>",body[quick_start:]):
+for match in re.finditer(r"</?div\b[^>]*>",body[quick_start:]):
     if match.group(0).startswith("</"):
         depth-=1
         if depth==0:
