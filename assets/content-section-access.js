@@ -27,7 +27,7 @@ style.textContent=`
  min-width:0!important;overflow-wrap:anywhere!important;
 }
 [data-nic-content-key].nic-content-box-guest-locked .cost-row>strong.nic-masked-value{
- justify-self:end!important;
+ display:inline-block!important;width:max-content!important;justify-self:end!important;
 }
 [data-nic-content-key].nic-content-box-guest-locked input:not([type=checkbox]):not([type=radio]),
 [data-nic-content-key].nic-content-box-guest-locked output{
