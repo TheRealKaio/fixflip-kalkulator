@@ -7,7 +7,7 @@ s = path.read_text(encoding="utf-8")
 
 def div_end(html, start):
     depth = 0
-    for match in re.finditer(r"</?div\\b[^>]*>", html[start:]):
+    for match in re.finditer(r"</?div\b[^>]*>", html[start:]):
         if match.group(0).startswith("</"):
             depth -= 1
             if depth == 0:
