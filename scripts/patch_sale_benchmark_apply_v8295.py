@@ -156,7 +156,7 @@ required = [
     'field.dispatchEvent(new Event("input",{bubbles:true}));',
     'localStorage.setItem("ff_flip_sale_after_reno_value",String(rounded));',
     'const subtitleSourceKey="ff_flip_sale_after_reno_source";',
-    'hint.textContent=label+" • editierbar";',
+    'hint.textContent="geändert (bitte prüfen)";',
     'localStorage.setItem(subtitleSourceKey,source);',
     'updateSaleSubtitle(source);',
     'V8.295',
