@@ -716,6 +716,24 @@ jobs:
               raise SystemExit("Checklist PDF heading not found in generated assets")
           print(f"Corrected checklist PDF heading ({count} occurrence(s))")
           PY
+          # Update the Fix & Flip introductory text in all generated pages.
+          python - <<'PY'
+          from pathlib import Path
+          old = "Du gibst ein, was du kaufst und sanierst. Die App übernimmt die Finanzmathematik und zeigt dir, wo das Risiko steckt."
+          new = "Plane Dein Fix-&-Flip-Projekt mit unserem Immobilienrechner. Gib Kaufpreis, Kaufnebenkosten, Sanierungskosten und Verkaufspreis ein. Der Rechner kalkuliert Kosten, Gewinn und Rendite automatisch und zeigt wirtschaftliche Chancen beim Immobilienkauf."
+          changes = 0
+          for path in Path("_site").rglob("*.html"):
+              source = path.read_text(encoding="utf-8")
+              for before, after in ((old, new), (old.replace("&", "&amp;"), new.replace("&", "&amp;"))):
+                  occurrences = source.count(before)
+                  if occurrences:
+                      source = source.replace(before, after)
+                      changes += occurrences
+              path.write_text(source, encoding="utf-8")
+          if changes == 0:
+              raise SystemExit("Fix & Flip introduction not found; refusing to publish unchanged text")
+          print(f"Fix & Flip introduction updated ({changes} occurrence(s))")
+          PY
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
