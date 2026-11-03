@@ -29,13 +29,14 @@ const assert=require('node:assert/strict');
    assert.equal(await page.locator('.nic-tile-active').count(),1,'Exactly one active tile on every route');
    if(slug==='fix-flip'){
     await page.evaluate(()=>{
-     const section=document.querySelector('#costsSection');
-     section.setAttribute('data-nic-content-key','test.costs');
-     NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,'test.costs':{visible:true,guestAllowed:false}}});
+     const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?');
+     const key=section.dataset.nicContentKey;
+     NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,[key]:{visible:true,guestAllowed:false}}});
     });
-    await page.waitForFunction(()=>document.querySelector('#costsSection .cost-row .nic-masked-value'));
+    await page.waitForFunction(()=>[...document.querySelectorAll('[data-nic-content-key]')].some(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?'&&box.querySelector('.cost-row .nic-masked-value')));
     const masked=await page.evaluate(()=>{
-     const section=document.querySelector('#costsSection'),style=getComputedStyle(section),box=section.getBoundingClientRect();
+     const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?');
+     const style=getComputedStyle(section),box=section.getBoundingClientRect();
      const contentRight=box.right-parseFloat(style.borderRightWidth)-parseFloat(style.paddingRight);
      return [...section.querySelectorAll('.cost-row .nic-masked-value')].map(el=>({
       display:getComputedStyle(el).display,right:el.getBoundingClientRect().right,
@@ -44,7 +45,7 @@ const assert=require('node:assert/strict');
     });
     assert(masked.length>0,'Guest cost values should be masked');
     assert(masked.every(x=>x.display==='inline-block'&&x.right<=x.rowRight+1&&x.right<=x.contentRight+1),'Masked cost values must remain aligned and inside the card');
-    await page.evaluate(()=>{const section=document.querySelector('#costsSection');NICContentSections.apply(NICSettings.current);section.removeAttribute('data-nic-content-key');});
+    await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
    }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
    assert(await page.locator('.deal-type-option').evaluateAll(els=>els.every(el=>Math.abs(el.getBoundingClientRect().height-els[0].getBoundingClientRect().height)<1)),'All five tile heights must be identical');
