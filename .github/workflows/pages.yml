@@ -777,6 +777,23 @@ jobs:
               raise SystemExit("Responsive headings not found; aborting release: " + ", ".join(missing))
           print("Removed forced breaks and soft hyphens:", changes)
           PY
+          # Update the rental calculator intro, including runtime header variants.
+          python - <<'PY'
+          from pathlib import Path
+          old = "Prüfe Miete, laufende Kosten und Finanzierung. Der Rechner zeigt dir Cashflow, Renditen und die notwendige Break-even-Miete."
+          new = "Prüfe mit unserem Mietrendite-Rechner, ob sich Deine Mietwohnung als Kapitalanlage in Hamburg oder deutschlandweit lohnt. Berechne Mieteinnahmen, laufende Kosten, Finanzierung, Cashflow und Rendite. Ermittle außerdem die Break-even-Miete für Deine Immobilie."
+          assert len(new) <= 300
+          changes = 0
+          for path in Path("_site").rglob("*.html"):
+              source = path.read_text(encoding="utf-8")
+              count = source.count(old)
+              if count:
+                  path.write_text(source.replace(old, new), encoding="utf-8")
+                  changes += count
+          if changes == 0:
+              raise SystemExit("Rental calculator description not found: stopping release")
+          print("Rental calculator SEO/GEO text updated:", changes, "occurrence(s)")
+          PY
           python scripts/centralize_expand_controls.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
