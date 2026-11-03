@@ -796,7 +796,7 @@ jobs:
           PY
           python scripts/centralize_expand_controls.py _site
           python scripts/centralize_calculator_actions.py _site
-          python scripts/centralize_cost_breakdown_typography.py _site
+          python scripts/centralize_layout_typography.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
