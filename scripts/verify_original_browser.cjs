@@ -35,8 +35,8 @@ const assert=require('node:assert/strict');
     assert(['flex','inline-flex'].includes(actionStyle[key].display),'Unified flex alignment: '+key);
    }
    assert.equal(actionStyle.primary.bg,'rgb(180, 35, 24)','Primary restart control retains theme red');
-   assert.equal(actionStyle.pdf.bg,'rgb(17, 26, 46)','PDF share retains navy');
-   assert.equal(actionStyle.download.bg,'rgb(17, 26, 46)','PDF download retains navy');
+   assert.equal(actionStyle.pdf.bg,'rgb(15, 23, 42)','PDF share retains navy');
+   assert.equal(actionStyle.download.bg,'rgb(15, 23, 42)','PDF download retains navy');
    assert(actionStyle.primary.width>0&&actionStyle.pdf.width>0&&actionStyle.download.width>0);
    // The shared stylesheet must win over legacy CSS and JS-applied visuals.
    const expandControls=await page.evaluate(()=>{
