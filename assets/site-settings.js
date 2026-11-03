@@ -182,9 +182,8 @@ body:not(.nic-admin) .deal-type-option:is(:has(input:checked),[aria-pressed="tru
 body:not(.nic-embed) .deal-type-row>.deal-type-option{box-sizing:border-box!important;border:2px solid #dce8e2!important;border-radius:${scaledRadius(16)}px!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active{border:2px solid var(--nic-green-bg,#075c55)!important;background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong,small){color:var(--nic-green-text,#fff)!important}
-body:not(.nic-admin) .plus-btn,body:not(.nic-admin) .market-check-toggle{background:var(--nic-highlight-bg)!important;border-color:var(--nic-highlight-bg)!important;color:var(--nic-highlight-text)!important}
 body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
-body:not(.nic-admin) details summary:after{background:var(--nic-highlight-bg)!important;border-color:var(--nic-highlight-bg)!important;color:var(--nic-highlight-text)!important}`;
+`;
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
       for(const rel of ['icon','apple-touch-icon']){
