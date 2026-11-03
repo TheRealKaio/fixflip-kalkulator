@@ -92,8 +92,12 @@ for p in site.rglob('*.html'):
   r'(</label>\\s*<div class="input-wrap">.*?</div>)',re.S
  )
  def move_equity_hint(match):
-  hint=re.sub(r'^<span\\b','<div',match.group(2),count=1)
-  hint=re.sub(r'</span>
+   hint=re.sub(r'^<span\b','<div',match.group(2),count=1)
+   hint=re.sub(r'</span>$','</div>',hint,count=1)
+   return match.group(1)+match.group(3)+hint
+  s,equity_hint_moves=equity_hint_pattern.subn(move_equity_hint,s,count=1)
+  if 'id="equityInputHint"' in s and equity_hint_moves!=1:
+   raise SystemExit('Could not move equity helper below its input: '+str(p))
  labels={"Energieeffizienzklasse":"Effizienzkl. EEK","Lfd. Kosten pro Monat":"Lfd. mtl. Kosten","Laufende Kosten pro Monat":"Lfd. mtl. Kosten"}
  parts=re.split(r'(<script\b[^>]*>.*?</script>|<style\b[^>]*>.*?</style>)',s,flags=re.S|re.I)
  for i in range(0,len(parts),2):
