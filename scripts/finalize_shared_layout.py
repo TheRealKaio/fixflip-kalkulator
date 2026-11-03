@@ -379,6 +379,71 @@ rules.append("""
 }
 """)
 
+# Vermietung financing mirrors the responsive owner-use grouping while retaining its own controls.
+rules.append("""
+@media (min-width:701px) and (max-width:1000px){
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  gap:14px!important;min-width:0!important;max-width:100%!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.finance-rate-grid{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;grid-column:1/-1!important;min-width:0!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv){
+  grid-column:1/-1!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls){
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px 10px!important;grid-column:1/-1!important;min-width:0!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.field:has(#rentMonths){
+  grid-column:1/-1!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard #rentFinancingControls{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;grid-column:1/-1!important;min-width:0!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-row{
+  display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
+  gap:10px!important;align-items:end!important;grid-column:1/-1!important;min-width:0!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-total{grid-column:1!important}
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-option{grid-column:2!important}
+ body:not(.nic-admin) #rentFinanceCard .field,
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-row>*{
+  min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+ }
+}
+@media(max-width:700px){
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px 12px!important;min-width:0!important;max-width:100%!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.finance-rate-grid,
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls){
+  display:contents!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv),
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.field:has(#rentMonths){
+  grid-column:1/-1!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard #rentFinancingControls{
+  display:contents!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-row{
+  display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
+  gap:10px!important;align-items:end!important;grid-column:1/-1!important;order:7!important;min-width:0!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-total{grid-column:1!important}
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-option{grid-column:2!important}
+ body:not(.nic-admin) #rentFinanceCard .field,
+ body:not(.nic-admin) #rentFinanceCard .finance-acq-row>*{
+  min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+ }
+}
+""")
+
 # Both sale fields occupy separate full-width rows on phones, including landscape.
 rules.append("""
 @media(max-width:700px), (max-width:1000px) and (max-height:600px) and (orientation:landscape){
