@@ -77,7 +77,7 @@ const assert=require('node:assert/strict');
      assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Rental interest and repayment share the first mobile row');
      assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Rental financed share and duration follow the interest assumptions');
      assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.broker.top)<1,'Rental notary and broker follow the duration on one row');
-     assert(fields.total.top>fields.broker.top&&Math.abs(fields.total.top-fields.option.top)<1,'Rental acquisition total and financing toggle form the final row');
+     assert(fields.total.top>fields.broker.top&&Math.abs(fields.total.top-fields.option.top)<1,'Rental acquisition total and financing toggle form the final row: '+JSON.stringify(fields));
      assert(Math.abs(fields.total.left-fields.row.left)<1&&Math.abs(fields.option.right-fields.row.right)<1,'Rental acquisition row spans the available width');
     }
     if(wasOpen===false)await summary.click();
