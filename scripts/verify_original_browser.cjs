@@ -316,6 +316,9 @@ const assert=require('node:assert/strict');
     const sizes=new Set(['21px','25px','13px','40px','29px','23px','17px']);
     const failures=[],fontFailures=[];
     let examined=0;
+    const bodyMappedTexts=[...document.querySelectorAll('.nic-body-font-text')]
+      .filter(el=>el.textContent.trim()==='Weitere Finanzierung berücksichtigen')
+      .map(el=>getComputedStyle(el).fontSize);
     const skip=new Set(['SCRIPT','STYLE','NOSCRIPT','TEMPLATE','OPTION','SVG','PATH','TITLE']);
     for(const el of document.querySelectorAll('.app *')){
      if(skip.has(el.tagName)||el.closest('svg')||el.closest('.nic-admin-open'))continue;
@@ -334,13 +337,17 @@ const assert=require('node:assert/strict');
       fontFailures.push({...info,font:cs.fontFamily});
     }
     NICSettings.apply(original);
-    return {examined,failures,fontFailures};
+    return {examined,failures,fontFailures,bodyMappedTexts};
    });
    if(typographyAudit.failures.length||typographyAudit.fontFailures.length)
     console.log('TYPOGRAPHY_AUDIT',width,slug,JSON.stringify(typographyAudit));
    assert(typographyAudit.examined>20,'No visible typography audited');
    assert.deepEqual(typographyAudit.failures,[],'All text must map to an Admin font size');
    assert.deepEqual(typographyAudit.fontFailures,[],'All text must follow Systemschrift');
+   if(slug==='eigennutzung'){
+    assert(typographyAudit.bodyMappedTexts.length>0,'The additional-financing title is tagged for Grundschriftgröße (px)');
+    assert(typographyAudit.bodyMappedTexts.every(size=>size==='21px'),'The additional-financing title follows Grundschriftgröße (px): '+JSON.stringify(typographyAudit.bodyMappedTexts));
+   }
    // Verify the real current Admin settings (not repository fallback values)
    // on portrait, small-phone, tablet and landscape viewports.
    const liveSnapshot=await page.evaluate(()=>{
