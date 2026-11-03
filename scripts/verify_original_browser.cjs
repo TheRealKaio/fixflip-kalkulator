@@ -61,7 +61,10 @@ const assert=require('node:assert/strict');
     await page.locator('#interest').evaluate((el,open)=>{el.closest('details').open=open;},originalOpen);
    }
    if(width===390&&slug==='budget'){
-    const incomeIds=['budgetIncomeEmployment','budgetIncomePension','budgetIncomeSupport','budgetIncomeSide','budgetIncomeRent','budgetIncomeOther','budgetChildBenefit'];
+    for(const id of ['budgetIncomeToggle','budgetExpensesToggle']){
+     if(await page.locator('#'+id).getAttribute('aria-expanded')==='false')await page.locator('#'+id).click();
+    }
+    const incomeIds=['budgetIncomeEmployment','budgetIncomePension','budgetIncomeSupport','budgetIncomeSide','budgetIncomeRent','budgetIncomeOther'];
     const expenseIds=['budgetFood','budgetMobility','budgetInsurance','budgetTelecom','budgetLeisure','budgetChildCosts','budgetExistingLoans','budgetOther'];
     for(const id of [...incomeIds,...expenseIds])await page.locator('#'+id).fill('0');
     await page.locator('#budgetIncomeEmployment').fill('4000');
