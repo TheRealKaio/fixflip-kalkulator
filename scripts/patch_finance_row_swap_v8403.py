@@ -80,11 +80,7 @@ acq_block = acq_block.replace(
     '<div class="finance-acq-row" id="finance-acq-row-swap-v8403">',
     1,
 )
-quick_open = quick_block[:opening_end].replace(
-    'class="quick-grid"',
-    'class="quick-grid finance-row-order-v8403" style="display:grid!important;grid-template-columns:1fr 1fr!important"',
-    1,
-)
+quick_open = quick_block[:opening_end]
 new_quick = (
     quick_open
     + term_block
@@ -112,10 +108,9 @@ css = '''<style id="finance-row-order-v8403">
   align-items:end!important;
   width:100%!important;
   grid-column:1/-1!important;
-  grid-row:auto!important;
 }
-#finance-acq-row-swap-v8403 .finance-acq-total{grid-column:1!important;grid-row:1!important}
-#finance-acq-row-swap-v8403 .finance-acq-option{grid-column:2!important;grid-row:1!important}
+#finance-acq-row-swap-v8403 .finance-acq-total{grid-column:1!important}
+#finance-acq-row-swap-v8403 .finance-acq-option{grid-column:2!important}
 </style>'''
 if "</head>" not in s:
     raise SystemExit("V8.403 style insertion anchor missing")
