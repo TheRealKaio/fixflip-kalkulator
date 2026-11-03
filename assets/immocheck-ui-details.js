@@ -27,6 +27,23 @@ decorate();
 const row=document.querySelector('.deal-type-row');
 if(row)new MutationObserver(decorate).observe(row,{childList:true});
 
+
+// Bind the renovation split heading to Admin → Layout → H3 (px).
+// Its existing element and all surrounding layout/behavior remain unchanged.
+function bindRenovationSplitH3(){
+ document.querySelectorAll('.reno-head').forEach(container=>{
+  const labels=container.querySelectorAll('h1,h2,h3,h4,.reno-title,strong,span,div');
+  for(const el of labels){
+   if(el.textContent.trim()!=='Sanierung aufteilen')continue;
+   const target=el.closest('h1,h2,h3,h4')||el;
+   target.classList.add('nic-reno-split-h3');
+   break;
+  }
+ });
+}
+bindRenovationSplitH3();
+new MutationObserver(bindRenovationSplitH3).observe(document.body,{childList:true,subtree:true});
+
 /* Shared action bar: one initialization, with original calculator event handlers retained. */
 function setupCalculatorActions(){
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
