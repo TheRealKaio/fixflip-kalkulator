@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 29373)
-Total output lines: 2438
+Warning: truncated output (original token count: 29331)
+Total output lines: 2437
 
 from pathlib import Path
 import sys
@@ -1015,7 +1015,14 @@ function resetBudgetCalculatorToDefaults(){
   if($("budgetFamilyStatus")) $("budgetFamilyStatus").value="single";
   if($("budgetAdults")) $("budgetAdults").value="1";
   if($("budgetChildren")) $("budgetChildren").value="0";
-  if($("budgetEqui…4373 tokens truncated…ocalStorage.getItem("ff_budget_rateSliderPct")!==null){
+  if($("budgetEqui…4331 tokens truncated…e Einnahmen oder Ausgaben prüfen.";
+        }else{
+          $("budgetRateSliderWarning").textContent="";
+        }
+
+      }
+    }
+    if($("budgetSafetyReserve") && localStorage.getItem("ff_budget_rateSliderPct")!==null){
       budgetRateSliderSyncing=true;
       $("budgetSafetyReserve").value=String(Math.round(m.minimumReserve));
       budgetRateSliderSyncing=false;
@@ -1829,23 +1836,22 @@ if term_now < 0:
     raise SystemExit("V8.236 layout term block disappeared before replacement")
 s = s[:term_now] + holding_block + s[term_now + len(term_block):]
 
-# Laufzeit Finanzierung im Anpassungsbereich direkt hinter den laufenden Kosten setzen.
+# Laufzeit Finanzierung im Anpassungsbereich direkt vor den Verkaufskosten setzen.
 _, section_start, section_end = _target_financing_section(s)
-holding_positions = _label_positions(s, "Laufende Kosten pro Monat", section_start, section_end)
-if len(holding_positions) != 1:
-    raise SystemExit("V8.236 layout holding field not unique after replacement")
-_, holding_end, _ = _field_block_at_label(s, "Laufende Kosten pro Monat", holding_positions[0])
-s = s[:holding_end] + "\n\n        " + term_block + s[holding_end:]
+sale_cost_positions = _label_positions(s, '<div class="sale-cost-grid">', section_start, section_end)
+if len(sale_cost_positions) != 1:
+    raise SystemExit("V8.236 layout sale-cost grid not unique after replacement")
+sale_cost_start = sale_cost_positions[0]
+s = s[:sale_cost_start] + term_block + "\n\n        " + s[sale_cost_start:]
 
 # Abnahmekontrolle nur im gemeinten Formularbereich.
 _, section_start, section_end = _target_financing_section(s)
 section_html = s[section_start:section_end]
 term_in_section = section_html.find('id="monthsLabel"')
-holding_in_section = section_html.find("Laufende Kosten pro Monat")
-if term_in_section < 0 or holding_in_section < 0:
+if term_in_section < 0:
     raise SystemExit(
-        "V8.236 layout verification failed in financing section: term/holding="
-        + str((term_in_section, holding_in_section))
+        "V8.236 layout verification failed in financing section: term="
+        + str(term_in_section)
     )
 if "Sanierungs-Puffer" in section_html:
     raise SystemExit("V8.236 layout verification failed: Sanierungs-Puffer remains in financing section")
