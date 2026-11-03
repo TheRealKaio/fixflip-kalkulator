@@ -141,5 +141,34 @@ body:not(.nic-admin) :is(.footer-note,.nic-shared-footer,.public-footer) .nic-co
 }
 """)
 
+
+# Renovation proposal actions occupy their own right-aligned row; totals stay below.
+rules.append("""
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:10px!important;min-width:0!important;
+}
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions{
+ display:flex!important;flex-direction:column!important;align-items:flex-end!important;
+ flex:0 0 auto!important;gap:0!important;width:100%!important;max-width:100%!important;
+ min-width:0!important;box-sizing:border-box!important;
+}
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions .nic-reno-action-row{
+ display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+ justify-content:flex-end!important;align-items:center!important;
+ width:48%!important;max-width:100%!important;min-width:0!important;
+ margin-left:auto!important;margin-right:0!important;box-sizing:border-box!important;
+}
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions :is(#renoSuggestionTotal,#rentRenoSheetTotal,.suggestion-total){
+ display:block!important;flex:none!important;width:100%!important;max-width:100%!important;
+ box-sizing:border-box!important;margin:8px 0 0!important;text-align:right!important;
+}
+@media(max-width:650px){
+ body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions .nic-reno-action-row{
+  width:100%!important;
+ }
+}
+""")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
