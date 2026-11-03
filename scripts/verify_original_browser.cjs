@@ -51,8 +51,8 @@ const assert=require('node:assert/strict');
    for(const item of expandControls){
     assert.equal(item.width,'32px','Expand button width: '+JSON.stringify(item));
     assert.equal(item.height,'32px','Expand button height: '+JSON.stringify(item));
-    assert.equal(item.bg,'rgb(237, 243, 255)','Expand button background: '+JSON.stringify(item));
-    assert.equal(item.color,'rgb(37, 99, 235)','Expand button color: '+JSON.stringify(item));
+    assert.equal(item.bg,'rgb(253, 230, 138)','Expand button background: '+JSON.stringify(item));
+    assert.equal(item.color,'rgb(0, 0, 0)','Expand button color: '+JSON.stringify(item));
    }
    if(['eigennutzung','vermietung','fix-flip'].includes(slug)){
     const id=slug==='vermietung'?'rentFinanceAcquisition':'financeAcquisition';
