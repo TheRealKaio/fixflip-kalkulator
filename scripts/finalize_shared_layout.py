@@ -265,6 +265,14 @@ body:not(.nic-admin) #rentRenoPanel #rentRenoSheetTotal.nic-rental-proposal-tota
 }
 """)
 
+# Input units follow the admin hint-text scale. The Haushaltsbudget transfer
+# summary uses plain text values, not input unit spans, so remains unchanged.
+rules.append("""
+body:not(.nic-admin) .input-wrap .unit{
+ font-size:var(--nic-hint-font-size,12px)!important;
+}
+""")
+
 # Mobile: rates, financing choices, then the full-width acquisition total.
 rules.append("""
 @media(max-width:700px){
