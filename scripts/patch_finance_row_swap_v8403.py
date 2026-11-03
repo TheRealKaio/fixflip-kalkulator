@@ -80,7 +80,7 @@ acq_block = acq_block.replace(
     '<div class="finance-acq-row" id="finance-acq-row-swap-v8403">',
     1,
 )
-quick_open = quick_block[:opening_end]
+quick_open = quick_block[:opening_end].replace('class="quick-grid"', 'class="quick-grid" id="financeQuickGridSwapV8403"', 1)
 new_quick = (
     quick_open
     + term_block
@@ -97,6 +97,8 @@ acq_pos = s.find('id="finance-acq-row-swap-v8403"')
 sale_cost_pos = s.find('<div class="sale-cost-grid">')
 if not (0 <= term_pos < notary_pos < buy_broker_pos < acq_pos < sale_cost_pos):
     raise SystemExit("V8.403 verification failed: rows are not in the requested order")
+if 'id="financeQuickGridSwapV8403"' not in s:
+    raise SystemExit("V8.403 mobile financing grid anchor missing")
 if s.count('id="financeAcquisition"') != 1:
     raise SystemExit("V8.403 verification failed: Mitfinanzieren control missing or duplicated")
 
@@ -111,6 +113,9 @@ css = '''<style id="finance-row-order-v8403">
 }
 #finance-acq-row-swap-v8403 .finance-acq-total{grid-column:1!important}
 #finance-acq-row-swap-v8403 .finance-acq-option{grid-column:2!important}
+@media(max-width:600px){
+  #financeQuickGridSwapV8403{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-auto-flow:row!important;align-items:start!important}
+}
 </style>'''
 if "</head>" not in s:
     raise SystemExit("V8.403 style insertion anchor missing")
