@@ -70,7 +70,9 @@ required_implementation = {
     "own budget reset expenses": 'localStorage.removeItem("ff_own_budget_expenses");',
     "own budget reset timestamp": 'localStorage.removeItem("ff_own_budget_imported_at");',
     "budget financing green header": 'class="decision go budget-financing-decision"',
-    "budget financing icon": '<div class="light" aria-hidden="true">💶</div>',
+    "budget financing full-width header": '#budgetSection .budget-financing-decision{display:block!important;text-align:left!important}',
+    "budget financing base font": 'font-size:var(--nic-body-font-size,16px)!important',
+    "budget expense total without separator": '#budgetExpensesSection .budget-summary-row.total:has(#budgetExpensesTotal){border-top:0!important}',
     "budget financing title": '<h2>Deine mögliche Finanzierung</h2>',
     "budget financing info text": 'Aus deinem Budget, Eigenkapital und den Finanzierungsannahmen ergibt sich hier deine mögliche Finanzierung.',
     "budget financing spacing": '.budget-financing-decision{margin-bottom:14px}',
@@ -692,3 +694,8 @@ print("Slider acceptance passed:")
 for name in required_implementation:
     print(" -", name)
 print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, rate-reduction amount, exact/sub-euro 300 threshold, pre-adjustment undershoot")
+
+# The budget result heading intentionally has no leading icon.
+header = re.search(r'<div class="decision go budget-financing-decision">([\s\S]*?)<div class="budget-result-grid">', html)
+if not header or 'class="light"' in header.group(1):
+    raise SystemExit("Budget financing heading must have no icon")
