@@ -107,6 +107,7 @@ css = '''<style id="finance-row-order-v8403">
   align-items:end!important;
   width:100%!important;
   grid-column:1/-1!important;
+  grid-row:3!important;
 }
 #finance-acq-row-swap-v8403 .finance-acq-total{grid-column:1!important;grid-row:1!important}
 #finance-acq-row-swap-v8403 .finance-acq-option{grid-column:2!important;grid-row:1!important}
