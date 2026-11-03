@@ -76,8 +76,21 @@ const assert=require('node:assert/strict');
     assert.equal(await page.locator('#buffer').inputValue(),'','Renovation buffer starts blank');
     if(slug==='eigennutzung')assert.equal(await page.locator('#months').inputValue(),'120','Financing duration starts at 120 months');
     if(slug==='fix-flip'){
-     const sale=await page.locator('#otherSaleCosts').evaluate(el=>{const f=el.closest('.field'),row=f.closest('.sale-cost-grid');return {field:f.getBoundingClientRect().width,row:row.getBoundingClientRect().width};});
-     assert(Math.abs(sale.field-sale.row)<1,'Other sale costs span their own mobile row');
+     for(const viewport of [{width:320,height:740},{width:390,height:900},{width:844,height:390}]){
+      await page.setViewportSize(viewport);
+      const sale=await page.evaluate(()=>{
+       const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width};};
+       const broker=document.getElementById('sellBroker').closest('.field');
+       const other=document.getElementById('otherSaleCosts').closest('.field');
+       return {broker:rect(broker),other:rect(other),row:rect(broker.closest('.sale-cost-grid')),input:rect(document.getElementById('sellBroker')),viewport:innerWidth};
+      });
+      for(const field of [sale.broker,sale.other]){
+       assert(Math.abs(field.left-sale.row.left)<1&&Math.abs(field.right-sale.row.right)<1,'Both sale fields span the full mobile row: '+JSON.stringify(sale));
+      }
+      assert(sale.other.top>=sale.broker.bottom,'Sale broker and additional costs have separate mobile rows');
+      assert(sale.input.width>0&&sale.input.left>=0&&sale.input.right<=sale.viewport,'Sale broker input stays inside the mobile viewport');
+     }
+     await page.setViewportSize({width,height:900});
     }
     await page.evaluate(()=>resetDealCalculatorToDefaults());
     assert.equal(await page.locator('#buffer').inputValue(),'','Reset keeps renovation buffer blank');

@@ -211,11 +211,12 @@ rules.append("""
 """)
 
 
-# Keep additional sale costs on a separate full-width mobile row.
+# Both sale fields occupy separate full-width rows on phones, including landscape.
 rules.append("""
-@media(max-width:700px){
- body:not(.nic-admin) .sale-cost-grid .field:has(#otherSaleCosts){
+@media(max-width:700px), (max-width:1000px) and (max-height:600px) and (orientation:landscape){
+ body:not(.nic-admin) .sale-cost-grid .field:has(:is(#sellBroker,#otherSaleCosts)){
   grid-column:1 / -1!important;min-width:0!important;
+  width:100%!important;max-width:100%!important;box-sizing:border-box;
  }
 }
 """)
