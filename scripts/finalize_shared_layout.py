@@ -77,6 +77,15 @@ for p in site.rglob('*.html'):
   rate_end=s.find('<div class="sale-cost-grid">',rate_start)
   if rate_end<0:raise SystemExit('Finance mobile grouping anchor missing: '+str(p))
   s=s[:rate_start]+'<div class="nic-finance-mobile-fields">'+s[rate_start:rate_end]+'</div>'+s[rate_end:]
+ # Rental uses the same mobile grid, with its own isolated controls and IDs.
+ rental_body=s.find('id="rentFinanceBody"')
+ if rental_body>=0:
+  rental_start=s.find('<div class="finance-rate-grid">',rental_body)
+  rental_controls=s.find('<div class="quick-grid" id="rentFinancingControls">',rental_start)
+  if rental_start<0 or rental_controls<0:raise SystemExit('Rental finance grouping anchor missing: '+str(p))
+  _,_,controls_end=element(s[rental_controls:],'quick-grid')
+  rental_end=rental_controls+controls_end
+  s=s[:rental_start]+'<div class="nic-finance-mobile-fields">'+s[rental_start:rental_end]+'</div>'+s[rental_end:]
  s=re.sub(r'<link[^>]*href="/calculator-shell.css[^"]*"[^>]*>','',s)
  s=re.sub(r'(<style\b[^>]*>)(.*?)(</style>)',lambda m:m[1]+split(m[2],pattern)[0]+m[3],s,flags=re.S|re.I)
  if 'class="bottom-actions"' in s:
@@ -208,9 +217,9 @@ rules.append("""
  body:not(.nic-admin) .nic-finance-mobile-fields>.quick-grid,
  body:not(.nic-admin) .nic-finance-mobile-fields>.quick-grid>.finance-acq-row{display:contents!important}
  body:not(.nic-admin) .nic-finance-mobile-fields .field{grid-column:auto!important;min-width:0!important;order:6}
- body:not(.nic-admin) .nic-finance-mobile-fields .field:has(#interest){order:1}
- body:not(.nic-admin) .nic-finance-mobile-fields .field:has(#repayment){order:2}
- body:not(.nic-admin) .nic-finance-mobile-fields .field:has(#ltv){order:3}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#interest,#rentInterest)){order:1}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#repayment,#rentRepayment)){order:2}
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#ltv,#rentLtv)){order:3}
  body:not(.nic-admin) .nic-finance-mobile-fields .finance-acq-option{order:4}
  body:not(.nic-admin) .nic-finance-mobile-fields .finance-acq-total{order:5;grid-column:1 / -1!important}
 }
