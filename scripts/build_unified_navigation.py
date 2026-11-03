@@ -51,6 +51,9 @@ for page in site.rglob('*.html'):
  if 'async function initializeReferenceInterest()' in s:
   anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
   if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))
+  snapshot_anchor='if(!restored) initializeModeDefaults(mode);'
+  if s.count(snapshot_anchor)!=1:raise SystemExit('Mode snapshot initializer missing: '+str(page))
+  s=s.replace(snapshot_anchor,snapshot_anchor+'\n    if(window.NICReferenceInterest&&localStorage.getItem("ff_interest_manual")!=="1")document.getElementById("interest").value=window.NICReferenceInterest.rate.toFixed(2);',1)
   s=s.replace('async function initializeReferenceInterest(){','async function initializeReferenceInterest(){\n  installFinancingManualOverrideTracking();',1)
   # Read the manual flags after the request, including edits made while it loads.
   for flag,key in [('mainManual','ff_interest_manual'),('budgetManual','ff_budget_interest_manual'),('rentalManual','ff_rent_interest_manual')]:
