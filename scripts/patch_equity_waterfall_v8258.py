@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 path=Path("_site/index.html")
 s=path.read_text(encoding="utf-8")
@@ -22,13 +23,13 @@ s=s.replace('<span id="equityInputLabel">Eigenkapital eingesetzt</span> <span cl
 
 # Show the gray explanation below the amount field, aligned with its left edge.
 equity_hint_pattern = re.compile(
-    r'(<label\\b[^>]*>(?:(?!</label>).)*?<span id="equityInputLabel">.*?</span>)\\s*'
+    r'(<label\b[^>]*>(?:(?!</label>).)*?<span id="equityInputLabel">.*?</span>)\s*'
     r'<span class="hint" id="equityInputHint">(.*?)</span>'
-    r'(</label>\\s*<div class="input-wrap">.*?</div>)',
+    r'(</label>\s*<div class="input-wrap">.*?</div>)',
     re.S
 )
 s, equity_hint_matches = equity_hint_pattern.subn(
-    r'\\1\\3<div class="hint" id="equityInputHint">\\2</div>', s, count=1
+    r'\1\3<div class="hint" id="equityInputHint">\2</div>', s, count=1
 )
 if equity_hint_matches != 1:
     raise SystemExit("Equity helper hint could not be moved below its input")
