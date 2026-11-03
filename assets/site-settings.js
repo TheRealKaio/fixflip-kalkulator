@@ -159,7 +159,7 @@ body:not(.nic-admin) :is(.budget-summary-row,.budget-summary-row span,.budget-su
 body:not(.nic-admin) .own-budget-transfer-copy>.name{font-size:${l.bodySize}px!important;line-height:1.5}
 body:not(.nic-admin) .own-budget-transfer-copy>.note{font-size:${l.subtextSize}px!important;line-height:1.5}
 body:not(.nic-admin) .own-budget-transfer-status{font-size:${l.hintSize}px!important;line-height:1.5}
-body:not(.nic-admin) .own-budget-household-row,body:not(.nic-admin) .own-budget-household-row strong{font-size:${l.hintSize}px!important;line-height:1.5}
+body:not(.nic-admin) .own-budget-household-row,body:not(.nic-admin) .own-budget-household-row :where(*){font-size:${l.bodySize}px!important;line-height:1.5!important}
 body:not(.nic-admin) :is(.budget-rate-slider-head,.budget-rate-slider-head span,.budget-rate-slider-head strong,.budget-rate-slider-note,.budget-rate-slider-warning,.budget-rate-guidance,.budget-rate-guidance *,.rent-note,.rent-note *, .legend,.legend *){font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) #rentSection .rent-note,body:not(.nic-admin) #rentSection .rent-note *{font-size:${l.hintSize}px!important;line-height:1.5}
 body:not(.nic-admin) .source,body:not(.nic-admin) .source *{font-size:${l.hintSize}px!important;line-height:1.5}
