@@ -197,13 +197,13 @@ body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-act
 }
 body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions .nic-reno-action-row{
  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
- justify-content:flex-end!important;align-items:center!important;
+ justify-content:center!important;align-items:center!important;
  width:48%!important;max-width:100%!important;min-width:0!important;
- margin-left:auto!important;margin-right:0!important;box-sizing:border-box!important;
+ margin-left:auto!important;margin-right:auto!important;box-sizing:border-box!important;
 }
 body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions :is(#renoSuggestionTotal,#rentRenoSheetTotal,.suggestion-total){
  display:block!important;flex:none!important;width:100%!important;max-width:100%!important;
- box-sizing:border-box!important;margin:8px 0 0!important;text-align:right!important;
+ box-sizing:border-box!important;margin:8px 0 0!important;text-align:center!important;
 }
 @media(max-width:650px){
  body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-actions .nic-reno-action-row{
