@@ -356,15 +356,22 @@ rules.append("""
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields>.quick-grid{
   display:contents!important;
  }
- body:not(.nic-admin) #ownFinanceCard .finance-duration-swap-v8403{
+ body:not(.nic-admin) #ownFinanceCard .finance-rate-grid .field:has(#ltv){
   grid-column:1/-1!important;
+ }
+ body:not(.nic-admin) #ownFinanceCard .finance-duration-swap-v8403{
+  grid-column:1/-1!important;order:4!important;
  }
  body:not(.nic-admin) #ownFinanceCard .finance-acq-row{
   display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important;
-  gap:10px!important;align-items:end!important;grid-column:1/-1!important;min-width:0!important;
+  gap:10px!important;align-items:start!important;grid-column:1/-1!important;order:7!important;min-width:0!important;
  }
  body:not(.nic-admin) #ownFinanceCard .finance-acq-total{grid-column:1!important}
  body:not(.nic-admin) #ownFinanceCard .finance-acq-option{grid-column:2!important}
+ body:not(.nic-admin) #ownFinanceCard .finance-acq-row>.finance-acq-total,
+ body:not(.nic-admin) #ownFinanceCard .finance-acq-row>.finance-acq-option{
+  order:0!important;grid-row:1!important;
+ }
  body:not(.nic-admin) #ownFinanceCard .sale-cost-grid{
   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
   gap:14px!important;min-width:0!important;
