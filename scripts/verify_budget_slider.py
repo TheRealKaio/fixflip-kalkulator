@@ -61,7 +61,7 @@ required_implementation = {
     "financing reserve summary value": 'if($("budgetFinancingReserveResult")) $("budgetFinancingReserveResult").textContent=eur(m.minimumReserve);',
     "remaining monthly surplus formula": 'const remainingMonthlySurplus=rawReserve-minimumReserve;',
     "remaining monthly surplus summary row": '<span>- Verbleibender Monatsüberschuss</span><strong id="budgetReserveResult">–</strong>',
-    "remaining monthly surplus summary value": 'if($("budgetReserveResult")) $("budgetReserveResult").textContent=eur(m.remainingMonthlySurplus);',
+    "remaining monthly surplus summary value": 'if($("budgetReserveResult")) $("budgetReserveResult").textContent=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2}).format(m.remainingMonthlySurplus);',
     "remaining monthly surplus PDF": 'line("Verbleibender Monatsueberschuss",pdfMoney(m.additionalBuffer));',
     "own budget import button": 'id="ownImportBudgetValues">Budgetwerte übernehmen</button>',
     "own imported income display": 'id="ownHouseholdIncome"',

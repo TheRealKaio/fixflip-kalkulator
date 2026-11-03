@@ -154,6 +154,15 @@ const assert=require('node:assert/strict');
     assert.deepEqual(await state(),beforeIncome,'Income edits remain provisional before blur');
     await page.locator('#budgetIncomeEmployment').press('Tab');await assertRate(35);
     await finishEdit('budgetIncomeEmployment','0');await assertRate(0);
+    const surplus=()=>page.locator('#budgetReserveResult').innerText();
+    const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+    assert.equal(await surplus(),euro(-2600),'Monthly deficit remains signed rather than clipped to zero');
+    await finishEdit('budgetFood','0');
+    assert.equal(await surplus(),euro(0),'Zero monthly surplus shows an exact currency value');
+    await finishEdit('budgetIncomeEmployment','4000');
+    await finishEdit('budgetFood','1000,25');
+    await page.locator('#budgetRateSlider').evaluate(el=>{el.value='0';el.dispatchEvent(new Event('input',{bubbles:true}));});
+    assert.equal(await surplus(),euro(2699.75),'Positive surplus preserves cents after expenses, credit rate and financing reserve');
    }
    assert(await page.locator('.nic-tile-active').evaluate(el=>getComputedStyle(el).borderWidth==='2px'),'Active border is shared, including finance');
    assert(await page.locator('.deal-type-option').evaluateAll(els=>els.every(el=>Math.abs(el.getBoundingClientRect().height-els[0].getBoundingClientRect().height)<1)),'All five tile heights must be identical');
