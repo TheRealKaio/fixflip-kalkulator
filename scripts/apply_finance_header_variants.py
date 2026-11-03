@@ -6,7 +6,7 @@ finance=site/'finanzierungsrechner'/'index.html'
 source=re.search(r'<script type="application/json" id="nic-header-variants">([^<]*)</script>',original)
 if not source:raise SystemExit('Original responsive-header variants not found')
 variants=json.loads(source.group(1))
-finance_variant=['Fi&shy;nan&shy;zie&shy;rungs&shy;rech&shy;ner','Plane deine Immobilienfinanzierung in Deutschland und berechne, wie Tilgung und Sondertilgungen die Restschuld deines Darlehens beeinflussen.']
+finance_variant=['Fi&shy;nan&shy;zie&shy;rungs&shy;rech&shy;ner','Plane deine Immobilienfinanzierung und berechne, wie Tilgung und Sondertilgungen die Restschuld deines Darlehens beeinflussen.']
 if finance_variant not in variants:variants.append(finance_variant)
 target='<script type="application/json" id="nic-header-variants">[]</script>'
 html=finance.read_text(encoding='utf-8')
