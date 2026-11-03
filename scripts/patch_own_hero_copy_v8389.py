@@ -6,8 +6,10 @@ html=path.read_text(encoding="utf-8")
 title="Lohnt sich der Kauf dieser Ei&shy;gen&shy;tums&shy;woh&shy;nung?"
 description="Was kostet dich deine Eigentumswohnung wirklich? Berechne Kaufnebenkosten, Sanierungsbudget, Zinsen, Tilgung und monatliche Finanzierungskosten. Unser interaktiver Immobilienrechner zeigt dir, ob deine Wunschimmobilie zu deinem Budget passt."
 old_title='"Lohnt sich diese Eigentumswohnung?"'
-if html.count(old_title)!=1:raise SystemExit("Expected one runtime owner-use heading")
-html=html.replace(old_title,json.dumps(title,ensure_ascii=False),1)
+count=html.count(old_title)
+if count<1:raise SystemExit("Expected runtime owner-use heading")
+html=html.replace(old_title,json.dumps(title,ensure_ascii=False))
+
 old=': '+json.dumps("Du gibst ein, was du kaufst und sanierst. Die App übernimmt die Finanzmathematik und zeigt dir, wo das Risiko steckt.",ensure_ascii=False)+';'
 new=': own ? '+json.dumps(description,ensure_ascii=False)+' '+old
 if html.count(old)!=1:raise SystemExit("Expected one runtime hero description")
