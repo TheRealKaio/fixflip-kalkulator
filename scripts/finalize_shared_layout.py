@@ -273,6 +273,15 @@ body:not(.nic-admin) .input-wrap .unit{
 }
 """)
 
+# Field helper copy stays below its control and left aligned.
+rules.append("""
+body:not(.nic-admin) .field-hint-below{
+ display:block!important;box-sizing:border-box!important;min-width:0!important;
+ width:100%!important;text-align:left!important;margin:4px 0 0!important;
+ float:none!important;
+}
+""")
+
 # Mobile: rates, financing choices, then the full-width acquisition total.
 rules.append("""
 @media(max-width:700px){
