@@ -5,7 +5,7 @@ path=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 html=path.read_text(encoding="utf-8")
 title="Lohnt sich der Kauf dieser Ei&shy;gen&shy;tums&shy;woh&shy;nung?"
 description="Was kostet dich deine Eigentumswohnung wirklich? Berechne Kaufnebenkosten, Sanierungsbudget, Zinsen, Tilgung und monatliche Finanzierungskosten. Unser interaktiver Immobilienrechner zeigt dir, ob deine Wunschimmobilie zu deinem Budget passt."
-old_title='"Lohnt sich<br>diese Ei&shy;gen&shy;tums&shy;woh&shy;nung?"'
+old_title='"Lohnt sich diese Eigentumswohnung?"'
 if html.count(old_title)!=1:raise SystemExit("Expected one runtime owner-use heading")
 html=html.replace(old_title,json.dumps(title,ensure_ascii=False),1)
 old=': '+json.dumps("Du gibst ein, was du kaufst und sanierst. Die App übernimmt die Finanzmathematik und zeigt dir, wo das Risiko steckt.",ensure_ascii=False)+';'
