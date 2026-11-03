@@ -31,7 +31,6 @@ css=r'''
   border-radius:50%!important;
   background:#fff!important;
   color:#475569!important;
-  font-size:11px!important;
   font-weight:800!important;
   line-height:16px!important;
   text-align:center!important;
@@ -55,7 +54,6 @@ css=r'''
   min-height:18px!important;
   right:7px!important;
   top:7px!important;
-  font-size:11px!important;
 }
 .field label:has(.inline-info){
   align-items:center!important;
