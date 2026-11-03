@@ -410,6 +410,10 @@ rules.append("""
  }
  body:not(.nic-admin) #rentFinanceCard .finance-acq-total{grid-column:1!important}
  body:not(.nic-admin) #rentFinanceCard .finance-acq-option{grid-column:2!important}
+ body:not(.nic-admin) #rentFinanceCard #rentFinancingControls .finance-acq-row>.finance-acq-total,
+ body:not(.nic-admin) #rentFinanceCard #rentFinancingControls .finance-acq-row>.finance-acq-option{
+  order:0!important;grid-row:1!important;
+ }
  body:not(.nic-admin) #rentFinanceCard .field,
  body:not(.nic-admin) #rentFinanceCard .finance-acq-row>*{
   min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
@@ -438,6 +442,10 @@ rules.append("""
  }
  body:not(.nic-admin) #rentFinanceCard .finance-acq-total{grid-column:1!important}
  body:not(.nic-admin) #rentFinanceCard .finance-acq-option{grid-column:2!important}
+ body:not(.nic-admin) #rentFinanceCard #rentFinancingControls .finance-acq-row>.finance-acq-total,
+ body:not(.nic-admin) #rentFinanceCard #rentFinancingControls .finance-acq-row>.finance-acq-option{
+  order:0!important;grid-row:1!important;
+ }
  body:not(.nic-admin) #rentFinanceCard .field,
  body:not(.nic-admin) #rentFinanceCard .finance-acq-row>*{
   min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
