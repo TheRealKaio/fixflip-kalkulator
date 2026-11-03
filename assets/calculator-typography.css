@@ -1,0 +1,84 @@
+/* Central typography for public calculators.
+   All seven sizes and the font family come from Admin > Layout.
+   Do not use fixed px here: these are variable fallbacks only. */
+html body:not(.nic-admin) :where(.app, .app *):not(svg):not(svg *) {
+  font-family: var(--nic-body-font-family, system-ui, sans-serif) !important;
+  font-size: var(--nic-body-font-size, 16px) !important;
+}
+
+/* Headings and heading-equivalent controls */
+html body:not(.nic-admin) :is(h1,h1 :where(*)) {
+  font-size: var(--nic-h1-font-size, 40px) !important;
+}
+html body:not(.nic-admin) :is(h2,h2 :where(*),.section-summary-title,
+  .flip-section-card .advanced > summary,.own-finance-card .advanced > summary,
+  .deal-type-title) {
+  font-size: var(--nic-h2-font-size, 25px) !important;
+}
+html body:not(.nic-admin) :is(h3,h3 :where(*),.nic-reno-split-h3) {
+  font-size: var(--nic-h3-font-size, 20px) !important;
+}
+html body:not(.nic-admin) :is(h4,h4 :where(*)) {
+  font-size: var(--nic-h4-font-size, 14px) !important;
+}
+
+/* Section descriptions, secondary copy, figures and actions. */
+html body:not(.nic-admin) :is(
+  .sub,.subtitle,.section-subtitle,.section-summary-subtitle,
+  .section-summary-subtitle *, .flip-section-subtitle,
+  .nic-brand-description,.nic-brand-description *,
+  .deal-type-option small,
+  .kpi .name,.kpi .value,.metric-box .metric-value,
+  .info-box,.info-box :where(*),.info-card p,.tip-box p,
+  .budget-summary-row,.budget-summary-row :where(*),
+  .budget-expense-name,.budget-expense-title,
+  .reno-note,.reno-note :where(*),
+  .footer-note,.footer-note :where(*),
+  .nic-shared-footer,.nic-shared-footer :where(*),
+  .cost-row,.cost-row :where(*),
+  .cost-total,.cost-total :where(*),
+  .cost-summary,.cost-summary :where(*),
+  .cost-footer,.cost-footer :where(*),
+  .cost-grand-total,.cost-grand-total :where(*)
+) {
+  font-size: var(--nic-subtext-font-size, 14px) !important;
+}
+/* Cost-chart total may have a generic class. Keep this scoped to cost charts. */
+html body:not(.nic-admin) :is(section,.card):has(.cost-row)
+:is(.total,.total :where(*),.total-row,.total-row :where(*),
+    .summary-total,.summary-total :where(*)) {
+  font-size: var(--nic-subtext-font-size, 14px) !important;
+}
+
+/* Auxiliary labels, explanations and statuses. */
+html body:not(.nic-admin) :is(
+  .mini,.mini :where(*),.hint,.hint :where(*),
+  .note,.note :where(*),.helper,.helper :where(*),
+  .info-text,.info-text :where(*),.tip,.tip :where(*),
+  .source,.source :where(*),.status,.status :where(*),
+  .legend,.legend :where(*),.rent-note,.rent-note :where(*),
+  .rent-maintenance-status,.metric-label,
+  .budget-result-card .name,
+  .budget-rate-slider-head,.budget-rate-slider-head :where(*),
+  .budget-rate-slider-note,.budget-rate-slider-warning,
+  .budget-rate-guidance,.budget-rate-guidance :where(*)
+) {
+  font-size: var(--nic-hint-font-size, 12px) !important;
+}
+/* Explicit subtexts inside hinted wrappers retain the admin subtext scale. */
+html body:not(.nic-admin) :is(.sub,.subtitle,.section-subtitle) :where(*) {
+  font-size: var(--nic-subtext-font-size, 14px) !important;
+}
+/* Explicit hints inside subtext containers keep the hint scale. */
+html body:not(.nic-admin) :is(.sub,.subtitle,.section-subtitle,
+ .budget-expense-name,.info-box,.cost-row) :is(.mini,.hint,.note,.helper) {
+  font-size: var(--nic-hint-font-size, 12px) !important;
+}
+
+/* Keep the site's existing responsive H1 shrink-to-fit behavior.
+   This caps, but never fixes, the size configured in Admin. */
+@media (max-width: 600px), (max-height: 480px) and (max-width: 950px) {
+  html body:not(.nic-admin) .hero.nic-responsive-header > h1 {
+    font-size: min(var(--nic-h1-font-size, 40px), clamp(26px, 7.5vw, var(--nic-h1-font-size, 40px))) !important;
+  }
+}
