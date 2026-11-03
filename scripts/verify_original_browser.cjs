@@ -236,9 +236,12 @@ const assert=require('node:assert/strict');
     assert(Math.abs(actual-expected)<1,'Remaining debt differs');
     assert(await page.locator('#repayChart path').count()>0);
    }
-   await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));s.layout.font='georgia';s.layout.bodySize=20;s.layout.h2=24;NICSettings.save(s);NICSettings.apply(s);});
+   await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));s.layout.font='georgia';s.layout.bodySize=20;s.layout.h2=24;s.layout.subtextSize=17;NICSettings.save(s);NICSettings.apply(s);});
    assert(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).fontSize===NICSettings.current.layout.subtextSize+'px'&&getComputedStyle(el).fontFamily.includes('Georgia')));
    assert(await page.locator('.deal-type-title').evaluate(el=>getComputedStyle(el).fontSize==='24px'));
+   for(const selector of ['.bottom-actions>.bottom-primary','.bottom-actions>.bottom-pdf']){
+    assert.equal(await page.locator(selector).first().evaluate(el=>getComputedStyle(el).fontSize),'17px','Action label follows Untertexte (px)');
+   }
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1?[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1}).map(e=>({tag:e.tagName,id:e.id,c:e.className,w:e.getBoundingClientRect().width,right:e.getBoundingClientRect().right})).slice(0,12):[]);
    assert.deepEqual(overflow,[],'No horizontal page overflow');
    assert.equal(await page.locator('.mini').first().evaluate(e=>getComputedStyle(e).fontSize),'12px');
