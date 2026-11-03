@@ -170,5 +170,20 @@ body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .reno-head .reno-head-act
 }
 """)
 
+
+# Shared renovation-list typography follows the two admin text scales.
+rules.append("""
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .trade-name,
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) .trade-name *{
+ font-size:var(--nic-subtext-font-size,14px)!important;line-height:1.5!important;
+}
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) :is(.trade-basis,.trade-auto,.trade-section-label,.reno-note,.reno-head .sub,.trade-row .unit),
+body:not(.nic-admin) :is(#renoBackdrop,#rentRenoPanel) :is(.trade-basis,.trade-auto,.trade-section-label,.reno-note,.reno-head .sub) *,
+body:not(.nic-admin) #renoBackdrop :is(#renoSuggestionTotal,.reno-suggestion-total,.nic-reno-proposal-total),
+body:not(.nic-admin) #rentRenoPanel #rentRenoSheetTotal.nic-rental-proposal-total{
+ font-size:var(--nic-hint-font-size,12px)!important;line-height:1.5!important;
+}
+""")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
