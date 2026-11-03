@@ -777,6 +777,7 @@ jobs:
               raise SystemExit("Responsive headings not found; aborting release: " + ", ".join(missing))
           print("Removed forced breaks and soft hyphens:", changes)
           PY
+          python scripts/centralize_expand_controls.py _site
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
