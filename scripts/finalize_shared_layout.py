@@ -390,6 +390,9 @@ rules.append("""
   display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:10px!important;grid-column:1/-1!important;min-width:0!important;
  }
+ body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv){
+  grid-column:auto!important;min-width:0!important;
+ }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls){
   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:14px 10px!important;grid-column:1/-1!important;min-width:0!important;
