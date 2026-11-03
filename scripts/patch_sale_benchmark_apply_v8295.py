@@ -11,7 +11,7 @@ def replace_once(old, new, label):
 
 replace_once(
     '<label>VK nach Sanierung <span class="hint">automatisch kalkuliert · editierbar</span></label>',
-    '<label>VK nach Sanierung <span class="hint">VK Projektziel • editierbar</span></label>',
+    '<label>VK nach Sanierung <span class="hint"></span></label>',
     "VK field subtitle"
 )
 
@@ -93,8 +93,7 @@ script = r'''
     const wrapper=field ? field.closest(".field") : null;
     const hint=wrapper ? wrapper.querySelector("label .hint") : null;
     if(!hint) return;
-    const label=labels[source] || "VK Projektziel";
-    hint.textContent=label+" • editierbar";
+    hint.textContent="geändert (bitte prüfen)";
   }
 
   const savedSubtitleSource=localStorage.getItem(subtitleSourceKey);
@@ -147,7 +146,7 @@ s = s.replace("V8.294", "V8.295")
 s = s.replace("service-worker.js?v=8.294", "service-worker.js?v=8.295")
 
 required = [
-    'VK Projektziel • editierbar',
+    'geändert (bitte prüfen)',
     'data-vk-source="project"',
     'data-vk-source="breakeven"',
     'data-vk-source="postreno"',
@@ -164,6 +163,8 @@ required = [
     'service-worker.js?v=8.295'
 ]
 missing = [token for token in required if token not in s]
+if 'VK Projektziel • editierbar' in s:
+    raise SystemExit("Obsolete VK subtitle is still present")
 if missing:
     raise SystemExit("V8.295 VK benchmark apply verification failed: " + ", ".join(missing))
 
