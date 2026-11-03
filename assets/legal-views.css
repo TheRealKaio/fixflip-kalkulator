@@ -1,6 +1,7 @@
 body.nic-legal-open .app > :not(.nic-brand-bar):not(.hero):not(#nicLegalPanel):not(.footer-note):not(.nic-shared-footer){display:none!important}
 #nicLegalPanel[hidden]{display:none!important}
 #nicLegalPanel{padding:16px 0;min-width:0}
+body.nic-legal-open #nicLegalPanel>.nic-admin-back{display:block;width:calc(100% - 24px);margin:0 12px 8px;box-sizing:border-box;text-align:left}
 #nicLegalPanel nav{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 12px 16px;font-size:13px}
 #nicLegalPanel nav a{color:var(--ink);text-underline-offset:3px}
 #nicLegalPanel nav a[aria-current=page]{font-weight:750}
