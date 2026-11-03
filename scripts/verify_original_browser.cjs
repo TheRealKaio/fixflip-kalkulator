@@ -34,7 +34,7 @@ const assert=require('node:assert/strict');
     assert.equal(actionStyle[key].radius,'9px','Unified footer button radius: '+key);
     assert(['flex','inline-flex'].includes(actionStyle[key].display),'Unified flex alignment: '+key);
    }
-   assert.equal(actionStyle.primary.bg,'rgb(175, 35, 28)','Primary restart control retains red');
+   assert.equal(actionStyle.primary.bg,'rgb(180, 35, 24)','Primary restart control retains theme red');
    assert.equal(actionStyle.pdf.bg,'rgb(17, 26, 46)','PDF share retains navy');
    assert.equal(actionStyle.download.bg,'rgb(17, 26, 46)','PDF download retains navy');
    assert(actionStyle.primary.width>0&&actionStyle.pdf.width>0&&actionStyle.download.width>0);
