@@ -160,7 +160,7 @@ for page in paths:
         raise SystemExit(str(page) + ": expected exactly one shared action stylesheet")
     # Make the authoritative stylesheet the final head stylesheet after all
     # responsive/theme bundles, so same-specificity legacy rules cannot win.
-    link_pattern = re.compile(r'<link\\b[^>]*href="/' + re.escape(file_name) + r'"[^>]*>', re.I)
+    link_pattern = re.compile(r'<link\b[^>]*href="/' + re.escape(file_name) + r'"[^>]*>', re.I)
     html, n = link_pattern.subn("", html)
     if n != 1 or html.count("</head>") != 1:
         raise SystemExit(str(page) + ": missing action CSS link or head")
