@@ -21,7 +21,7 @@ css = """/* Authoritative calculator action bar (all five routes).
   --nic-action-radius: 9px;
   --nic-action-gap: 8px;
   --nic-action-primary: var(--nic-red-bg, #B42318);
-  --nic-action-secondary: #111a2e;
+  --nic-action-secondary: var(--nic-button-bg, #0F172A);
   --nic-action-color: #fff;
 }
 html body:not(.nic-admin) .bottom .bottom-actions {
