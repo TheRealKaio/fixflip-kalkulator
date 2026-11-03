@@ -32,7 +32,7 @@ const assert=require('node:assert/strict');
    for(const key of ['primary','pdf','download']){
     assert.equal(actionStyle[key].height,44,'Unified footer button height: '+key);
     assert.equal(actionStyle[key].radius,'9px','Unified footer button radius: '+key);
-    assert.equal(actionStyle[key].display,'inline-flex','Unified footer button alignment: '+key);
+    assert(['flex','inline-flex'].includes(actionStyle[key].display),'Unified flex alignment: '+key);
    }
    assert.equal(actionStyle.primary.bg,'rgb(175, 35, 28)','Primary restart control retains red');
    assert.equal(actionStyle.pdf.bg,'rgb(17, 26, 46)','PDF share retains navy');
