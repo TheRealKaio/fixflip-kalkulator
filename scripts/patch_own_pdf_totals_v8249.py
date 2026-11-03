@@ -73,13 +73,37 @@ if old_finance not in s:
     raise SystemExit("V8.249 own finance block anchor missing")
 s=s.replace(old_finance,new_finance,1)
 
-old_costs='''  const interestCosts = m.interest;
-  const repaymentCosts = m.repayment;'''
-new_costs='''  const interestCosts = isOwnUse ? pdfInterestCostsTotal : m.interest;
-  const repaymentCosts = isOwnUse ? pdfRepaymentCostsTotal : m.repayment;'''
-if old_costs not in s:
-    raise SystemExit("V8.249 cost breakdown anchor missing")
-s=s.replace(old_costs,new_costs,1)
+old_sale_lines='''  (!isOwnUse ? page2Line : line)("Makler Verkauf", pdfMoney(m.sellBroker));
+  (!isOwnUse ? page2Line : line)("Weitere Kosten bei Verkauf", pdfMoney(m.fixedOther));'''
+new_sale_lines='''  if(!isOwnUse){
+    page2Line("Makler Verkauf", pdfMoney(m.sellBroker));
+    page2Line("Weitere Kosten bei Verkauf", pdfMoney(m.fixedOther));
+  }'''
+if old_sale_lines not in s:
+    raise SystemExit("V8.249 sale-cost PDF rows anchor missing")
+s=s.replace(old_sale_lines,new_sale_lines,1)
+
+old_cost_rows='''  const costRows = [
+    ["Kaufpreis", m.p],
+    ["Kaufnebenkosten", purchaseAncillary],
+    ["Modernisierung", m.reno],
+    ["Zinskosten", interestCosts],
+    ["Tilgung", repaymentCosts],
+    ["Laufende Kosten", m.holding],
+    ["Verkaufskosten", sellingCosts]
+  ];'''
+new_cost_rows='''  const costRows = [
+    ["Kaufpreis", m.p],
+    ["Kaufnebenkosten", purchaseAncillary],
+    ["Modernisierung", m.reno],
+    ["Zinskosten", interestCosts],
+    ["Tilgung", repaymentCosts],
+    ["Laufende Kosten", m.holding]
+  ];
+  if(!isOwnUse) costRows.push(["Verkaufskosten", sellingCosts]);'''
+if old_cost_rows not in s:
+    raise SystemExit("V8.249 sale-cost chart anchor missing")
+s=s.replace(old_cost_rows,new_cost_rows,1)
 
 s=s.replace("V8.248","V8.249")
 s=s.replace("service-worker.js?v=8.248","service-worker.js?v=8.249")
@@ -95,6 +119,9 @@ required=[
     'line("Monatliche Gesamtbelastung", pdfMoney(pdfMonthlyTotalBurden), true);',
     'const interestCosts = isOwnUse ? pdfInterestCostsTotal : m.interest;',
     'const repaymentCosts = isOwnUse ? pdfRepaymentCostsTotal : m.repayment;',
+    'if(!isOwnUse){\\n    page2Line("Makler Verkauf", pdfMoney(m.sellBroker));',
+    'page2Line("Weitere Kosten bei Verkauf", pdfMoney(m.fixedOther));',
+    'if(!isOwnUse) costRows.push(["Verkaufskosten", sellingCosts]);',
     'V8.249',
     'service-worker.js?v=8.249'
 ]
