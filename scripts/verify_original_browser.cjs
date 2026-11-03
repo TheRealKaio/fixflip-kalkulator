@@ -239,6 +239,21 @@ const assert=require('node:assert/strict');
    await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));s.layout.font='georgia';s.layout.bodySize=20;s.layout.h2=24;s.layout.subtextSize=17;NICSettings.save(s);NICSettings.apply(s);});
    assert(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).fontSize===NICSettings.current.layout.subtextSize+'px'&&getComputedStyle(el).fontFamily.includes('Georgia')));
    assert(await page.locator('.deal-type-title').evaluate(el=>getComputedStyle(el).fontSize==='24px'));
+   // Cost chart labels, amounts and totals must follow the admin 'Untertexte (px)' size.
+   if(['eigennutzung','fix-flip'].includes(slug)){
+    const costTypography=await page.evaluate(()=>{
+     const chart=[...document.querySelectorAll('section,.card')].find(el=>el.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?'&&el.querySelector('.cost-row'));
+     if(!chart)return null;
+     const rows=[...chart.querySelectorAll('.cost-row')];
+     const texts=rows.flatMap(row=>[...row.querySelectorAll('*')].filter(el=>el.children.length===0&&el.textContent.trim()&&getComputedStyle(el).display!=='none'));
+     const total=[...chart.querySelectorAll('*')].find(el=>el.children.length===0&&el.textContent.trim()==='Gesamt');
+     return {rows:rows.length,fonts:texts.map(el=>getComputedStyle(el).fontSize),total:total?getComputedStyle(total).fontSize:null};
+    });
+    assert(costTypography&&costTypography.rows>=7,'Cost breakdown rows exist');
+    assert(costTypography.fonts.length>=7&&costTypography.fonts.every(font=>font==='17px'),
+      'Cost chart captions and amounts use Untertexte 17px: '+JSON.stringify(costTypography));
+    assert.equal(costTypography.total,'17px','Cost chart overall total uses Untertexte');
+   }
    for(const selector of ['.bottom-actions>.bottom-primary','.bottom-actions>.bottom-pdf']){
     assert.equal(await page.locator(selector).first().evaluate(el=>getComputedStyle(el).fontSize),'17px','Action label follows Untertexte (px)');
    }
