@@ -33,7 +33,7 @@ function setAdmin(open){
    const profile=location.hash==='#account';const section=location.hash.slice(7);adminFrame.src=profile?new URL('user-data.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current'),S.ROOT).href:new URL('admin.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current')+(['company','layout','social','meta','legal','users','stats'].includes(section)?'#'+section:''),S.ROOT).href;
    adminPanel.append(close,adminFrame);hero.after(adminPanel);
   }
-  adminOpen=true;document.body.classList.add('nic-admin-open');adminPanel.hidden=false;
+  adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;
   const profile=location.hash==='#account';adminPanel.setAttribute('aria-label',profile?'Deine Nutzerdaten':'Admin-Bereich');adminFrame.title=profile?'Deine Nutzerdaten':'Einstellungen im Admin-Bereich';document.getElementById('heroTitle').textContent=profile?'Deine Nutzerdaten':'Admin-Bereich';document.getElementById('heroText').textContent=profile?'Hier kannst du deine Daten ändern oder dein Benutzerkonto unwiderruflich löschen.':'Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
   document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';account.setAttribute('aria-expanded','true');account.setAttribute('aria-controls','nicAdminPanel');
   adminFrame.contentWindow?.postMessage({type:'nic-request-logo'},location.origin);
