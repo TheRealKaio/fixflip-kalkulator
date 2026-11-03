@@ -38,7 +38,7 @@ function setAdmin(open){
   document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';account.setAttribute('aria-expanded','true');account.setAttribute('aria-controls','nicAdminPanel');
   adminFrame.contentWindow?.postMessage({type:'nic-request-logo'},location.origin);
  }else if(!open&&adminOpen){
-  adminOpen=false;document.body.classList.remove('nic-admin-open');adminPanel.hidden=true;
+  adminOpen=false;document.body.classList.remove('nic-admin-open');document.documentElement.classList.remove('nic-admin-open');adminPanel.hidden=true;
   document.getElementById('heroTitle').innerHTML=headerSnapshot.title;document.getElementById('heroText').textContent=headerSnapshot.text;document.title=headerSnapshot.titleAttr;
   account.setAttribute('aria-expanded','false');if(S.current)S.applyLogo(S.current.websiteLogo);account.focus();
  }
