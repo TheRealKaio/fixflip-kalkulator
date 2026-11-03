@@ -118,6 +118,8 @@ if removed==0:raise SystemExit("No legacy CSS found: refuse unchecked release")
 (site/name).write_text(css,encoding="utf-8")
 for page in pages:
     html=page.read_text(encoding="utf-8")
+    # Use the case-sensitive published route in every navigation tile.
+    html=html.replace("/Finanzierungsrechner/", "/finanzierungsrechner/")
     if html.count("</head>")!=1 or name in html:
         raise SystemExit("Duplicate or missing stylesheet anchor: "+str(page))
     html=html.replace("</head>",'<link rel="stylesheet" href="/'+name+'"></head>',1)
