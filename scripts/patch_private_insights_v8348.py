@@ -20,7 +20,7 @@ if 'id="costsSection"' not in html:
 
 # Keep the monthly burden/rest-debt box in the page. Its visibility for guests
 # is controlled by the same per-box admin settings as the other H2 boxes.
-monthly_heading = "<h2>Monatliche Belastung & Restschuld</h2>"
+monthly_heading = "<h2>Monatliche Tilgung- und Restschuld</h2>"
 if monthly_heading in html:
     heading_at = html.find(monthly_heading)
     section_start = html.rfind("<section", 0, heading_at)
