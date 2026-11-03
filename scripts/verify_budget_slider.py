@@ -73,7 +73,7 @@ required_implementation = {
     "budget financing full-width header": '#budgetSection .budget-financing-decision{display:block!important;text-align:left!important}',
     "budget financing base font": 'font-size:var(--nic-body-font-size,16px)!important',
     "budget expense total without separator": '#budgetExpensesSection .budget-summary-row.total:has(#budgetExpensesTotal){border-top:0!important}',
-    "budget financing title": '<h2>Deine mögliche Finanzierung</h2>',
+    "budget financing title": '<h2>Wieviel Haus kann ich mir leisten?</h2>',
     "budget financing info text": 'Aus deinem Budget, Eigenkapital und den Finanzierungsannahmen ergibt sich hier deine mögliche Finanzierung.',
     "budget financing spacing": '.budget-financing-decision{margin-bottom:14px}',
     "VK transfer subtitle": 'VK Projektziel • editierbar',
@@ -695,7 +695,7 @@ for name in required_implementation:
     print(" -", name)
 print(" - numerical cases: 45% cap, EUR 300 floor, zero left edge, directionality, income reduction, expense increase, net-income basis, reached/under-300 warning, shortfall amount, rate-reduction amount, exact/sub-euro 300 threshold, pre-adjustment undershoot")
 
-# The budget result heading intentionally has no leading icon.
+# The requested budget result symbol is present.
 header = re.search(r'<div class="decision go budget-financing-decision">([\s\S]*?)<div class="budget-result-grid">', html)
-if not header or 'class="light"' in header.group(1):
-    raise SystemExit("Budget financing heading must have no icon")
+if not header or '<div class="light" aria-hidden="true">💶</div>' not in header.group(1):
+    raise SystemExit("Budget financing heading must include the restored symbol")
