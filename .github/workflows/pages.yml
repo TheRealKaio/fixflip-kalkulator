@@ -757,7 +757,7 @@ jobs:
           titles = [
               "Wie viel Immobilie kannst du dir leisten?",
               "Lohnt sich diese Mietwohnung?",
-              "Lohnt sich diese Eigentumswohnung?",
+              "Lohnt sich der Kauf dieser Eigentumswohnung?",
               "Lohnt sich dieses Objekt?",
               "Finanzierungsrechner",
           ]
