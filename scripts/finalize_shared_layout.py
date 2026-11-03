@@ -297,6 +297,8 @@ body:not(.nic-admin) .section-summary-subtitle{
 
 # This financing section title follows the configurable base text size.
 rules.append("""
+body:not(.nic-admin) #ownAdditionalFinance h3.nic-body-font-text,
+body:not(.nic-admin) #ownAdditionalFinance h3.nic-body-font-text *,
 body:not(.nic-admin) .nic-body-font-text,
 body:not(.nic-admin) .nic-body-font-text *{
  font-size:var(--nic-body-font-size,16px)!important;
