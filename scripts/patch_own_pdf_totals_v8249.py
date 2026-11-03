@@ -84,6 +84,24 @@ if old_sale_lines not in s:
     raise SystemExit("V8.249 sale-cost PDF rows anchor missing")
 s=s.replace(old_sale_lines,new_sale_lines,1)
 
+old_calculator_costs='''  const calculatorSellingCosts = m.sellBroker + m.fixedOther;
+  const calculatorSellingLabel = isOwnUse ? "Verkaufskosten (nur bei Verkauf)" : "Verkaufskosten";
+  const costs=[
+    ["Kaufpreis",m.p],["Kaufnebenkosten",m.tax+m.notary+m.buyBroker],
+    ["Sanierung inkl. Puffer",m.reno],["Zinskosten",m.interest],["Tilgung (reduziert Restschuld)",m.repayment],
+    ["Laufende Kosten",m.holding],[calculatorSellingLabel,calculatorSellingCosts]
+  ];'''
+new_calculator_costs='''  const calculatorSellingCosts = m.sellBroker + m.fixedOther;
+  const costs=[
+    ["Kaufpreis",m.p],["Kaufnebenkosten",m.tax+m.notary+m.buyBroker],
+    ["Sanierung inkl. Puffer",m.reno],["Zinskosten",m.interest],["Tilgung (reduziert Restschuld)",m.repayment],
+    ["Laufende Kosten",m.holding]
+  ];
+  if(!isOwnUse) costs.push(["Verkaufskosten",calculatorSellingCosts]);'''
+if old_calculator_costs not in s:
+    raise SystemExit("V8.249 calculator sale-cost row anchor missing")
+s=s.replace(old_calculator_costs,new_calculator_costs,1)
+
 # The visible source label can include an explanatory suffix. Preserve that label
 # for Fix & Flip and remove the row from Eigennutzung reports.
 cost_rows_match=re.search(r"  const costRows = \[([\s\S]*?)\n  \];",s)
@@ -117,7 +135,7 @@ required=[
     'page2Line("Makler Verkauf", pdfMoney(m.sellBroker));',
     'page2Line("Weitere Kosten bei Verkauf", pdfMoney(m.fixedOther));',
     'if(!isOwnUse) costRows.push(["',
-    'sellingCosts]);',
+    'if(!isOwnUse) costs.push(["Verkaufskosten",calculatorSellingCosts]);',
     'V8.249',
     'service-worker.js?v=8.249'
 ]
@@ -126,4 +144,4 @@ if missing:
     raise SystemExit("V8.249 verification failed: "+", ".join(missing))
 
 path.write_text(s,encoding="utf-8")
-print("V8.249 explicit Eigennutzung PDF financing totals applied")
+print("V8.249 Eigennutzung sale-cost fields removed from calculator and PDF views")
