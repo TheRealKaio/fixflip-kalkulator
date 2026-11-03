@@ -698,6 +698,24 @@ jobs:
           cp assets/immocheck-ui-details.js _site/immocheck-ui-details.js
           python scripts/verify_original_restore.py
           python scripts/finalize_shared_layout.py _site
+          # Correct the checklist heading in generated PDF scripts, without changing calculations.
+          python - <<'PY'
+          from pathlib import Path
+          old = "Wofuer ist diese Checkliste?"
+          new = "Wofür ist diese Checkliste?"
+          count = 0
+          for path in Path("_site").rglob("*"):
+              if not path.is_file() or path.suffix not in (".html", ".js"):
+                  continue
+              source = path.read_text(encoding="utf-8")
+              n = source.count(old)
+              if n:
+                  path.write_text(source.replace(old, new), encoding="utf-8")
+                  count += n
+          if not count:
+              raise SystemExit("Checklist PDF heading not found in generated assets")
+          print(f"Corrected checklist PDF heading ({count} occurrence(s))")
+          PY
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
