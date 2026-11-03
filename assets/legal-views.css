@@ -1,3 +1,4 @@
+body.nic-legal-open .app > :not(.nic-brand-bar):not(.hero):not(#nicLegalPanel):not(.footer-note):not(.nic-shared-footer){display:none!important}
 #nicLegalPanel[hidden]{display:none!important}
 #nicLegalPanel{padding:16px 0;min-width:0}
 #nicLegalPanel nav{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 12px 16px;font-size:13px}
@@ -13,17 +14,38 @@
 body.nic-legal-open #heroTitle[tabindex="-1"]:focus{outline:none;box-shadow:none}
 body.nic-legal-open #heroTitle{-webkit-tap-highlight-color:transparent}
 
-.nic-legal-card{overflow:auto}.nic-legal-card table{border-collapse:collapse;max-width:100%}.nic-legal-card :is(td,th){padding:6px;border:1px solid #cbd5e1}@media(max-width:600px){.nic-legal-card [style*="text-align: justify"]{text-align:left!important}}
+.nic-legal-card table{border-collapse:collapse;max-width:100%}
+.nic-legal-card :is(td,th){padding:6px;border:1px solid #cbd5e1}
+@media(max-width:600px){.nic-legal-card [style*="text-align: justify"]{text-align:left!important}}
 
-/* Short legal views fill the viewport and keep the footer at the bottom. */
+/* Keep the persistent brand bar and graphic header above the legal content. */
 body.nic-legal-open .app{
   display:flex;
   flex-direction:column;
   min-height:100vh;
+  min-height:100dvh;
   box-sizing:border-box;
 }
+body.nic-legal-open .app>.nic-brand-bar{
+  display:grid!important;
+  flex:0 0 auto;
+}
+body.nic-legal-open .app>.hero,
+body.nic-legal-open .app>.footer-note,
+body.nic-legal-open .app>.nic-shared-footer{
+  flex:0 0 auto;
+}
 body.nic-legal-open #nicLegalPanel{
+  display:flex;
   flex:1 0 auto;
+  flex-direction:column;
+  min-width:0;
+  box-sizing:border-box;
+  padding:16px 0 0;
+}
+body.nic-legal-open #nicLegalPanel .nic-legal-card{
+  flex:1 0 auto;
+  margin-bottom:0;
 }
 body.nic-legal-open .app>.footer-note,
 body.nic-legal-open .app>.nic-shared-footer{
