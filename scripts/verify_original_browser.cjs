@@ -293,6 +293,48 @@ const assert=require('node:assert/strict');
    assert(typographyAudit.examined>20,'No visible typography audited');
    assert.deepEqual(typographyAudit.failures,[],'All text must map to an Admin font size');
    assert.deepEqual(typographyAudit.fontFailures,[],'All text must follow Systemschrift');
+   // Verify the real current Admin settings (not repository fallback values)
+   // on portrait, small-phone, tablet and landscape viewports.
+   const liveSnapshot=await page.evaluate(()=>{
+    const saved=JSON.parse(JSON.stringify(NICSettings.current));
+    const values=JSON.parse(JSON.stringify(saved));
+    Object.assign(values.layout,{font:'system',bodySize:18,subtextSize:15,
+      hintSize:14,h1:40,h2:25,h3:20,h4:14});
+    NICSettings.apply(values);
+    return saved;
+   });
+   try {
+    for(const viewport of [
+     {width:320,height:740},{width:390,height:844},
+     {width:768,height:1024},{width:844,height:390}
+    ]) {
+     await page.setViewportSize(viewport);
+     const result=await page.evaluate(()=>{
+      const root=document.querySelector('.app');
+      const targets=['.hero h1','.bottom-actions>.bottom-primary',
+        '.bottom-actions>.bottom-pdf','.bottom-actions>.bottom-save'];
+      const elements=targets.map(q=>root.querySelector(q)).filter(Boolean);
+      const boxes=elements.map(el=>{
+       const r=el.getBoundingClientRect();return {name:el.className||el.tagName,
+        left:r.left,right:r.right,width:r.width};
+      });
+      const font=getComputedStyle(document.body).fontFamily;
+      const sample=document.querySelector('.app .sub,.app .subtitle,.app .section-subtitle');
+      const subSize=sample?getComputedStyle(sample).fontSize:null;
+      return {pageWidth:document.documentElement.scrollWidth,viewport:innerWidth,
+       bodyFont:font,subSize,boxes};
+     });
+     assert(result.bodyFont.includes('Segoe UI'),'Systemschrift active: '+JSON.stringify(result));
+     if(result.subSize)assert.equal(result.subSize,'15px','Admin Untertexte stay at 15px');
+     assert(result.pageWidth<=viewport.width+1,
+       'No horizontal overflow with actual Admin font sizes: '+slug+' '+JSON.stringify({viewport,result}));
+     assert(result.boxes.every(x=>x.left>=-1&&x.right<=viewport.width+1),
+       'All primary controls stay visible: '+slug+' '+JSON.stringify({viewport,result}));
+    }
+   } finally {
+    await page.evaluate(saved=>NICSettings.apply(saved),liveSnapshot);
+    await page.setViewportSize({width,height:900});
+   }
    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1?[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>innerWidth+1}).map(e=>({tag:e.tagName,id:e.id,c:e.className,w:e.getBoundingClientRect().width,right:e.getBoundingClientRect().right})).slice(0,12):[]);
    assert.deepEqual(overflow,[],'No horizontal page overflow');
    assert.equal(await page.locator('.mini').first().evaluate(e=>getComputedStyle(e).fontSize),'12px');
