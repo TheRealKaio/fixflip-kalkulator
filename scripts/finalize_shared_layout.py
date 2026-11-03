@@ -59,6 +59,27 @@ checkbox_rule='.finance-check-box input[type="checkbox"]'
 checkbox_matches=sum(rule.count(checkbox_rule+'{') for rule in rules)
 if checkbox_matches!=1:raise SystemExit('Expected one shared finance checkbox size rule')
 rules=[rule.replace(checkbox_rule+'{',checkbox_rule+'{min-width:22.5px;max-width:22.5px;min-height:22.5px;max-height:22.5px;padding:0;box-sizing:border-box;') for rule in rules]
+
+# The 22.5px checkbox remains unchanged. Draw a single inset checkmark:
+# stroke extents stay at least 3px inside the outer square on all sides.
+# Suppress older native/pseudo checkmarks so no duplicate ticks appear.
+rules.append("""
+body:not(.nic-admin) .finance-check-box input[type="checkbox"]{
+ appearance:none!important;-webkit-appearance:none!important;
+ background-image:none!important;
+}
+body:not(.nic-admin) .finance-check-box input[type="checkbox"]:checked{
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22.5 22.5'%3E%3Cpath d='M5 11.2l4.1 4.1L17.7 5.4' fill='none' stroke='%23172033' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ background-repeat:no-repeat!important;
+}
+body:not(.nic-admin) .finance-check-box input[type="checkbox"]::before,
+body:not(.nic-admin) .finance-check-box input[type="checkbox"]::after{
+ content:none!important;
+}
+""")
+
 for p in site.glob('*.css'):
  p.write_text(split(p.read_text(),pattern)[0])
 for p in site.rglob('*.html'):
