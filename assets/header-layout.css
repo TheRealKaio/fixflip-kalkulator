@@ -1,7 +1,7 @@
 /* Descriptions use the entire content width, including below header controls. */
 .hero>h1{
   display:block;width:100%;max-width:none;min-width:0;
-  white-space:normal;word-break:normal;overflow-wrap:normal;
+  white-space:normal;word-break:normal;overflow-wrap:break-word;
   -webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:6 3 3;
 }
 .hero>p,.card>.sub,.section-summary-subtitle{
