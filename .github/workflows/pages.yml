@@ -750,6 +750,33 @@ jobs:
               raise SystemExit("Financing introduction not found; stopping deployment to avoid a false success")
           print(f"Financing introduction updated ({changes} occurrence(s))")
           PY
+          # Responsive main headings: permit wrapping only when available width requires it.
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          titles = [
+              "Wie viel Immobilie kannst du dir leisten?",
+              "Lohnt sich diese Mietwohnung?",
+              "Lohnt sich dieses Objekt?",
+              "Finanzierungsrechner",
+          ]
+          changes = {title: 0 for title in titles}
+          for path in Path("_site").rglob("*.html"):
+              content = path.read_text(encoding="utf-8")
+              for title in titles:
+                  words = title.split()
+                  parts = []
+                  for word in words:
+                      parts.append(r"(?:&shy;|\u00ad)*".join(re.escape(letter) for letter in word))
+                  pattern = r"(?:\s|<br\s*/?>|\\u003cbr\s*/?>)+".join(parts)
+                  content, n = re.subn(pattern, lambda m: title, content, flags=re.I)
+                  changes[title] += n
+              path.write_text(content, encoding="utf-8")
+          missing = [title for title, count in changes.items() if count == 0]
+          if missing:
+              raise SystemExit("Responsive headings not found; aborting release: " + ", ".join(missing))
+          print("Removed forced breaks and soft hyphens:", changes)
+          PY
           python scripts/fingerprint_assets.py _site
           node scripts/verify_asset_refresh.js _site
           node scripts/verify_finance_updates.js _site
