@@ -173,6 +173,7 @@ body:not(.nic-admin) :is(.nic-login-button,.nic-account-link,.budget-apply-btn,.
 body:not(.nic-admin) :is(.nic-clear-reno,.bottom-primary,#newCalc){background:var(--nic-red-bg)!important;color:var(--nic-red-text)!important;border-color:var(--nic-red-bg)!important}
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer){background:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(a,.footer-version,.nic-consent-settings){color:var(--nic-green-text)!important}
+body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(.nic-consent-settings,#nicConsentSettings){background:var(--nic-green-bg)!important;border-color:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(.nic-consent-settings,#nicConsentSettings){text-decoration:none!important}
 body:not(.nic-admin) :is(.footer-note,.nic-shared-footer) :is(.nic-consent-settings,#nicConsentSettings):hover{text-decoration:underline!important}
 body:not(.nic-admin) .deal-type-row>.deal-type-option:is(:has(input:checked),[aria-pressed="true"],.current,[aria-current="page"]){background:var(--nic-green-bg)!important;border-color:var(--nic-green-bg)!important;color:var(--nic-green-text)!important}
