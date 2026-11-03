@@ -9,6 +9,12 @@ document.addEventListener('click',event=>{
  const url=new URL(card.dataset.href||card.href,location.href);
  if(url.origin!==location.origin||!paths.has(url.pathname)||url.pathname===location.pathname)return;
  try{sessionStorage.setItem(key,JSON.stringify({path:url.pathname,y:window.scrollY,at:Date.now()}));}catch(_){}
+ // The financing tile is an anchor inside the legacy calculator menu. Its
+ // delegated click handlers can cancel the anchor's normal navigation.
+ if(card.id==='nicFinancingTab'){
+  event.preventDefault();
+  location.assign(url.href);
+ }
 },true);
 let saved;
 try{saved=JSON.parse(sessionStorage.getItem(key)||'null');sessionStorage.removeItem(key);}catch(_){}
