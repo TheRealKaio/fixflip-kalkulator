@@ -560,5 +560,16 @@ if not any(" #flipFinanceCard .nic-finance-mobile-fields .finance-rate-grid .fie
 if not any(" #flipFinanceCard .finance-acq-total" in rule and "grid-template-columns:repeat(2,minmax(0,1fr))!important" in rule for rule in rules):
  raise SystemExit("Fix & Flip acquisition-cost/checkbox mobile row missing")
 
+
+# Eigennutzung has no sale-cost inputs; the shared fields remain available in Fix & Flip.
+rules.append("""
+body:not(.nic-admin) #ownFinanceCard .field:has(#sellBroker),
+body:not(.nic-admin) #ownFinanceCard .field:has(#otherSaleCosts){
+ display:none!important;
+}
+""")
+if not any("#ownFinanceCard .field:has(#sellBroker)" in rule and "#ownFinanceCard .field:has(#otherSaleCosts)" in rule for rule in rules):
+ raise SystemExit("Eigennutzung sale-cost field visibility rule missing")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
