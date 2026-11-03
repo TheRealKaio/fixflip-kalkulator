@@ -261,6 +261,32 @@ const assert=require('node:assert/strict');
    assert.deepEqual(overflow,[],'No horizontal page overflow');
    assert.equal(await page.locator('.mini').first().evaluate(e=>getComputedStyle(e).fontSize),'12px');
    const sub=page.locator('.sub,.subtitle,.card>h2+p:not(.mini)').first();if(await sub.count())assert.equal(await sub.evaluate(e=>getComputedStyle(e).fontSize),await page.evaluate(()=>NICSettings.current.layout.bodySize+'px'));
+   // Verify the user's current Admin values as a separate live preview:
+   // Systemschrift and Untertexte=25px, without changing stored defaults.
+   if(['eigennutzung','fix-flip'].includes(slug)){
+    const savedForPreview=await page.evaluate(()=>{
+     const original=JSON.parse(JSON.stringify(NICSettings.current));
+     const preview=JSON.parse(JSON.stringify(original));
+     preview.layout.font='system';preview.layout.subtextSize=25;
+     NICSettings.apply(preview);
+     return original;
+    });
+    const actual=await page.evaluate(()=>{
+     const card=[...document.querySelectorAll('section,.card')].find(el=>el.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?'&&el.querySelector('.cost-row'));
+     const leafText=[...card.querySelectorAll('.cost-row *')].filter(el=>el.children.length===0&&el.textContent.trim()&&getComputedStyle(el).display!=='none');
+     const total=[...card.querySelectorAll('*')].find(el=>el.children.length===0&&el.textContent.trim()==='Gesamt');
+     return {textSizes:leafText.map(el=>getComputedStyle(el).fontSize),
+       fonts:leafText.map(el=>getComputedStyle(el).fontFamily),
+       totalSize:total&&getComputedStyle(total).fontSize,
+       bodyFont:getComputedStyle(document.body).fontFamily};
+    });
+    assert(actual.textSizes.length>=7&&actual.textSizes.every(x=>x==='25px'),
+      'User Admin Untertexte=25px applies to all cost labels and values: '+JSON.stringify(actual));
+    assert.equal(actual.totalSize,'25px','User Admin Untertexte=25px applies to Gesamt');
+    assert(actual.bodyFont.includes('Segoe UI')&&actual.fonts.every(x=>x.includes('Segoe UI')),
+      'Systemschrift must be inherited by all cost texts: '+JSON.stringify(actual));
+    await page.evaluate(original=>NICSettings.apply(original),savedForPreview);
+   }
    await page.screenshot({path:`tmp/${width}-${slug}.png`,fullPage:true});
    await page.evaluate(()=>{NICSettings.discard();});
    assert.deepEqual(errors,[]);page.removeListener('pageerror',listener);
