@@ -35,6 +35,8 @@ function open(next){
  active=next;panel.hidden=false;document.body.classList.add('nic-legal-open');panel.setAttribute('aria-label',labels[next]);title.textContent=labels[next];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[next]+' | Neustart ImmoCheck';
  panel.querySelectorAll('[data-nic-legal]').forEach(a=>{if(a.dataset.nicLegal===next)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');
+ // Legal routes always begin at the top of the shared header, including the disclaimer sheet route.
+ window.scrollTo(0,0);
 }
 function route(){if(S.current)open(key());}
 // Close before the admin takes its header snapshot; open after it restores the calculator header.
@@ -47,7 +49,7 @@ window.addEventListener('click',e=>{
  e.preventDefault();e.stopImmediatePropagation();opener=el;
  if(location.hash!=='#'+next)history.pushState(null,'',location.pathname+location.search+'#'+next);
  // Notify the existing admin router before displaying the legal content.
- window.dispatchEvent(new Event('hashchange'));title.setAttribute('tabindex','-1');title.focus({preventScroll:true});hero.scrollIntoView({block:'start'});
+ window.dispatchEvent(new Event('hashchange'));title.setAttribute('tabindex','-1');title.focus({preventScroll:true});
 },true);
 window.NICLegal={refresh(){if(active){title.textContent=labels[active];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[active]+' | Neustart ImmoCheck';render();}else if(key())open(key());}};
 route();
