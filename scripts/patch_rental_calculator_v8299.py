@@ -446,7 +446,7 @@ script=r'''
         cls="go"; icon="✓"; title="Positiver monatlicher Cashflow";
         text="Die Wohnung trägt ihre laufenden Eigentümer- und Finanzierungskosten rechnerisch und erzeugt einen positiven Cashflow vor Steuer.";
       }else if(m.monthlyCashflow>=-100){
-        cls="check"; icon="!"; title="Nahe am monatlichen Break-even";
+        cls="check"; icon="!"; title="Nahe am mtl. Break-even";
         text="Der monatliche Cashflow ist leicht negativ. Prüfe Miete, nicht umlagefähige Kosten und Finanzierung besonders genau.";
       }else{
         cls="stop"; icon="×"; title="Negativer monatlicher Cashflow";
