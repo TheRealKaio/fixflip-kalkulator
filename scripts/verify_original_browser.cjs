@@ -49,8 +49,8 @@ const assert=require('node:assert/strict');
     }));
    });
    for(const item of expandControls){
-    assert.equal(item.width,'32px','Expand button width: '+JSON.stringify(item));
-    assert.equal(item.height,'32px','Expand button height: '+JSON.stringify(item));
+    assert(Math.abs(parseFloat(item.width)-38.4)<.1,'Expand button width: '+JSON.stringify(item));
+    assert(Math.abs(parseFloat(item.height)-38.4)<.1,'Expand button height: '+JSON.stringify(item));
     assert.equal(item.bg,'rgb(253, 230, 138)','Expand button background: '+JSON.stringify(item));
     assert.equal(item.color,'rgb(0, 0, 0)','Expand button color: '+JSON.stringify(item));
    }
@@ -399,7 +399,7 @@ const assert=require('node:assert/strict');
      const responsiveHero=el.matches('.hero.nic-responsive-header>h1');
      const reducedReset=el.matches('.nic-clear-reno')&&
        Math.abs(parseFloat(cs.fontSize)-parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-body-font-size'))*.8)<.01&&
-       Math.abs(box.width-38)<.1&&Math.abs(box.height-40)<.1;
+       Math.abs(box.width-30.4)<.1&&Math.abs(box.height-32)<.1;
      if(!sizes.has(cs.fontSize)&&!responsiveHero&&!reducedReset&&failures.length<35)failures.push(info);
      if(!cs.fontFamily.includes('Segoe UI')&&fontFailures.length<12)
       fontFailures.push({...info,font:cs.fontFamily});

@@ -6,12 +6,12 @@ name="calculator-expand-controls.css"
 pages=[site/p/"index.html" for p in ("","budget","eigennutzung","vermietung","fix-flip","finanzierungsrechner")]
 css="""/* One visual language for the five calculators' expand/collapse controls. */
 :root{
-  --nic-expand-size:32px;
-  --nic-clear-width:38px;
-  --nic-clear-height:40px;
+  --nic-expand-size:38.4px;
+  --nic-clear-width:30.4px;
+  --nic-clear-height:32px;
   --nic-clear-glyph-size:calc(var(--nic-body-font-size,16px) * .8);
   --nic-expand-glyph-size:19.2px;
-  --nic-expand-radius:10px;
+  --nic-expand-radius:12px;
   --nic-expand-border:var(--nic-highlight-bg,#c7d8ff);
   --nic-expand-bg:var(--nic-highlight-bg,#edf3ff);
   --nic-expand-ink:var(--nic-highlight-text,#2563eb);
@@ -27,7 +27,7 @@ body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
   max-height:var(--nic-expand-size)!important;
   padding:0!important;
   margin:0!important;
-  border:1px solid var(--nic-expand-border)!important;
+  border:1.2px solid var(--nic-expand-border)!important;
   border-radius:var(--nic-expand-radius)!important;
   background:var(--nic-expand-bg)!important;
   color:var(--nic-expand-ink)!important;
@@ -53,7 +53,7 @@ body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>
   min-height:var(--nic-expand-size)!important;
   margin:0!important;
   padding:0!important;
-  border:1px solid var(--nic-expand-border)!important;
+  border:1.2px solid var(--nic-expand-border)!important;
   border-radius:var(--nic-expand-radius)!important;
   background:var(--nic-expand-bg)!important;
   color:var(--nic-expand-ink)!important;
@@ -69,7 +69,7 @@ body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>
 body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced[open]>summary::after{
   content:"−"!important;
 }
-/* One shared reset-button style; the X alone is reduced by twenty percent. */
+/* One shared reset-button style; the entire control is reduced by twenty percent. */
 html body:not(.nic-admin) .app .nic-reno-action-row .nic-clear-reno{
   appearance:none!important;
   box-sizing:border-box!important;
@@ -85,8 +85,8 @@ html body:not(.nic-admin) .app .nic-reno-action-row .nic-clear-reno{
   max-height:var(--nic-clear-height)!important;
   padding:0!important;
   margin:0!important;
-  border:1px solid var(--nic-red-bg,#B42318)!important;
-  border-radius:var(--nic-expand-radius)!important;
+  border:.8px solid var(--nic-red-bg,#B42318)!important;
+  border-radius:8px!important;
   background:var(--nic-red-bg,#B42318)!important;
   color:var(--nic-red-text,#fff)!important;
   font-family:var(--nic-body-font-family,system-ui,sans-serif)!important;
