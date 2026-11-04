@@ -243,3 +243,15 @@ Für die Anschlussfinanzierung enthält `scripts/verify_finance_updates.js` Prü
 | Offen | Aktualisierungsrhythmus und Verhalten bei Ausfall oder Lücken der Bundesbank-Reihe dokumentieren. |
 | Hoch | Anbieter- und Impressumsangaben in `assets/site-settings.json` prüfen und mit freigegebenen Unternehmensdaten ersetzen. |
 | Mittel | Den Text der Schaltflächen für den 5- und 10-Jahreszins mit der tatsächlichen Übernahme des jüngsten Monatswerts abstimmen. |
+
+
+## Strukturprüfung vom 4. November 2026
+
+Die fünf Rechnerkennungen werden in `assets/calculators.json` zentral geführt und von der einheitlichen Navigation verwendet. Die Kennungen bleiben `budget`, `own`, `rent`, `flip` und `finance`; bestehende Speicher- und Statistikkonventionen bleiben kompatibel. Der aktive Rechner ist über `data-calculator` und `NICCalculators.active` erkennbar. Der Finanzierungsmodul-Code wird beim Build in eine eigene JavaScript-Datei ausgelagert und vor der Navigation geladen.
+
+Der PHP-Unterbau für Konten, Einstellungen und Statistiken liegt bereits unter `server/webspace/`; dies belegt noch keine erfolgreiche Installation auf dem produktiven Webspace. Die Formeln sind weiterhin JavaScript. Die Übertragung der Formeln, eine einheitliche serverseitige Rechteprüfung je Rechner und Zahlungsintegration sind weitere Migrationsschritte. Die aktuelle Strukturänderung stellt keine abgeschlossene PHP-Migration dar.
+
+Bereinigung: Die parallele Routentabelle der Navigation wurde durch die zentrale Registrierung ersetzt. Historische Patches werden vom Workflow vielfach weiterhin ausgeführt und sind daher nicht pauschal löschbar. Ein Repository wurde nicht gelöscht. Der bestehende PDF-Dokumentationsstand muss beim abschließenden Dokumentationslauf neu erzeugt werden; dieser Markdown-Nachtrag ist bis dahin der neuere Stand.
+
+
+CSS-Zwischenstand: Statische Inline-Blöcke werden nach `shared`, `budget`, `own`, `rent` und `flip` in wiederverwendbare CSS-Dateien ausgelagert. Der Build behält die ursprünglichen Einfügepositionen und damit die Kaskadenreihenfolge bei. Laufzeitgesteuerte Styles bleiben bestehen; Finanzierung behält seine Shadow-DOM-Isolation. Diese technische Auslagerung ersetzt noch nicht die vollständige semantische Konsolidierung aller historischen Regeln. Es werden weder fünf vollständige Kopien des gemeinsamen CSS noch neue überschreibende Korrekturregeln angelegt.
