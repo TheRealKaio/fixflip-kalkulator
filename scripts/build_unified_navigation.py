@@ -40,9 +40,10 @@ if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({i
 nav=Path('assets/unified-calculator-navigation.js').read_text().replace('/* FINANCE_MODULE */',factory)
 nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calculators)+';')
 (site/'calculators.json').write_text(json.dumps(registry,ensure_ascii=False,indent=2)+'\n')
-(site/'calculator-finance.js').write_text('(()=>{'+factory+'window.NICFinanceModule={create:createFinance,header:financeHeader};})();')
-nav=nav.replace(factory,'const createFinance=window.NICFinanceModule.create,financeHeader=window.NICFinanceModule.header;')
+# Finance shares the same loaded controller and initialization scope as all modes.
 (site/'calculator-navigation.js').write_text(nav)
+# Remove obsolete split bundles if rebuilding an existing output directory.
+for obsolete in site.glob('calculator-finance*.js'):obsolete.unlink()
 # Direct finance URLs boot the identical application, with finance selected.
 base=(site/'index.html').read_text()
 base=re.sub(r'data-nic-page="[^"]+"','data-nic-page="finance"',base,count=1)
@@ -56,6 +57,7 @@ base=base.replace('!["budget","own","flip"].includes(document.documentElement.da
 print('Unified five-calculator document and financing module built')
 for page in site.rglob('*.html'):
  s=page.read_text()
+ s=re.sub(r'<script\b[^>]*src="[^"]*calculator-finance(?:\.[a-f0-9]{16})?\.js"[^>]*>\s*</script>','',s)
  if 'async function initializeReferenceInterest()' in s:
   anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
   if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))
@@ -75,8 +77,6 @@ for page in site.rglob('*.html'):
  if page==site/'finanzierungsrechner/index.html':
   s=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+finance_header[0]+m[2],s,count=1,flags=re.S)
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
- # Install the finance module before the navigation controller on every route.
- s=re.sub(r'(<script\b[^>]*src="[^"]*calculator-navigation(?:\.[a-f0-9]{16})?\.js"[^>]*>)',r'<script src="/calculator-finance.js"></script>\1',s,count=1)
  key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'budget')
  s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)

@@ -20,6 +20,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
   const origin=await page.evaluate(()=>performance.timeOrigin);
+  assert.equal(await page.locator('script[src*="calculator-finance"]').count(),0,'Finance must use the shared controller bundle');
+  assert.equal(await page.evaluate(()=>typeof window.NICFinanceModule),'undefined','No second finance bootstrap');
   for(const key of ['finance','own','rent','flip','budget','finance']){
    await page.locator(`.deal-type-option[data-calculator="${key}"]`).click();
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);

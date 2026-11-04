@@ -2,6 +2,8 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 (async()=>{
+ const baselinePath=path.join(process.cwd(),'_site','.calculator-css-baseline.json');
+ const baseline=fs.existsSync(baselinePath)?JSON.parse(fs.readFileSync(baselinePath,'utf8')):{};
  const browser=await chromium.launch({headless:true});
  try{
  for(const width of [320,390,1440]){
@@ -18,7 +20,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     const file=path.join(process.cwd(),'_site',name);
     if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
     let body=fs.readFileSync(file);
-    if(inline&&file.endsWith('.html'))body=Buffer.from(body.toString().replace(/<link rel="stylesheet"( id="[^"]+")? href="\/(calculator-(?:shared|own|rent|flip|budget)-[a-f0-9]{16}\.css)">/g,(_,id,css)=>'<style'+(id||'')+'>'+fs.readFileSync(path.join(process.cwd(),'_site',css),'utf8')+'</style>'));
+    if(inline&&file.endsWith('.html')){assert(/calculator-(?:shared|own|rent|flip|budget)-/.test(body.toString()),'Missing external CSS fixtures');body=Buffer.from(body.toString().replace(/<link rel="stylesheet"( id="[^"]+")? href="\/(calculator-(?:shared|own|rent|flip|budget)-[a-f0-9]{16}(?:\.[a-f0-9]{16})?\.css)">/g,(_,id,css)=>'<style'+(id||'')+'>'+(baseline[css.replace(/\.[a-f0-9]{16}\.css$/,'.css')]??fs.readFileSync(path.join(process.cwd(),'_site',css),'utf8'))+'</style>'));assert(!/href="\/calculator-(?:shared|own|rent|flip|budget)-/.test(body.toString()), 'Inline baseline reconstruction failed');}
     return route.fulfill({body,contentType:({'.html':'text/html','.css':'text/css','.js':'application/javascript','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml'})[path.extname(file)]||'text/plain'});
    });
    await page.goto('http://localhost/budget/');
@@ -40,4 +42,5 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   console.log(`CSS cascade equivalence passed: all five calculators at ${width}px`);
  }
  }finally{await browser.close();}
+ if(fs.existsSync(baselinePath))fs.unlinkSync(baselinePath);
 })().catch(error=>{console.error(error);process.exit(1);});

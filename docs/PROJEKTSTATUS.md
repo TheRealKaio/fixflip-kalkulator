@@ -255,3 +255,13 @@ Bereinigung: Die parallele Routentabelle der Navigation wurde durch die zentrale
 
 
 CSS-Zwischenstand: Statische Inline-Blöcke werden nach `shared`, `budget`, `own`, `rent` und `flip` in wiederverwendbare CSS-Dateien ausgelagert. Der Build behält die ursprünglichen Einfügepositionen und damit die Kaskadenreihenfolge bei. Laufzeitgesteuerte Styles bleiben bestehen; Finanzierung behält seine Shadow-DOM-Isolation. Diese technische Auslagerung ersetzt noch nicht die vollständige semantische Konsolidierung aller historischen Regeln. Es werden weder fünf vollständige Kopien des gemeinsamen CSS noch neue überschreibende Korrekturregeln angelegt.
+
+
+### CSS-Bereinigung vom 4. November 2026
+
+Der neue Cleaner entfernt leere Regeln, vollständig wiederholte Angaben und überholte feste Größenangaben bei identischem Selektor und identischen Medienbedingungen. Er berücksichtigt die Priorität von `!important`, erhält unterschiedliche Bildschirmbedingungen sowie komplexe Werte und Fallbacks. Zwölf gezielte Tests prüfen unter anderem Priorität, ungültige spätere Werte, Strings mit Semikolon und Kontextgrenzen. Der Browservergleich rekonstruiert die ursprünglichen Regeln auch aus fingerprinteten Dateinamen und vergleicht alle fünf Rechner bei 320, 390 und 1440 Pixeln. Die Bereinigung gilt für die statischen Inline-Styles; sie ist kein pauschales Entfernen aller historischen Build-Skripte.
+
+
+### Aktualisierung der Finanzierungseinbindung
+
+Auf Wunsch ist die gesonderte JavaScript-Ausgabedatei `calculator-finance.js` zurückgenommen. Die Finanzierungsfunktion liegt wieder im gemeinsamen Rechnercontroller mit zentraler Registrierung und Navigation. Der zusätzliche globale Einstiegspunkt entfällt. Die Finanzierungsformeln und der bisherige isolierte Formularcontainer bleiben bestehen. Eine weitere Zusammenführung historischer Speicher- und PDF-Implementierungen ist damit noch nicht abgeschlossen.
