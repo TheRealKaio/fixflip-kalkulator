@@ -46,7 +46,7 @@ old='''          <div class="field">
 new='''          <div class="field rent-reno-field">
             <label>Einmalige Sanierung / Renovierung <span class="hint">inkl. Puffer</span></label>
             <div class="rent-reno-input-row">
-              <div class="input-wrap"><input id="rentRenovation" class="readonly-input" inputmode="decimal" value="0" readonly><span class="unit">€</span></div>
+              <div class="input-wrap"><input id="rentRenovation" inputmode="decimal" value="0"><span class="unit">€</span></div>
               <button class="plus-btn" id="rentOpenReno" type="button" aria-label="Sanierungsgewerke öffnen" aria-expanded="false" aria-controls="rentRenoPanel">+</button>
             </div>
           </div>'''
@@ -139,6 +139,8 @@ js=r'''
   const money=n=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(Number(n)||0);
   const num=v=>{let x=String(v??"").trim().replace(/\s/g,"");if(x.includes(",")&&x.includes(".")){x=x.lastIndexOf(",")>x.lastIndexOf(".")?x.replace(/\./g,"").replace(",","."):x.replace(/,/g,"");}else{x=x.replace(",",".");}x=x.replace(/[^0-9.-]/g,"");const n=Number(x);return Number.isFinite(n)?n:0;};
   const vals={}; const manual=new Set();
+  const manualTotalKey=RP+"manual_total";
+  let syncingTotal=false;
   function areaKey(h){return RP+"area_"+h.areaKey}
   function getArea(h){return h&&h.areaKey?num(localStorage.getItem(areaKey(h))||0):0}
   function suggestion(t){
@@ -152,8 +154,8 @@ js=r'''
     const b=localStorage.getItem(RP+"buffer"); if($r("rentRenoBuffer")) $r("rentRenoBuffer").value=b===null?"0.00":b;
   }
   function saveTrade(t){localStorage.setItem(RP+"trade_"+t.key,String(vals[t.key]||0));localStorage.setItem(RP+"manual_"+t.key,manual.has(t.key)?"1":"0")}
-  function total(){const base=trades.reduce((a,t)=>a+(Number(vals[t.key])||0),0);const buffer=Math.max(0,num($r("rentRenoBuffer")?.value))/100;return Math.round(base*(1+buffer));}
-  function sync(){const t=total();if($r("rentRenovation")){$r("rentRenovation").value=String(t);localStorage.setItem("ff_rent_rentRenovation",String(t));}if($r("rentRenoSheetTotal"))$r("rentRenoSheetTotal").textContent=money(t);}
+  function total(){const direct=localStorage.getItem(manualTotalKey);if(direct!==null&&Number.isFinite(Number(direct)))return Math.max(0,Number(direct));const base=trades.reduce((a,t)=>a+(Number(vals[t.key])||0),0);const buffer=Math.max(0,num($r("rentRenoBuffer")?.value))/100;return Math.round(base*(1+buffer));}
+  function sync(){syncingTotal=true;try{const t=total();if($r("rentRenovation")){$r("rentRenovation").value=String(t);localStorage.setItem("ff_rent_rentRenovation",String(t));}if($r("rentRenoSheetTotal"))$r("rentRenoSheetTotal").textContent=money(t);}finally{syncingTotal=false;}}
   function render(){
     const list=$r("rentTradeList"); if(!list) return;
     const a=num($r("rentArea")?.value);
@@ -168,8 +170,24 @@ js=r'''
     list.querySelectorAll('.rent-trade-area').forEach(inp=>inp.addEventListener('input',()=>{const t=trades.find(x=>x.key===inp.dataset.tradeKey),h=t?fixedTradeHints[t.name]:null;if(h){localStorage.setItem(areaKey(h),String(num(inp.value)));if(!manual.has(t.key)) vals[t.key]=0;render();sync();}}));
     sync();
   }
-  function reset(ask=true){if(ask&&!confirm('Möchtest du wirklich alle Sanierungswerte der Vermietung auf 0 zurücksetzen?'))return; trades.forEach(t=>{vals[t.key]=0;manual.delete(t.key);localStorage.removeItem(RP+'trade_'+t.key);localStorage.removeItem(RP+'manual_'+t.key);const h=fixedTradeHints[t.name];if(h&&h.areaKey)localStorage.removeItem(areaKey(h));});localStorage.removeItem(RP+'buffer');if($r('rentRenoBuffer'))$r('rentRenoBuffer').value='0.00';render();sync();}
+  function reset(ask=true){if(ask&&!confirm('Möchtest du wirklich alle Sanierungswerte der Vermietung auf 0 zurücksetzen?'))return; localStorage.removeItem(manualTotalKey);trades.forEach(t=>{vals[t.key]=0;manual.delete(t.key);localStorage.removeItem(RP+'trade_'+t.key);localStorage.removeItem(RP+'manual_'+t.key);const h=fixedTradeHints[t.name];if(h&&h.areaKey)localStorage.removeItem(areaKey(h));});localStorage.removeItem(RP+'buffer');if($r('rentRenoBuffer'))$r('rentRenoBuffer').value='0.00';render();sync();}
   window.resetRentRenoV8300=reset;
+  // Match owner-use: a direct amount is the final total, including any buffer.
+  const totalInput=$r('rentRenovation');
+  totalInput?.addEventListener('input',()=>{
+    if(syncingTotal)return;
+    const amount=Math.max(0,num(totalInput.value));
+    localStorage.setItem(manualTotalKey,String(amount));
+    localStorage.setItem('ff_rent_rentRenovation',String(amount));
+    if($r('rentRenoSheetTotal'))$r('rentRenoSheetTotal').textContent=money(amount);
+  },true);
+  totalInput?.addEventListener('change',()=>sync());
+  // Opening details and changing the area/buffer preserve a direct total.
+  // Editing a detail or applying/resetting trades returns to the detail sum.
+  $r('rentTradeList')?.addEventListener('input',event=>{
+    if(event.target.matches?.('.rent-trade-amount,.rent-trade-area'))localStorage.removeItem(manualTotalKey);
+  },true);
+  $r('rentApplyTradeSuggestions')?.addEventListener('click',()=>localStorage.removeItem(manualTotalKey),true);
   load(); render();
   $r('rentOpenReno')?.addEventListener('click',()=>{const p=$r('rentRenoPanel');const open=!p.classList.contains('show');p.classList.toggle('show',open);$r('rentOpenReno').textContent=open?'−':'+';$r('rentOpenReno').setAttribute('aria-expanded',open?'true':'false');if(open)render();});
   $r('rentApplyTradeSuggestions')?.addEventListener('click',()=>{trades.forEach(t=>{const v=suggestion(t);vals[t.key]=v;manual.delete(t.key);saveTrade(t)});render();sync();});
