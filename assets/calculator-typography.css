@@ -139,3 +139,8 @@ html body:not(.nic-admin) .app :is(h1,h2,h3,h4) {
     text-align: center !important;
   }
 }
+
+/* Field headings use their full width; helper copy below controls stays visible. */
+html body:not(.nic-admin) .app .field > label .hint {
+  display: none !important;
+}
