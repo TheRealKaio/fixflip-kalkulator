@@ -7,6 +7,7 @@ pages=[site/p/"index.html" for p in ("","budget","eigennutzung","vermietung","fi
 css="""/* One visual language for the five calculators' expand/collapse controls. */
 :root{
   --nic-expand-size:32px;
+  --nic-expand-glyph-size:19.2px;
   --nic-expand-radius:10px;
   --nic-expand-border:var(--nic-highlight-bg,#c7d8ff);
   --nic-expand-bg:var(--nic-highlight-bg,#edf3ff);
@@ -28,7 +29,7 @@ body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
   background:var(--nic-expand-bg)!important;
   color:var(--nic-expand-ink)!important;
   font-family:inherit!important;
-  font-size:16px!important;
+  font-size:var(--nic-expand-glyph-size)!important;
   font-weight:500!important;
   line-height:1!important;
   text-align:center!important;
@@ -54,7 +55,7 @@ body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>
   background:var(--nic-expand-bg)!important;
   color:var(--nic-expand-ink)!important;
   font-family:inherit!important;
-  font-size:16px!important;
+  font-size:var(--nic-expand-glyph-size)!important;
   font-weight:500!important;
   line-height:1!important;
   display:inline-flex!important;
