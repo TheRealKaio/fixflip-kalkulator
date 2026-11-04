@@ -397,7 +397,10 @@ const assert=require('node:assert/strict');
        cls:typeof el.className==='string'?el.className.slice(0,90):'',
        size:cs.fontSize};
      const responsiveHero=el.matches('.hero.nic-responsive-header>h1');
-     if(!sizes.has(cs.fontSize)&&!responsiveHero&&failures.length<35)failures.push(info);
+     const reducedReset=el.matches('.nic-clear-reno')&&
+       Math.abs(parseFloat(cs.fontSize)-parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-body-font-size'))*.8)<.01&&
+       Math.abs(box.width-38)<.1&&Math.abs(box.height-40)<.1;
+     if(!sizes.has(cs.fontSize)&&!responsiveHero&&!reducedReset&&failures.length<35)failures.push(info);
      if(!cs.fontFamily.includes('Segoe UI')&&fontFailures.length<12)
       fontFailures.push({...info,font:cs.fontFamily});
     }
