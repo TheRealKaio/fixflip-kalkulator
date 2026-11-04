@@ -28,7 +28,7 @@ html body:not(.nic-admin) :is(
   .section-summary-subtitle *, .flip-section-subtitle,
   .nic-brand-description,.nic-brand-description *,
   .deal-type-option small,
-  .kpi .name,.kpi .value,.metric-box .metric-value,
+  .kpi .name,.kpi .name > span,.kpi .value,.metric-box .metric-value,
   .info-box,.info-box :where(*),.info-card p,.tip-box p,
   .budget-summary-row,.budget-summary-row :where(*),
   .budget-expense-name,.budget-expense-title,
