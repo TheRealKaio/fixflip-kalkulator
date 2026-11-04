@@ -7,6 +7,9 @@ pages=[site/p/"index.html" for p in ("","budget","eigennutzung","vermietung","fi
 css="""/* One visual language for the five calculators' expand/collapse controls. */
 :root{
   --nic-expand-size:32px;
+  --nic-clear-width:38px;
+  --nic-clear-height:40px;
+  --nic-clear-glyph-size:calc(var(--nic-body-font-size,16px) * .8);
   --nic-expand-glyph-size:19.2px;
   --nic-expand-radius:10px;
   --nic-expand-border:var(--nic-highlight-bg,#c7d8ff);
@@ -66,6 +69,34 @@ body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>
 body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced[open]>summary::after{
   content:"−"!important;
 }
+/* One shared reset-button style; the X alone is reduced by twenty percent. */
+html body:not(.nic-admin) .app .nic-reno-action-row .nic-clear-reno{
+  appearance:none!important;
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 var(--nic-clear-width)!important;
+  width:var(--nic-clear-width)!important;
+  min-width:var(--nic-clear-width)!important;
+  max-width:var(--nic-clear-width)!important;
+  height:var(--nic-clear-height)!important;
+  min-height:var(--nic-clear-height)!important;
+  max-height:var(--nic-clear-height)!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid var(--nic-red-bg,#B42318)!important;
+  border-radius:var(--nic-expand-radius)!important;
+  background:var(--nic-red-bg,#B42318)!important;
+  color:var(--nic-red-text,#fff)!important;
+  font-family:var(--nic-body-font-family,system-ui,sans-serif)!important;
+  font-size:var(--nic-clear-glyph-size)!important;
+  font-weight:400!important;
+  line-height:1!important;
+  text-align:center!important;
+  box-shadow:none!important;
+  cursor:pointer;
+}
 body:not(.nic-admin) :is(.plus-btn,.market-check-toggle):focus-visible,
 body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>summary:focus-visible{
   outline:2px solid var(--nic-expand-ink);
@@ -80,7 +111,7 @@ visual={"width","height","min-width","min-height","max-width","max-height",
         "padding-top","padding-bottom","margin-top","box-shadow","text-align",
         "vertical-align","float","box-sizing","align-items","justify-content",
         "flex","flex-basis","flex-grow","flex-shrink","content"}
-target=re.compile(r"\.(?:plus-btn|market-check-toggle)(?![\w-])|"
+target=re.compile(r"\.(?:plus-btn|market-check-toggle|nic-clear-reno)(?![\w-])|"
                   r"\.(?:own-finance-card|flip-section-card)\s+\.advanced(?:\s*\[open\])?\s*>\s*summary::after")
 rule=re.compile(r"([^{}]+)\{([^{}]*)\}",re.S)
 declaration=re.compile(r"(\s*)([-\w]+)\s*:\s*([^;{}]*)(;|$)",re.S)
