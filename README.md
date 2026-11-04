@@ -12,7 +12,7 @@ Die App wird als statische Website über GitHub Pages veröffentlicht. Die Haupt
 - Gemeinsame PDF-Berichtsfunktionen für Logo, Kopfbereich, Fußzeile und rechtliche Hinweise
 - Die Projektdokumentation kann unter Admin → Layout als letzte Karte heruntergeladen werden
 
-Die Admin-Einstellungen werden derzeit lokal im Browser gespeichert. Eine serverseitige Anmeldung und zentrale Datenbank sind noch offen.
+Für Anmeldung, zentrale Einstellungen und Statistiken liegt ein optionales PHP-/MySQL-Backend unter `server/webspace/` vor. Seine Installation und der tatsächliche Betrieb sind getrennt vom statischen Pages-Deployment. Die Rechnerformeln laufen weiterhin im Browser; Bezahlfunktionen und serverseitige Berechnungen sind noch nicht umgesetzt.
 
 ## Dokumentation
 
@@ -39,3 +39,27 @@ Der Pages-Workflow startet bei Pushes auf `main`, kann manuell gestartet werden 
 
 Live: <https://www.neustart-immocheck.de/>  
 Repository: <https://github.com/TheRealKaio/fixflip-kalkulator>
+
+## Modularisierung und Rechnerkennungen (4. November 2026)
+
+`assets/calculators.json` definiert die fünf stabilen Kennungen und Routen zentral:
+
+| Rechner | Kennung | Route |
+| --- | --- | --- |
+| Budget | `budget` | `/budget/` |
+| Eigennutzung | `own` | `/eigennutzung/` |
+| Vermietung | `rent` | `/vermietung/` |
+| Fix & Flip | `flip` | `/fix-flip/` |
+| Finanzierung | `finance` | `/finanzierungsrechner/` |
+
+Die Navigation nutzt diese Registrierung. `data-calculator` am HTML-Element und Body zeigt den aktiven Rechner auch nach einem Wechsel ohne Seitenneuladen. `window.NICCalculators.active` liefert die Kennung; `nic-calculator-changed` meldet abgeschlossene Wechsel. Eigennutzung und Fix & Flip teilen derzeit denselben Inhaltscontainer, bleiben aber unterschiedliche Rechnerkennungen.
+
+Das Build-Skript `scripts/build_unified_navigation.py` erzeugt die gemeinsame Navigation und das separate Finanzierungsmodul `calculator-finance.js`. Gemeinsame Layoutregeln bleiben zentral in den bestehenden Stylesheets. Eine vollständige Aufteilung der übrigen Formeln und rechnerspezifischen Styles ist noch offen.
+
+Alte Patch-Dateien sind teilweise aktive Build-Abhängigkeiten. Sie dürfen erst entfernt werden, nachdem ihre Wirkung in die gepflegten Quellen übernommen und der vollständige Build geprüft wurde. Veraltete Repositories werden nur nach eindeutiger Zuordnung und Prüfung von Deployment-Abhängigkeiten entfernt. Im geprüften Kaio-Konto wurde bei der Repository-Suche nur `fixflip-kalkulator` gefunden; es wurde kein Repository gelöscht.
+
+### CSS-Auslagerung
+
+`scripts/modularize_calculator_styles.py` läuft nach der Erzeugung der einheitlichen Navigation. Statische Inline-Styles werden an exakt derselben Stelle durch Stylesheet-Links ersetzt. Die erzeugten Dateien sind nach `shared`, `budget`, `own`, `rent` und `flip` geordnet und werden zwischen Routen wiederverwendet. Der Finanzierungsrechner behält seine isolierten Shadow-DOM-Styles im Finanzierungsmodul. `calculator-styles.json` dokumentiert die erzeugten Gruppen.
+
+Die Aufteilung verwendet mehrere geordnete CSS-Blöcke je Gruppe: Ein Zusammenziehen in nur eine Datei je Rechner würde die bisherige Kaskade verschieben. Laufzeitabhängige Styles und Styles mit relativen Ressourcenpfaden bleiben erhalten. Eine semantische Bereinigung aller alten CSS-Überschreibungen ist damit noch nicht abgeschlossen. Die komprimierten Originalquellen und Berechnungsformeln bleiben unverändert.

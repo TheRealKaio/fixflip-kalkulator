@@ -2,9 +2,16 @@
 (()=>{
 'use strict';
 /* FINANCE_MODULE */
-const routes={'/budget/':'budget','/eigennutzung/':'own','/vermietung/':'rent','/fix-flip/':'flip','/finanzierungsrechner/':'finance'};
+/* CALCULATOR_REGISTRY */
+const routes=Object.fromEntries(calculators.map(item=>[item.path,item.id]));
+window.NICCalculators=Object.freeze({
+ list:Object.freeze(calculators.map(item=>Object.freeze(item))),
+ get active(){return active;},
+ get(id){return calculators.find(item=>item.id===id)||null;}
+});
 let active=null,financeRoot=null,bypass=false;
 function select(key,push=false){
+ if(!calculators.some(item=>item.id===key))throw new Error('Unknown calculator: '+key);
  if(active===key)return;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
@@ -22,6 +29,9 @@ function select(key,push=false){
  }
  window.NICHeader?.refresh();
  active=key;
+ document.documentElement.dataset.calculator=key;
+ document.body.dataset.calculator=key;
+ window.dispatchEvent(new CustomEvent('nic-calculator-changed',{detail:{id:key}}));
  const path=Object.keys(routes).find(p=>routes[p]===key);
  if(push){history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',path+location.search);}
  try{localStorage.setItem('nic_last_calculator_v1',key);}catch(_){}

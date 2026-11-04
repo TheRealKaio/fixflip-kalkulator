@@ -33,7 +33,15 @@ window.addEventListener('nic-reference-interest',event=>applyReferenceRate(event
 applyReferenceRate(window.NICReferenceInterest?.rate??4.0);
 """
 factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
+registry=json.loads(Path('assets/calculators.json').read_text())
+calculators=registry['calculators']
+if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
+ raise SystemExit('Expected five unique calculator IDs and routes')
 nav=Path('assets/unified-calculator-navigation.js').read_text().replace('/* FINANCE_MODULE */',factory)
+nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calculators)+';')
+(site/'calculators.json').write_text(json.dumps(registry,ensure_ascii=False,indent=2)+'\n')
+(site/'calculator-finance.js').write_text('(()=>{'+factory+'window.NICFinanceModule={create:createFinance,header:financeHeader};})();')
+nav=nav.replace(factory,'const createFinance=window.NICFinanceModule.create,financeHeader=window.NICFinanceModule.header;')
 (site/'calculator-navigation.js').write_text(nav)
 # Direct finance URLs boot the identical application, with finance selected.
 base=(site/'index.html').read_text()
@@ -67,5 +75,9 @@ for page in site.rglob('*.html'):
  if page==site/'finanzierungsrechner/index.html':
   s=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+finance_header[0]+m[2],s,count=1,flags=re.S)
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
+ # Install the finance module before the navigation controller on every route.
+ s=re.sub(r'(<script\b[^>]*src="[^"]*calculator-navigation(?:\.[a-f0-9]{16})?\.js"[^>]*>)',r'<script src="/calculator-finance.js"></script>\1',s,count=1)
+ key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'budget')
+ s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)
  page.write_text(s)
