@@ -6,6 +6,7 @@ Files are content-addressed because the same block is reused by several calculat
 from pathlib import Path
 from html.parser import HTMLParser
 import hashlib,json,re,sys
+from clean_calculator_css import clean
 
 class Styles(HTMLParser):
  def __init__(self,source):
@@ -20,13 +21,15 @@ class Styles(HTMLParser):
    a,opening,attrs=self.start;b=self.position_offset();self.blocks.append((a,b+8,opening,self.source[a+len(opening):b],attrs));self.start=None
 
 def build(site):
- manifest={};counts={}
+ manifest={};counts={};baseline={};cleanup={"empty":0,"duplicate":0,"overridden":0}
  for slug in ('','budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner'):
-  page=site/slug/'index.html';source=page.read_text();parser=Styles(source);parser.feed(source);edits=[]
-  for a,b,opening,css,attrs in parser.blocks:
+  page=site/slug/'index.html';source=page.read_text();parser=Styles(source);parser.feed(source);edits=[];contexts={}
+  for a,b,opening,css,attrs in reversed(parser.blocks):
    # Config/runtime scripts may rewrite these by ID; keep their element contract.
    if (attrs.get('id') and source.count(attrs['id'])>1) or attrs.get('id','').startswith('nic-') or any(k in attrs for k in ('media','type','nonce','disabled')):continue
    if not css.strip() or '@import' in css or re.search(r'url\(\s*["\']?(?!data:|https?:|/|#)',css,re.I):continue
+   original=css
+   css,removed=clean(css,contexts)
    ident=attrs.get('id','')
    group='shared'
    if ident.startswith('rental-'):group='rent'
@@ -35,12 +38,17 @@ def build(site):
    elif ident.startswith('budget-'):group='budget'
    digest=hashlib.sha256(css.encode()).hexdigest()[:16]
    name=f'calculator-{group}-{digest}.css';(site/name).write_text(css)
+   baseline[name]=original
+   for key in cleanup:cleanup[key]+=removed[key]
    # Keep IDs available to DOM queries without creating a second style authority.
    id_attr=' id="'+ident+'"' if ident else ''
    edits.append((a,b,f'<link rel="stylesheet"{id_attr} href="/{name}">'))
    manifest.setdefault(group,{})[name]=digest
-  for a,b,replacement in reversed(edits):source=source[:a]+replacement+source[b:]
+  for a,b,replacement in edits:source=source[:a]+replacement+source[b:]
   page.write_text(source);counts[slug or '/']=len(edits)
+ (site/'.calculator-css-baseline.json').write_text(json.dumps(baseline))
+ (site/'calculator-css-cleanup.json').write_text(json.dumps(cleanup,indent=2)+'\n')
+ print('Removed legacy CSS rules (across six page copies):',cleanup)
  (site/'calculator-styles.json').write_text(json.dumps({'groups':manifest,'pages':counts},indent=2)+'\n')
  print('Calculator CSS externalized without reordering:',counts)
 

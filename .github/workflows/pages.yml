@@ -824,6 +824,7 @@ jobs:
       - name: Build and verify unified calculator navigation
         run: |
           python scripts/build_unified_navigation.py _site
+          python scripts/test_clean_calculator_css.py
           python scripts/modularize_calculator_styles.py _site
           python scripts/fingerprint_assets.py _site
           NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
