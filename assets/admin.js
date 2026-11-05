@@ -27,7 +27,7 @@ function buildLegal(){
 function showLegal(key){activeLegal=key;for(const k of Object.keys(S.legalLabels)){$('legal-card-'+k).hidden=k!==key;const button=$('legalSections').querySelector('[data-legal-section="'+k+'"]');button.setAttribute('aria-pressed',String(k===key));}}
 function fillLegal(s){
  for(const key of Object.keys(S.legalLabels)){
-  legalDefaults[key]=S.legalSource(s,key,disclaimerHTML());$('legal-'+key).value=legalDefaults[key];
+  legalDefaults[key]=S.legalSource(s,key,disclaimerHTML());$('legal-'+key).value=s.legal?.[key]||window.NICLegalDrafts?.[key]||legalDefaults[key];
   const published=S.published||s;$('legal-published-'+key).replaceChildren(S.legalFragment(S.legalSource(published,key,disclaimerHTML()),published));
  }
 }
