@@ -125,13 +125,15 @@
     "agbs": "",
     "datenschutz": "",
     "haftungsausschluss": "",
-    "cookie-hinweis": ""
+    "cookie-hinweis": "",
+    "avv": "",
+    "widerruf": "",
+    "sicherheit": ""
   },
   "access": {
     "calculators": true,
     "pdfDownload": true,
     "pdfShare": true
   },
-  "contentSections": {
-  }
+  "contentSections": {}
 }
