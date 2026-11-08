@@ -58,6 +58,7 @@ else:
 root=(site/'index.html').read_text()
 # The base keeps calculator assets and the service worker on the root scope.
 root=root.replace('<head>','<head>\n<base href="/">',1)
+root_calculators=root
 def metadata(key,path):
     c=config.get('content',{}).get(key,{})
     m=config.get('meta',{}).get(key,{})
@@ -99,7 +100,7 @@ if 'id="nic-home-intro"' not in root:root=re.sub(r'(<main\b[^>]*>)',lambda m:m[1
 (site/'index.html').write_text(customize(root,'website',''))
 for key in ['budget','own','rent','flip']:
     path=pages[key];folder=site/path;folder.mkdir(exist_ok=True)
-    (folder/'index.html').write_text(customize(root,key,path))
+    (folder/'index.html').write_text(customize(root_calculators,key,path))
 
 # Crawlable, editable information pages for the public navigation.
 content_style='''<style>body{margin:0;background:#f5f7fb;color:#263b3a;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}.nic-content-header{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:15px max(20px,calc((100vw - 1180px)/2));border-bottom:1px solid #e2e9e5;background:#fff}.nic-content-brand{color:#075c55;font-weight:700;text-decoration:none;white-space:nowrap}.nic-content-nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.nic-content-nav a{color:#263b3a;text-decoration:none;font-size:14px}.nic-content-main{max-width:980px;margin:48px auto;padding:0 22px}.nic-content-card{padding:36px;border:1px solid #e2e9e5;border-radius:14px;background:#fff}.nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}.nic-content-card p{margin:12px 0}.nic-content-footer{padding:24px max(20px,calc((100vw - 1180px)/2));background:#075c55;color:white}.nic-content-footer a{color:white;margin-right:18px}@media(max-width:760px){.nic-content-header{align-items:flex-start;flex-direction:column}.nic-content-nav{gap:12px}.nic-content-main{margin:24px auto}.nic-content-card{padding:24px 18px}}</style>'''
