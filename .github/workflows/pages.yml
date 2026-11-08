@@ -556,8 +556,7 @@ jobs:
           python scripts/verify_rental_calculator.py _site/index.html
           node scripts/verify_rental_interpretation.js _site/index.html
 
-          # Release contract first: detected patch version, generated marker,
-          # visible/PDF version and Service Worker/cache version must all agree.
+          # Release contract keeps the Admin version, PDF version and Service Worker/cache in sync.
           python scripts/release_contract.py verify _site
 
           # Product deployment gate for release-independent behavior/UI requirements.
@@ -660,7 +659,6 @@ jobs:
           python scripts/extract_finance_header.py _site
           mkdir -p _site/finanzierungsrechner
           cp assets/financing.html _site/finanzierungsrechner/index.html
-          sed -i "s/VERSION_PLACEHOLDER/$(cat _site/.release-version)/g" _site/finanzierungsrechner/index.html
           python scripts/patch_blank_zero_inputs_v8368.py _site/finanzierungsrechner/index.html
           python scripts/unify_finance_footer_markup.py _site
           python scripts/apply_finance_header_variants.py _site

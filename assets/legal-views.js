@@ -5,7 +5,7 @@ const labels=S.legalLabels||{impressum:'Impressum',datenschutz:'Datenschutz',agb
 const hero=document.querySelector('.app > .hero'),title=document.getElementById('heroTitle'),text=document.getElementById('heroText');
 if(!hero||!title){if(/\/impressum\/?$/.test(location.pathname))location.replace(new URL('#impressum',S.ROOT).href);return;}
 let active=null,panel=null,article=null,snapshot=null,opener=null;
-const key=()=>{const k=location.hash.slice(1);return Object.hasOwn(labels,k)&&(!['widerruf','avv','sicherheit'].includes(k)||!!S.current?.legal?.[k])?k:null;};
+const key=()=>{const k=location.hash.slice(1);return Object.hasOwn(labels,k)&&(!['widerruf','avv'].includes(k)||!!S.current?.legal?.[k])?k:null;};
 function node(tag,value,parent){const el=document.createElement(tag);if(value!==undefined)el.textContent=value;if(parent)parent.append(el);return el;}
 function operator(){const s=S.current;if(!s)return;const box=node('section',undefined,article);box.className='nic-legal-operator';node('h2',active==='datenschutz'?'Verantwortlicher':'Anbieter',box);const wanted=['Anbieter','Vertreten durch','Anschrift','Kontakt'];const parts=S.imprint(s).filter(x=>wanted.includes(x.label));if(!parts.length){node('p','Die Betreiberangaben wurden noch nicht veröffentlicht.',box);return;}for(const item of parts){const p=node('p',item.value,box);p.dataset.companyGroup=item.label;}}
 function render(){
@@ -31,7 +31,7 @@ function close(){if(!active)return;active=null;document.body.classList.remove('n
 function open(next){
  if(!next){const was=active;close();if(was)opener?.focus();return;}
  if(!active)snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title};
- if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← Zu den Kalkulatoren',panel);back.type='button';back.className='nic-admin-back';back.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);open(null);});const nav=node('nav',undefined,panel);nav.setAttribute('aria-label','Rechtliche Bereiche');for(const [k,label]of Object.entries(labels)){if(['widerruf','avv','sicherheit'].includes(k)&&!S.current?.legal?.[k])continue;const a=node('a',label,nav);a.href='#'+k;a.dataset.nicLegal=k;}article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
+ if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← Zu den Kalkulatoren',panel);back.type='button';back.className='nic-admin-back';back.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);open(null);});const nav=node('nav',undefined,panel);nav.setAttribute('aria-label','Rechtliche Bereiche');for(const [k,label]of Object.entries(labels)){if(['widerruf','avv'].includes(k)&&!S.current?.legal?.[k])continue;const a=node('a',label,nav);a.href='#'+k;a.dataset.nicLegal=k;}article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
  active=next;panel.hidden=false;document.body.classList.add('nic-legal-open');panel.setAttribute('aria-label',labels[next]);title.textContent=labels[next];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[next]+' | Neustart ImmoCheck';
  panel.querySelectorAll('[data-nic-legal]').forEach(a=>{if(a.dataset.nicLegal===next)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');

@@ -15,7 +15,7 @@
       [['name','legalForm'],'Anbieter'],[['representative'],'Vertreten durch'],[['street','postalCode','city','country'],'Anschrift'],[['email','website','phone','fax'],'Kontakt'],
       [['registerType','registerCourt','registerNumber'],'Register'],[['vatId'],'Umsatzsteuer-ID'],[['businessId'],'Wirtschafts-ID'],[['authority'],'Aufsichtsbehörde'],[['profession','professionalCountry','chamber','professionalRules'],'Berufsrechtliche Angaben'],[['capital'],'Kapitalangaben'],[['liquidation'],'Abwicklung / Liquidation'],[['mediaState','mediaAuthority'],'Audiovisuelle Mediendienste'],[['editorialResponsible','editorialAddress'],'Redaktionell verantwortlich'],[['disputeResolution'],'Verbraucherstreitbeilegung'],[['additional'],'Weitere Angaben']
     ];
-  const legalLabels={impressum:'Impressum',agbs:'AGBs',datenschutz:'Datenschutz',haftungsausschluss:'Haftungsausschluss',widerruf:'Widerruf',avv:'AVV',sicherheit:'Datenschutz & Sicherheit','cookie-hinweis':'Cookie-Hinweis'};
+  const legalLabels={impressum:'Impressum',agbs:'AGBs',datenschutz:'Datenschutz',haftungsausschluss:'Haftungsausschluss',widerruf:'Widerruf',avv:'AVV','cookie-hinweis':'Cookie-Hinweis'};
   const escapeHTML=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function legalSource(s,key,disclaimer=''){
     if(s.legal?.[key])return s.legal[key];
