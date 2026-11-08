@@ -7,6 +7,7 @@ import html
 import json
 import re
 import sys
+from html.parser import HTMLParser
 from urllib.parse import urlparse
 from render_share_image import render_share_image
 
@@ -18,6 +19,31 @@ base='https://www.neustart-immocheck.de/'
 share_name=render_share_image(config,site)
 share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
+content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','contact':'kontakt/','login':'anmelden/'}
+content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator'),('contact','Kontakt'),('login','Anmelden')]
+
+class ContentSanitizer(HTMLParser):
+    allowed={'p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h2','h3','h4'}
+    void={'br','hr'}
+    def __init__(self):
+        super().__init__(convert_charrefs=True);self.out=[]
+    def handle_starttag(self,tag,attrs):
+        if tag not in self.allowed:return
+        if tag=='a':
+            href=next((v for k,v in attrs if k=='href'), '') or ''
+            href=href.strip()
+            if '{{company.email}}' in href: href='mailto:{{company.email}}'
+            if re.match(r'^(https?://|mailto:|tel:)',href):
+                self.out.append('<a href="'+html.escape(href,quote=True)+'" rel="noopener noreferrer">');return
+        self.out.append('<'+tag+'>')
+    def handle_endtag(self,tag):
+        if tag in self.allowed and tag not in self.void:self.out.append('</'+tag+'>')
+    def handle_data(self,data):self.out.append(html.escape(data))
+    def fragment(self,value):
+        self.feed(str(value or ''));result=''.join(self.out)
+        for key,value in config.get('company',{}).items():
+            result=result.replace('{{company.'+key+'}}',html.escape(str(value or '')))
+        return result
 # Publish a real PNG so Safari can fetch the icon before JavaScript runs.
 apple=config.get('appleTouchIcon','')
 if apple:
@@ -33,13 +59,15 @@ root=(site/'index.html').read_text()
 # The base keeps calculator assets and the service worker on the root scope.
 root=root.replace('<head>','<head>\n<base href="/">',1)
 def metadata(key,path):
+    c=config.get('content',{}).get(key,{})
     m=config.get('meta',{}).get(key,{})
     fallback=config.get('meta',{}).get('website',{})
-    title=html.escape(str(m.get('title') or fallback.get('title') or 'Neustart ImmoCheck'),quote=True)
-    description=html.escape(str(m.get('description') or fallback.get('description') or ''),quote=True)
+    title=html.escape(str(c.get('seoTitle') or m.get('title') or fallback.get('title') or 'Neustart ImmoCheck'),quote=True)
+    description=html.escape(str(c.get('metaDescription') or m.get('description') or fallback.get('description') or ''),quote=True)
     url=html.escape(base+path,quote=True)
     share_alt=html.escape(str(config.get('imageAlts',{}).get('sharing','Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden.')),quote=True)
-    return f'<title>{title}</title>\n<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="Neustart ImmoCheck">\n<meta property="og:image" content="{share_url}">\n<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="{share_alt}">\n<meta name="twitter:image:alt" content="{share_alt}">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:image" content="{share_url}">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
+    robots='<meta name="robots" content="noindex,follow">' if c.get('noindex') or key=='login' else ''
+    return f'<title>{title}</title>\n{robots}<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="Neustart ImmoCheck">\n<meta property="og:image" content="{share_url}">\n<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="{share_alt}">\n<meta name="twitter:image:alt" content="{share_alt}">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:image" content="{share_url}">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
 
 def customize(s,key,path):
     s=re.sub(r'<html lang="de"([^>]*)>',lambda m:f'<html lang="de"{m[1]} data-nic-page="{key}">',s,count=1)
@@ -59,10 +87,32 @@ def customize(s,key,path):
     s=re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', s, flags=re.I)
     s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1)
     return s
+home_content=config.get('content',{}).get('welcome',{})
+home_title=html.escape(str(home_content.get('title') or 'Deine Immobilien. Klar gerechnet.'))
+home_body=ContentSanitizer().fragment(home_content.get('description',''))
+intro='''<section id="nic-home-intro" class="nic-home-intro"><div class="nic-home-copy"><p class="nic-eyebrow">IMMOBILIEN EINFACH IM BLICK</p><h2>__TITLE__</h2><div class="nic-home-description">__BODY__</div><div class="nic-home-actions"><button type="button" data-nic-show-calculators>Immobilie berechnen</button><a href="/nebenkostenabrechnung/">Nebenkosten abrechnen</a></div></div></section>'''
+intro=intro.replace('__TITLE__',home_title).replace('__BODY__',home_body)
+style='''<style>.nic-home-intro{margin:24px 0;padding:28px 30px;border:1px solid #e2e9e5;border-radius:12px;background:#f6f1e9;color:#263b3a}.nic-home-copy{max-width:900px;margin:auto}.nic-home-intro h2{margin:0;color:#075c55;font-size:26px}.nic-home-description{margin-top:10px;max-width:780px;line-height:1.55}.nic-eyebrow{margin:0 0 7px;color:#16867a;font-size:12px;font-weight:700;letter-spacing:.07em}.nic-home-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.nic-home-actions a,.nic-home-actions button{display:inline-flex;min-height:44px;align-items:center;padding:10px 18px;border:1px solid #075c55;border-radius:12px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}.nic-home-actions a{background:#fff;color:#075c55}@media(max-width:600px){.nic-home-intro{padding:22px 18px}.nic-home-intro h2{font-size:22px}.nic-home-actions{flex-direction:column}.nic-home-actions>*{justify-content:center}}</style>'''
+root=root.replace('</head>',style+'</head>',1)
+root=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>.*?</p>)',lambda m:m[1]+intro,root,count=1,flags=re.S)
+if 'id="nic-home-intro"' not in root:root=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+intro,root,count=1)
 (site/'index.html').write_text(customize(root,'website',''))
 for key in ['budget','own','rent','flip']:
     path=pages[key];folder=site/path;folder.mkdir(exist_ok=True)
     (folder/'index.html').write_text(customize(root,key,path))
+
+# Crawlable, editable information pages for the public navigation.
+content_style='''<style>body{margin:0;background:#f5f7fb;color:#263b3a;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}.nic-content-header{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:15px max(20px,calc((100vw - 1180px)/2));border-bottom:1px solid #e2e9e5;background:#fff}.nic-content-brand{color:#075c55;font-weight:700;text-decoration:none;white-space:nowrap}.nic-content-nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.nic-content-nav a{color:#263b3a;text-decoration:none;font-size:14px}.nic-content-main{max-width:980px;margin:48px auto;padding:0 22px}.nic-content-card{padding:36px;border:1px solid #e2e9e5;border-radius:14px;background:#fff}.nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}.nic-content-card p{margin:12px 0}.nic-content-footer{padding:24px max(20px,calc((100vw - 1180px)/2));background:#075c55;color:white}.nic-content-footer a{color:white;margin-right:18px}@media(max-width:760px){.nic-content-header{align-items:flex-start;flex-direction:column}.nic-content-nav{gap:12px}.nic-content-main{margin:24px auto}.nic-content-card{padding:24px 18px}}</style>'''
+nav=''.join('<a href="/'+content_routes[key]+'">'+label+'</a>' for key,label in content_nav)
+for key,path in content_routes.items():
+    content=config.get('content',{}).get(key,{})
+    title=html.escape(str(content.get('title') or key))
+    body=ContentSanitizer().fragment(content.get('description',''))
+    page='''<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">__META____STYLE__</head><body><header class="nic-content-header"><a class="nic-content-brand" href="/">Neustart ImmoCheck</a><nav class="nic-content-nav" aria-label="Hauptnavigation">__NAV__</nav></header><main class="nic-content-main"><article class="nic-content-card"><h1>__TITLE__</h1><div>__BODY__</div></article></main><footer class="nic-content-footer"><a href="/">Startseite</a>__NAV__</footer></body></html>'''
+    page=page.replace('__STYLE__',content_style).replace('__NAV__',nav).replace('__TITLE__',title).replace('__BODY__',body)
+    page=page.replace('__META__','<title></title>') # replaced by customize
+    folder=site/path;folder.mkdir(exist_ok=True)
+    (folder/'index.html').write_text(customize(page,key,path))
 
 company=config.get('company',{})
 groups=[('Anbieter',['name','legalForm']),('Vertreten durch',['representative']),('Anschrift',['street','postalCode','city','country']),('Kontakt',['email','website','phone','fax']),('Register',['registerType','registerCourt','registerNumber']),('Umsatzsteuer-ID',['vatId']),('Wirtschafts-ID',['businessId']),('Aufsichtsbehörde',['authority']),('Berufsrechtliche Angaben',['profession','professionalCountry','chamber','professionalRules']),('Kapitalangaben',['capital']),('Abwicklung / Liquidation',['liquidation']),('Audiovisuelle Mediendienste',['mediaState','mediaAuthority']),('Redaktionell verantwortlich',['editorialResponsible','editorialAddress']),('Verbraucherstreitbeilegung',['disputeResolution']),('Weitere Angaben',['additional'])]
@@ -79,9 +129,9 @@ for path,title in [('unternehmen/','Unternehmen & Kontakt'),('impressum/','Impre
     s=customize(s,'company',path)
     if path=='impressum/':s=s.replace('</head>','<meta name="robots" content="noindex,follow"></head>',1)
     (folder/'index.html').write_text(s)
-urls=[base+p for p in pages.values()]
+urls=[base+p for p in pages.values()]+[base+p for k,p in content_routes.items() if k!='login']
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
-print('Settings metadata pages built: website, company and four calculators')
+print('Settings metadata pages built: website, company, four calculators and five content pages')
 
 for name in ('admin.css','admin.js','legal-drafts.js'):
     shutil.copyfile(Path('assets')/name,site/name)
@@ -121,7 +171,7 @@ def write_mortgage_rates():
             lines=raw.splitlines()
             i=next((i for i,line in enumerate(lines) if 'TIME_PERIOD' in line and 'OBS_VALUE' in line),None)
             if i is None:
-                raise ValueError('No SDMX CSV header for '+name+': '+raw[:250].replace('\\n',' '))
+                raise ValueError('No SDMX CSV header for '+name+': '+raw[:250].replace('\n',' '))
             sample=lines[i]
             delimiter=';' if sample.count(';')>sample.count(',') else ','
             reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])),delimiter=delimiter)
