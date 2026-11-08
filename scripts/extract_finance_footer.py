@@ -5,7 +5,7 @@ import sys
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 html=(site/'index.html').read_text(encoding='utf-8')
 styles=re.findall(r'<style[^>]*>(.*?)</style>',html,re.S|re.I)
-target=('.footer-note','.footer-meta','.footer-version','.footer-legal-links')
+target=('.footer-note','.footer-meta','.footer-legal-links')
 rules=[]
 for style in styles:
     stack=[]

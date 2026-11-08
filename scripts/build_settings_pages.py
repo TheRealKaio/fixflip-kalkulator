@@ -145,8 +145,3 @@ def write_mortgage_rates():
 
 write_mortgage_rates()
 
-# Finance standalone page shares the same release number as the four calculators.
-finance=site/'finanzierungsrechner'/'index.html'
-if finance.exists():
-    release=(site/'.release-version').read_text(encoding='utf-8').strip()
-    finance.write_text(finance.read_text(encoding='utf-8').replace('VERSION_PLACEHOLDER',release),encoding='utf-8')

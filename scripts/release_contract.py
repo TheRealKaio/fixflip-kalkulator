@@ -60,8 +60,10 @@ def verify(site_dir=Path("_site"), repo_root=Path(".")):
     registrations = sorted(set(SW_QUERY_RE.findall(index)))
     caches = sorted(set(SW_CACHE_RE.findall(sw)))
 
+    finance_path = site_dir / "finanzierungsrechner" / "index.html"
+    finance = finance_path.read_text(encoding="utf-8") if finance_path.exists() else ""
     checks = {
-        "visible version": visible == [expected],
+        "public footer version removed": 'class="footer-version"' not in index and 'class="footer-version"' not in finance,
         "admin version": sorted(set(VISIBLE_RE.findall((site_dir / "admin.html").read_text(encoding="utf-8")))) == [expected],
         "service-worker registration": registrations == [f"service-worker.js?v={plain}"],
         "service-worker cache": caches == [f"neustart-immocheck-v{plain}"],
@@ -71,7 +73,7 @@ def verify(site_dir=Path("_site"), repo_root=Path(".")):
         raise SystemExit(
             "Release contract failed - "
             + ", ".join(failed)
-            + f" | expected={expected}, visible={visible}, registrations={registrations}, caches={caches}"
+            + f" | expected={expected}, footer removed={checks['public footer version removed']}, admin={checks['admin version']}, registrations={registrations}, caches={caches}"
         )
     print(f"Release contract verified: {expected}")
 
