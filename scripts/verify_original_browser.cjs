@@ -312,7 +312,7 @@ const assert=require('node:assert/strict');
    if(!geometry.has(width))geometry.set(width,shell);else assert.deepEqual(shell,geometry.get(width),'Shared header and menu geometry must remain identical across routes');
    assert.equal(await page.locator('#nicAccountLink').innerText(),'Jetzt anmelden');
    if(slug!=='finanzierungsrechner')assert(!(await page.locator('.footer-note').innerText()).includes('Der Deal Check ist eine Kalkulationshilfe'));
-   assert.equal(await page.locator('.footer-version').evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)');
+   assert.equal(await page.locator('.footer-version').count(),0,'Public footer must not display an app version');
    assert.equal(await page.locator('.hero').evaluate(el=>parseFloat(getComputedStyle(el).borderTopLeftRadius)),0,'Header top-left corner must be square');
    assert.equal(await page.locator('.hero').evaluate(el=>parseFloat(getComputedStyle(el).borderTopRightRadius)),0,'Header top-right corner must be square');
    assert.equal(await page.locator('.nic-brand-bar').evaluate(el=>parseFloat(getComputedStyle(el).borderTopLeftRadius)),0,'White header top-left corner must be square');
