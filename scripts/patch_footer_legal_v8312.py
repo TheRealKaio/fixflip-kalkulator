@@ -1,24 +1,20 @@
 from pathlib import Path
+import re
 import sys
 
-p=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
-s=p.read_text(encoding="utf-8")
+p = Path(sys.argv[1] if len(sys.argv) > 1 else "_site/index.html")
+s = p.read_text(encoding="utf-8")
 
-def rep(old,new,label):
-    global s
-    if old not in s:
-        raise SystemExit(label+" anchor missing")
-    s=s.replace(old,new,1)
+footer = re.compile(
+    r'(<div class="footer-note">\s*<span>.*?</span>)'
+    r'(?:\s*<span class="footer-version">.*?</span>)?\s*</div>',
+    re.S,
+)
+match = footer.search(s)
+if not match:
+    raise SystemExit("Footer markup anchor missing")
 
-old='''    <div class="footer-note">
-      <span>Sanierungswerte sind editierbare Orientierungswerte für einen ersten Deal-Check. Der Deal Check ist eine Kalkulationshilfe und keine Steuer-, Rechts- oder Finanzierungsberatung. Steuern werden nicht individuell berechnet. Prüfe vor einem Kauf insbesondere Verkaufspreis, Sanierungsumfang und Finanzierung mit belastbaren Unterlagen.</span>
-      <span class="footer-version">V8.311</span>
-    </div>'''
-
-new='''    <div class="footer-note">
-      <span>Sanierungswerte sind editierbare Orientierungswerte für einen ersten Deal-Check. Der Deal Check ist eine Kalkulationshilfe und keine Steuer-, Rechts- oder Finanzierungsberatung. Steuern werden nicht individuell berechnet. Prüfe vor einem Kauf insbesondere Verkaufspreis, Sanierungsumfang und Finanzierung mit belastbaren Unterlagen.</span>
-      <div class="footer-meta">
-        <span class="footer-version">V8.312</span>
+legal = '''\n      <div class="footer-meta">
         <nav class="footer-legal-links" aria-label="Rechtliche Hinweise">
           <a href="#" data-legal-placeholder="impressum">Impressum</a>
           <span aria-hidden="true">·</span>
@@ -26,41 +22,38 @@ new='''    <div class="footer-note">
           <span aria-hidden="true">·</span>
           <a href="#" data-legal-placeholder="datenschutz">Datenschutz</a>
         </nav>
-      </div>
-    </div>'''
+      </div>'''
+if 'class="footer-legal-links"' not in s:
+    s = s[:match.start()] + match.group(1) + legal + '\n    </div>' + s[match.end():]
 
-rep(old,new,"footer markup")
-
-old_css='''.footer-note{padding:0 18px;color:#7b8492;font-size:11px;line-height:1.45;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
-.footer-version{white-space:nowrap;text-align:right;font-weight:700;color:#7b8492}'''
-
-new_css='''.footer-note{padding:0 18px;color:#7b8492;font-size:11px;line-height:1.45;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
+# Remove the retired version styling and keep the public legal links readable.
+s = re.sub(r'\.footer-version\{[^}]*\}', '', s)
+if ".footer-meta{" not in s:
+    note = re.search(r'\.footer-note\{[^}]*\}', s)
+    if not note:
+        raise SystemExit("Footer CSS anchor missing")
+    style = '''
 .footer-meta{display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:2px;text-align:right}
-.footer-version{white-space:nowrap;text-align:right;font-weight:700;color:#7b8492}
 .footer-legal-links{display:flex;align-items:center;justify-content:flex-end;gap:5px;white-space:nowrap;font-size:10px;line-height:1.3}
 .footer-legal-links a{color:#7b8492;text-decoration:none;font-weight:400}
 .footer-legal-links a:hover,.footer-legal-links a:focus{text-decoration:underline;color:#475569}'''
+    s = s[:note.end()] + style + s[note.end():]
 
-rep(old_css,new_css,"footer css")
-
-s=s.replace("V8.311","V8.312")
-s=s.replace("service-worker.js?v=8.311","service-worker.js?v=8.312")
-
-required=[
-  'class="footer-meta"',
-  'class="footer-legal-links"',
-  'data-legal-placeholder="impressum"',
-  'data-legal-placeholder="agbs"',
-  'data-legal-placeholder="datenschutz"',
-  '>Impressum</a>',
-  '>AGBs</a>',
-  '>Datenschutz</a>',
-  "V8.312",
-  "service-worker.js?v=8.312"
+required = [
+    'class="footer-meta"',
+    'class="footer-legal-links"',
+    'data-legal-placeholder="impressum"',
+    'data-legal-placeholder="agbs"',
+    'data-legal-placeholder="datenschutz"',
+    '>Impressum</a>',
+    '>AGBs</a>',
+    '>Datenschutz</a>',
 ]
-missing=[x for x in required if x not in s]
+missing = [item for item in required if item not in s]
 if missing:
-    raise SystemExit("V8.312 missing: "+", ".join(missing))
+    raise SystemExit("Footer legal links missing: " + ", ".join(missing))
+if 'class="footer-version"' in s:
+    raise SystemExit("Public footer version must be removed")
 
-p.write_text(s,encoding="utf-8")
-print("V8.312 legal footer placeholders added")
+p.write_text(s, encoding="utf-8")
+print("Legal footer links added without a public version number")
