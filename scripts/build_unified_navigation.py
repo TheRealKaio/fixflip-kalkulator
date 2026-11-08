@@ -46,6 +46,7 @@ nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calc
 for obsolete in site.glob('calculator-finance*.js'):obsolete.unlink()
 # Direct finance URLs boot the identical application, with finance selected.
 base=(site/'index.html').read_text()
+base=re.sub(r'<section id="nic-home-intro"[^>]*>.*?</section>','',base,flags=re.S)
 base=re.sub(r'data-nic-page="[^"]+"','data-nic-page="finance"',base,count=1)
 for pattern in [r'<title>.*?</title>',r'<link rel="canonical"[^>]*>',r'<meta (?:name="description"|property="og:[^"]+"|name="twitter:[^"]+")[^>]*>']:
  old=re.findall(pattern,finance,re.S)
