@@ -39,12 +39,18 @@ if ".footer-meta{" not in s:
 .footer-legal-links a:hover,.footer-legal-links a:focus{text-decoration:underline;color:#475569}'''
     s = s[:note.end()] + style + s[note.end():]
 
+# Keep the historical build contract moving without rendering a public footer version.
+s = s.replace("V8.311", "V8.312")
+s = s.replace("service-worker.js?v=8.311", "service-worker.js?v=8.312")
+
 required = [
     'class="footer-meta"',
     'class="footer-legal-links"',
     'data-legal-placeholder="impressum"',
     'data-legal-placeholder="agbs"',
     'data-legal-placeholder="datenschutz"',
+    "V8.312",
+    "service-worker.js?v=8.312",
     '>Impressum</a>',
     '>AGBs</a>',
     '>Datenschutz</a>',
