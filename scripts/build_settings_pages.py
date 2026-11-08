@@ -95,8 +95,12 @@ intro='''<section id="nic-home-intro" class="nic-home-intro"><div class="nic-hom
 intro=intro.replace('__TITLE__',home_title).replace('__BODY__',home_body)
 style='''<style>.nic-home-intro{margin:24px 0;padding:28px 30px;border:1px solid #e2e9e5;border-radius:12px;background:#f6f1e9;color:#263b3a}.nic-home-copy{max-width:900px;margin:auto}.nic-home-intro h2{margin:0;color:#075c55;font-size:26px}.nic-home-description{margin-top:10px;max-width:780px;line-height:1.55}.nic-eyebrow{margin:0 0 7px;color:#16867a;font-size:12px;font-weight:700;letter-spacing:.07em}.nic-home-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.nic-home-actions a,.nic-home-actions button{display:inline-flex;min-height:44px;align-items:center;padding:10px 18px;border:1px solid #075c55;border-radius:12px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}.nic-home-actions a{background:#fff;color:#075c55}@media(max-width:600px){.nic-home-intro{padding:22px 18px}.nic-home-intro h2{font-size:22px}.nic-home-actions{flex-direction:column}.nic-home-actions>*{justify-content:center}}</style>'''
 root=root.replace('</head>',style+'</head>',1)
-root=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>.*?</p>)',lambda m:m[1]+intro,root,count=1,flags=re.S)
-if 'id="nic-home-intro"' not in root:root=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+intro,root,count=1)
+header_end=root.find('</header>')
+if header_end>=0 and 'id="nic-home-intro"' not in root:
+    header_end+=len('</header>')
+    root=root[:header_end]+intro+root[header_end:]
+elif 'id="nic-home-intro"' not in root:
+    root=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+intro,root,count=1)
 (site/'index.html').write_text(customize(root,'website',''))
 for key in ['budget','own','rent','flip']:
     path=pages[key];folder=site/path;folder.mkdir(exist_ok=True)
