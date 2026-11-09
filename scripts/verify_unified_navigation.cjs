@@ -4,7 +4,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
  const browser=await chromium.launch({headless:true});
  for(const width of [1440,390]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  page.on('pageerror',e=>{const details=e.stack||e.message;errors.push(details);console.error('BROWSER PAGE ERROR '+width+' '+page.url()+'\\n'+details);});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
    if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
