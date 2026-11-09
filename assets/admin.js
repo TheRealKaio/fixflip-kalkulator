@@ -87,9 +87,38 @@ function updatePreview(){
  S.pages.forEach(([k])=>{const meta=S.pageMeta(s,k);for(const p of ['title','description']){$('search-'+k+'-'+p).textContent=meta[p];const counter=$('meta-'+k+'-'+p+'-count');counter.textContent=$('meta-'+k+'-'+p).value.length+' Zeichen · Richtwert '+counter.dataset.recommend;}});
 }
 function validForm(){const invalid=Array.from(form.querySelectorAll('input,textarea,select')).find(el=>!el.checkValidity());if(invalid){const section=invalid.closest('[role=tabpanel]');if(section)selectTab(section.id.replace('panel-',''));const details=invalid.closest('details');if(details)details.open=true;invalid.reportValidity();invalid.focus();return false;}return true;}
-function selectTab(key){document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]').forEach(t=>{const active=t.id==='tab-'+key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;$(t.getAttribute('aria-controls')).hidden=!active;});if($('statsReset'))$('statsReset').hidden=key!=='stats'||$('statsSource').value!=='database'||!window.NICAccess?.enabled;history.replaceState(null,'',(document.getElementById('nicAdminContent')?'#admin-':'#')+key);}
+let adminMenuButton=null;
+function setAdminMenuOpen(open){
+ const nav=document.querySelector('#nicAdminContent .admin-tabs,body.nic-admin .admin-tabs');
+ if(!nav||!adminMenuButton)return;
+ nav.classList.toggle('is-open',open);
+ adminMenuButton.setAttribute('aria-expanded',String(open));
+}
+function syncAdminMenu(key){
+ const label=$('tab-'+key)?.textContent.trim();
+ const current=adminMenuButton?.querySelector('[data-active-admin-label]');
+ if(current&&label)current.textContent=label;
+ const wasOpen=adminMenuButton?.getAttribute('aria-expanded')==='true';
+ setAdminMenuOpen(false);
+ if(wasOpen)adminMenuButton.focus();
+}
+function selectTab(key){document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]').forEach(t=>{const active=t.id==='tab-'+key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;$(t.getAttribute('aria-controls')).hidden=!active;});if($('statsReset'))$('statsReset').hidden=key!=='stats'||$('statsSource').value!=='database'||!window.NICAccess?.enabled;syncAdminMenu(key);history.replaceState(null,'',(document.getElementById('nicAdminContent')?'#admin-':'#')+key);}
 form.noValidate=true;
-const tabs=Array.from(document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
+const adminNav=document.querySelector('#nicAdminContent .admin-tabs,body.nic-admin .admin-tabs');
+if(adminNav){
+ adminNav.id='nicAdminNavigation';
+ adminMenuButton=document.createElement('button');adminMenuButton.type='button';adminMenuButton.className='admin-menu-toggle';
+ adminMenuButton.setAttribute('aria-controls',adminNav.id);adminMenuButton.setAttribute('aria-expanded','false');
+ adminMenuButton.innerHTML='<span>Admin-Menü · <strong data-active-admin-label>Unternehmensdaten</strong></span><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+ adminNav.before(adminMenuButton);
+ adminMenuButton.addEventListener('click',()=>setAdminMenuOpen(adminMenuButton.getAttribute('aria-expanded')!=='true'));
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&adminMenuButton.getAttribute('aria-expanded')==='true'){setAdminMenuOpen(false);adminMenuButton.focus();}});
+ document.addEventListener('click',event=>{if(!adminNav.contains(event.target)&&!adminMenuButton.contains(event.target))setAdminMenuOpen(false);});
+ const mobile=window.matchMedia('(max-width:1024px)');
+ const sync=()=>{adminNav.setAttribute('aria-orientation',mobile.matches?'vertical':'horizontal');setAdminMenuOpen(false);};
+ mobile.addEventListener('change',sync);sync();
+}
+const tabs=Array.from(document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight'||e.key==='ArrowDown')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft'||e.key==='ArrowUp')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
 // Serialize checkbox saves: a second click must never overwrite an in-flight edit.
 let savingAccess=false,accessSaveRequested=false;
