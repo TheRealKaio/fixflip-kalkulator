@@ -540,6 +540,18 @@ const assert=require('node:assert/strict');
    const widths=await admin.locator('.configuration-tools .tool-row').evaluate(row=>({row:row.getBoundingClientRect().width,items:[...row.children].filter(el=>el.matches('button,.import-label')).map(el=>el.getBoundingClientRect().width)}));
    assert(widths.items.every(width=>Math.abs(width-widths.row)<2),'Mobile configuration actions use the full row width');
   }
+  await page.evaluate(()=>window.scrollTo(0,0));
+  const firstSwipe=await page.evaluate(()=>{
+   const d=document.getElementById('nicAdminFrame').contentDocument,target=d.querySelector('.admin-shell');
+   const fire=(type,y)=>{
+    const event=new d.defaultView.Event(type,{bubbles:true,cancelable:true});
+    Object.defineProperty(event,'touches',{value:type==='touchcancel'?[]:[{clientX:100,clientY:y}]});
+    target.dispatchEvent(event);return event.defaultPrevented;
+   };
+   const before=window.scrollY;fire('touchstart',300);const forwarded=fire('touchmove',180);fire('touchcancel',180);
+   return {forwarded,delta:window.scrollY-before};
+  });
+  assert(firstSwipe.forwarded&&firstSwipe.delta>=100,'First vertical gesture inside admin content immediately scrolls the outer page: '+JSON.stringify(firstSwipe));
   const tabs=admin.locator('.admin-tabs button:visible');
   for(let i=0;i<await tabs.count();i++){
    await tabs.nth(i).click();
