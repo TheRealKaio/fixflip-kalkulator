@@ -30,5 +30,4 @@
 body.nic-admin #panel-layout .layout-body-copy,body.nic-admin .save-bar #saveStatus,body.nic-admin .configuration-tools>p{font-size:var(--nic-body-font-size,16px)!important}
 
 /* Embedded administration grows with its document instead of scrolling internally. */
-html.nic-admin-embedded,html.nic-admin-embedded body{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
 body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:auto!important}
