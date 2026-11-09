@@ -631,7 +631,16 @@ for page in site.rglob('*.html'):
  if not match or match.group(1) not in content_pages:
   continue
  key=match.group(1)
- style='<style id="nic-content-hero-hide">html[data-nic-page="'+key+'"] .app .hero{display:none!important}</style>'
+ style=(
+  '<style id="nic-content-page-layout">'
+  'html[data-nic-page="'+key+'"] body{margin:0;min-height:100vh}'
+  'html[data-nic-page="'+key+'"] body .app{min-height:100vh!important;display:flex!important;flex-direction:column!important}'
+  'html[data-nic-page="'+key+'"] body .app .hero{display:none!important}'
+  'html[data-nic-page="'+key+'"] body .app main.nic-content-main{display:flex!important;flex-direction:column!important;flex:1 0 auto!important;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}'
+  'html[data-nic-page="'+key+'"] body .app .nic-content-card{flex:1 0 auto!important;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto 16px;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}'
+  '@media(max-width:760px){html[data-nic-page="'+key+'"] body .app main.nic-content-main{padding:24px 16px 16px}html[data-nic-page="'+key+'"] body .app .nic-content-card{padding:24px 18px}}'
+  '</style>'
+ )
  if 'id="nic-content-hero-hide"' not in source:
   if '</head>' not in source:
    raise SystemExit('Content page head missing: '+str(page))
