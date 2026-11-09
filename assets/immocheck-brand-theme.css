@@ -468,7 +468,7 @@ body:not(.nic-embed) .deal-type-row > .deal-type-option small{
 }
 
 /* Container canvas is independent from the outer browser background. */
-body:not(.nic-embed):not(.nic-admin) .app{background:var(--bg,#F5F7FB)}
+body:not(.nic-embed):not(.nic-admin) .app{background:var(--nic-outer-bg,var(--nic-design-warm,#F6F1E9))!important}
 
 /* Configurable result traffic-light backgrounds; keep the green result grade unchanged. */
 body:not(.nic-embed) :is(.rent-grade-orange,.rent-grade-lime){background:var(--nic-highlight-bg,#FDE68A)!important}
