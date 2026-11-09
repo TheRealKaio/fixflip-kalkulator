@@ -39,9 +39,6 @@ function syncAccountLink(){
  if(authenticated)account.dataset.nicDestination='portal';else delete account.dataset.nicDestination;
  if(adminLogout)adminLogout.hidden=!(adminOpen&&authenticated&&access.user.role==='admin');
 }
-const adminToolbarStyle=document.createElement('style');
-adminToolbarStyle.textContent='.nic-admin-toolbar{display:flex;align-items:stretch;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box}.nic-admin-toolbar .nic-admin-back{flex:1 1 auto!important;width:auto!important;margin:0!important;text-align:left!important}.nic-admin-logout{flex:0 0 auto;border:0!important;background:transparent!important;color:#075c55!important;padding:10px 14px!important;font:700 13px/1.2 system-ui,sans-serif!important;letter-spacing:.06em;cursor:pointer}.nic-admin-logout[hidden]{display:none!important}@media(max-width:520px){.nic-admin-toolbar{gap:4px}.nic-admin-logout{padding:10px 8px!important;font-size:12px!important}}';
-document.head.append(adminToolbarStyle);
 window.addEventListener('nic-auth-changed',syncAccountLink);
 function setAdmin(open){
  if(!hero||!account)return;
