@@ -534,6 +534,12 @@ const assert=require('node:assert/strict');
  // Administration must expand its iframe and share the outer document scroll on every tab.
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
   await page.setViewportSize(viewport);
+  await page.locator('#heroTitle').evaluate(el=>el.textContent='Lohnt sich der Kauf dieser Eigentumswohnung?');
+  await page.waitForFunction(()=>document.getElementById('heroTitle').textContent==='Admin-Bereich');
+  if(viewport.width<=700||viewport.height<=600){
+   const widths=await admin.locator('.configuration-tools .tool-row').evaluate(row=>({row:row.getBoundingClientRect().width,items:[...row.children].filter(el=>el.matches('button,.import-label')).map(el=>el.getBoundingClientRect().width)}));
+   assert(widths.items.every(width=>Math.abs(width-widths.row)<2),'Mobile configuration actions use the full row width');
+  }
   const tabs=admin.locator('.admin-tabs button:visible');
   for(let i=0;i<await tabs.count();i++){
    await tabs.nth(i).click();
