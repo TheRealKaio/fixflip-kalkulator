@@ -26,13 +26,13 @@ body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-cons
 .deal-type-option:focus-within,.nic-login-button:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
 @media(max-width:700px){
   .nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;flex-wrap:wrap;gap:8px;padding:12px}
-  .nic-brand-bar .brand-logo{width:150px!important}
+  .nic-brand-bar .brand-logo{width:165px!important}
   .nic-brand-description{grid-column:1 / -1;grid-row:2;order:3;flex-basis:100%;border-left:0;padding:0;}
   .nic-brand-bar a.nic-login-button{grid-column:2;grid-row:1;margin-left:auto;padding:10px!important}
 }
 @media(max-width:380px){
   .nic-brand-bar{gap:6px}
-  .nic-brand-bar .brand-logo{width:130px!important}
+  .nic-brand-bar .brand-logo{width:143px!important}
   .nic-brand-bar a.nic-login-button{padding:9px!important;gap:5px}
 }
 body.nic-admin-open .app>.nic-brand-bar#nicBrandBar{display:grid!important}
