@@ -42,3 +42,29 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
   box-sizing:border-box!important;white-space:normal!important;text-align:center;
  }
 }
+
+/* Mobile admin section navigation: one trigger, then full-width rows. */
+.admin-menu-toggle{display:none}
+@media(max-width:1024px){
+ body.nic-admin .admin-menu-toggle{
+  display:flex!important;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;max-width:100%;min-width:0;min-height:48px;box-sizing:border-box;
+  margin:24px 0 0;padding:12px 14px;border:1px solid var(--line,#e2e8f0);
+  border-radius:var(--nic-menu-radius,16px);background:#fff;color:var(--nic-green-bg,#075c55);
+  font:inherit;font-size:var(--nic-body-font-size,16px);line-height:1.4;text-align:left;cursor:pointer;
+ }
+ body.nic-admin .admin-menu-toggle>span{min-width:0;white-space:normal;overflow-wrap:break-word;hyphens:auto}
+ body.nic-admin .admin-menu-toggle>svg{display:block;flex:0 0 24px;width:24px;height:24px}
+ body.nic-admin .admin-tabs{
+  display:none!important;grid-template-columns:none;margin:8px 0 24px;padding:6px;
+  border:1px solid var(--line,#e2e8f0);border-radius:var(--nic-menu-radius,16px);
+  background:#fff;gap:0;overflow:visible;
+ }
+ body.nic-admin .admin-tabs.is-open{display:flex!important;flex-direction:column;align-items:stretch}
+ body.nic-admin .admin-tabs button{
+  display:block;flex:0 0 auto;width:100%;min-width:0;min-height:44px;margin:0;
+  padding:12px;border:0;border-radius:8px;box-sizing:border-box;text-align:left;
+  white-space:normal;overflow-wrap:break-word;hyphens:auto;font-size:var(--nic-body-font-size,16px);line-height:1.4;
+ }
+ body.nic-admin .admin-tabs button[aria-selected=true]{background:var(--nic-green-bg,#075c55);color:var(--nic-green-text,#fff);border:0}
+}
