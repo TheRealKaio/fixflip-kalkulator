@@ -15,8 +15,7 @@ if not match:
     raise SystemExit("Footer markup anchor missing")
 
 legal = "<div class=\"nic-footer-layout\">\n      <div class=\"nic-footer-left\">\n        <details id=\"nicFooterSocial\" class=\"nic-footer-section nic-footer-social\" hidden>\n          <summary><h2>Folge uns</h2></summary>\n          <nav id=\"nicSocialLinks\" class=\"nic-social-links\" aria-label=\"Social Media\"></nav>\n        </details>\n      </div>\n      <div class=\"nic-footer-right\">\n        <details id=\"nicFooterAboutSection\" class=\"nic-footer-section nic-footer-about\" open hidden>\n          <summary><h2>Über uns</h2></summary>\n          <div id=\"nicFooterAbout\"></div>\n        </details>\n        <details id=\"nicFooterContactSection\" class=\"nic-footer-section nic-footer-contact\" open hidden>\n          <summary><h2>Kontakt</h2></summary>\n          <a id=\"nicFooterEmail\"></a>\n        </details>\n      </div>\n      <div class=\"footer-meta\">\n        <nav class=\"footer-legal-links\" aria-label=\"Rechtliche Hinweise\">\n          <a href=\"#\" data-legal-placeholder=\"impressum\">Impressum</a>\n          <span aria-hidden=\"true\">·</span>\n          <a href=\"#\" data-legal-placeholder=\"agbs\">AGBs</a>\n          <span aria-hidden=\"true\">·</span>\n          <a href=\"#\" data-legal-placeholder=\"datenschutz\">Datenschutz</a>\n        </nav>\n      </div>\n    </div>"
-if 'class="footer-legal-links"' not in s:
-    s = s[:match.start()] + match.group(1) + legal + '\n    </div>' + s[match.end():]
+s = s[:match.start()] + match.group(1) + legal + '\n    </div>' + s[match.end():]
 
 # Remove the retired version styling and keep the public legal links readable.
 s = re.sub(r'\.footer-version\{[^}]*\}', '', s)
