@@ -7,7 +7,7 @@ const ctx={URL,location:{hash:''},element,ROOT:new URL('https://www.neustart-imm
 vm.createContext(ctx);
 vm.runInContext(source.slice(source.indexOf('async function logout()'),source.indexOf('function mountUsers()')),ctx);
 (async()=>{
- await ctx.profile();assert.equal(ctx.location.hash,'#account','admin login must enter the integrated account view');assert.equal(elements.length,0,'portal login must not stop at a profile modal');ctx.user=null;ctx.location.hash='#anmelden';ctx.login=async()=>{ctx.user={role:'user'};return true;};await ctx.profile();assert.equal(ctx.location.hash,'#account','normal-user login must enter the integrated account view without a standalone-page redirect');ctx.user={role:'admin'};
+ await ctx.profile();assert.equal(ctx.location.hash,'#admin','admin login must enter the integrated admin portal');assert.equal(elements.length,0,'portal login must not stop at a profile modal');ctx.user=null;ctx.location.hash='#anmelden';ctx.login=async()=>{ctx.user={role:'user'};return true;};await ctx.profile();assert.equal(ctx.location.hash,'#account','normal-user login must enter the integrated account view without a standalone-page redirect');ctx.user={role:'admin'};
  await ctx.logout();assert.equal(destination,'https://www.neustart-immocheck.de/?logged-out=1');assert.equal(ctx.user,null);
  destination=null;fail=true;await assert.rejects(ctx.logout());assert.equal(destination,null,'failed logout must not show success');
  const profileSource=fs.readFileSync('assets/user-data.js','utf8');
