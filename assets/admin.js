@@ -36,7 +36,7 @@ function updateLegal(s){for(const key of Object.keys(S.legalLabels)){const sourc
 function buildContent(){
  for(const [key,defaults] of Object.entries(S.contentPageDefaults)){
   const card=document.createElement('section');card.className='form-card content-editor-card';card.dataset.contentPage=key;
-  const heading=document.createElement('h3');heading.textContent=key==='welcome'?'Startseite · Einführung':({'settlement':'Nebenkostenabrechnung','prices':'Preise','why':'Warum Immo-Kalkulator','contact':'Kontakt','login':'Anmelden'}[key]||key);card.append(heading);
+  const heading=document.createElement('h3');heading.textContent=key==='welcome'?'Startseite · Einführung':({'settlement':'Nebenkostenabrechnung','prices':'Preise','why':'Warum Immo-Kalkulator','about':'Über uns · Footer','contact':'Kontakt','login':'Anmelden'}[key]||key);card.append(heading);
   const title=field(card,'content-'+key+'-title','Seitentitel / Überschrift','text');title.maxLength=240;title.value=defaults.title;
   const description=field(card,'content-'+key+'-description','Beschreibungstext (HTML möglich)','textarea');description.maxLength=12000;description.value=defaults.description;description.parentElement.classList.add('wide');
   const seoTitle=field(card,'content-'+key+'-seoTitle','SEO-Titel','text','Empfohlen: kurz, eindeutig und passend zum Suchinhalt.');seoTitle.maxLength=200;seoTitle.value=defaults.seoTitle;
