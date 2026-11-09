@@ -1,7 +1,7 @@
 /* Original backup layout and interactions; retain only current branding and colors. */
 :root{--nic-design-deep:#075c55;--nic-design-teal:#16867a;--nic-design-mint:#ddece8;--nic-design-warm:#f6f1e9;--nic-design-ink:#263b3a}
 body:not(.nic-embed){background:var(--nic-design-warm);color:var(--nic-design-ink)}
-body:not(.nic-embed) .hero{background-color:#f6f1e9!important;background-image:linear-gradient(90deg,rgba(246,241,233,.98),rgba(246,241,233,.92) 50%,rgba(246,241,233,.45)),url('/immocheck-hero.jpg')!important;background-size:cover!important;background-position:center!important}
+body:not(.nic-embed) .hero{background-color:#f6f1e9!important;background-image:url('/immocheck-hero.jpg')!important;background-size:cover!important;background-position:center!important}
 body:not(.nic-embed) .hero-top,body:not(.nic-embed) .brand-logo-wrap{background:#fff!important}
 body:not(.nic-embed) .brand-logo-wrap{box-shadow:none!important}
 body:not(.nic-embed) .hero>h1{color:#075c55!important;opacity:1!important}
