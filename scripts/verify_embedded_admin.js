@@ -1,6 +1,6 @@
 const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
 class El {
- constructor(tag='div'){this.tag=tag;this.attrs={};this.children=[];this.listeners={};this.style={};this.classList={add(){},remove(){}};this.contentWindow={postMessage(){}};this.innerHTML='Budget prüfen';this.textContent='Budget description';}
+ constructor(tag='div'){this.tag=tag;this.attrs={};this.children=[];this.listeners={};this.style={};this.dataset={};this.classList={add(){},remove(){}};this.contentWindow={postMessage(){}};this.innerHTML='Budget prüfen';this.textContent='Budget description';}
  addEventListener(k,f){(this.listeners[k]??=[]).push(f)}
  append(...x){this.children.push(...x)} after(x){this.sibling=x}setAttribute(k,v){this.attrs[k]=v}getAttribute(k){return this.attrs[k]}focus(){this.focused=true}
  click(){for(const f of this.listeners.click||[])f({preventDefault(){}})}
@@ -19,6 +19,7 @@ for(const f of events.message)f({origin:'https://evil.test',source:frame.content
 for(const f of events.message)f({origin:location.origin,source:frame.contentWindow,data:{type:'nic-admin-height',height:2000}});assert.equal(frame.style.height,'2000px');
 panel.children[0].children[0].click();assert(panel.hidden);assert.equal(title.innerHTML,'Budget prüfen');assert.equal(S.lastLogo,'saved-logo');assert(account.focused);
 account.click();assert.equal(panel.hidden,false);assert.equal(hero.sibling,panel);assert.equal(location.hash,'#admin');
+context.NICAccess={enabled:true,user:{role:'admin'}};account.click();assert.equal(location.hash,'#account');assert.equal(frame.src,'https://example.test/user-data.html?embedded=1&release=8.339');assert.equal(title.textContent,'Deine Nutzerdaten');assert.equal(panel.hidden,false);
 location.hash='';for(const f of events.popstate)f();assert(panel.hidden);
 const userHero=new El(),userTitle=new El(),userText=new El(),userAccount=new El();
 const userLocation={...location,hash:'#account'};
