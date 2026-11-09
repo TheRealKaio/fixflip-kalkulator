@@ -63,7 +63,7 @@ s = s.replace("service-worker.js?v=8.311", "service-worker.js?v=8.312")
 
 required = [
     'class="nic-footer-layout"',
-    'class="nic-footer-social"',
+    'nic-footer-section nic-footer-social',
     'id="nicFooterAbout"',
     'id="nicFooterEmail"',
     'class="footer-meta"',
