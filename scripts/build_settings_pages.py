@@ -151,6 +151,28 @@ for key,path in content_routes.items():
     page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',replace_existing_content_container,root_calculators,count=1)
     if count!=1:
         raise SystemExit('Could not replace the existing content container for '+key)
+    # Informational pages do not contain calculator input fields. Carrying over
+    # calculator-only inline bootstraps makes them throw on /preise/ etc.
+    # Preserve JSON data scripts and the shared external assets/header/footer.
+    # Only remove inline executable blocks that contain calculator-specific
+    # code, leaving global site, consent and settings initialization intact.
+    calculator_bootstrap=re.compile(
+        r'\\b(?:syncRenoTotal|budgetSuggestionData|renderBudgetSuggestions|'
+        r'updateMarketValueSourceHint|currentDealType|initializeModeDefaults|'
+        r'initializeReferenceInterest|initializeRepaymentDefaults)\\b'
+    )
+    removed_scripts=[0]
+    def omit_calculator_inline(match):
+        body=match.group(2)
+        if calculator_bootstrap.search(body):
+            removed_scripts[0]+=1
+            return ''
+        return match.group(0)
+    page=re.sub(r'(<script\\b(?![^>]*\\bsrc=)[^>]*>)([\\s\\S]*?)(</script>)',
+        omit_calculator_inline,
+        page,flags=re.I)
+    if not removed_scripts[0]:
+        raise SystemExit('Calculator inline bootstrap not found on '+key)
     page=page.replace('</head>',content_style+'</head>',1)
     def mark_content_page(match):
         attrs=match.group(1)
