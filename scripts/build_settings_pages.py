@@ -151,7 +151,17 @@ for key,path in content_routes.items():
     if count!=1:
         raise SystemExit('Could not replace the existing content container for '+key)
     page=page.replace('</head>',content_style+'</head>',1)
-    page=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+m[1]+' class="nic-content-page">',page,count=1)
+    def mark_content_page(match):
+        attrs=match.group(1)
+        class_match=re.search(r'\bclass\s*=\s*(["\'])(.*?)\1',attrs)
+        if class_match:
+            classes=class_match.group(2).split()
+            if 'nic-content-page' not in classes:classes.append('nic-content-page')
+            attrs=attrs[:class_match.start()]+'class="'+ ' '.join(classes)+'"'+attrs[class_match.end():]
+        else:
+            attrs+=' class="nic-content-page"'
+        return '<body'+attrs+'>'
+    page=re.sub(r'<body\b([^>]*)>',mark_content_page,page,count=1)
     if key=='login':page=page.replace('</body>',login_activation+'</body>',1)
     folder=site/path;folder.mkdir(exist_ok=True)
     (folder/'index.html').write_text(customize(page,key,path))
