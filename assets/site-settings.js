@@ -191,7 +191,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
         const links=Array.from(document.head.querySelectorAll(`link[rel="${rel}"]`));let el=links.shift();links.forEach(x=>x.remove());
         if(!el){el=document.createElement('link');el.rel=rel;document.head.append(el);}
         if(rel==='apple-touch-icon'){el.href=current.appleTouchIcon||new URL('apple-touch-icon.png?v=8.364',ROOT).href;el.type='image/png';el.setAttribute('sizes','180x180');}
-        else{el.href=current.favicon||new URL('favicon-64.png?v=8.364',ROOT).href;el.type=current.favicon?(current.favicon.match(/^data:(image\\/[^;]+)/)?.[1]||'image/png'):'image/png';}
+        else{el.href=current.favicon||new URL('favicon-64.png?v=8.364',ROOT).href;el.type=current.favicon?(current.favicon.slice(5,current.favicon.indexOf(';'))||'image/png'):'image/png';}
       }
     }
     applyLogo(current.websiteLogo,current.imageAlts.websiteLogo);
