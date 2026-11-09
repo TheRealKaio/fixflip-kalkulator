@@ -17,7 +17,7 @@ assert.equal(S.lastActiveTile,'budget');assert.equal(title.textContent,'Admin-Be
 for(const f of events.message)f({origin:location.origin,source:frame.contentWindow,data:{type:'nic-logo-preview',value:'preview-logo'}});assert.equal(S.lastLogo,'preview-logo');
 for(const f of events.message)f({origin:'https://evil.test',source:frame.contentWindow,data:{type:'nic-logo-preview',value:'evil-logo'}});assert.equal(S.lastLogo,'preview-logo');
 for(const f of events.message)f({origin:location.origin,source:frame.contentWindow,data:{type:'nic-admin-height',height:2000}});assert.equal(frame.style.height,'2000px');
-panel.children[0].click();assert(panel.hidden);assert.equal(title.innerHTML,'Budget prüfen');assert.equal(S.lastLogo,'saved-logo');assert(account.focused);
+panel.children[0].children[0].click();assert(panel.hidden);assert.equal(title.innerHTML,'Budget prüfen');assert.equal(S.lastLogo,'saved-logo');assert(account.focused);
 account.click();assert.equal(panel.hidden,false);assert.equal(hero.sibling,panel);assert.equal(location.hash,'#admin');
 location.hash='';for(const f of events.popstate)f();assert(panel.hidden);
 const userHero=new El(),userTitle=new El(),userText=new El(),userAccount=new El();
