@@ -69,25 +69,13 @@ function mountUsers(){
  async function load(){more.disabled=true;try{const data=await api('users',undefined,'page='+page);rows.push(...data.users);page++;more.hidden=!data.more;status.textContent=rows.length+' Benutzer geladen.';render();}catch(error){status.textContent=error.message;}finally{more.disabled=false;}}
  search.addEventListener('input',render);more.addEventListener('click',load);load();
 }
-// Revalidate a signed-in account before opening its portal after page navigation.
-let accountNavigationPending=false,validatedAccountTarget=null;
+// The page's initial /me response already establishes the active account.
+// Rechecking on each click can turn a valid in-memory login into a false login prompt.
 document.addEventListener('click',event=>{
  const target=event.target.closest?.('#nicAccountLink,.nic-account-link');if(!target||!config?.enabled)return;
- if(validatedAccountTarget===target){validatedAccountTarget=null;return;}
- const destination=target.dataset.nicDestination;
- if(destination==='portal'||destination==='admin'){
-  event.preventDefault();event.stopImmediatePropagation();
-  if(accountNavigationPending)return;
-  accountNavigationPending=true;
-  refresh().then(current=>{
-   if(!current){target.removeAttribute('data-nic-destination');return profile();}
-   target.dataset.nicDestination=current.role==='admin'?'admin':'portal';
-   validatedAccountTarget=target;
-   target.click();
-  }).catch(error=>alert(error.message)).finally(()=>{accountNavigationPending=false;});
-  return;
- }
- event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
+ if(event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+ event.preventDefault();event.stopImmediatePropagation();
+ profile().catch(error=>alert(error.message));
 },true);
 window.NICAccess={init,authorize,requireAdmin,loadSettings,refresh,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:async()=>{const result=await api('delete-own-account',{confirm:true});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
