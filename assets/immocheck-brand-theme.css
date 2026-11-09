@@ -670,12 +670,6 @@ body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) *{
 }
 
 /* Administration scrolls with the outer page, including its shared header. */
-html.nic-admin-open,html.nic-admin-open body{
- height:auto!important;max-height:none!important;overflow-y:visible!important;
-}
-body.nic-admin-open .app{
- height:auto!important;max-height:none!important;overflow:visible!important;
-}
 body.nic-admin-open .app>.nic-brand-bar,
 body.nic-admin-open .app>.hero,
 body.nic-admin-open .nic-admin-toolbar{
