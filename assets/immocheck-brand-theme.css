@@ -580,3 +580,9 @@ body.nic-content-page>.app{min-height:100vh!important;display:flex!important;fle
 body.nic-admin-open .app>main>:not(.footer-note){display:none!important}
 body.nic-admin-open .app>.bottom{display:none!important}
 body.nic-admin-open #nic-home-intro{display:none!important}
+
+/* Account and admin views keep the shared footer and fill the space above it. */
+body.nic-admin-open .app{min-height:100vh!important;display:flex!important;flex-direction:column!important}
+body.nic-admin-open .app>#nicAdminPanel{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-height:0;background:#fff!important}
+body.nic-admin-open #nicAdminFrame{height:auto;min-height:calc(100vh - 480px);flex:1 1 auto;background:#fff!important}
+body.nic-admin-open .app>#nicAdminPanel~.footer-note.footer-note,body.nic-admin-open .app>#nicAdminPanel~.nic-shared-footer.nic-shared-footer{display:flex!important;flex:0 0 auto!important}
