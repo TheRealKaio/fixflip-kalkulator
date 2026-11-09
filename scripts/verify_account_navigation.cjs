@@ -16,7 +16,7 @@ const listenerStart=accessSource.indexOf("// Revalidate a signed-in account befo
 const listenerEnd=accessSource.indexOf("},true);",listenerStart)+7;
 assert(listenerStart>=0&&listenerEnd>listenerStart,'session refresh click listener must be present');
 let clickHandler,bubbled=0,loginCalls=0;
-const target={dataset:{nicDestination:'admin'},removeAttribute(name){delete this.dataset.nicDestination;},click(){clickHandler({target:{closest:()=>target},preventDefault(){throw Error('validated click must reach site navigation')},stopImmediatePropagation(){throw Error('validated click must reach site navigation')});bubbled++;}};
+const target={dataset:{nicDestination:'admin'},removeAttribute(name){delete this.dataset.nicDestination;},click(){clickHandler({target:{closest:()=>target},preventDefault(){throw Error('validated click must reach site navigation')},stopImmediatePropagation(){throw Error('validated click must reach site navigation')}});bubbled++;}};
 const navigation={document:{addEventListener(_name,handler){clickHandler=handler}},config:{enabled:true},user:null,refresh:async()=>{navigation.user={role:'admin'};return navigation.user;},profile:async()=>{loginCalls++;return false;},alert(message){throw Error(message);}};
 vm.createContext(navigation);vm.runInContext(accessSource.slice(listenerStart,listenerEnd),navigation);
 clickHandler({target:{closest:()=>target},preventDefault(){this.prevented=true;},stopImmediatePropagation(){}});
