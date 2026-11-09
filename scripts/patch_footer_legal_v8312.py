@@ -62,8 +62,8 @@ if ".footer-meta{" not in s:
 s += '''\n<style>\n.nic-footer-layout .footer-meta{justify-content:flex-start!important;text-align:left!important}\n.nic-footer-layout .footer-meta .footer-legal-links{justify-content:flex-start!important;margin-left:0!important;margin-right:auto!important}\n.nic-social-links{display:flex;align-items:center;gap:12px}.nic-social-link{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;flex:0 0 20px;color:inherit;text-decoration:none;line-height:1}.nic-social-link svg{display:block;width:20px;height:20px;flex:none;fill:currentColor}.nic-social-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}\n.nic-footer-section summary::after{display:none!important}\n.nic-footer-section summary::marker{content:""}\n.nic-footer-section summary::-webkit-details-marker{display:none}\n@media(max-width:700px){.nic-footer-layout .footer-meta{justify-content:center!important;text-align:center!important}.nic-footer-layout .footer-meta .footer-legal-links{justify-content:center!important;margin-left:auto!important;margin-right:auto!important}.nic-footer-section>summary::after{display:flex!important;font-size:18px!important;line-height:1!important;height:20px!important;max-height:20px!important;overflow:hidden;align-self:center;flex:0 0 20px;align-items:center;justify-content:center;box-sizing:border-box}}\n</style>\n'''
 
 # Keep the historical build contract moving without rendering a public footer version.
-s = re.sub(r'V8\.31[12]', 'V8.313', s)
-s = re.sub(r'service-worker\.js\?v=8\.31[12]', 'service-worker.js?v=8.313', s)
+s = re.sub(r'V8\.31[123]', 'V8.312', s)
+s = re.sub(r'service-worker\.js\?v=8\.31[123]', 'service-worker.js?v=8.312', s)
 
 required = [
     'class="nic-footer-layout"',
@@ -75,8 +75,8 @@ required = [
     'data-legal-placeholder="impressum"',
     'data-legal-placeholder="agbs"',
     'data-legal-placeholder="datenschutz"',
-    "V8.313",
-    "service-worker.js?v=8.313",
+    "V8.312",
+    "service-worker.js?v=8.312",
     '>Impressum</a>',
     '>AGBs</a>',
     '>Datenschutz</a>',
