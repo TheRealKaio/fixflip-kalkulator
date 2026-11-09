@@ -565,3 +565,6 @@ body:not(.nic-admin) #budgetExpensesSection .budget-summary-row.total:has(#budge
 /* Login dialog primary actions use the Admin brand green. */
 body:not(.nic-embed) .nic-auth-dialog :is(button,a.nic-auth-button,a.nic-auth-button:visited){background:var(--nic-green-bg,#075c55)!important;border-color:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}
 body:not(.nic-embed) .nic-auth-dialog :is(button,a.nic-auth-button):focus-visible{outline:3px solid var(--nic-green-bg,#075c55)!important;outline-offset:4px}
+
+/* Keep all generated content routes in the shared header and footer shell. */
+body.nic-content-page>.app{min-height:100vh!important;display:flex!important;flex-direction:column!important}
