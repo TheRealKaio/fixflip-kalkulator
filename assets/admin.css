@@ -31,3 +31,12 @@ body.nic-admin #panel-layout .layout-body-copy,body.nic-admin .save-bar #saveSta
 
 /* Embedded administration grows with its document instead of scrolling internally. */
 body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:auto!important}
+
+/* Full-width configuration actions on phones in either orientation. */
+@media(max-width:700px),(max-width:1024px) and (max-height:600px) and (orientation:landscape){
+ .configuration-tools .tool-row{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;width:100%;min-width:0}
+ .configuration-tools .tool-row>button,.configuration-tools .tool-row>.import-label{
+  display:flex;align-items:center;justify-content:center;width:100%;max-width:100%;min-width:0;
+  box-sizing:border-box;white-space:normal;text-align:center;
+ }
+}
