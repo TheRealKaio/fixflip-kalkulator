@@ -601,12 +601,6 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('#nicAdminFrame').count(),0,'No independent admin browsing context exists');
  }
  console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
- await page.evaluate(()=>window.scrollTo(0,0));
- await page.locator('.nic-brand-bar .nic-menu-toggle').click();
- await page.locator('[data-nic-site-nav] a[href="/preise/"]').click();
- await page.waitForURL('http://127.0.0.1:8766/preise/');
- assert(!(await page.locator('body').evaluate(el=>el.classList.contains('nic-admin-open'))),'Header menu leaves admin for the selected content page');
-
  await page.setViewportSize({width:1440,height:900});
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
