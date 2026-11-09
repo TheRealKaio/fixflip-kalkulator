@@ -122,7 +122,7 @@ for key in ['budget','own','rent','flip']:
 content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
-body.nic-content-page>.app>.hero{display:none!important}
+body.nic-content-page>.app>.hero,html[data-nic-page="settlement"] .app>.hero,html[data-nic-page="prices"] .app>.hero,html[data-nic-page="why"] .app>.hero,html[data-nic-page="about"] .app>.hero,html[data-nic-page="contact"] .app>.hero,html[data-nic-page="login"] .app>.hero{display:none!important}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
 body.nic-content-page>.app>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>.app>.bottom{display:none!important}
