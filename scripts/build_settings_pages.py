@@ -122,14 +122,13 @@ content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
-body.nic-content-page>div>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
-body.nic-content-page>div>.bottom{display:none!important}
+body.nic-content-page>.app>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
+body.nic-content-page>.app>.bottom{display:none!important}
 body.nic-content-page .nic-actions-above-footer{display:none!important}
-body.nic-content-page>div>.nic-calculator-source{display:none!important}
 .nic-content-card{flex:1;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
 .nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}
 .nic-content-card p{margin:12px 0}
-@media(max-width:760px){body.nic-content-page>div>main.nic-content-main{padding:24px 16px 16px}.nic-content-card{padding:24px 18px}}
+@media(max-width:760px){body.nic-content-page>.app>main.nic-content-main{padding:24px 16px 16px}.nic-content-card{padding:24px 18px}}
 </style>'''
 login_activation='''<script>
 window.addEventListener('DOMContentLoaded',function(){
@@ -142,15 +141,17 @@ for key,path in content_routes.items():
     content=config.get('content',{}).get(key,{})
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
-    article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article></main>'
-    def preserve_calculator_dom(match):
-        calculator=match.group(0).replace('class="section"','class="section nic-calculator-source"',1)
-        return article+calculator
-    page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',preserve_calculator_dom,root_calculators,count=1)
+    article='<article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article>'
+    def replace_existing_content_container(match):
+        return '<main class="section nic-content-main">'+article+'</main>'
+    page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',replace_existing_content_container,root_calculators,count=1)
     if count!=1:
-        raise SystemExit('Could not replace the existing calculator content for '+key)
+        raise SystemExit('Could not replace the existing content container for '+key)
+    page,count=re.subn(r'<header\b(?=[^>]*class="[^"]*\bhero\b")[^>]*>[\s\S]*?</header>','',page,count=1)
+    if count!=1:
+        raise SystemExit('Could not remove the calculator hero for '+key)
     page=page.replace('</head>',content_style+'</head>',1)
-    page=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+m[1]+' class=\"nic-content-page\">',page,count=1)
+    page=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+m[1]+' class="nic-content-page">',page,count=1)
     if key=='login':page=page.replace('</body>',login_activation+'</body>',1)
     folder=site/path;folder.mkdir(exist_ok=True)
     (folder/'index.html').write_text(customize(page,key,path))
