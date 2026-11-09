@@ -19,6 +19,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
+  assert.deepEqual(errors,[], 'Page initialization must complete without JavaScript errors');
   const origin=await page.evaluate(()=>performance.timeOrigin);
   assert.equal(await page.locator('script[src*="calculator-finance"]').count(),0,'Finance must use the shared controller bundle');
   assert.equal(await page.evaluate(()=>typeof window.NICFinanceModule),'undefined','No second finance bootstrap');
@@ -70,6 +71,13 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(await sectionToggle.isVisible()){await sectionToggle.click();await page.locator('#nicAdminContent #tab-layout').click();assert(await page.locator('#nicAdminContent #panel-layout').isVisible());}
   }
   const toggle=page.locator('.nic-brand-bar .nic-menu-toggle');if(await toggle.isVisible())await toggle.click();
+  // Legal pages must not repeat the footer navigation above the legal text.
+  await page.goto('http://localhost/#impressum');
+  await page.locator('#nicLegalPanel .nic-legal-card').waitFor({state:'visible'});
+  assert.equal(await page.locator('#nicLegalPanel nav[aria-label="Rechtliche Bereiche"]').count(),0,'Duplicated legal navigation must be absent');
+  assert(await page.locator('.footer-legal-links a').count()>0,'Footer legal links must remain available');
+  await page.goto('http://localhost/#admin-company');
+  await page.locator('#nicAdminContent #settingsForm').waitFor({state:'visible'});
   await page.locator('[data-nic-site-nav] a[href="/preise/"]').click();
   await page.waitForURL('http://localhost/preise/');
   assert(!(await page.locator('body').evaluate(el=>el.classList.contains('nic-admin-open'))),'Admin header menu navigates to the selected content page');
