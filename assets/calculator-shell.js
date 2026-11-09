@@ -1,12 +1,36 @@
 /* Shared footer behavior for every calculator; calculation state stays untouched. */
 (()=>{
 'use strict';
-const S=window.NICSettings,footer=document.querySelector('.footer-note');
+const S=window.NICSettings;
+const footer=document.querySelector('.app>.footer-note')||document.querySelector('.app>.nic-shared-footer')||document.querySelector('.nic-shared-footer')||document.querySelector('.footer-note');
 if(!S||!footer)return;
+const mobileQuery=window.matchMedia?.('(max-width:700px)')||null;
+function syncDisclosureState(){
+ const mobile=!!mobileQuery?.matches;
+ footer.querySelectorAll('.nic-footer-section').forEach(section=>{if(!section.hidden)section.open=!mobile;});
+}
+if(mobileQuery?.addEventListener)mobileQuery.addEventListener('change',syncDisclosureState);
+else if(mobileQuery?.addListener)mobileQuery.addListener(syncDisclosureState);
 function refresh(s=S.current){
  if(!s)return;
- let nav=footer.querySelector('#nicSocialLinks');if(!nav){nav=document.createElement('nav');nav.id='nicSocialLinks';nav.className='nic-social-links';nav.setAttribute('aria-label','Social Media');footer.append(nav);}
- nav.replaceChildren();for(const [key,label] of S.portals){const url=s.social[key];if(!url)continue;const a=document.createElement('a');a.href=url;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';nav.append(a);}nav.hidden=!nav.childElementCount;
+ const socialSection=footer.querySelector('#nicFooterSocial');
+ const nav=footer.querySelector('#nicSocialLinks');
+ if(nav){
+  nav.replaceChildren();
+  for(const [key,label] of S.portals){const url=s.social?.[key];if(!url)continue;const a=document.createElement('a');a.href=url;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';nav.append(a);}
+ }
+ if(socialSection)socialSection.hidden=!nav?.childElementCount;
+ const aboutSection=footer.querySelector('#nicFooterAboutSection');
+ const about=footer.querySelector('#nicFooterAbout');
+ const aboutHtml=s.content?.about?.description||'';
+ if(about&&aboutHtml.trim())about.replaceChildren(S.legalFragment(aboutHtml,s));
+ if(aboutSection)aboutSection.hidden=!about||!aboutHtml.trim()||!about.childNodes.length;
+ const contactSection=footer.querySelector('#nicFooterContactSection');
+ const email=footer.querySelector('#nicFooterEmail');
+ const address=String(s.company?.email||'').trim();
+ if(email){email.textContent=address;email.href=address?'mailto:'+address:'';}
+ if(contactSection)contactSection.hidden=!address;
+ syncDisclosureState();
  window.NICLegal?.refresh();
 }
 window.NICShell={refresh};
