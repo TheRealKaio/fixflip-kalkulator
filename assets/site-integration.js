@@ -49,6 +49,20 @@ function adminPanelRoute(){
  const selected=allowed.includes(section)?section:'';
  return {profile,section:selected,key:profile?'account':'admin'+(selected?'-'+selected:'')};
 }
+function syncAdminHeading(){
+ if(!adminOpen)return;
+ const profile=location.hash==='#account';
+ const title=profile?'Deine Nutzerdaten':'Admin-Bereich';
+ const description=profile?'Hier kannst du deine Daten ändern oder dein Benutzerkonto unwiderruflich löschen.':'Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
+ const h=document.getElementById('heroTitle'),p=document.getElementById('heroText');
+ if(h&&h.textContent!==title)h.textContent=title;
+ if(p&&p.textContent!==description)p.textContent=description;
+}
+if(hero&&typeof MutationObserver==='function'){
+ const observer=new MutationObserver(syncAdminHeading);
+ for(const el of [document.getElementById('heroTitle'),document.getElementById('heroText')])if(el)observer.observe(el,{childList:true,characterData:true,subtree:true});
+}
+window.addEventListener('nic-calculator-changed',syncAdminHeading);
 function adminPanelUrl(route){
  const release=encodeURIComponent(document.documentElement.dataset.nicRelease||'current');
  if(route.profile)return new URL('user-data.html?embedded=1&release='+release,S.ROOT).href;
