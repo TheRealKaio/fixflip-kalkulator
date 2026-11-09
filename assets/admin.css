@@ -25,3 +25,6 @@
 .content-section-controls{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:16px 0 22px}.content-section-header,.content-section-row{display:grid;grid-template-columns:minmax(0,1fr) 92px 150px;gap:12px;align-items:center;padding:11px 14px}.content-section-header{background:#f1f5f9;color:#475569;font-size:var(--nic-hint-font-size,12px)}.content-section-group{margin:0;padding:12px 14px;background:#f8fafc;border-top:1px solid #e2e8f0;color:#172033}.content-section-row{border-top:1px solid #edf0f5;font-size:var(--nic-body-font-size,16px)}.content-section-row span{overflow-wrap:anywhere}.content-section-row input{justify-self:center;width:20px;height:20px}@media(max-width:520px){.content-section-header,.content-section-row{grid-template-columns:minmax(0,1fr) 64px 110px;gap:8px;padding:10px}.content-section-header{font-size:var(--nic-hint-font-size,12px)}.content-section-row{font-size:var(--nic-body-font-size,16px)}}
 
 .admin-field select{height:46px;min-height:46px;line-height:normal;-webkit-appearance:menulist;appearance:menulist}
+
+/* Layout copy and save status use the configured base font size, not helper/subtext scaling. */
+body.nic-admin #panel-layout .layout-body-copy,body.nic-admin .save-bar #saveStatus,body.nic-admin .configuration-tools>p{font-size:var(--nic-body-font-size,16px)!important}
