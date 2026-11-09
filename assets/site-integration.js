@@ -71,7 +71,7 @@ function setAdmin(open){
   const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
   adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
   toolbar.append(close,adminLogout);
-  adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
+  adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';adminFrame.setAttribute('scrolling','no');
   adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
  }
  adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;syncAccountLink();
