@@ -548,9 +548,26 @@ const assert=require('node:assert/strict');
    return {cancelled:event.defaultPrevented,document:root.ownerDocument===document};
   });
   assert(nativeGesture.document&&!nativeGesture.cancelled,'Admin content uses native document gestures without custom touch interception');
-  const tabs=admin.locator('.admin-tabs button:visible');
+  const tabs=admin.locator('.admin-tabs button');
+  const toggle=admin.locator('.admin-menu-toggle'),mobileMenu=viewport.width<=1024;
+  assert.equal(await toggle.isVisible(),mobileMenu,'Mobile section menu replaces desktop tabs at narrow widths');
+  if(mobileMenu){
+   assert(!(await admin.locator('.admin-tabs').isVisible()),'Mobile section list starts collapsed');
+   await toggle.click();
+   assert(await admin.locator('.admin-tabs').isVisible(),'Mobile section list opens');
+   const rows=await tabs.evaluateAll(items=>items.map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right};}));
+   assert(rows.every((row,i)=>i===0||row.top>=rows[i-1].bottom-1),'Mobile menu rows never overlap');
+   await page.keyboard.press('Escape');
+   assert(!(await admin.locator('.admin-tabs').isVisible()),'Escape closes mobile section list');
+  }
   for(let i=0;i<await tabs.count();i++){
+   if(mobileMenu)await toggle.click();
+   const label=await tabs.nth(i).innerText();
    await tabs.nth(i).click();
+   if(mobileMenu){
+    assert(!(await admin.locator('.admin-tabs').isVisible()),'Selecting a section closes the mobile list');
+    assert((await toggle.innerText()).includes(label),'Mobile trigger shows the active section');
+   }
    assert.equal(await admin.locator('.save-bar').evaluate(el=>getComputedStyle(el).position),'static','Save bar stays in normal flow on each admin tab');
    const tab=await tabs.nth(i).getAttribute('aria-controls');
    assert(await admin.locator('#'+tab).isVisible(),'Selected admin content is visible in the shared page');
