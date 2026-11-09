@@ -29,6 +29,11 @@ window.addEventListener('pageshow',()=>{if(S.current)S.init().then(apply).catch(
 // Keep the calculator header and state while opening administration below it.
 const account=document.getElementById('nicAccountLink'),hero=document.querySelector('.app > .hero');
 let adminPanel=null,adminFrame=null,adminLogout=null,headerSnapshot=null,adminOpen=false,accountReturnUrl=null;
+function setAdminFrameHeight(height){
+ if(!adminFrame||!Number.isFinite(height))return;
+ const value=Math.min(50000,Math.max(300,Math.ceil(height)))+'px';
+ if(adminFrame.style.height!==value)adminFrame.style.height=value;
+}
 function syncAccountLink(){
  if(!account)return;
  const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user),admin=authenticated&&access.user.role==='admin';
@@ -87,56 +92,71 @@ function setAdmin(open){
   toolbar.append(close,adminLogout);
   adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';adminFrame.setAttribute('scrolling','auto');
   // Same-origin fallback: fit the iframe even if its height message is delayed.
-  let frameObserver=null;
+  let frameObserver=null,removeScrollBridge=()=>{};
   adminFrame.addEventListener('load',()=>{
-   frameObserver?.disconnect();
+   frameObserver?.disconnect();removeScrollBridge();
    try{
     const shell=adminFrame.contentDocument?.querySelector('.admin-shell');
     if(!shell)return;
-    const fit=()=>{const height=Math.ceil(shell.getBoundingClientRect().height)+24;if(height>0)adminFrame.style.height=Math.max(300,height)+'px';};
+    const fit=()=>{const height=Math.ceil(shell.getBoundingClientRect().height)+24;if(height>0)setAdminFrameHeight(height);};
     fit();
     if(typeof ResizeObserver==='function'){frameObserver=new ResizeObserver(fit);frameObserver.observe(shell);}
     adminFrame.contentDocument.fonts?.ready.then(fit);
     // Route vertical gestures to the outer page; Safari otherwise captures the first swipe in the iframe.
     const doc=adminFrame.contentDocument;
     let startX=0,lastY=0,lastTime=0,speed=0,dragged=false,tracking=false,momentum=0;
-    const stop=()=>{cancelAnimationFrame(momentum);momentum=0;};
-    const canScrollInside=(target,delta)=>{
-     for(let el=target?.nodeType===1?target:target?.parentElement;el&&el!==doc.body;el=el.parentElement){
-      const style=adminFrame.contentWindow.getComputedStyle(el);
-      if(/auto|scroll/.test(style.overflowY)&&el.scrollHeight>el.clientHeight+1&&
-       (delta<0?el.scrollTop>0:el.scrollTop+el.clientHeight<el.scrollHeight-1))return true;
-     }
-     return false;
+    let scrollTick=0,pendingDelta=0,scrollParents=[];
+    const flush=()=>{
+     scrollTick=0;
+     if(pendingDelta){const delta=pendingDelta;pendingDelta=0;window.scrollBy({top:delta,left:0,behavior:'instant'});}
     };
+    const stop=()=>{
+     cancelAnimationFrame(momentum);momentum=0;
+     if(scrollTick){cancelAnimationFrame(scrollTick);flush();}
+    };
+    const canScrollInside=delta=>scrollParents.some(el=>
+     delta<0?el.scrollTop>0:el.scrollTop+el.clientHeight<el.scrollHeight-1);
     doc.addEventListener('touchstart',event=>{
      stop();tracking=event.touches.length===1&&!event.target.closest?.('input[type="range"],select,[contenteditable="true"]');
-     dragged=false;speed=0;
-     if(tracking){startX=event.touches[0].clientX;lastY=event.touches[0].clientY;lastTime=performance.now();}
+     dragged=false;speed=0;scrollParents=[];
+     if(tracking){
+      startX=event.touches[0].clientX;lastY=event.touches[0].clientY;lastTime=event.timeStamp;
+      // Read ancestor styles once per gesture, not on every movement.
+      for(let el=event.target?.nodeType===1?event.target:event.target?.parentElement;el&&el!==doc.body;el=el.parentElement){
+       if(/auto|scroll/.test(adminFrame.contentWindow.getComputedStyle(el).overflowY)&&el.scrollHeight>el.clientHeight+1)scrollParents.push(el);
+      }
+     }
     },{passive:true});
     doc.addEventListener('touchmove',event=>{
      if(!tracking||event.touches.length!==1)return;
-     const touch=event.touches[0],now=performance.now(),delta=lastY-touch.clientY,dt=Math.max(8,now-lastTime);
+     const touch=event.touches[0],now=event.timeStamp,delta=lastY-touch.clientY,dt=Math.max(8,now-lastTime);
      if(!dragged&&Math.abs(touch.clientX-startX)>Math.abs(delta)){tracking=false;return;}
-     if(canScrollInside(event.target,delta)){lastY=touch.clientY;lastTime=now;return;}
+     if(canScrollInside(delta)){lastY=touch.clientY;lastTime=now;return;}
      if(Math.abs(delta)<2&&!dragged)return;
      if(event.cancelable)event.preventDefault();
-     dragged=true;window.scrollBy(0,delta);speed=.35*speed+.65*delta/dt;
+     dragged=true;pendingDelta+=delta;
+     if(!scrollTick)scrollTick=requestAnimationFrame(flush);
+     speed=.35*speed+.65*delta/dt;
      lastY=touch.clientY;lastTime=now;
     },{passive:false});
-    doc.addEventListener('touchend',()=>{
+    doc.addEventListener('touchend',event=>{
      tracking=false;
-     if(!dragged||performance.now()-lastTime>100)return;
+     if(scrollTick){cancelAnimationFrame(scrollTick);flush();}
+     if(!dragged||event.timeStamp-lastTime>100)return;
      let previous=performance.now();speed=Math.max(-2.5,Math.min(2.5,speed));
      const glide=now=>{
-      const dt=Math.min(32,now-previous);previous=now;
-      const before=window.scrollY;window.scrollBy(0,speed*dt);speed*=Math.pow(.94,dt/16);
+      const dt=Math.max(8,Math.min(32,now-previous));previous=now;
+      const before=window.scrollY;window.scrollBy({top:speed*dt,left:0,behavior:'instant'});speed*=Math.pow(.94,dt/16);
       if(Math.abs(speed)>.02&&Math.abs(window.scrollY-before)>.1)momentum=requestAnimationFrame(glide);
      };
      momentum=requestAnimationFrame(glide);
     },{passive:true});
     doc.addEventListener('touchcancel',()=>{tracking=false;stop();},{passive:true});
     window.addEventListener('touchstart',stop,{passive:true});
+    removeScrollBridge=()=>{
+     cancelAnimationFrame(momentum);cancelAnimationFrame(scrollTick);pendingDelta=0;
+     window.removeEventListener('touchstart',stop);
+    };
 
    }catch(_){/* Native iframe scrolling remains available as a fallback. */}
   });
@@ -168,7 +188,7 @@ if(account&&hero){
  window.addEventListener('hashchange',syncAdminRoute);
  window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==adminFrame?.contentWindow)return;
   if(e.data?.type==='nic-auth-changed'){window.NICAccess?.refresh?.().then(syncAccountLink).catch(()=>syncAccountLink());return;}
-  if(e.data?.type==='nic-admin-height'&&Number.isFinite(e.data.height))adminFrame.style.height=Math.min(50000,Math.max(300,e.data.height))+'px';
+  if(e.data?.type==='nic-admin-height')setAdminFrameHeight(e.data.height);
   if(adminOpen&&e.data?.type==='nic-logo-preview')S.applyLogo(e.data.value,e.data.alt,e.data.website);
  });
 }
