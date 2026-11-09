@@ -55,7 +55,7 @@ if ".footer-meta{" not in s:
 .nic-social-links{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:0}
 .nic-footer-layout .footer-meta{grid-column:1/-1;grid-row:2}
 @media(max-width:700px){
- .nic-footer-layout{grid-template-columns:minmax(0,1fr);gap:10px}
+ .nic-footer-layout{grid-template-columns:minmax(0,1fr);row-gap:4px;column-gap:10px}
  .nic-footer-left,.nic-footer-right{grid-column:1;grid-row:auto}
  .nic-footer-right{gap:4px}
  .nic-footer-social{max-width:none}
