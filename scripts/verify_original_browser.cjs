@@ -548,6 +548,24 @@ const assert=require('node:assert/strict');
    return {cancelled:event.defaultPrevented,document:root.ownerDocument===document};
   });
   assert(nativeGesture.document&&!nativeGesture.cancelled,'Admin content uses native document gestures without custom touch interception');
+  const toolbarStyle=await page.locator('.nic-admin-toolbar').evaluate(bar=>{
+   const inspect=selector=>{const style=getComputedStyle(bar.querySelector(selector));return {font:style.fontFamily,size:style.fontSize,weight:style.fontWeight,color:style.color,background:style.backgroundColor,border:style.borderTopWidth};};
+   return {back:inspect('.nic-admin-back'),logout:inspect('.nic-admin-logout')};
+  });
+  assert.deepEqual(toolbarStyle.back,toolbarStyle.logout,'Admin back link shares the logout action typography and unboxed styling');
+  assert.equal(toolbarStyle.back.background,'rgba(0, 0, 0, 0)');
+  assert.equal(toolbarStyle.back.border,'0px');
+  const headerToggle=page.locator('.nic-brand-bar .nic-menu-toggle');
+  if(await headerToggle.isVisible()){
+   await page.evaluate(()=>window.scrollTo(0,0));
+   await headerToggle.click();
+   const dropdown=await page.locator('[data-nic-site-nav]').evaluate(nav=>{
+    const n=nav.getBoundingClientRect(),h=nav.closest('.nic-brand-bar').getBoundingClientRect(),link=nav.querySelector('a'),r=link.getBoundingClientRect();
+    return {top:n.top,headerBottom:h.bottom,hit:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest('[data-nic-site-nav]')===nav};
+   });
+   assert(Math.abs(dropdown.top-dropdown.headerBottom)<3&&dropdown.hit,'Header burger opens directly below the admin header and remains clickable: '+JSON.stringify(dropdown));
+   await headerToggle.click();
+  }
   const tabs=admin.locator('.admin-tabs button');
   const toggle=admin.locator('.admin-menu-toggle'),mobileMenu=viewport.width<=1024;
   assert.equal(await toggle.isVisible(),mobileMenu,'Mobile section menu replaces desktop tabs at narrow widths');
@@ -583,6 +601,12 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('#nicAdminFrame').count(),0,'No independent admin browsing context exists');
  }
  console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
+ await page.evaluate(()=>window.scrollTo(0,0));
+ await page.locator('.nic-brand-bar .nic-menu-toggle').click();
+ await page.locator('[data-nic-site-nav] a[href="/preise/"]').click();
+ await page.waitForURL('http://127.0.0.1:8766/preise/');
+ assert(!(await page.locator('body').evaluate(el=>el.classList.contains('nic-admin-open'))),'Header menu leaves admin for the selected content page');
+
  await page.setViewportSize({width:1440,height:900});
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
