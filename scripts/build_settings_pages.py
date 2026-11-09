@@ -17,8 +17,9 @@ config=json.loads((site/'site-settings.json').read_text())
 if config.get('version')!=1:
     raise SystemExit('Unsupported site settings version')
 base='https://www.neustart-immocheck.de/'
+ASSET_VERSION='8.364'
 share_name=render_share_image(config,site)
-share_url=base+share_name
+share_url=base+share_name+'?v='+share_name.removeprefix('social-preview-').removesuffix('.jpg')
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
 content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','contact':'kontakt/','login':'anmelden/'}
 content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator')]
@@ -75,8 +76,18 @@ def customize(s,key,path):
     s=re.sub(r'<html lang="de"([^>]*)>',lambda m:f'<html lang="de"{m[1]} data-nic-page="{key}">',s,count=1)
     s=re.sub(r'<title>.*?</title>',metadata(key,path),s,count=1,flags=re.S)
     icon=config.get('favicon','')
-    if isinstance(icon,str) and len(icon)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',icon):
-        s=s.replace('</head>',f'<link rel="icon" href="{html.escape(icon,quote=True)}"></head>',1)
+    if not (isinstance(icon,str) and len(icon)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',icon)):
+        icon=f'/favicon-64.png?v={ASSET_VERSION}'
+        icon_type='image/png'
+    else:
+        icon_type=icon[5:icon.find(';')]
+    s=re.sub(r'<link\\b(?=[^>]*\\brel=[\\"\\'](?:icon|shortcut icon)[\\"\\'])[^>]*>', '', s, flags=re.I)
+    s=s.replace('</head>',f'<link rel="icon" type="{icon_type}" href="{html.escape(icon,quote=True)}"></head>',1)
+    outer=config.get('layout',{}).get('outerBackground','#F6F1E9')
+    if not re.fullmatch(r'#[0-9a-fA-F]{6}',str(outer)):
+        outer='#F6F1E9'
+    critical=f'<style id="nic-critical-background">html,body{{min-height:100%;background:{outer}!important}}body:not(.nic-admin):not(.nic-embed){{background:{outer}!important}}</style>'
+    s=s.replace('</head>',critical+'</head>',1)
     logo=config.get('websiteLogo','')
     if isinstance(logo,str) and len(logo)<=400000 and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',logo):
         s=re.sub(r'(<div class="brand-logo-wrap">).*?</svg>',lambda m:m[1]+'<img class="brand-logo" alt="'+html.escape(str(config.get('imageAlts',{}).get('websiteLogo','Neustart ImmoCheck – Immobilien-Kalkulatoren')),quote=True)+'" style="max-height:72px;object-fit:contain" src="'+html.escape(logo,quote=True)+'">',s,count=1,flags=re.S)
@@ -87,7 +98,7 @@ def customize(s,key,path):
     target=website if parsed.scheme in ('http','https') and parsed.hostname and not parsed.username and not parsed.password else base
     s=re.sub(r'(<div class="brand-logo-wrap">)(.*?)(</div>)',lambda m:m[1]+'<a class="nic-logo-link" href="'+html.escape(target,quote=True)+'">'+m[2]+'</a>'+m[3],s,count=1,flags=re.S)
     s=re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', s, flags=re.I)
-    s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png"></head>',1)
+    s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png?v={ASSET_VERSION}"></head>',1)
     return s
 home_content=config.get('content',{}).get('welcome',{})
 home_title=html.escape(str(home_content.get('title') or 'Deine Immobilien. Klar gerechnet.'))
@@ -112,14 +123,14 @@ content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column}
-body.nic-content-page>div>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 0}
+body.nic-content-page>div>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>div>.bottom{display:none!important}
 body.nic-content-page .nic-actions-above-footer{display:none!important}
 body.nic-content-page>div>.nic-calculator-source{display:none!important}
 .nic-content-card{flex:1;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
 .nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}
 .nic-content-card p{margin:12px 0}
-@media(max-width:760px){body.nic-content-page>div>main.nic-content-main{padding:24px 16px 0}.nic-content-card{padding:24px 18px}}
+@media(max-width:760px){body.nic-content-page>div>main.nic-content-main{padding:24px 16px 16px}.nic-content-card{padding:24px 18px}}
 </style>'''
 login_activation='''<script>
 window.addEventListener('DOMContentLoaded',function(){
