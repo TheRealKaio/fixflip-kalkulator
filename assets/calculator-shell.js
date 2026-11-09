@@ -29,14 +29,14 @@ function refresh(s=S.current){
  const nav=footer.querySelector('#nicSocialLinks');
  if(nav){
   nav.replaceChildren();
-  for(const [key,label] of S.portals){const url=s.social?.[key];if(!url)continue;const a=document.createElement('a');a.href=url;a.className='nic-social-link';a.setAttribute('aria-label',label);a.title=label;a.target='_blank';a.rel='noopener noreferrer';const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','20');svg.setAttribute('height','20');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.innerHTML=socialIconPaths[key]||'';a.append(svg);nav.append(a);}
+  for(const [key,label] of S.portals){const url=s.social?.[key];if(!url)continue;const a=document.createElement('a');a.href=url;a.className='nic-social-link';a.setAttribute('aria-label',label);a.title=label;a.target='_blank';a.rel='noopener noreferrer';const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','40');svg.setAttribute('height','40');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.innerHTML=socialIconPaths[key]||'';a.append(svg);nav.append(a);}
  }
  if(socialSection)socialSection.hidden=!nav?.childElementCount;
  const aboutSection=footer.querySelector('#nicFooterAboutSection');
  const about=footer.querySelector('#nicFooterAbout');
- const aboutHtml=s.content?.about?.description||'';
- if(about&&aboutHtml.trim())about.replaceChildren(S.legalFragment(aboutHtml,s));
- if(aboutSection)aboutSection.hidden=!about||!aboutHtml.trim()||!about.childNodes.length;
+ const aboutDescription=String(s.content?.why?.metaDescription||s.meta?.why?.description||s.meta?.website?.description||'').trim();
+ if(about){about.replaceChildren();if(aboutDescription){const more=document.createElement('a');more.href=new URL('warum-immocheck/',S.ROOT).href;more.textContent='Mehr...';more.className='nic-footer-more';about.append(document.createTextNode(aboutDescription+' '),more);}}
+ if(aboutSection)aboutSection.hidden=!about||!aboutDescription;
  const contactSection=footer.querySelector('#nicFooterContactSection');
  const email=footer.querySelector('#nicFooterEmail');
  const address=String(s.company?.email||'').trim();
