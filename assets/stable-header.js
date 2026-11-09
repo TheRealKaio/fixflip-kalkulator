@@ -49,7 +49,8 @@ function schedule(){if(!queued){queued=true;requestAnimationFrame(measure);}}
 new ResizeObserver(()=>{if(Math.abs(hero.getBoundingClientRect().width-lastWidth)>.5)schedule();}).observe(hero);
 new MutationObserver(schedule).observe(hero,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['src','style']});
 hero.addEventListener('load',schedule,true);
-window.addEventListener('resize',schedule);
+// Safari's browser bars change viewport height during scrolling; only width changes require remeasurement.
+window.addEventListener('resize',()=>{if(Math.abs(hero.getBoundingClientRect().width-lastWidth)>.5)schedule();});
 window.addEventListener('orientationchange',schedule);
 document.fonts?.ready.then(schedule);
 window.NICHeader={refresh:schedule};
