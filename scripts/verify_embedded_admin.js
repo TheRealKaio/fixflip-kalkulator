@@ -2,7 +2,8 @@ const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/st
 class El {
  constructor(tag='div'){this.tag=tag;this.attrs={};this.children=[];this.listeners={};this.style={};this.dataset={};this.classList={add(){},remove(){}};this.contentWindow={postMessage(){}};this.innerHTML='Budget prüfen';this.textContent='Budget description';}
  addEventListener(k,f){(this.listeners[k]??=[]).push(f)}
- append(...x){this.children.push(...x)} after(x){this.sibling=x}setAttribute(k,v){this.attrs[k]=v}getAttribute(k){return this.attrs[k]}focus(){this.focused=true}
+ append(...x){this.children.push(...x)}
+ after(x){this.sibling=x}setAttribute(k,v){this.attrs[k]=v}getAttribute(k){return this.attrs[k]}focus(){this.focused=true}
  click(){for(const f of this.listeners.click||[])f({preventDefault(){}})}
 }
 (async()=>{
@@ -19,7 +20,7 @@ for(const f of events.message)f({origin:'https://evil.test',source:frame.content
 for(const f of events.message)f({origin:location.origin,source:frame.contentWindow,data:{type:'nic-admin-height',height:2000}});assert.equal(frame.style.height,'2000px');
 panel.children[0].children[0].click();assert(panel.hidden);assert.equal(title.innerHTML,'Budget prüfen');assert.equal(S.lastLogo,'saved-logo');assert(account.focused);
 account.click();assert.equal(panel.hidden,false);assert.equal(hero.sibling,panel);assert.equal(location.hash,'#admin');
-context.NICAccess={enabled:true,user:{role:'admin'}};account.click();assert.equal(location.hash,'#account');assert.equal(frame.src,'https://example.test/user-data.html?embedded=1&release=8.339');assert.equal(title.textContent,'Deine Nutzerdaten');assert.equal(panel.hidden,false);
+context.NICAccess={enabled:true,user:{role:'admin'}};account.click();assert.equal(location.hash,'#admin');assert.equal(frame.src,'https://example.test/admin.html?embedded=1&release=8.339');assert.equal(title.textContent,'Admin-Bereich');assert.equal(panel.hidden,false);
 location.hash='';for(const f of events.popstate)f();assert(panel.hidden);
 const userHero=new El(),userTitle=new El(),userText=new El(),userAccount=new El();
 const userLocation={...location,hash:'#account'};
@@ -27,5 +28,5 @@ const userDoc={...document,body:new El(),getElementById:id=>({nicAccountLink:use
 const userContext={...context,document:userDoc,location:userLocation,addEventListener(){}};userContext.window=userContext;
 vm.createContext(userContext);vm.runInContext(fs.readFileSync('assets/site-integration.js','utf8'),userContext);await new Promise(setImmediate);
 assert.equal(userTitle.textContent,'Deine Nutzerdaten');assert(userText.textContent.includes('unwiderruflich'));assert(userHero.sibling.children[1].src.includes('/user-data.html?embedded=1'));assert.equal(userDoc.title,'Deine Nutzerdaten | Neustart ImmoCheck');
-console.log('Embedded admin checks passed: deep link, shared heading, same frame on reopen, back navigation, saved logo restore, live preview and message origin protection.');
+console.log('Embedded admin checks passed: role-specific destination, deep link, shared heading, same frame on reopen, back navigation, saved logo restore, live preview and message origin protection.');
 })().catch(e=>{console.error(e);process.exit(1)});
