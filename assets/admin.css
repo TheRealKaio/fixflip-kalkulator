@@ -34,9 +34,11 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
 
 /* Embedded admin height follows its content, so use width alone for mobile actions. */
 @media(max-width:1024px){
- .configuration-tools .tool-row{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;width:100%;min-width:0}
- .configuration-tools .tool-row>button,.configuration-tools .tool-row>.import-label{
-  display:flex;align-items:center;justify-content:center;width:100%;max-width:100%;min-width:0;
-  box-sizing:border-box;white-space:normal;text-align:center;
+ body.nic-admin .admin-shell,body.nic-admin .configuration-tools{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important}
+ body.nic-admin .tool-row,body.nic-admin .save-bar-actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;max-width:none!important;min-width:0!important}
+ body.nic-admin .save-bar{flex-direction:column!important;align-items:stretch!important}
+ body.nic-admin .tool-row>button,body.nic-admin .tool-row>.import-label,body.nic-admin .save-bar-actions>button{
+  display:flex!important;align-items:center;justify-content:center;width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;white-space:normal!important;text-align:center;
  }
 }
