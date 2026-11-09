@@ -121,7 +121,7 @@ for key in ['budget','own','rent','flip']:
 content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
-body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column}
+body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
 body.nic-content-page>div>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>div>.bottom{display:none!important}
 body.nic-content-page .nic-actions-above-footer{display:none!important}
