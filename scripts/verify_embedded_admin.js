@@ -3,7 +3,7 @@ class El {
  constructor(tag='div'){this.tag=tag;this.attrs={};this.children=[];this.listeners={};this.style={};this.dataset={};this.classList={add(){},remove(){}};this.contentWindow={postMessage(){}};this.innerHTML='Budget prüfen';this.textContent='Budget description';}
  addEventListener(k,f){(this.listeners[k]??=[]).push(f)}
  append(...x){this.children.push(...x)}
- after(x){this.sibling=x}setAttribute(k,v){this.attrs[k]=v}getAttribute(k){return this.attrs[k]}focus(){this.focused=true}
+ after(x){this.sibling=x}setAttribute(k,v){this.attrs[k]=v}getAttribute(k){return this.attrs[k]}removeAttribute(k){delete this.attrs[k]}focus(){this.focused=true}
  click(){for(const f of this.listeners.click||[])f({preventDefault(){}})}
 }
 (async()=>{
