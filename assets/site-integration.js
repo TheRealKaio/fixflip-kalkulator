@@ -109,7 +109,7 @@ function ensureNativeView(profile){
   }));
   sources.push(...Array.from(doc.querySelectorAll('style'),style=>style.textContent));
   const style=document.createElement('style');style.dataset.nicNativeStyle=key;
-  style.textContent=scopedAdminCss(sources.join('\n'),'#'+root.id)+'\n#'+root.id+'[hidden],#'+root.id+' [hidden]{display:none!important}';
+  style.textContent=scopedAdminCss(sources.join('\n'),'#'+root.id)+'\n#'+root.id+'{--ink:inherit;--bg:var(--nic-outer-bg,#F6F1E9);background:transparent;color:inherit}#'+root.id+'[hidden],#'+root.id+' [hidden]{display:none!important}';
   document.head.append(style);
   for(const script of doc.querySelectorAll('script[src]')){
    const src=new URL(script.getAttribute('src'),url),name=src.pathname.split('/').pop().replace(/\.[a-f0-9]{16}(?=\.js$)/,'');
