@@ -627,7 +627,7 @@ print('Central calculator-shell.css:',len(rules),'shared rules; removed competin
 content_pages={'settlement','prices','why','about','contact','login'}
 for page in site.rglob('*.html'):
  source=page.read_text()
- match=re.search(r'<html\\b[^>]*data-nic-page="([^"]+)"',source)
+ match=re.search(r'<html\b[^>]*data-nic-page="([^"]+)"',source)
  if not match or match.group(1) not in content_pages:
   continue
  key=match.group(1)
@@ -641,7 +641,7 @@ for page in site.rglob('*.html'):
   '@media(max-width:760px){html[data-nic-page="'+key+'"] body .app main.nic-content-main{padding:24px 16px 16px}html[data-nic-page="'+key+'"] body .app .nic-content-card{padding:24px 18px}}'
   '</style>'
  )
- if 'id="nic-content-hero-hide"' not in source:
+ if 'id="nic-content-page-layout"' not in source:
   if '</head>' not in source:
    raise SystemExit('Content page head missing: '+str(page))
   source=source.replace('</head>',style+'</head>',1)
