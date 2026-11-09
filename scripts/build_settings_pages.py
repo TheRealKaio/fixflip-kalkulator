@@ -10,7 +10,6 @@ import sys
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 from render_share_image import render_share_image
-from unify_finance_footer_markup import extract_footer
 
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 config=json.loads((site/'site-settings.json').read_text())
@@ -19,7 +18,7 @@ if config.get('version')!=1:
 base='https://www.neustart-immocheck.de/'
 ASSET_VERSION='8.364'
 share_name=render_share_image(config,site)
-share_url=base+share_name+'?v='+share_name.removeprefix('social-preview-').removesuffix('.jpg')
+share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
 content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','contact':'kontakt/','login':'anmelden/'}
 content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator')]
@@ -139,12 +138,11 @@ window.addEventListener('DOMContentLoaded',function(){
  window.NICAccess.init().then(function(){return window.NICAccess.login();}).catch(console.error);
 });
 </script>'''
-shared_footer,_,_=extract_footer(root_calculators)
 for key,path in content_routes.items():
     content=config.get('content',{}).get(key,{})
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
-    article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article>'+shared_footer+'</main>'
+    article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article></main>'
     def preserve_calculator_dom(match):
         calculator=match.group(0).replace('class="section"','class="section nic-calculator-source"',1)
         return article+calculator
