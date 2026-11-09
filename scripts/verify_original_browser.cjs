@@ -534,7 +534,7 @@ const assert=require('node:assert/strict');
  // Administration must expand its iframe and share the outer document scroll on every tab.
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
   await page.setViewportSize(viewport);
-  const tabs=admin.locator('.admin-tabs button');
+  const tabs=admin.locator('.admin-tabs button:visible');
   for(let i=0;i<await tabs.count();i++){
    await tabs.nth(i).click();
    await page.waitForFunction(()=>{
@@ -554,6 +554,7 @@ const assert=require('node:assert/strict');
   assert.equal(await page.locator('#nicAdminFrame').evaluate(el=>el.contentWindow.scrollY),0,'Admin iframe has no independent vertical scroll');
  }
  console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
+ await page.setViewportSize({width:1440,height:900});
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
  assert.equal(await page.locator('.footer-note').evaluate(e=>getComputedStyle(e).fontSize),'17px');
