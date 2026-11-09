@@ -157,9 +157,9 @@ for key,path in content_routes.items():
     # Only remove inline executable blocks that contain calculator-specific
     # code, leaving global site, consent and settings initialization intact.
     calculator_bootstrap=re.compile(
-        r'\\b(?:syncRenoTotal|budgetSuggestionData|renderBudgetSuggestions|'
+        r'\b(?:syncRenoTotal|budgetSuggestionData|renderBudgetSuggestions|'
         r'updateMarketValueSourceHint|currentDealType|initializeModeDefaults|'
-        r'initializeReferenceInterest|initializeRepaymentDefaults)\\b'
+        r'initializeReferenceInterest|initializeRepaymentDefaults)\b'
     )
     removed_scripts=[0]
     def omit_calculator_inline(match):
@@ -168,7 +168,7 @@ for key,path in content_routes.items():
             removed_scripts[0]+=1
             return ''
         return match.group(0)
-    page=re.sub(r'(<script\\b(?![^>]*\\bsrc=)[^>]*>)([\\s\\S]*?)(</script>)',
+    page=re.sub(r'(<script\b(?![^>]*\bsrc=)[^>]*>)([\s\S]*?)(</script>)',
         omit_calculator_inline,
         page,flags=re.I)
     if not removed_scripts[0]:
