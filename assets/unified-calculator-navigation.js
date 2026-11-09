@@ -22,7 +22,12 @@ function select(key,push=false){
  document.body.classList.toggle('nic-finance-active',key==='finance');
  const host=document.getElementById('nicFinanceModule');if(host)host.hidden=key!=='finance';
  bypass=true;
- try{window.dispatchEvent(new CustomEvent('nic-select-calculator',{detail:key}));}finally{bypass=false;}
+ try{
+  // The legacy handler recognizes only budget, own, rent and flip.
+  // Financing has its own Shadow DOM module; forwarding 'finance' to the
+  // legacy four-calculator handler leaves its DOM and calculations undefined.
+  if(key!=='finance')window.dispatchEvent(new CustomEvent('nic-select-calculator',{detail:key}));
+ }finally{bypass=false;}
  if(key==='finance'){
   document.getElementById('heroTitle').innerHTML=financeHeader[0];
   document.getElementById('heroText').textContent=financeHeader[1];
