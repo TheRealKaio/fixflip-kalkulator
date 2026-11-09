@@ -31,12 +31,14 @@ const account=document.getElementById('nicAccountLink'),hero=document.querySelec
 let adminPanel=null,adminFrame=null,adminLogout=null,headerSnapshot=null,adminOpen=false,accountReturnUrl=null;
 function syncAccountLink(){
  if(!account)return;
- const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user);
+ const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user),admin=authenticated&&access.user.role==='admin';
  const label=account.querySelector?.('span');
- if(label)label.textContent=authenticated?'Zum Nutzerportal':'Jetzt anmelden';
- account.href=authenticated?new URL('#account',S.ROOT).href:new URL('#anmelden',S.ROOT).href;
- account.setAttribute('aria-label',authenticated?'Zum Nutzerportal':'Jetzt anmelden');
- if(authenticated)account.setAttribute('data-nic-destination','portal');else account.removeAttribute?.('data-nic-destination');
+ const destination=admin?'#admin':authenticated?'#account':'#anmelden';
+ const accountLabel=admin?'Zum Adminportal':authenticated?'Zum Nutzerportal':'Jetzt anmelden';
+ if(label)label.textContent=accountLabel;
+ account.href=new URL(destination,S.ROOT).href;
+ account.setAttribute('aria-label',accountLabel);
+ if(authenticated)account.setAttribute('data-nic-destination',admin?'admin':'portal');else account.removeAttribute?.('data-nic-destination');
  if(adminLogout)adminLogout.hidden=!(adminOpen&&authenticated&&access.user.role==='admin');
 }
 window.addEventListener('nic-auth-changed',syncAccountLink);
@@ -86,8 +88,8 @@ if(account&&hero){
   if(window.NICAccess?.enabled&&window.NICAccess.user){
    e.preventDefault();
    if(!adminOpen)accountReturnUrl=location.pathname+location.search;
-   const target=new URL('#account',S.ROOT);
-   if(location.pathname!==target.pathname||location.hash!=='#account')history.pushState(null,'',target.href);
+   const target=new URL(window.NICAccess.user.role==='admin'?'#admin':'#account',S.ROOT);
+   if(location.pathname!==target.pathname||location.hash!==target.hash)history.pushState(null,'',target.href);
    setAdmin(true);
    return;
   }
