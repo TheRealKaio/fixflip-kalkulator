@@ -20,7 +20,7 @@ ASSET_VERSION='8.364'
 share_name=render_share_image(config,site)
 share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
-content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','contact':'kontakt/','login':'anmelden/'}
+content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','about':'ueber-uns/','contact':'kontakt/','login':'anmelden/'}
 content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator')]
 
 class ContentSanitizer(HTMLParser):
@@ -172,7 +172,7 @@ for path,title in [('unternehmen/','Unternehmen & Kontakt'),('impressum/','Impre
     (folder/'index.html').write_text(s)
 urls=[base+p for p in pages.values()]+[base+p for k,p in content_routes.items() if k!='login']
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
-print('Settings metadata pages built: website, company, four calculators and five content pages')
+print('Settings metadata pages built: website, company, four calculators and six content pages')
 
 for name in ('admin.css','admin.js','legal-drafts.js'):
     shutil.copyfile(Path('assets')/name,site/name)
