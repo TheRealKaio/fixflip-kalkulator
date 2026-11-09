@@ -119,6 +119,7 @@ for key in ['budget','own','rent','flip']:
     (folder/'index.html').write_text(customize(root_calculators,key,path))
 
 # Crawlable information pages reuse the existing app shell, header, and footer.
+# Content-page standard: one shared shell and footer; the white card grows to the footer on short pages and naturally scrolls with longer text.
 content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
