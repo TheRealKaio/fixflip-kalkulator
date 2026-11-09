@@ -40,37 +40,55 @@ function syncAccountLink(){
  if(adminLogout)adminLogout.hidden=!(adminOpen&&authenticated&&access.user.role==='admin');
 }
 window.addEventListener('nic-auth-changed',syncAccountLink);
+function adminPanelRoute(){
+ const profile=location.hash==='#account';
+ const section=location.hash.startsWith('#admin-')?location.hash.slice(7):'';
+ const allowed=['company','layout','social','meta','legal','users','stats'];
+ const selected=allowed.includes(section)?section:'';
+ return {profile,section:selected,key:profile?'account':'admin'+(selected?'-'+selected:'')};
+}
+function adminPanelUrl(route){
+ const release=encodeURIComponent(document.documentElement.dataset.nicRelease||'current');
+ if(route.profile)return new URL('user-data.html?embedded=1&release='+release,S.ROOT).href;
+ return new URL('admin.html?embedded=1&release='+release+(route.section?'#'+route.section:''),S.ROOT).href;
+}
 function setAdmin(open){
  if(!hero||!account)return;
  if(open&&location.hash==='#account'&&location.pathname!==new URL('/',S.ROOT).pathname){accountReturnUrl=location.pathname+location.search;history.replaceState(null,'',new URL('#account',S.ROOT).href);}
- if(open&&!adminOpen){
-  headerSnapshot={title:document.getElementById('heroTitle').innerHTML,text:document.getElementById('heroText').textContent,titleAttr:document.title};
-  if(!adminPanel){
-   adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
-   const toolbar=document.createElement('div');toolbar.className='nic-admin-toolbar';
-   const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
-   adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
-   toolbar.append(close,adminLogout);
-   adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
-   const profile=location.hash==='#account';const section=location.hash.slice(7);adminFrame.src=profile?new URL('user-data.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current'),S.ROOT).href:new URL('admin.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current')+(['company','layout','social','meta','legal','users','stats'].includes(section)?'#'+section:''),S.ROOT).href;
-   adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
-  }
-  adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;syncAccountLink();
-  const profile=location.hash==='#account';adminPanel.setAttribute('aria-label',profile?'Deine Nutzerdaten':'Admin-Bereich');adminFrame.title=profile?'Deine Nutzerdaten':'Einstellungen im Admin-Bereich';document.getElementById('heroTitle').textContent=profile?'Deine Nutzerdaten':'Admin-Bereich';document.getElementById('heroText').textContent=profile?'Hier kannst du deine Daten ändern oder dein Benutzerkonto unwiderruflich löschen.':'Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
-  document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';account.setAttribute('aria-expanded','true');account.setAttribute('aria-controls','nicAdminPanel');
-  adminFrame.contentWindow?.postMessage({type:'nic-request-logo'},location.origin);
- }else if(!open&&adminOpen){
+ if(!open&&adminOpen){
   adminOpen=false;document.body.classList.remove('nic-admin-open');document.documentElement.classList.remove('nic-admin-open');adminPanel.hidden=true;syncAccountLink();
   document.getElementById('heroTitle').innerHTML=headerSnapshot.title;document.getElementById('heroText').textContent=headerSnapshot.text;document.title=headerSnapshot.titleAttr;
   account.setAttribute('aria-expanded','false');if(S.current)S.applyLogo(S.current.websiteLogo);account.focus();
+  return;
  }
+ if(!open)return;
+ if(!adminOpen)headerSnapshot={title:document.getElementById('heroTitle').innerHTML,text:document.getElementById('heroText').textContent,titleAttr:document.title};
+ if(!adminPanel){
+  adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
+  const toolbar=document.createElement('div');toolbar.className='nic-admin-toolbar';
+  const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
+  adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
+  toolbar.append(close,adminLogout);
+  adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
+  adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
+ }
+ adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;syncAccountLink();
+ const route=adminPanelRoute();
+ if(adminFrame.dataset.nicRoute!==route.key){adminFrame.dataset.nicRoute=route.key;adminFrame.src=adminPanelUrl(route);}
+ adminPanel.setAttribute('aria-label',route.profile?'Deine Nutzerdaten':'Admin-Bereich');adminFrame.title=route.profile?'Deine Nutzerdaten':'Einstellungen im Admin-Bereich';
+ document.getElementById('heroTitle').textContent=route.profile?'Deine Nutzerdaten':'Admin-Bereich';document.getElementById('heroText').textContent=route.profile?'Hier kannst du deine Daten ändern oder dein Benutzerkonto unwiderruflich löschen.':'Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
+ document.title=(route.profile?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';account.setAttribute('aria-expanded','true');account.setAttribute('aria-controls','nicAdminPanel');
+ adminFrame.contentWindow?.postMessage({type:'nic-request-logo'},location.origin);
 }
 if(account&&hero){
  account.addEventListener('click',e=>{
   if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
   if(window.NICAccess?.enabled&&window.NICAccess.user){
    e.preventDefault();
-   if(!adminOpen){accountReturnUrl=location.pathname+location.search;history.pushState(null,'',new URL('#account',S.ROOT).href);setAdmin(true);}
+   if(!adminOpen)accountReturnUrl=location.pathname+location.search;
+   const target=new URL('#account',S.ROOT);
+   if(location.pathname!==target.pathname||location.hash!=='#account')history.pushState(null,'',target.href);
+   setAdmin(true);
    return;
   }
   e.preventDefault();if(!adminOpen)history.pushState(null,'',location.pathname+location.search+'#admin');setAdmin(true);
