@@ -5,6 +5,19 @@ import sys
 p = Path(sys.argv[1] if len(sys.argv) > 1 else "_site/index.html")
 s = p.read_text(encoding="utf-8")
 
+# The legacy disclosure styles belong only to calculator advanced sections.
+# Their unscoped details::after rule was also styling footer accordion frames
+# at 34px, overriding the intended compact mobile footer control.
+for old, new in (
+    ("details summary{", ".advanced>summary{"),
+    ("details summary::-webkit-details-marker{", ".advanced>summary::-webkit-details-marker{"),
+    ("details summary:after{", ".advanced>summary:after{"),
+    ("details[open] summary:after{", ".advanced[open]>summary:after{"),
+):
+    if s.count(old) != 1:
+        raise SystemExit(f"Expected exactly one legacy disclosure selector: {old}")
+    s = s.replace(old, new, 1)
+
 footer = re.compile(
     r'(<div class="footer-note">\s*<span>.*?</span>)'
     r'(?:\s*<span class="footer-version">.*?</span>)?\s*</div>',
@@ -49,7 +62,7 @@ if ".footer-meta{" not in s:
  .nic-footer-section{width:100%}
  .nic-footer-section>summary{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;padding:5px 0;border:0!important;border-radius:0;background:transparent!important}
  .nic-footer-section>summary h2{margin:0;font-size:16px}
- .nic-footer-section>summary::after{content:"+";font-size:13px!important;line-height:1!important;width:14px!important;height:14px!important;max-height:14px!important;overflow:hidden;align-self:center;flex:0 0 14px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+ .nic-footer-section>summary::after{content:"+";font-size:13px!important;line-height:1!important;width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;max-width:24px!important;max-height:24px!important;border:1px solid #c7d8ff!important;border-radius:8px!important;background:#edf3ff!important;color:#2563eb!important;padding:0!important;margin:0!important;overflow:hidden;align-self:center;flex:0 0 24px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
  .nic-footer-section[open]>summary::after{content:"−"}
  .nic-footer-section[open]>:not(summary){padding:6px 0 4px}
  .nic-footer-layout .footer-meta{grid-column:1;grid-row:auto;justify-content:center;text-align:center;border-top:1px solid rgba(255,255,255,.32);padding-top:12px;margin-top:4px}
@@ -59,7 +72,7 @@ if ".footer-meta{" not in s:
 
 # Override legacy footer alignment rules emitted by earlier page builds.
 # Desktop legal links sit on the left; mobile legal links stay centered.
-s += '''\n<style>\n.nic-footer-layout .footer-meta{justify-content:flex-start!important;text-align:left!important}\n.nic-footer-layout .footer-meta .footer-legal-links{justify-content:flex-start!important;margin-left:0!important;margin-right:auto!important}\n.nic-social-links{display:flex;align-items:center;gap:12px;margin-top:0!important}.nic-social-link{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 40px;color:inherit;text-decoration:none;line-height:1}.nic-social-link svg{display:block;width:40px;height:40px;flex:none;fill:currentColor}.nic-social-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}\n.nic-footer-section summary::after{display:none!important}\n.nic-footer-section summary::marker{content:""}\n.nic-footer-section summary::-webkit-details-marker{display:none}\n@media(max-width:700px){.nic-footer-layout .footer-meta{justify-content:center!important;text-align:center!important}.nic-footer-layout .footer-meta .footer-legal-links{justify-content:center!important;margin-left:auto!important;margin-right:auto!important}.nic-footer-section>summary::after{display:flex!important;font-size:13px!important;line-height:1!important;width:14px!important;height:14px!important;max-height:14px!important;overflow:hidden;align-self:center;flex:0 0 14px;align-items:center;justify-content:center;box-sizing:border-box}}\n</style>\n'''
+s += '''\n<style>\n.nic-footer-layout .footer-meta{justify-content:flex-start!important;text-align:left!important}\n.nic-footer-layout .footer-meta .footer-legal-links{justify-content:flex-start!important;margin-left:0!important;margin-right:auto!important}\n.nic-social-links{display:flex;align-items:center;gap:12px;margin-top:0!important}.nic-social-link{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 40px;color:inherit;text-decoration:none;line-height:1}.nic-social-link svg{display:block;width:40px;height:40px;flex:none;fill:currentColor}.nic-social-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}\n.nic-footer-section summary::after{display:none!important}\n.nic-footer-section summary::marker{content:""}\n.nic-footer-section summary::-webkit-details-marker{display:none}\n@media(max-width:700px){.nic-footer-layout .footer-meta{justify-content:center!important;text-align:center!important}.nic-footer-layout .footer-meta .footer-legal-links{justify-content:center!important;margin-left:auto!important;margin-right:auto!important}.nic-footer-section>summary::after{display:flex!important;font-size:13px!important;line-height:1!important;width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;max-width:24px!important;max-height:24px!important;border:1px solid #c7d8ff!important;border-radius:8px!important;background:#edf3ff!important;color:#2563eb!important;padding:0!important;margin:0!important;overflow:hidden;align-self:center;flex:0 0 24px;align-items:center;justify-content:center;box-sizing:border-box}}\n</style>\n'''
 
 # Keep the historical build contract moving without rendering a public footer version.
 s = re.sub(r'V8\.31[123]', 'V8.312', s)
@@ -81,6 +94,12 @@ required = [
     '>AGBs</a>',
     '>Datenschutz</a>',
 ]
+if ('details summary:after{' in s or 'details summary{' in s:
+    raise SystemExit("Unscoped legacy disclosure styles remain")
+for item in ('min-width:24px!important', 'min-height:24px!important', 'border-radius:8px!important', 'flex:0 0 24px'):
+    if item not in s:
+        raise SystemExit("Mobile footer frame is missing its compact sizing: " + item)
+
 missing = [item for item in required if item not in s]
 if missing:
     raise SystemExit("Footer legal links missing: " + ", ".join(missing))
