@@ -88,13 +88,13 @@ const css=element('style');css.textContent=`
 .nic-auth-dialog label{display:block;color:inherit;margin:14px 0}
 .nic-auth-dialog input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;font:inherit;padding:11px 12px;border:1px solid var(--line,#cbd5e1);border-radius:10px;background:var(--bg,#f5f7fb);color:var(--ink,#172033)}
 .nic-auth-dialog .nic-register-choice{display:flex;align-items:center;gap:10px;cursor:pointer}.nic-auth-dialog .nic-register-choice input[type=checkbox]{appearance:auto;-webkit-appearance:checkbox;flex:0 0 10px;width:10px;height:10px;min-width:10px;min-height:10px;padding:0;margin:0}.nic-auth-dialog .nic-register-choice span{flex:1;text-align:left}
-.nic-auth-dialog input[type=checkbox]{accent-color:var(--nic-button-bg,#0f172a)}
+.nic-auth-dialog input[type=checkbox]{accent-color:var(--nic-green-bg,#075c55)}
 .nic-auth-dialog input:not([type=checkbox]):focus,.nic-auth-dialog input:not([type=checkbox]):focus-visible{outline:none;box-shadow:none;border-color:#4b5563}
 .nic-auth-dialog .nic-auth-actions{display:grid;grid-auto-columns:minmax(0,1fr);grid-auto-flow:column;gap:12px;margin-top:24px;align-items:stretch}
-.nic-auth-dialog button,.nic-auth-dialog a.nic-auth-button,.nic-auth-dialog a.nic-auth-button:visited{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:46px;font:inherit;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-shadow:none;padding:12px 14px;margin:0;border:1px solid var(--nic-button-bg,#0f172a);border-radius:11px;background:var(--nic-button-bg,#0f172a);color:var(--nic-button-text,#fff);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.nic-auth-dialog button,.nic-auth-dialog a.nic-auth-button,.nic-auth-dialog a.nic-auth-button:visited{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:46px;font:inherit;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-shadow:none;padding:12px 14px;margin:0;border:1px solid var(--nic-green-bg,#075c55);border-radius:11px;background:var(--nic-green-bg,#075c55);color:var(--nic-green-text,#fff);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
 .nic-auth-dialog a.nic-admin-action{border:0}
 .nic-auth-dialog :is(button,a.nic-auth-button):hover{filter:brightness(.92)}
-.nic-auth-dialog :is(button,a.nic-auth-button):focus-visible{outline:3px solid var(--nic-button-bg,#0f172a);outline-offset:4px}
+.nic-auth-dialog :is(button,a.nic-auth-button):focus-visible{outline:3px solid var(--nic-green-bg,#075c55);outline-offset:4px}
 .nic-auth-dialog button:disabled{opacity:.65;cursor:wait}
 .nic-user-row{padding:14px 0;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}
 @media(max-width:480px){.nic-auth-dialog{padding:20px}.nic-auth-dialog .nic-auth-actions{grid-auto-flow:row;grid-template-columns:1fr}}
