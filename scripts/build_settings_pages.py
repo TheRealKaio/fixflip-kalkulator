@@ -115,6 +115,7 @@ body.nic-content-page>div{min-height:100vh;display:flex;flex-direction:column}
 body.nic-content-page>div>main.nic-content-main{flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 48px}
 body.nic-content-page>div>.bottom{display:none!important}
 body.nic-content-page .nic-actions-above-footer{display:none!important}
+body.nic-content-page>div>.nic-calculator-source{display:none!important}
 .nic-content-card{max-width:980px;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
 .nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}
 .nic-content-card p{margin:12px 0}
@@ -133,7 +134,10 @@ for key,path in content_routes.items():
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
     article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article>'+shared_footer+'</main>'
-    page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',lambda m:article,root_calculators,count=1)
+    def preserve_calculator_dom(match):
+        calculator=match.group(0).replace('class="section"','class="section nic-calculator-source"',1)
+        return article+calculator
+    page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',preserve_calculator_dom,root_calculators,count=1)
     if count!=1:
         raise SystemExit('Could not replace the existing calculator content for '+key)
     page=page.replace('</head>',content_style+'</head>',1)
