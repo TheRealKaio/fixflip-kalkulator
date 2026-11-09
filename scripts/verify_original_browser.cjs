@@ -519,19 +519,21 @@ const assert=require('node:assert/strict');
  }
  await page.route('**/backend-config.json',r=>r.fulfill({json:{enabled:false}}));
  await page.goto('http://127.0.0.1:8766/#admin-layout',{waitUntil:'domcontentloaded'});
- const admin=page.frameLocator('#nicAdminFrame');
+ const admin=page.locator('#nicAdminContent');
+ await admin.locator('#settingsForm').waitFor({state:'visible'});
+ assert.equal(await page.locator('#nicAdminFrame').count(),0,'Administration is part of the main document');
  await admin.locator('#layout-subtextSize').waitFor({state:'visible'});
  assert.equal(await admin.locator('#layout-subtextSize').inputValue(),'14');
  assert.equal(await admin.locator('#layout-hintSize').inputValue(),'12');
  await admin.locator('#layout-subtextSize').fill('17');await admin.locator('#layout-hintSize').fill('11');
  await admin.locator('#saveSettings').click();
- assert.equal(await admin.locator('body').evaluate(()=>NICSettings.current.layout.subtextSize),17);
- assert.equal(await admin.locator('body').evaluate(()=>NICSettings.current.layout.hintSize),11);
+ assert.equal(await page.evaluate(()=>NICSettings.current.layout.subtextSize),17);
+ assert.equal(await page.evaluate(()=>NICSettings.current.layout.hintSize),11);
  await page.reload({waitUntil:'domcontentloaded'});
  await admin.locator('#layout-subtextSize').waitFor({state:'visible'});
  assert.equal(await admin.locator('#layout-subtextSize').inputValue(),'17');
  assert.equal(await admin.locator('#layout-hintSize').inputValue(),'11');
- // Administration must expand its iframe and share the outer document scroll on every tab.
+ // Native administration shares the document and browser scroll on every tab.
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
   await page.setViewportSize(viewport);
   await page.locator('#heroTitle').evaluate(el=>el.textContent='Lohnt sich der Kauf dieser Eigentumswohnung?');
@@ -541,26 +543,18 @@ const assert=require('node:assert/strict');
    assert(widths.items.every(width=>Math.abs(width-widths.row)<2),'Mobile configuration actions use the full row width');
   }
   await page.evaluate(()=>window.scrollTo(0,0));
-  const firstSwipe=await page.evaluate(()=>{
-   const d=document.getElementById('nicAdminFrame').contentDocument,target=d.querySelector('.admin-shell');
-   const fire=(type,y)=>{
-    const event=new d.defaultView.Event(type,{bubbles:true,cancelable:true});
-    Object.defineProperty(event,'touches',{value:type==='touchcancel'?[]:[{clientX:100,clientY:y}]});
-    target.dispatchEvent(event);return event.defaultPrevented;
-   };
-   const before=window.scrollY;fire('touchstart',300);const forwarded=fire('touchmove',180);fire('touchcancel',180);
-   return {forwarded,delta:window.scrollY-before};
+  const nativeGesture=await admin.evaluate(root=>{
+   const event=new Event('touchmove',{bubbles:true,cancelable:true});root.dispatchEvent(event);
+   return {cancelled:event.defaultPrevented,document:root.ownerDocument===document};
   });
-  assert(firstSwipe.forwarded&&firstSwipe.delta>=100,'First vertical gesture inside admin content immediately scrolls the outer page: '+JSON.stringify(firstSwipe));
+  assert(nativeGesture.document&&!nativeGesture.cancelled,'Admin content uses native document gestures without custom touch interception');
   const tabs=admin.locator('.admin-tabs button:visible');
   for(let i=0;i<await tabs.count();i++){
    await tabs.nth(i).click();
-   await page.waitForFunction(()=>{
-    const frame=document.getElementById('nicAdminFrame'),shell=frame?.contentDocument?.querySelector('.admin-shell');
-    return shell&&frame.getBoundingClientRect().height>=Math.ceil(shell.getBoundingClientRect().height);
-   });
    assert.equal(await admin.locator('.save-bar').evaluate(el=>getComputedStyle(el).position),'static','Save bar stays in normal flow on each admin tab');
-   assert.equal(await page.locator('#nicAdminFrame').evaluate(el=>getComputedStyle(el).flexShrink),'0','Admin frame cannot shrink into an inner scroll viewport');
+   const tab=await tabs.nth(i).getAttribute('aria-controls');
+   assert(await admin.locator('#'+tab).isVisible(),'Selected admin content is visible in the shared page');
+
   }
   await page.evaluate(()=>window.scrollTo(0,0));
   const top=await page.locator('.nic-brand-bar').evaluate(el=>el.getBoundingClientRect().top);
@@ -569,7 +563,7 @@ const assert=require('node:assert/strict');
   const scroll=await page.evaluate(()=>window.scrollY);
   const moved=await page.locator('.nic-brand-bar').evaluate(el=>el.getBoundingClientRect().top);
   assert(Math.abs(moved-(top-scroll))<2,'Admin header scrolls upward with the page');
-  assert.equal(await page.locator('#nicAdminFrame').evaluate(el=>el.contentWindow.scrollY),0,'Admin iframe has no independent vertical scroll');
+  assert.equal(await page.locator('#nicAdminFrame').count(),0,'No independent admin browsing context exists');
  }
  console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
  await page.setViewportSize({width:1440,height:900});
