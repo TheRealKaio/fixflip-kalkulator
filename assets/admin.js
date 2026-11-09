@@ -87,9 +87,9 @@ function updatePreview(){
  S.pages.forEach(([k])=>{const meta=S.pageMeta(s,k);for(const p of ['title','description']){$('search-'+k+'-'+p).textContent=meta[p];const counter=$('meta-'+k+'-'+p+'-count');counter.textContent=$('meta-'+k+'-'+p).value.length+' Zeichen · Richtwert '+counter.dataset.recommend;}});
 }
 function validForm(){const invalid=Array.from(form.querySelectorAll('input,textarea,select')).find(el=>!el.checkValidity());if(invalid){const section=invalid.closest('[role=tabpanel]');if(section)selectTab(section.id.replace('panel-',''));const details=invalid.closest('details');if(details)details.open=true;invalid.reportValidity();invalid.focus();return false;}return true;}
-function selectTab(key){document.querySelectorAll('[role=tab]').forEach(t=>{const active=t.id==='tab-'+key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;$(t.getAttribute('aria-controls')).hidden=!active;});if($('statsReset'))$('statsReset').hidden=key!=='stats'||$('statsSource').value!=='database'||!window.NICAccess?.enabled;history.replaceState(null,'','#'+key);}
+function selectTab(key){document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]').forEach(t=>{const active=t.id==='tab-'+key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;$(t.getAttribute('aria-controls')).hidden=!active;});if($('statsReset'))$('statsReset').hidden=key!=='stats'||$('statsSource').value!=='database'||!window.NICAccess?.enabled;history.replaceState(null,'',(document.getElementById('nicAdminContent')?'#admin-':'#')+key);}
 form.noValidate=true;
-const tabs=Array.from(document.querySelectorAll('[role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
+const tabs=Array.from(document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
 // Serialize checkbox saves: a second click must never overwrite an in-flight edit.
 let savingAccess=false,accessSaveRequested=false;
@@ -183,7 +183,7 @@ $('sharingFile').addEventListener('change',async e=>{
  }catch(err){status(err.message,true);}finally{e.target.value='';}
 });
 $('removeSharingImage').addEventListener('click',()=>{sharingImage='';$('sharingFile').value='';updateSharingPreview();markDirty();});
-function notifyLogo(){if(window.parent!==window)window.parent.postMessage({type:'nic-logo-preview',value:websiteLogo,alt:$('alt-websiteLogo').value,website:S.websiteUrl($('company-website').value)},location.origin);}
+function notifyLogo(){S.applyLogo(websiteLogo,$('alt-websiteLogo').value,S.websiteUrl($('company-website').value));}
 $('websiteLogoFile').addEventListener('change',async e=>{
  const file=e.target.files[0];if(!file)return;
  try{
@@ -200,12 +200,7 @@ $('websiteLogoFile').addEventListener('change',async e=>{
  }catch(err){status(err.message,true);}finally{e.target.value='';}
 });
 $('removeWebsiteLogo').addEventListener('click',()=>{websiteLogo='';updateSharingPreview();$('websiteLogoPreview').src='neustart-immocheck-logo.svg';$('websiteLogoFile').value='';notifyLogo();markDirty();});
-if(window.parent!==window){
- const resize=()=>window.parent.postMessage({type:'nic-admin-height',height:Math.ceil(document.querySelector('.admin-shell').getBoundingClientRect().height)+24},location.origin);
- new ResizeObserver(resize).observe(document.querySelector('.admin-shell'));
- window.addEventListener('load',resize);
- window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===window.parent&&e.data?.type==='nic-request-logo')notifyLogo();});
-}
+
 $('appleTouchIconFile').addEventListener('change',async e=>{
  const file=e.target.files[0];if(!file)return;
  try{
@@ -223,6 +218,7 @@ $('appleTouchIconFile').addEventListener('change',async e=>{
 });
 $('removeAppleTouchIcon').addEventListener('click',()=>{appleTouchIcon='';$('appleTouchIconPreview').src='apple-touch-icon.png';$('appleTouchIconFile').value='';markDirty();});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
-async function start(){build();form.hidden=true;try{await buildContentSectionControls();if(window.NICAccess&&!await window.NICAccess.requireAdmin()){$('saveState').textContent='Admin-Anmeldung erforderlich';status('Bitte als Administrator anmelden und den Bereich erneut öffnen.',true);return;}form.hidden=false;const globalStats=window.NICAccess?.enabled===true;document.querySelector('[data-global-statistics]').hidden=!globalStats;if(globalStats){$('statsSource').value='database';$('statsSource').dispatchEvent(new Event('change'));}const s=await S.init();fill(s);S.apply(s);$('saveState').textContent=S.isLocal?'Lokaler Entwurf geladen':'Veröffentlichte Einstellungen geladen';if(window.NICAccess?.enabled){document.querySelector('.storage-note')?.remove();$('saveSettings').textContent='Global speichern';document.querySelector('.configuration-tools>p').textContent='Mit „Global speichern“ werden alle Änderungen direkt in der Datenbank gespeichert und für alle Besucher angewendet. Export und Import dienen der Sicherung.';document.querySelector('.publish-steps').hidden=true;document.querySelector('.publish-steps+p').hidden=true;document.querySelector('#panel-legal>.helper').textContent='„Global speichern“ übernimmt alle rechtlichen Texte für alle Besucher. „Konfiguration exportieren“ erstellt eine zusätzliche Sicherung.';window.NICAccess.mountUsers();}status(window.NICAccess?.enabled?'Einstellungen werden zentral in der Datenbank gespeichert.':'Änderungen gelten nach dem Speichern nur auf diesem Gerät.');['saveSettings','exportSettings','discardSettings'].forEach(id=>$(id).disabled=false);}catch(err){status(err.message,true);$('saveState').textContent='Einstellungen nicht verfügbar';}if(['company','content','layout','social','meta','legal','users','stats'].includes(location.hash.slice(1)))selectTab(location.hash.slice(1));}
-start();
+async function start(){build();form.hidden=true;try{await buildContentSectionControls();if(window.NICAccess&&!await window.NICAccess.requireAdmin()){$('saveState').textContent='Admin-Anmeldung erforderlich';status('Bitte als Administrator anmelden und den Bereich erneut öffnen.',true);return;}form.hidden=false;const globalStats=window.NICAccess?.enabled===true;document.querySelector('[data-global-statistics]').hidden=!globalStats;if(globalStats){$('statsSource').value='database';$('statsSource').dispatchEvent(new Event('change'));}const s=await S.init();fill(s);S.apply(s);$('saveState').textContent=S.isLocal?'Lokaler Entwurf geladen':'Veröffentlichte Einstellungen geladen';if(window.NICAccess?.enabled){document.querySelector('.storage-note')?.remove();$('saveSettings').textContent='Global speichern';document.querySelector('.configuration-tools>p').textContent='Mit „Global speichern“ werden alle Änderungen direkt in der Datenbank gespeichert und für alle Besucher angewendet. Export und Import dienen der Sicherung.';document.querySelector('.publish-steps').hidden=true;document.querySelector('.publish-steps+p').hidden=true;document.querySelector('#panel-legal>.helper').textContent='„Global speichern“ übernimmt alle rechtlichen Texte für alle Besucher. „Konfiguration exportieren“ erstellt eine zusätzliche Sicherung.';window.NICAccess.mountUsers();}status(window.NICAccess?.enabled?'Einstellungen werden zentral in der Datenbank gespeichert.':'Änderungen gelten nach dem Speichern nur auf diesem Gerät.');['saveSettings','exportSettings','discardSettings'].forEach(id=>$(id).disabled=false);}catch(err){status(err.message,true);$('saveState').textContent='Einstellungen nicht verfügbar';}const section=location.hash.replace(/^#(?:admin-)?/,'');if(['company','content','layout','social','meta','legal','users','stats'].includes(section))selectTab(section);const note=document.querySelector('.storage-note');if(note)note.hidden=false;}
+window.NICAdminUI={select:selectTab,ready:null};
+window.NICAdminUI.ready=start();
 })();
