@@ -28,12 +28,8 @@ window.addEventListener('nic-settings-updated',apply);
 window.addEventListener('pageshow',()=>{if(S.current)S.init().then(apply).catch(()=>{});});
 // Keep the calculator header and state while opening administration below it.
 const account=document.getElementById('nicAccountLink'),hero=document.querySelector('.app > .hero');
-let adminPanel=null,adminFrame=null,adminLogout=null,headerSnapshot=null,adminOpen=false,accountReturnUrl=null;
-function setAdminFrameHeight(height){
- if(!adminFrame||!Number.isFinite(height))return;
- const value=Math.min(50000,Math.max(300,Math.ceil(height)))+'px';
- if(adminFrame.style.height!==value)adminFrame.style.height=value;
-}
+let adminPanel=null,adminLogout=null,headerSnapshot=null,adminOpen=false,accountReturnUrl=null;
+const nativeViews=new Map(),nativeScripts=new Map();
 function syncAccountLink(){
  if(!account)return;
  const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user),admin=authenticated&&access.user.role==='admin';
@@ -50,7 +46,7 @@ window.addEventListener('nic-auth-changed',syncAccountLink);
 function adminPanelRoute(){
  const profile=location.hash==='#account';
  const section=location.hash.startsWith('#admin-')?location.hash.slice(7):'';
- const allowed=['company','layout','social','meta','legal','users','stats'];
+ const allowed=['company','content','layout','social','meta','legal','users','stats'];
  const selected=allowed.includes(section)?section:'';
  return {profile,section:selected,key:profile?'account':'admin'+(selected?'-'+selected:'')};
 }
@@ -68,10 +64,76 @@ if(hero&&typeof MutationObserver==='function'){
  for(const el of [document.getElementById('heroTitle'),document.getElementById('heroText')])if(el)observer.observe(el,{childList:true,characterData:true,subtree:true});
 }
 window.addEventListener('nic-calculator-changed',syncAdminHeading);
-function adminPanelUrl(route){
- const release=encodeURIComponent(document.documentElement.dataset.nicRelease||'current');
- if(route.profile)return new URL('user-data.html?embedded=1&release='+release,S.ROOT).href;
- return new URL('admin.html?embedded=1&release='+release+(route.section?'#'+route.section:''),S.ROOT).href;
+function scopedAdminCss(source,scope){
+ const parser=document.createElement('style');parser.media='not all';parser.textContent=source;document.head.append(parser);
+ const selectors=text=>{
+  const result=[];let depth=0,start=0;
+  for(let i=0;i<text.length;i++){if(text[i]==='('||text[i]==='[')depth++;else if(text[i]===')'||text[i]===']')depth--;else if(text[i]===','&&!depth){result.push(text.slice(start,i));start=i+1;}}
+  result.push(text.slice(start));return result;
+ };
+ const walk=rules=>Array.from(rules).map(rule=>{
+  if(rule.type===1){
+   const names=selectors(rule.selectorText).map(value=>{
+    value=value.trim().replace(/:root/g,scope).replace(/\b(?:html|body)(?:\.nic-admin(?:-embedded)?)?(?![\w-])/g,scope);
+    return value.startsWith(scope)?value:scope+' '+value;
+   });
+   return names.join(',')+'{'+rule.style.cssText+'}';
+  }
+  if(rule.cssRules)return rule.cssText.slice(0,rule.cssText.indexOf('{')+1)+walk(rule.cssRules)+'}';
+  return rule.cssText;
+ }).join('\n');
+ try{return walk(parser.sheet.cssRules);}finally{parser.remove();}
+}
+function loadNativeScript(url){
+ if(!nativeScripts.has(url))nativeScripts.set(url,new Promise((resolve,reject)=>{
+  const script=document.createElement('script');script.src=url;script.onload=resolve;script.onerror=()=>reject(new Error('Admin-Funktionen konnten nicht geladen werden.'));document.head.append(script);
+ }));
+ return nativeScripts.get(url);
+}
+function ensureNativeView(profile){
+ const key=profile?'account':'admin';
+ if(nativeViews.has(key))return nativeViews.get(key);
+ const root=document.createElement('div');root.id=profile?'nicAccountContent':'nicAdminContent';root.className='nic-admin nic-native-admin';root.hidden=true;
+ root.setAttribute('aria-busy','true');adminPanel.append(root);
+ const record={root,ready:null};nativeViews.set(key,record);
+ record.ready=(async()=>{
+  const url=new URL(profile?'user-data.html':'admin.html',S.ROOT);
+  const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw new Error('Admin-Inhalt konnte nicht geladen werden.');
+  const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+  const shell=doc.querySelector('.admin-shell');if(!shell)throw new Error('Admin-Inhalt fehlt.');
+  shell.querySelector('.admin-header')?.remove();shell.querySelector('.admin-heading')?.remove();
+  const note=shell.querySelector('.storage-note');if(note)note.hidden=true;
+  root.replaceChildren(document.importNode(shell,true));
+  const sources=await Promise.all(Array.from(doc.querySelectorAll('link[rel="stylesheet"]')).map(async link=>{
+   const css=await fetch(new URL(link.getAttribute('href'),url),{cache:'no-store'});if(!css.ok)throw new Error('Admin-Gestaltung konnte nicht geladen werden.');return css.text();
+  }));
+  sources.push(...Array.from(doc.querySelectorAll('style'),style=>style.textContent));
+  const style=document.createElement('style');style.dataset.nicNativeStyle=key;
+  style.textContent=scopedAdminCss(sources.join('\n'),'#'+root.id)+'\n#'+root.id+'[hidden],#'+root.id+' [hidden]{display:none!important}';
+  document.head.append(style);
+  for(const script of doc.querySelectorAll('script[src]')){
+   const src=new URL(script.getAttribute('src'),url),name=src.pathname.split('/').pop().replace(/\.[a-f0-9]{16}(?=\.js$)/,'');
+   if(!['statistics-core.js','statistics-admin.js','legal-drafts.js','admin.js','user-data.js'].includes(name))continue;
+   if(name==='statistics-core.js'&&window.NICStatsCore)continue;
+   await loadNativeScript(src.href);
+  }
+  if(!profile)await window.NICAdminUI?.ready;
+  root.removeAttribute('aria-busy');
+  root.dataset.ready='true';
+ })();
+ return record;
+}
+async function showNativeView(route){
+ const view=ensureNativeView(route.profile);
+ for(const [key,record]of nativeViews)record.root.hidden=key!==(route.profile?'account':'admin');
+ try{
+  await view.ready;
+  if(adminOpen&&adminPanelRoute().profile===route.profile){
+   view.root.hidden=false;
+   if(!route.profile)window.NICAdminUI?.select(route.section||'company');
+   syncAdminHeading();
+  }
+ }catch(error){view.root.textContent=error.message;view.root.removeAttribute('aria-busy');view.root.dataset.ready='error';}
 }
 function setAdmin(open){
  if(!hero||!account)return;
@@ -90,85 +152,15 @@ function setAdmin(open){
   const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
   adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
   toolbar.append(close,adminLogout);
-  adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';adminFrame.setAttribute('scrolling','auto');
-  // Same-origin fallback: fit the iframe even if its height message is delayed.
-  let frameObserver=null,removeScrollBridge=()=>{};
-  adminFrame.addEventListener('load',()=>{
-   frameObserver?.disconnect();removeScrollBridge();
-   try{
-    const shell=adminFrame.contentDocument?.querySelector('.admin-shell');
-    if(!shell)return;
-    const fit=()=>{const height=Math.ceil(shell.getBoundingClientRect().height)+24;if(height>0)setAdminFrameHeight(height);};
-    fit();
-    if(typeof ResizeObserver==='function'){frameObserver=new ResizeObserver(fit);frameObserver.observe(shell);}
-    adminFrame.contentDocument.fonts?.ready.then(fit);
-    // Route vertical gestures to the outer page; Safari otherwise captures the first swipe in the iframe.
-    const doc=adminFrame.contentDocument;
-    let startX=0,lastY=0,lastTime=0,speed=0,dragged=false,tracking=false,momentum=0;
-    let scrollTick=0,pendingDelta=0,scrollParents=[];
-    const flush=()=>{
-     scrollTick=0;
-     if(pendingDelta){const delta=pendingDelta;pendingDelta=0;window.scrollBy({top:delta,left:0,behavior:'instant'});}
-    };
-    const stop=()=>{
-     cancelAnimationFrame(momentum);momentum=0;
-     if(scrollTick){cancelAnimationFrame(scrollTick);flush();}
-    };
-    const canScrollInside=delta=>scrollParents.some(el=>
-     delta<0?el.scrollTop>0:el.scrollTop+el.clientHeight<el.scrollHeight-1);
-    doc.addEventListener('touchstart',event=>{
-     stop();tracking=event.touches.length===1&&!event.target.closest?.('input[type="range"],select,[contenteditable="true"]');
-     dragged=false;speed=0;scrollParents=[];
-     if(tracking){
-      startX=event.touches[0].clientX;lastY=event.touches[0].clientY;lastTime=event.timeStamp;
-      // Read ancestor styles once per gesture, not on every movement.
-      for(let el=event.target?.nodeType===1?event.target:event.target?.parentElement;el&&el!==doc.body;el=el.parentElement){
-       if(/auto|scroll/.test(adminFrame.contentWindow.getComputedStyle(el).overflowY)&&el.scrollHeight>el.clientHeight+1)scrollParents.push(el);
-      }
-     }
-    },{passive:true});
-    doc.addEventListener('touchmove',event=>{
-     if(!tracking||event.touches.length!==1)return;
-     const touch=event.touches[0],now=event.timeStamp,delta=lastY-touch.clientY,dt=Math.max(8,now-lastTime);
-     if(!dragged&&Math.abs(touch.clientX-startX)>Math.abs(delta)){tracking=false;return;}
-     if(canScrollInside(delta)){lastY=touch.clientY;lastTime=now;return;}
-     if(Math.abs(delta)<2&&!dragged)return;
-     if(event.cancelable)event.preventDefault();
-     dragged=true;pendingDelta+=delta;
-     if(!scrollTick)scrollTick=requestAnimationFrame(flush);
-     speed=.35*speed+.65*delta/dt;
-     lastY=touch.clientY;lastTime=now;
-    },{passive:false});
-    doc.addEventListener('touchend',event=>{
-     tracking=false;
-     if(scrollTick){cancelAnimationFrame(scrollTick);flush();}
-     if(!dragged||event.timeStamp-lastTime>100)return;
-     let previous=performance.now();speed=Math.max(-2.5,Math.min(2.5,speed));
-     const glide=now=>{
-      const dt=Math.max(8,Math.min(32,now-previous));previous=now;
-      const before=window.scrollY;window.scrollBy({top:speed*dt,left:0,behavior:'instant'});speed*=Math.pow(.94,dt/16);
-      if(Math.abs(speed)>.02&&Math.abs(window.scrollY-before)>.1)momentum=requestAnimationFrame(glide);
-     };
-     momentum=requestAnimationFrame(glide);
-    },{passive:true});
-    doc.addEventListener('touchcancel',()=>{tracking=false;stop();},{passive:true});
-    window.addEventListener('touchstart',stop,{passive:true});
-    removeScrollBridge=()=>{
-     cancelAnimationFrame(momentum);cancelAnimationFrame(scrollTick);pendingDelta=0;
-     window.removeEventListener('touchstart',stop);
-    };
-
-   }catch(_){/* Native iframe scrolling remains available as a fallback. */}
-  });
-  adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
+  adminPanel.append(toolbar);hero.after(adminPanel);
  }
  adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;syncAccountLink();
  const route=adminPanelRoute();
- if(adminFrame.dataset.nicRoute!==route.key){adminFrame.dataset.nicRoute=route.key;adminFrame.src=adminPanelUrl(route);}
- adminPanel.setAttribute('aria-label',route.profile?'Deine Nutzerdaten':'Admin-Bereich');adminFrame.title=route.profile?'Deine Nutzerdaten':'Einstellungen im Admin-Bereich';
+ showNativeView(route);
+ adminPanel.setAttribute('aria-label',route.profile?'Deine Nutzerdaten':'Admin-Bereich');
  document.getElementById('heroTitle').textContent=route.profile?'Deine Nutzerdaten':'Admin-Bereich';document.getElementById('heroText').textContent=route.profile?'Hier kannst du deine Daten ändern oder dein Benutzerkonto unwiderruflich löschen.':'Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
  document.title=(route.profile?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';account.setAttribute('aria-expanded','true');account.setAttribute('aria-controls','nicAdminPanel');
- adminFrame.contentWindow?.postMessage({type:'nic-request-logo'},location.origin);
+
 }
 if(account&&hero){
  account.addEventListener('click',e=>{
@@ -186,11 +178,7 @@ if(account&&hero){
  const syncAdminRoute=()=>{const open=/^#(?:admin(?:-|$)|account$)/.test(location.hash);if(!open)accountReturnUrl=null;setAdmin(open);};
  window.addEventListener('popstate',syncAdminRoute);
  window.addEventListener('hashchange',syncAdminRoute);
- window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==adminFrame?.contentWindow)return;
-  if(e.data?.type==='nic-auth-changed'){window.NICAccess?.refresh?.().then(syncAccountLink).catch(()=>syncAccountLink());return;}
-  if(e.data?.type==='nic-admin-height')setAdminFrameHeight(e.data.height);
-  if(adminOpen&&e.data?.type==='nic-logo-preview')S.applyLogo(e.data.value,e.data.alt,e.data.website);
- });
+
 }
 window.NICAccess?.init?.().then(syncAccountLink).catch(()=>syncAccountLink());
 if(S.current){if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));}
