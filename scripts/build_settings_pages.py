@@ -20,7 +20,7 @@ share_name=render_share_image(config,site)
 share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
 content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','contact':'kontakt/','login':'anmelden/'}
-content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator'),('contact','Kontakt'),('login','Anmelden')]
+content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator')]
 
 class ContentSanitizer(HTMLParser):
     allowed={'p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h2','h3','h4'}
@@ -106,16 +106,33 @@ for key in ['budget','own','rent','flip']:
     path=pages[key];folder=site/path;folder.mkdir(exist_ok=True)
     (folder/'index.html').write_text(customize(root_calculators,key,path))
 
-# Crawlable, editable information pages for the public navigation.
-content_style='''<style>body{margin:0;background:#f5f7fb;color:#263b3a;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}.nic-content-header{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:15px max(20px,calc((100vw - 1180px)/2));border-bottom:1px solid #e2e9e5;background:#fff}.nic-content-brand{display:flex;align-items:center;color:#075c55;font-weight:700;text-decoration:none;white-space:nowrap}.nic-content-brand img{display:block;width:170px;height:auto;max-width:100%}.nic-content-nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.nic-content-nav a{color:#263b3a;text-decoration:none;font-size:14px}.nic-content-main{max-width:980px;margin:48px auto;padding:0 22px}.nic-content-card{padding:36px;border:1px solid #e2e9e5;border-radius:14px;background:#fff}.nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}.nic-content-card p{margin:12px 0}.nic-content-footer{padding:24px max(20px,calc((100vw - 1180px)/2));background:#075c55;color:white}.nic-content-footer a{color:white;margin-right:18px}@media(max-width:760px){.nic-content-header{align-items:flex-start;flex-direction:column}.nic-content-nav{gap:12px}.nic-content-main{margin:24px auto}.nic-content-card{padding:24px 18px}}</style>'''
-nav=''.join('<a href="/'+content_routes[key]+'">'+label+'</a>' for key,label in content_nav)
+# Crawlable information pages reuse the existing app shell, header, and footer.
+content_style='''<style>
+html,body{min-height:100%}
+body{min-height:100vh}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.app>main.nic-content-main{flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 48px}
+.nic-content-card{max-width:980px;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
+.nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}
+.nic-content-card p{margin:12px 0}
+@media(max-width:760px){.app>main.nic-content-main{padding:24px 16px 36px}.nic-content-card{padding:24px 18px}}
+</style>'''
+login_activation='''<script>
+window.addEventListener('DOMContentLoaded',function(){
+ if(document.documentElement.dataset.nicPage!=='login')return;
+ if(location.hash!=='#anmelden')location.hash='anmelden';
+});
+</script>'''
 for key,path in content_routes.items():
     content=config.get('content',{}).get(key,{})
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
-    page='''<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">__META____STYLE__</head><body><header class="nic-content-header"><a class="nic-content-brand" href="/" aria-label="Neustart ImmoCheck – Startseite"><img src="/neustart-immocheck-logo.svg" alt="Neustart ImmoCheck"></a><nav class="nic-content-nav" aria-label="Hauptnavigation">__NAV__</nav></header><main class="nic-content-main"><article class="nic-content-card"><h1>__TITLE__</h1><div>__BODY__</div></article></main><footer class="nic-content-footer"><a href="/">Startseite</a>__NAV__<nav aria-label="Rechtliche Seiten"><a href="/#impressum">Impressum</a><a href="/#agbs">AGBs</a><a href="/#datenschutz">Datenschutz</a><a href="/#haftungsausschluss">Haftungsausschluss</a><a href="/#widerruf">Widerruf</a></nav></footer></body></html>'''
-    page=page.replace('__STYLE__',content_style).replace('__NAV__',nav).replace('__TITLE__',title).replace('__BODY__',body)
-    page=page.replace('__META__','<title></title>') # replaced by customize
+    article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article></main>'
+    page,count=re.subn(r'<main\\b[^>]*>[\\s\\S]*?</main>',lambda m:article,root_calculators,count=1)
+    if count!=1:
+        raise SystemExit('Could not replace the existing calculator content for '+key)
+    page=page.replace('</head>',content_style+'</head>',1)
+    if key=='login':page=page.replace('</body>',login_activation+'</body>',1)
     folder=site/path;folder.mkdir(exist_ok=True)
     (folder/'index.html').write_text(customize(page,key,path))
 
