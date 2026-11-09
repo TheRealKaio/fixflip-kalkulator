@@ -121,7 +121,8 @@ body{min-height:100vh}
 login_activation='''<script>
 window.addEventListener('DOMContentLoaded',function(){
  if(document.documentElement.dataset.nicPage!=='login')return;
- if(location.hash!=='#anmelden')location.hash='anmelden';
+ if(!window.NICAccess)return;
+ window.NICAccess.init().then(function(){return window.NICAccess.login();}).catch(console.error);
 });
 </script>'''
 for key,path in content_routes.items():
