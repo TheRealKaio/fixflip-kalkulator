@@ -71,7 +71,20 @@ function setAdmin(open){
   const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
   adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
   toolbar.append(close,adminLogout);
-  adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';adminFrame.setAttribute('scrolling','no');
+  adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';adminFrame.setAttribute('scrolling','auto');
+  // Same-origin fallback: fit the iframe even if its height message is delayed.
+  let frameObserver=null;
+  adminFrame.addEventListener('load',()=>{
+   frameObserver?.disconnect();
+   try{
+    const shell=adminFrame.contentDocument?.querySelector('.admin-shell');
+    if(!shell)return;
+    const fit=()=>{const height=Math.ceil(shell.getBoundingClientRect().height)+24;if(height>0)adminFrame.style.height=Math.max(300,height)+'px';};
+    fit();
+    if(typeof ResizeObserver==='function'){frameObserver=new ResizeObserver(fit);frameObserver.observe(shell);}
+    adminFrame.contentDocument.fonts?.ready.then(fit);
+   }catch(_){/* Native iframe scrolling remains available as a fallback. */}
+  });
   adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
  }
  adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;syncAccountLink();
