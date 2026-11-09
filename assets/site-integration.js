@@ -34,7 +34,7 @@ function syncAccountLink(){
  const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user);
  const label=account.querySelector?.('span');
  if(label)label.textContent=authenticated?'Zum Nutzerportal':'Jetzt anmelden';
- account.href=authenticated?new URL('user-data.html',S.ROOT).href:new URL('#anmelden',S.ROOT).href;
+ account.href=authenticated?location.pathname+location.search+'#account':new URL('#anmelden',S.ROOT).href;
  account.setAttribute('aria-label',authenticated?'Zum Nutzerportal':'Jetzt anmelden');
  if(authenticated)account.setAttribute('data-nic-destination','portal');else account.removeAttribute?.('data-nic-destination');
  if(adminLogout)adminLogout.hidden=!(adminOpen&&authenticated&&access.user.role==='admin');
