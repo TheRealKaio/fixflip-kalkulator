@@ -128,7 +128,7 @@ for key,path in content_routes.items():
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
     article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article></main>'
-    page,count=re.subn(r'<main\\b[^>]*>[\\s\\S]*?</main>',lambda m:article,root_calculators,count=1)
+    page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',lambda m:article,root_calculators,count=1)
     if count!=1:
         raise SystemExit('Could not replace the existing calculator content for '+key)
     page=page.replace('</head>',content_style+'</head>',1)
