@@ -81,7 +81,7 @@ def customize(s,key,path):
         icon_type='image/png'
     else:
         icon_type=icon[5:icon.find(';')]
-    s=re.sub(r'<link\\b(?=[^>]*\\brel=[\\"\\'](?:icon|shortcut icon)[\\"\\'])[^>]*>', '', s, flags=re.I)
+    s=re.sub(r'<link[^>]*rel="(?:icon|shortcut icon)"[^>]*>', '', s, flags=re.I)
     s=s.replace('</head>',f'<link rel="icon" type="{icon_type}" href="{html.escape(icon,quote=True)}"></head>',1)
     outer=config.get('layout',{}).get('outerBackground','#F6F1E9')
     if not re.fullmatch(r'#[0-9a-fA-F]{6}',str(outer)):
@@ -98,7 +98,7 @@ def customize(s,key,path):
     target=website if parsed.scheme in ('http','https') and parsed.hostname and not parsed.username and not parsed.password else base
     s=re.sub(r'(<div class="brand-logo-wrap">)(.*?)(</div>)',lambda m:m[1]+'<a class="nic-logo-link" href="'+html.escape(target,quote=True)+'">'+m[2]+'</a>'+m[3],s,count=1,flags=re.S)
     s=re.sub(r'<link\b(?=[^>]*\brel=[\"\']apple-touch-icon[\"\'])[^>]*>', '', s, flags=re.I)
-    s=s.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png?v={ASSET_VERSION}"></head>',1)
+    s=s.replace('</head>',f'<link rel="apple-touch-icon" sizes="180x180" type="image/png" href="/apple-touch-icon.png?v={ASSET_VERSION}"></head>',1)
     return s
 home_content=config.get('content',{}).get('welcome',{})
 home_title=html.escape(str(home_content.get('title') or 'Deine Immobilien. Klar gerechnet.'))
