@@ -10,6 +10,7 @@ import sys
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 from render_share_image import render_share_image
+from unify_finance_footer_markup import extract_footer
 
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 config=json.loads((site/'site-settings.json').read_text())
@@ -125,11 +126,12 @@ window.addEventListener('DOMContentLoaded',function(){
  window.NICAccess.init().then(function(){return window.NICAccess.login();}).catch(console.error);
 });
 </script>'''
+shared_footer,_,_=extract_footer(root_calculators)
 for key,path in content_routes.items():
     content=config.get('content',{}).get(key,{})
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
-    article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article></main>'
+    article='<main class="section nic-content-main"><article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article>'+shared_footer+'</main>'
     page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',lambda m:article,root_calculators,count=1)
     if count!=1:
         raise SystemExit('Could not replace the existing calculator content for '+key)
