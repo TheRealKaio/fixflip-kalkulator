@@ -310,7 +310,15 @@ const assert=require('node:assert/strict');
     return {header:box(document.querySelector('.hero')),menu:box(document.querySelector('.deal-type-row')),tiles:[...document.querySelectorAll('.deal-type-option')].map(box)};
    });
    if(!geometry.has(width))geometry.set(width,shell);else assert.deepEqual(shell,geometry.get(width),'Shared header and menu geometry must remain identical across routes');
-   assert.equal(await page.locator('#nicAccountLink').innerText(),'Jetzt anmelden');
+   assert.equal(await page.locator('#nicAccountLink').getAttribute('aria-label'),'Jetzt anmelden','Icon-only account action keeps its accessible name');
+   if(width<=700){
+    const action=await page.locator('#nicAccountLink').evaluate(el=>{const s=getComputedStyle(el);return {text:el.innerText.trim(),border:parseFloat(s.borderTopWidth),background:s.backgroundColor,image:s.backgroundImage,icon:!!el.querySelector('svg')};});
+    assert.equal(action.text,'','Mobile account action uses only its icon');
+    assert.equal(action.border,0,'Mobile account icon has no frame');
+    assert.equal(action.background,'rgba(0, 0, 0, 0)','Mobile account icon has no filled button background');
+    assert.equal(action.image,'none','Mobile account icon has no gradient');
+    assert(action.icon,'Mobile account icon remains present');
+   }else assert.equal(await page.locator('#nicAccountLink').innerText(),'Jetzt anmelden');
    if(slug!=='finanzierungsrechner')assert(!(await page.locator('.footer-note').innerText()).includes('Der Deal Check ist eine Kalkulationshilfe'));
    assert.equal(await page.locator('.footer-version').count(),0,'Public footer must not display an app version');
    assert.equal(await page.locator('.hero').evaluate(el=>parseFloat(getComputedStyle(el).borderTopLeftRadius)),0,'Header top-left corner must be square');
