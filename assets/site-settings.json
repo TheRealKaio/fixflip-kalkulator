@@ -172,6 +172,12 @@
       "seoTitle": "Bei ImmoCheck anmelden",
       "metaDescription": "Melde dich bei ImmoCheck an und öffne deine persönlichen Funktionen.",
       "noindex": true
+    },
+    "about": {
+      "title": "Über uns",
+      "description": "<p>Neustart ImmoCheck unterstützt private Eigentümerinnen und Eigentümer dabei, Immobilienentscheidungen verständlich zu berechnen und Nebenkosten nachvollziehbar abzurechnen.</p><p>Die digitalen Werkzeuge konzentrieren sich auf die Aufgaben, die im Alltag wirklich zählen – klar geführt und ohne unnötigen Verwaltungsaufwand.</p>",
+      "seoTitle": "Über uns | Neustart ImmoCheck",
+      "metaDescription": "Erfahre, wie Neustart ImmoCheck private Eigentümerinnen und Eigentümer bei Immobilienentscheidungen und der Nebenkostenabrechnung unterstützt."
     }
   }
 }
