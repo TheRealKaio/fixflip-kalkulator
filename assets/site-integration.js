@@ -28,13 +28,13 @@ window.addEventListener('nic-settings-updated',apply);
 window.addEventListener('pageshow',()=>{if(S.current)S.init().then(apply).catch(()=>{});});
 // Keep the calculator header and state while opening administration below it.
 const account=document.getElementById('nicAccountLink'),hero=document.querySelector('.app > .hero');
-let adminPanel=null,adminFrame=null,adminLogout=null,headerSnapshot=null,adminOpen=false;
+let adminPanel=null,adminFrame=null,adminLogout=null,headerSnapshot=null,adminOpen=false,accountReturnUrl=null;
 function syncAccountLink(){
  if(!account)return;
  const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user);
  const label=account.querySelector?.('span');
  if(label)label.textContent=authenticated?'Zum Nutzerportal':'Jetzt anmelden';
- account.href=authenticated?location.pathname+location.search+'#account':new URL('#anmelden',S.ROOT).href;
+ account.href=authenticated?new URL('#account',S.ROOT).href:new URL('#anmelden',S.ROOT).href;
  account.setAttribute('aria-label',authenticated?'Zum Nutzerportal':'Jetzt anmelden');
  if(authenticated)account.setAttribute('data-nic-destination','portal');else account.removeAttribute?.('data-nic-destination');
  if(adminLogout)adminLogout.hidden=!(adminOpen&&authenticated&&access.user.role==='admin');
@@ -42,12 +42,13 @@ function syncAccountLink(){
 window.addEventListener('nic-auth-changed',syncAccountLink);
 function setAdmin(open){
  if(!hero||!account)return;
+ if(open&&location.hash==='#account'&&location.pathname!==new URL('/',S.ROOT).pathname){accountReturnUrl=location.pathname+location.search;history.replaceState(null,'',new URL('#account',S.ROOT).href);}
  if(open&&!adminOpen){
   headerSnapshot={title:document.getElementById('heroTitle').innerHTML,text:document.getElementById('heroText').textContent,titleAttr:document.title};
   if(!adminPanel){
    adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
    const toolbar=document.createElement('div');toolbar.className='nic-admin-toolbar';
-   const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);setAdmin(false);});
+   const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
    adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
    toolbar.append(close,adminLogout);
    adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
@@ -65,9 +66,18 @@ function setAdmin(open){
  }
 }
 if(account&&hero){
- account.addEventListener('click',e=>{if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;if(window.NICAccess?.enabled&&window.NICAccess.user)return;e.preventDefault();if(!adminOpen)history.pushState(null,'',location.pathname+location.search+'#admin');setAdmin(true);});
- window.addEventListener('popstate',()=>setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash)));
- window.addEventListener('hashchange',()=>setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash)));
+ account.addEventListener('click',e=>{
+  if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+  if(window.NICAccess?.enabled&&window.NICAccess.user){
+   e.preventDefault();
+   if(!adminOpen){accountReturnUrl=location.pathname+location.search;history.pushState(null,'',new URL('#account',S.ROOT).href);setAdmin(true);}
+   return;
+  }
+  e.preventDefault();if(!adminOpen)history.pushState(null,'',location.pathname+location.search+'#admin');setAdmin(true);
+ });
+ const syncAdminRoute=()=>{const open=/^#(?:admin(?:-|$)|account$)/.test(location.hash);if(!open)accountReturnUrl=null;setAdmin(open);};
+ window.addEventListener('popstate',syncAdminRoute);
+ window.addEventListener('hashchange',syncAdminRoute);
  window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==adminFrame?.contentWindow)return;
   if(e.data?.type==='nic-auth-changed'){window.NICAccess?.refresh?.().then(syncAccountLink).catch(()=>syncAccountLink());return;}
   if(e.data?.type==='nic-admin-height'&&Number.isFinite(e.data.height))adminFrame.style.height=Math.min(50000,Math.max(300,e.data.height))+'px';
