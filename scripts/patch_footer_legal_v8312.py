@@ -59,7 +59,7 @@ if ".footer-meta{" not in s:
 
 # Override legacy footer alignment rules emitted by earlier page builds.
 # Desktop legal links sit on the left; mobile legal links stay centered.
-s += '''\n.nic-footer-layout .footer-meta{justify-content:flex-start!important;text-align:left!important}\n.nic-footer-layout .footer-meta .footer-legal-links{justify-content:flex-start!important}\n.nic-footer-section summary::marker{content:""}\n.nic-footer-section summary::-webkit-details-marker{display:none}\n@media(max-width:700px){.nic-footer-layout .footer-meta{justify-content:center!important;text-align:center!important}.nic-footer-layout .footer-meta .footer-legal-links{justify-content:center!important}}\n'''
+s += '''\n<style>\n.nic-footer-layout .footer-meta{justify-content:flex-start!important;text-align:left!important}\n.nic-footer-layout .footer-meta .footer-legal-links{justify-content:flex-start!important}\n.nic-footer-section summary::marker{content:""}\n.nic-footer-section summary::-webkit-details-marker{display:none}\n@media(max-width:700px){.nic-footer-layout .footer-meta{justify-content:center!important;text-align:center!important}.nic-footer-layout .footer-meta .footer-legal-links{justify-content:center!important}}\n</style>\n'''
 
 # Keep the historical build contract moving without rendering a public footer version.
 s = s.replace("V8.311", "V8.312")
