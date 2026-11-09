@@ -122,6 +122,7 @@ for key in ['budget','own','rent','flip']:
 content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
+body.nic-content-page>.app>.hero{display:none!important}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
 body.nic-content-page>.app>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>.app>.bottom{display:none!important}
@@ -149,9 +150,6 @@ for key,path in content_routes.items():
     page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',replace_existing_content_container,root_calculators,count=1)
     if count!=1:
         raise SystemExit('Could not replace the existing content container for '+key)
-    page,count=re.subn(r'<header\b(?=[^>]*class="[^"]*\bhero\b")[^>]*>[\s\S]*?</header>','',page,count=1)
-    if count!=1:
-        raise SystemExit('Could not remove the calculator hero for '+key)
     page=page.replace('</head>',content_style+'</head>',1)
     page=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+m[1]+' class="nic-content-page">',page,count=1)
     if key=='login':page=page.replace('</body>',login_activation+'</body>',1)
