@@ -71,11 +71,15 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(await sectionToggle.isVisible()){await sectionToggle.click();await page.locator('#nicAdminContent #tab-layout').click();assert(await page.locator('#nicAdminContent #panel-layout').isVisible());}
   }
   const toggle=page.locator('.nic-brand-bar .nic-menu-toggle');if(await toggle.isVisible())await toggle.click();
-  // Legal pages must not repeat the footer navigation above the legal text.
-  await page.goto('http://localhost/#impressum');
-  await page.locator('#nicLegalPanel .nic-legal-card').waitFor({state:'visible'});
-  assert.equal(await page.locator('#nicLegalPanel nav[aria-label="Rechtliche Bereiche"]').count(),0,'Duplicated legal navigation must be absent');
-  assert(await page.locator('.footer-legal-links a').count()>0,'Footer legal links must remain available');
+  // Check every standard legal view on desktop and mobile, not just the imprint.
+  for(const legalKey of ['impressum','agbs','datenschutz','haftungsausschluss','cookie-hinweis']){
+   await page.goto('http://localhost/#'+legalKey);
+   await page.locator('#nicLegalPanel .nic-legal-card').waitFor({state:'visible'});
+   assert.equal(await page.locator('#nicLegalPanel nav[aria-label="Rechtliche Bereiche"]').count(),0,'Duplicated legal navigation on '+legalKey);
+   assert.equal(await page.locator('#nicLegalPanel').isVisible(),true,'Legal panel missing on '+legalKey);
+   assert(await page.locator('.footer-legal-links a').count()>0,'Footer legal links missing on '+legalKey);
+   assert.deepEqual(errors,[],'Browser errors on legal page '+legalKey);
+  }
   await page.goto('http://localhost/#admin-company');
   await page.locator('#nicAdminContent #settingsForm').waitFor({state:'visible'});
   await page.locator('[data-nic-site-nav] a[href="/preise/"]').click();
