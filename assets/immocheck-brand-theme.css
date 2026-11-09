@@ -573,9 +573,10 @@ body.nic-content-page>.app{min-height:100vh!important;display:flex!important;fle
 /* Logout control in the shared embedded admin navigation bar. */
 .nic-admin-toolbar{display:flex;align-items:stretch;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box}
 .nic-admin-toolbar .nic-admin-back{flex:1 1 auto!important;width:auto!important;margin:0!important;text-align:left!important}
-.nic-admin-logout{flex:0 0 auto;border:0!important;background:transparent!important;color:#075c55!important;padding:10px 14px!important;font:700 13px/1.2 system-ui,sans-serif!important;letter-spacing:.06em;cursor:pointer}
+.nic-admin-logout{flex:0 0 auto}
+body.nic-admin-open #nicAdminPanel .nic-admin-toolbar :is(.nic-admin-back,.nic-admin-logout){border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;color:var(--nic-green-bg,#075c55)!important;padding:10px 14px!important;font-family:var(--nic-body-font-family,system-ui,sans-serif)!important;font-size:var(--nic-subtext-font-size,14px)!important;font-weight:700!important;line-height:1.2!important;letter-spacing:.06em;text-transform:uppercase;white-space:normal;min-width:0;cursor:pointer}
 .nic-admin-logout[hidden]{display:none!important}
-@media(max-width:520px){.nic-admin-toolbar{gap:4px}.nic-admin-logout{padding:10px 8px!important;font-size:12px!important}}
+@media(max-width:520px){.nic-admin-toolbar{gap:4px}body.nic-admin-open #nicAdminPanel .nic-admin-toolbar :is(.nic-admin-back,.nic-admin-logout){padding:10px 8px!important}}
 
 /* Keep the embedded account/admin panel as the only main content while it is open. */
 body.nic-admin-open .app>main>:not(.footer-note){display:none!important}
@@ -590,7 +591,7 @@ body.nic-admin-open .app>#nicAdminPanel~.footer-note.footer-note,body.nic-admin-
 
 /* Show the page background around the toolbar while keeping the back button white. */
 body.nic-admin-open .nic-admin-toolbar{background:transparent!important}
-body.nic-admin-open .nic-admin-toolbar .nic-admin-back{background:#fff!important}
+
 
 /* Mobile and portrait footer copy uses the complete inner width and German hyphenation. */
 @media(max-width:700px), (max-width:1024px) and (orientation:portrait), (max-width:1024px) and (max-height:600px) and (orientation:landscape){
@@ -670,11 +671,12 @@ body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) *{
 }
 
 /* Administration scrolls with the outer page, including its shared header. */
-body.nic-admin-open .app>.nic-brand-bar,
 body.nic-admin-open .app>.hero,
 body.nic-admin-open .nic-admin-toolbar{
  position:static!important;inset:auto!important;transform:none!important;flex-shrink:0!important;
 }
+/* Relative positioning anchors the burger dropdown while the header scrolls normally. */
+body.nic-admin-open .app>.nic-brand-bar{position:relative!important;inset:auto!important;transform:none!important;flex-shrink:0!important;z-index:40}
 
 /* Admin and account content share the page's native document flow. */
 body.nic-admin-open #nicAdminPanel{height:auto!important;max-height:none!important;overflow:visible!important}
