@@ -29,7 +29,7 @@ function login(){
  form.querySelector('[data-close]').addEventListener('click',()=>finish(false));modal.addEventListener('cancel',event=>{event.preventDefault();finish(false);});
  form.addEventListener('submit',async event=>{event.preventDefault();if(requestPending)return;requestPending=true;submit.disabled=true;status.textContent='Bitte warten …';try{
  if(!challenge){const r=await api('request-code',{email:form.elements.email.value,register:register.checked,first_name:form.elements.first_name.value,last_name:form.elements.last_name.value});challenge=r.challenge;status.textContent=r.message;form.querySelector('[data-code]').hidden=false;form.elements.code.required=true;form.elements.email.readOnly=true;register.disabled=true;submit.textContent='Code bestätigen';form.elements.code.focus();}
- else{const r=await api('verify-code',{challenge,code:form.elements.code.value});user=r.user;csrf=r.csrf;window.dispatchEvent(new Event('nic-auth-changed'));if(window!==window.top)window.parent.postMessage({type:'nic-auth-changed'},location.origin);finish(true);if(user.role!=='admin')location.hash='#account';}
+ else{const r=await api('verify-code',{challenge,code:form.elements.code.value});user=r.user;csrf=r.csrf;window.dispatchEvent(new Event('nic-auth-changed'));if(window!==window.top)window.parent.postMessage({type:'nic-auth-changed'},location.origin);finish(true);}
  }catch(error){status.textContent=error.message;}finally{requestPending=false;submit.disabled=false;}});
  modal.append(form);document.body.append(modal);modal.showModal();form.elements.email.focus();
  });return authPending;
@@ -54,12 +54,7 @@ async function logout(){await api('logout',{});user=null;csrf=null;window.dispat
 async function profile(){
  if(!await init())return;
  if(!user&&!await login())return;
- if(user.role!=='admin'){location.assign(new URL('user-data.html',ROOT).href);return;}
- const modal=element('dialog',null,{'aria-label':'Benutzerkonto'});modal.className='nic-auth-dialog';
- modal.append(element('h2',user.first_name+' '+user.last_name),element('p',user.email));
- const actions=element('div',null,{class:'nic-auth-actions nic-profile-actions'});
- if(user.role==='admin'){const a=element('a','Admin-Bereich',{href:new URL('#admin',ROOT).href,class:'nic-auth-button nic-admin-action'});a.addEventListener('click',()=>{modal.close();modal.remove();});actions.append(a);}
- const close=element('button','Schließen',{autofocus:''}),out=element('button','Abmelden');close.addEventListener('click',()=>{modal.close();modal.remove();});out.addEventListener('click',async()=>{try{await logout();modal.close();modal.remove();}catch(e){alert(e.message);}});actions.append(out,close);modal.append(actions);document.body.append(modal);modal.showModal();
+ location.hash='#account';
 }
 function mountUsers(){
  const panel=document.getElementById('panel-users');if(!panel||!config?.enabled||user?.role!=='admin')return;
