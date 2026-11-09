@@ -621,3 +621,20 @@ if not any("@media (min-width:1001px)" in rule and
 
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
+
+# Keep content pages on the shared shell while hiding the calculator-only hero.
+# This final inline override is added after the shared calculator CSS is consolidated.
+content_pages={'settlement','prices','why','about','contact','login'}
+for page in site.rglob('*.html'):
+ source=page.read_text()
+ match=re.search(r'<html\\b[^>]*data-nic-page="([^"]+)"',source)
+ if not match or match.group(1) not in content_pages:
+  continue
+ key=match.group(1)
+ style='<style id="nic-content-hero-hide">html[data-nic-page="'+key+'"] .app .hero{display:none!important}</style>'
+ if 'id="nic-content-hero-hide"' not in source:
+  if '</head>' not in source:
+   raise SystemExit('Content page head missing: '+str(page))
+  source=source.replace('</head>',style+'</head>',1)
+ page.write_text(source)
+
