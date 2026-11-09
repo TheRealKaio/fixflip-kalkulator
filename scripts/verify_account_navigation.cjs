@@ -10,21 +10,22 @@ vm.runInContext(source.slice(source.indexOf('async function logout()'),source.in
  await ctx.profile();assert.equal(ctx.location.hash,'#admin','admin login must enter the integrated admin portal');assert.equal(elements.length,0,'portal login must not stop at a profile modal');ctx.user=null;ctx.location.hash='#anmelden';ctx.login=async()=>{ctx.user={role:'user'};return true;};await ctx.profile();assert.equal(ctx.location.hash,'#account','normal-user login must enter the integrated account view without a standalone-page redirect');ctx.user={role:'admin'};
  await ctx.logout();assert.equal(destination,'https://www.neustart-immocheck.de/?logged-out=1');assert.equal(ctx.user,null);
  destination=null;fail=true;await assert.rejects(ctx.logout());assert.equal(destination,null,'failed logout must not show success');
- // A stale client cache must refresh a signed-in account before opening the portal.
+ // Opening the portal must use the account established by the page's initial /me call,
+// without a second request that can incorrectly clear a valid signed-in state.
 const accessSource=fs.readFileSync('assets/user-access.js','utf8');
-const listenerStart=accessSource.indexOf("// Revalidate a signed-in account before opening its portal after page navigation.");
+const listenerStart=accessSource.indexOf("// The page's initial /me response already establishes the active account.");
 const listenerEnd=accessSource.indexOf("},true);",listenerStart)+7;
-assert(listenerStart>=0&&listenerEnd>listenerStart,'session refresh click listener must be present');
-let clickHandler,bubbled=0,loginCalls=0;
-const target={dataset:{nicDestination:'admin'},removeAttribute(name){delete this.dataset.nicDestination;},click(){clickHandler({target:{closest:()=>target},preventDefault(){throw Error('validated click must reach site navigation')},stopImmediatePropagation(){throw Error('validated click must reach site navigation')}});bubbled++;}};
-const navigation={document:{addEventListener(_name,handler){clickHandler=handler}},config:{enabled:true},user:null,refresh:async()=>{navigation.user={role:'admin'};return navigation.user;},profile:async()=>{loginCalls++;return false;},alert(message){throw Error(message);}};
+assert(listenerStart>=0&&listenerEnd>listenerStart,'portal click handler must be present');
+let clickHandler,loginCalls=0;
+const navigation={document:{addEventListener(_name,handler){clickHandler=handler}},config:{enabled:true},location:{hash:''},profile:async()=>{navigation.location.hash=navigation.user.role==='admin'?'#admin':'#account';},user:{role:'admin'},alert(message){throw Error(message);}};
 vm.createContext(navigation);vm.runInContext(accessSource.slice(listenerStart,listenerEnd),navigation);
-clickHandler({target:{closest:()=>target},preventDefault(){this.prevented=true;},stopImmediatePropagation(){}});
+let prevented=false,stopped=false;
+clickHandler({target:{closest:()=>({})},button:0,ctrlKey:false,metaKey:false,shiftKey:false,altKey:false,preventDefault(){prevented=true;},stopImmediatePropagation(){stopped=true;}});
 await new Promise(setImmediate);
-assert.equal(navigation.user.role,'admin','the current server session must replace stale client state');
-assert.equal(target.dataset.nicDestination,'admin','admin accounts must remain routed to the admin portal');
-assert.equal(bubbled,1,'validated click must continue to integrated portal navigation');
-assert.equal(loginCalls,0,'a valid session must not open the login flow');
+assert.equal(prevented,true,'portal click must be handled by the access flow');
+assert.equal(stopped,true,'the access flow must prevent a second navigation handler');
+assert.equal(navigation.location.hash,'#admin','an already authenticated administrator must reach the integrated admin portal');
+assert.equal(loginCalls,0,'portal navigation must not trigger another login request');
 
 const profileSource=fs.readFileSync('assets/user-data.js','utf8');
  const begin=profileSource.indexOf("yes.addEventListener('click',async()=>");
