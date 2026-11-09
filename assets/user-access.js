@@ -29,7 +29,7 @@ function login(){
  form.querySelector('[data-close]').addEventListener('click',()=>finish(false));modal.addEventListener('cancel',event=>{event.preventDefault();finish(false);});
  form.addEventListener('submit',async event=>{event.preventDefault();if(requestPending)return;requestPending=true;submit.disabled=true;status.textContent='Bitte warten …';try{
  if(!challenge){const r=await api('request-code',{email:form.elements.email.value,register:register.checked,first_name:form.elements.first_name.value,last_name:form.elements.last_name.value});challenge=r.challenge;status.textContent=r.message;form.querySelector('[data-code]').hidden=false;form.elements.code.required=true;form.elements.email.readOnly=true;register.disabled=true;submit.textContent='Code bestätigen';form.elements.code.focus();}
- else{const r=await api('verify-code',{challenge,code:form.elements.code.value});user=r.user;csrf=r.csrf;window.dispatchEvent(new Event('nic-auth-changed'));if(window!==window.top)window.parent.postMessage({type:'nic-auth-changed'},location.origin);finish(true);if(user.role!=='admin')location.assign(new URL('user-data.html',ROOT).href);}
+ else{const r=await api('verify-code',{challenge,code:form.elements.code.value});user=r.user;csrf=r.csrf;window.dispatchEvent(new Event('nic-auth-changed'));if(window!==window.top)window.parent.postMessage({type:'nic-auth-changed'},location.origin);finish(true);if(user.role!=='admin')location.hash='#account';}
  }catch(error){status.textContent=error.message;}finally{requestPending=false;submit.disabled=false;}});
  modal.append(form);document.body.append(modal);modal.showModal();form.elements.email.focus();
  });return authPending;
