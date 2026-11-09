@@ -531,6 +531,29 @@ const assert=require('node:assert/strict');
  await admin.locator('#layout-subtextSize').waitFor({state:'visible'});
  assert.equal(await admin.locator('#layout-subtextSize').inputValue(),'17');
  assert.equal(await admin.locator('#layout-hintSize').inputValue(),'11');
+ // Administration must expand its iframe and share the outer document scroll on every tab.
+ for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
+  await page.setViewportSize(viewport);
+  const tabs=admin.locator('.admin-tabs button');
+  for(let i=0;i<await tabs.count();i++){
+   await tabs.nth(i).click();
+   await page.waitForFunction(()=>{
+    const frame=document.getElementById('nicAdminFrame'),shell=frame?.contentDocument?.querySelector('.admin-shell');
+    return shell&&frame.getBoundingClientRect().height>=Math.ceil(shell.getBoundingClientRect().height);
+   });
+   assert.equal(await admin.locator('.save-bar').evaluate(el=>getComputedStyle(el).position),'static','Save bar stays in normal flow on each admin tab');
+   assert.equal(await page.locator('#nicAdminFrame').evaluate(el=>getComputedStyle(el).flexShrink),'0','Admin frame cannot shrink into an inner scroll viewport');
+  }
+  await page.evaluate(()=>window.scrollTo(0,0));
+  const top=await page.locator('.nic-brand-bar').evaluate(el=>el.getBoundingClientRect().top);
+  await page.evaluate(()=>window.scrollTo(0,250));
+  await page.waitForFunction(()=>window.scrollY>100);
+  const scroll=await page.evaluate(()=>window.scrollY);
+  const moved=await page.locator('.nic-brand-bar').evaluate(el=>el.getBoundingClientRect().top);
+  assert(Math.abs(moved-(top-scroll))<2,'Admin header scrolls upward with the page');
+  assert.equal(await page.locator('#nicAdminFrame').evaluate(el=>el.contentWindow.scrollY),0,'Admin iframe has no independent vertical scroll');
+ }
+ console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
  assert.equal(await page.locator('.footer-note').evaluate(e=>getComputedStyle(e).fontSize),'17px');
