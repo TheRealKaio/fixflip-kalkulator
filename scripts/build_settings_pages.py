@@ -112,14 +112,14 @@ content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column}
-body.nic-content-page>div>main.nic-content-main{flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 48px}
+body.nic-content-page>div>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 0}
 body.nic-content-page>div>.bottom{display:none!important}
 body.nic-content-page .nic-actions-above-footer{display:none!important}
 body.nic-content-page>div>.nic-calculator-source{display:none!important}
-.nic-content-card{max-width:980px;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
+.nic-content-card{flex:1;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
 .nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}
 .nic-content-card p{margin:12px 0}
-@media(max-width:760px){body.nic-content-page>div>main.nic-content-main{padding:24px 16px 36px}.nic-content-card{padding:24px 18px}}
+@media(max-width:760px){body.nic-content-page>div>main.nic-content-main{padding:24px 16px 0}.nic-content-card{padding:24px 18px}}
 </style>'''
 login_activation='''<script>
 window.addEventListener('DOMContentLoaded',function(){
