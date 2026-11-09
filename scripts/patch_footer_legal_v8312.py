@@ -47,11 +47,11 @@ if ".footer-meta{" not in s:
  .nic-footer-right{gap:4px}
  .nic-footer-social{max-width:none}
  .nic-footer-section{width:100%}
- .nic-footer-section>summary{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;padding:8px 0;border:0!important;border-radius:0;background:transparent!important}
+ .nic-footer-section>summary{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;padding:5px 0;border:0!important;border-radius:0;background:transparent!important}
  .nic-footer-section>summary h2{margin:0;font-size:16px}
- .nic-footer-section>summary::after{content:"+";font-size:18px!important;line-height:1!important;height:20px!important;max-height:20px!important;overflow:hidden;align-self:center;flex:0 0 20px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+ .nic-footer-section>summary::after{content:"+";font-size:13px!important;line-height:1!important;height:20px!important;max-height:20px!important;overflow:hidden;align-self:center;flex:0 0 20px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
  .nic-footer-section[open]>summary::after{content:"−"}
- .nic-footer-section[open]>:not(summary){padding:8px 0 6px}
+ .nic-footer-section[open]>:not(summary){padding:6px 0 4px}
  .nic-footer-layout .footer-meta{grid-column:1;grid-row:auto;justify-content:center;text-align:center;border-top:1px solid rgba(255,255,255,.32);padding-top:12px;margin-top:4px}
  .nic-footer-layout .footer-legal-links{justify-content:center}
 }'''
