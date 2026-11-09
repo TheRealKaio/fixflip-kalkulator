@@ -166,7 +166,7 @@ for key,path in content_routes.items():
             return match.group(0)
         removed_scripts[0]+=1
         return ''
-    page=re.sub(r'(<script\\b(?![^>]*\\bsrc=)[^>]*>)([\\s\\S]*?)(</script>)',
+    page=re.sub(r'(<script\b(?![^>]*\bsrc=)[^>]*>)([\s\S]*?)(</script>)',
         omit_calculator_inline,page,flags=re.I)
     if not removed_scripts[0]:
         raise SystemExit('No calculator bootstrap scripts found on '+key)
