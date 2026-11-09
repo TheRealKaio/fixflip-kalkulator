@@ -77,6 +77,7 @@ function mountUsers(){
 // Capture account navigation before the legacy public-admin link handles it.
 document.addEventListener('click',event=>{
  const target=event.target.closest?.('#nicAccountLink,.nic-account-link');if(!target||!config?.enabled)return;
+ if(user&&target.dataset.nicDestination==='portal')return;
  event.preventDefault();event.stopImmediatePropagation();profile().catch(e=>alert(e.message));
 },true);
 window.NICAccess={init,authorize,requireAdmin,loadSettings,refresh,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:async()=>{const result=await api('delete-own-account',{confirm:true});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
