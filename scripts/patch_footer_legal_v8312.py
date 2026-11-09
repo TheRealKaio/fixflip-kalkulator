@@ -94,7 +94,7 @@ required = [
     '>AGBs</a>',
     '>Datenschutz</a>',
 ]
-if ('details summary:after{' in s or 'details summary{' in s:
+if 'details summary:after{' in s or 'details summary{' in s:
     raise SystemExit("Unscoped legacy disclosure styles remain")
 for item in ('min-width:24px!important', 'min-height:24px!important', 'border-radius:8px!important', 'flex:0 0 24px'):
     if item not in s:
