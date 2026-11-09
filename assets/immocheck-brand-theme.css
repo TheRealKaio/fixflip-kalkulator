@@ -585,7 +585,7 @@ body.nic-admin-open #nic-home-intro{display:none!important}
 /* Account and admin views keep the shared footer and fill the space above it. */
 body.nic-admin-open .app{min-height:100vh!important;display:flex!important;flex-direction:column!important}
 body.nic-admin-open .app>#nicAdminPanel{display:flex!important;flex:1 0 auto!important;flex-direction:column!important;height:auto!important;max-height:none!important;min-height:0;background:transparent!important}
-body.nic-admin-open #nicAdminFrame{display:block;width:100%;height:auto;min-height:0;max-height:none!important;flex:0 0 auto!important;border:0;background:#fff!important}
+
 body.nic-admin-open .app>#nicAdminPanel~.footer-note.footer-note,body.nic-admin-open .app>#nicAdminPanel~.nic-shared-footer.nic-shared-footer{display:flex!important;flex:0 0 auto!important}
 
 /* Show the page background around the toolbar while keeping the back button white. */
@@ -675,3 +675,10 @@ body.nic-admin-open .app>.hero,
 body.nic-admin-open .nic-admin-toolbar{
  position:static!important;inset:auto!important;transform:none!important;flex-shrink:0!important;
 }
+
+/* Admin and account content share the page's native document flow. */
+body.nic-admin-open #nicAdminPanel{height:auto!important;max-height:none!important;overflow:visible!important}
+#nicAdminPanel[hidden],.nic-native-admin[hidden]{display:none!important}
+.nic-native-admin{display:block;flex:1 0 auto;min-width:0;width:100%;max-width:100%;box-sizing:border-box;background:transparent}
+.nic-native-admin>.admin-shell{max-width:none;width:100%;box-sizing:border-box}
+.nic-native-admin .admin-header,.nic-native-admin .admin-heading{display:none!important}
