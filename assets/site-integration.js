@@ -97,6 +97,47 @@ function setAdmin(open){
     fit();
     if(typeof ResizeObserver==='function'){frameObserver=new ResizeObserver(fit);frameObserver.observe(shell);}
     adminFrame.contentDocument.fonts?.ready.then(fit);
+    // Route vertical gestures to the outer page; Safari otherwise captures the first swipe in the iframe.
+    const doc=adminFrame.contentDocument;
+    let startX=0,lastY=0,lastTime=0,speed=0,dragged=false,tracking=false,momentum=0;
+    const stop=()=>{cancelAnimationFrame(momentum);momentum=0;};
+    const canScrollInside=(target,delta)=>{
+     for(let el=target?.nodeType===1?target:target?.parentElement;el&&el!==doc.body;el=el.parentElement){
+      const style=adminFrame.contentWindow.getComputedStyle(el);
+      if(/auto|scroll/.test(style.overflowY)&&el.scrollHeight>el.clientHeight+1&&
+       (delta<0?el.scrollTop>0:el.scrollTop+el.clientHeight<el.scrollHeight-1))return true;
+     }
+     return false;
+    };
+    doc.addEventListener('touchstart',event=>{
+     stop();tracking=event.touches.length===1&&!event.target.closest?.('input[type="range"],select,[contenteditable="true"]');
+     dragged=false;speed=0;
+     if(tracking){startX=event.touches[0].clientX;lastY=event.touches[0].clientY;lastTime=performance.now();}
+    },{passive:true});
+    doc.addEventListener('touchmove',event=>{
+     if(!tracking||event.touches.length!==1)return;
+     const touch=event.touches[0],now=performance.now(),delta=lastY-touch.clientY,dt=Math.max(8,now-lastTime);
+     if(!dragged&&Math.abs(touch.clientX-startX)>Math.abs(delta)){tracking=false;return;}
+     if(canScrollInside(event.target,delta)){lastY=touch.clientY;lastTime=now;return;}
+     if(Math.abs(delta)<2&&!dragged)return;
+     if(event.cancelable)event.preventDefault();
+     dragged=true;window.scrollBy(0,delta);speed=.35*speed+.65*delta/dt;
+     lastY=touch.clientY;lastTime=now;
+    },{passive:false});
+    doc.addEventListener('touchend',()=>{
+     tracking=false;
+     if(!dragged||performance.now()-lastTime>100)return;
+     let previous=performance.now();speed=Math.max(-2.5,Math.min(2.5,speed));
+     const glide=now=>{
+      const dt=Math.min(32,now-previous);previous=now;
+      const before=window.scrollY;window.scrollBy(0,speed*dt);speed*=Math.pow(.94,dt/16);
+      if(Math.abs(speed)>.02&&Math.abs(window.scrollY-before)>.1)momentum=requestAnimationFrame(glide);
+     };
+     momentum=requestAnimationFrame(glide);
+    },{passive:true});
+    doc.addEventListener('touchcancel',()=>{tracking=false;stop();},{passive:true});
+    window.addEventListener('touchstart',stop,{passive:true});
+
    }catch(_){/* Native iframe scrolling remains available as a fallback. */}
   });
   adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
