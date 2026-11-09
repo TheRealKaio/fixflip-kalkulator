@@ -593,7 +593,7 @@ body.nic-admin-open .nic-admin-toolbar{background:transparent!important}
 body.nic-admin-open .nic-admin-toolbar .nic-admin-back{background:#fff!important}
 
 /* Mobile and portrait footer copy uses the complete inner width and German hyphenation. */
-@media(max-width:700px),(max-width:1024px) and (orientation:portrait){
+@media(max-width:700px), (max-width:1024px) and (orientation:portrait), (max-width:1024px) and (max-height:600px) and (orientation:landscape){
  body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-layout{
   box-sizing:border-box!important;width:100%!important;max-width:none!important;min-width:0!important;
   grid-template-columns:minmax(0,1fr)!important;row-gap:4px!important;
