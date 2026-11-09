@@ -575,3 +575,8 @@ body.nic-content-page>.app{min-height:100vh!important;display:flex!important;fle
 .nic-admin-logout{flex:0 0 auto;border:0!important;background:transparent!important;color:#075c55!important;padding:10px 14px!important;font:700 13px/1.2 system-ui,sans-serif!important;letter-spacing:.06em;cursor:pointer}
 .nic-admin-logout[hidden]{display:none!important}
 @media(max-width:520px){.nic-admin-toolbar{gap:4px}.nic-admin-logout{padding:10px 8px!important;font-size:12px!important}}
+
+/* Keep the embedded account/admin panel as the only main content while it is open. */
+body.nic-admin-open .app>main>:not(.footer-note){display:none!important}
+body.nic-admin-open .app>.bottom{display:none!important}
+body.nic-admin-open #nic-home-intro{display:none!important}
