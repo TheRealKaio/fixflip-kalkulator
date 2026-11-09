@@ -1,7 +1,8 @@
 /* Original backup layout and interactions; retain only current branding and colors. */
 :root{--nic-design-deep:#075c55;--nic-design-teal:#16867a;--nic-design-mint:#ddece8;--nic-design-warm:#f6f1e9;--nic-design-ink:#263b3a}
 body:not(.nic-embed){background:var(--nic-design-warm);color:var(--nic-design-ink)}
-body:not(.nic-embed) .hero{background-color:#f6f1e9!important;background-image:url('/immocheck-hero.jpg')!important;background-size:cover!important;background-position:center!important}
+/* Local contrast wash behind hero copy; the right side keeps the original photo clear. */
+body:not(.nic-embed) .hero{background-color:#f6f1e9!important;background-image:linear-gradient(90deg,rgba(246,241,233,.94) 0%,rgba(246,241,233,.84) 34%,rgba(246,241,233,.60) 60%,rgba(246,241,233,.32) 84%,rgba(246,241,233,.08) 100%),url('/immocheck-hero.jpg')!important;background-size:100% 100%,cover!important;background-position:left top,center!important;background-repeat:no-repeat!important}
 body:not(.nic-embed) .hero-top,body:not(.nic-embed) .brand-logo-wrap{background:#fff!important}
 body:not(.nic-embed) .brand-logo-wrap{box-shadow:none!important}
 body:not(.nic-embed) .hero>h1{color:#075c55!important;opacity:1!important}
