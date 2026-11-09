@@ -159,8 +159,8 @@ for key,path in content_routes.items():
     removed_scripts=[0]
     def omit_calculator_inline(match):
         opening=match.group(1)
-        script_type=re.search(r'\\btype\\s*=\\s*["\\']([^"\\']+)["\\']',opening,re.I)
-        if script_type and script_type.group(1).lower() not in (
+        script_type=re.search(r'type\s*=\s*([^\s>]+)',opening,re.I)
+        if script_type and script_type.group(1).strip(chr(34)+chr(39)).lower() not in (
             'text/javascript','application/javascript','module'
         ):
             return match.group(0)
