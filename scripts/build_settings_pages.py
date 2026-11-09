@@ -116,7 +116,7 @@ body.nic-content-page>div>.bottom{display:none!important}
 .nic-content-card{max-width:980px;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}
 .nic-content-card h1{margin:0 0 18px;color:#075c55;font-size:clamp(28px,4vw,42px);line-height:1.15}
 .nic-content-card p{margin:12px 0}
-@media(max-width:760px){.app>main.nic-content-main{padding:24px 16px 36px}.nic-content-card{padding:24px 18px}}
+@media(max-width:760px){body.nic-content-page>div>main.nic-content-main{padding:24px 16px 36px}.nic-content-card{padding:24px 18px}}
 </style>'''
 login_activation='''<script>
 window.addEventListener('DOMContentLoaded',function(){
@@ -134,7 +134,7 @@ for key,path in content_routes.items():
     if count!=1:
         raise SystemExit('Could not replace the existing calculator content for '+key)
     page=page.replace('</head>',content_style+'</head>',1)
-    page=re.sub(r'<body\\b([^>]*)>',lambda m:'<body'+m[1]+' class=\"nic-content-page\">',page,count=1)
+    page=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+m[1]+' class=\"nic-content-page\">',page,count=1)
     if key=='login':page=page.replace('</body>',login_activation+'</body>',1)
     folder=site/path;folder.mkdir(exist_ok=True)
     (folder/'index.html').write_text(customize(page,key,path))
