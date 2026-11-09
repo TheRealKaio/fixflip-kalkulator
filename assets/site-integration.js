@@ -28,17 +28,34 @@ window.addEventListener('nic-settings-updated',apply);
 window.addEventListener('pageshow',()=>{if(S.current)S.init().then(apply).catch(()=>{});});
 // Keep the calculator header and state while opening administration below it.
 const account=document.getElementById('nicAccountLink'),hero=document.querySelector('.app > .hero');
-let adminPanel=null,adminFrame=null,headerSnapshot=null,adminOpen=false;
+let adminPanel=null,adminFrame=null,adminLogout=null,headerSnapshot=null,adminOpen=false;
+function syncAccountLink(){
+ if(!account)return;
+ const access=window.NICAccess,authenticated=!!(access?.enabled&&access.user);
+ const label=account.querySelector('span');
+ if(label)label.textContent=authenticated?'Zum Nutzerportal':'Jetzt anmelden';
+ account.href=authenticated?new URL('user-data.html',S.ROOT).href:new URL('#anmelden',S.ROOT).href;
+ account.setAttribute('aria-label',authenticated?'Zum Nutzerportal':'Jetzt anmelden');
+ if(authenticated)account.dataset.nicDestination='portal';else delete account.dataset.nicDestination;
+ if(adminLogout)adminLogout.hidden=!(adminOpen&&authenticated&&access.user.role==='admin');
+}
+const adminToolbarStyle=document.createElement('style');
+adminToolbarStyle.textContent='.nic-admin-toolbar{display:flex;align-items:stretch;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box}.nic-admin-toolbar .nic-admin-back{flex:1 1 auto!important;width:auto!important;margin:0!important;text-align:left!important}.nic-admin-logout{flex:0 0 auto;border:0!important;background:transparent!important;color:#075c55!important;padding:10px 14px!important;font:700 13px/1.2 system-ui,sans-serif!important;letter-spacing:.06em;cursor:pointer}.nic-admin-logout[hidden]{display:none!important}@media(max-width:520px){.nic-admin-toolbar{gap:4px}.nic-admin-logout{padding:10px 8px!important;font-size:12px!important}}';
+document.head.append(adminToolbarStyle);
+window.addEventListener('nic-auth-changed',syncAccountLink);
 function setAdmin(open){
  if(!hero||!account)return;
  if(open&&!adminOpen){
   headerSnapshot={title:document.getElementById('heroTitle').innerHTML,text:document.getElementById('heroText').textContent,titleAttr:document.title};
   if(!adminPanel){
    adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
+   const toolbar=document.createElement('div');toolbar.className='nic-admin-toolbar';
    const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);setAdmin(false);});
+   adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
+   toolbar.append(close,adminLogout);
    adminFrame=document.createElement('iframe');adminFrame.title='Einstellungen im Admin-Bereich';adminFrame.id='nicAdminFrame';
    const profile=location.hash==='#account';const section=location.hash.slice(7);adminFrame.src=profile?new URL('user-data.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current'),S.ROOT).href:new URL('admin.html?embedded=1&release='+encodeURIComponent(document.documentElement.dataset.nicRelease||'current')+(['company','layout','social','meta','legal','users','stats'].includes(section)?'#'+section:''),S.ROOT).href;
-   adminPanel.append(close,adminFrame);hero.after(adminPanel);
+   adminPanel.append(toolbar,adminFrame);hero.after(adminPanel);
   }
   adminOpen=true;document.body.classList.add('nic-admin-open');document.documentElement.classList.add('nic-admin-open');adminPanel.hidden=false;
   const profile=location.hash==='#account';adminPanel.setAttribute('aria-label',profile?'Deine Nutzerdaten':'Admin-Bereich');adminFrame.title=profile?'Deine Nutzerdaten':'Einstellungen im Admin-Bereich';document.getElementById('heroTitle').textContent=profile?'Deine Nutzerdaten':'Admin-Bereich';document.getElementById('heroText').textContent=profile?'Hier kannst du deine Daten ändern oder dein Benutzerkonto unwiderruflich löschen.':'Verwalte Unternehmensdaten, Layout, Logos, Social Media, Meta-Daten, Nutzereinstellungen und Statistik.';
@@ -51,14 +68,16 @@ function setAdmin(open){
  }
 }
 if(account&&hero){
- account.addEventListener('click',e=>{if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();if(!adminOpen)history.pushState(null,'',location.pathname+location.search+'#admin');setAdmin(true);});
+ account.addEventListener('click',e=>{if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;if(window.NICAccess?.enabled&&window.NICAccess.user)return;e.preventDefault();if(!adminOpen)history.pushState(null,'',location.pathname+location.search+'#admin');setAdmin(true);});
  window.addEventListener('popstate',()=>setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash)));
  window.addEventListener('hashchange',()=>setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash)));
  window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==adminFrame?.contentWindow)return;
+  if(e.data?.type==='nic-auth-changed'){window.NICAccess?.refresh?.().then(syncAccountLink).catch(()=>syncAccountLink());return;}
   if(e.data?.type==='nic-admin-height'&&Number.isFinite(e.data.height))adminFrame.style.height=Math.min(50000,Math.max(300,e.data.height))+'px';
   if(adminOpen&&e.data?.type==='nic-logo-preview')S.applyLogo(e.data.value,e.data.alt,e.data.website);
  });
 }
+window.NICAccess?.init?.().then(syncAccountLink).catch(()=>syncAccountLink());
 if(S.current){if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));}
 S.init().then(()=>{if(['budget','own','rent','flip'].includes(page))activate(page);activePage=page;apply();setAdmin(/^#(?:admin(?:-|$)|account$)/.test(location.hash));window.NICAnalytics?.start({section:page,calculator:document.getElementById('heroTitle')?modePage():null});}).catch(err=>console.warn('Einstellungen:',err.message));
 
