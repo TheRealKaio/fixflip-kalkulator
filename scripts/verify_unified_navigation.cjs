@@ -85,6 +85,24 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.locator('[data-nic-site-nav] a[href="/preise/"]').click();
   await page.waitForURL('http://localhost/preise/');
   assert(!(await page.locator('body').evaluate(el=>el.classList.contains('nic-admin-open'))),'Admin header menu navigates to the selected content page');
+  // Regression-check informational routes and their real responsive header.
+  for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
+   await page.goto('http://localhost/'+routeName+'/');
+   await page.locator('.nic-content-card').waitFor({state:'visible'});
+   assert(await page.locator('.nic-content-card h1').isVisible(),'Content heading missing on '+routeName);
+   assert(await page.locator('.footer-legal-links a').count()>0,'Footer links missing on '+routeName);
+   assert.deepEqual(errors,[],'JavaScript errors on /'+routeName+'/');
+   const menuToggle=page.locator('.nic-brand-bar .nic-menu-toggle');
+   if(await menuToggle.isVisible()){
+    await menuToggle.click();
+    assert.equal(await menuToggle.getAttribute('aria-expanded'),'true','Mobile menu did not open on '+routeName);
+    assert(await page.locator('[data-nic-site-nav] a[href="/preise/"]').isVisible(),'Mobile navigation links hidden on '+routeName);
+    await menuToggle.click();
+    assert.equal(await menuToggle.getAttribute('aria-expanded'),'false','Mobile menu did not close on '+routeName);
+   }else{
+    assert(await page.locator('[data-nic-site-nav] a[href="/preise/"]').isVisible(),'Desktop navigation missing on '+routeName);
+   }
+  }
   assert.deepEqual(errors,[]);
   console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
   await page.close();
