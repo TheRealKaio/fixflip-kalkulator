@@ -572,5 +572,20 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('.footer-note').evaluate(e=>getComputedStyle(e).fontSize),'17px');
  assert.equal(await page.locator('.footer-note a').first().evaluate(e=>getComputedStyle(e).fontSize),'17px');
  console.log('PASS admin: secondary typography fields, save and reload; footer follows subtext size');
+ // Native user portal uses the same document and existing profile API.
+ await page.route('**/backend-config.json',route=>route.fulfill({json:{enabled:true,apiUrl:'https://neustart-immocheck.de/api/index.php'}}));
+ const profileUser={id:17,email:'profile@example.test',role:'user',first_name:'Test',last_name:'Nutzer'};
+ await page.route('https://neustart-immocheck.de/api/**',route=>route.fulfill({json:{user:profileUser,csrf:'profile-test',settings:require('../assets/site-settings.json'),revision:1}}));
+ await page.goto('http://127.0.0.1:8766/#account',{waitUntil:'domcontentloaded'});
+ const profile=page.locator('#nicAccountContent');
+ await profile.locator('#profileForm').waitFor({state:'visible'});
+ assert.equal(await page.locator('#nicAdminFrame').count(),0,'User portal also has no iframe');
+ assert.equal(await profile.locator('#profileEmail').inputValue(),profileUser.email);
+ await profile.locator('#firstName').fill('Geändert');
+ await profile.locator('[type=submit]').click();
+ await profile.locator('#profileStatus').filter({hasText:'Deine Daten wurden gespeichert.'}).waitFor();
+ assert.equal(await page.locator('#heroTitle').innerText(),'Deine Nutzerdaten');
+ console.log('PASS native account portal: role-specific view, profile display and save through existing API');
+
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
