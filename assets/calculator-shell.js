@@ -34,8 +34,8 @@ function refresh(s=S.current){
  if(socialSection)socialSection.hidden=!nav?.childElementCount;
  const aboutSection=footer.querySelector('#nicFooterAboutSection');
  const about=footer.querySelector('#nicFooterAbout');
- const aboutDescription=String(s.content?.why?.metaDescription||s.meta?.why?.description||s.meta?.website?.description||'').trim();
- if(about){about.replaceChildren();if(aboutDescription){const more=document.createElement('a');more.href=new URL('warum-immocheck/',S.ROOT).href;more.textContent='Mehr...';more.className='nic-footer-more';about.append(document.createTextNode(aboutDescription+' '),more);}}
+ const aboutDescription=String(s.content?.about?.metaDescription||s.meta?.about?.description||s.meta?.website?.description||'').trim();
+ if(about){about.replaceChildren();if(aboutDescription){const more=document.createElement('a');more.href=new URL('ueber-uns/',S.ROOT).href;more.textContent='Mehr...';more.className='nic-footer-more';about.append(document.createTextNode(aboutDescription+' '),more);}}
  if(aboutSection)aboutSection.hidden=!about||!aboutDescription;
  const contactSection=footer.querySelector('#nicFooterContactSection');
  const email=footer.querySelector('#nicFooterEmail');
