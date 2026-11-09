@@ -5,8 +5,8 @@ import subprocess
 
 root = Path('_site')
 backup = '0ef48e3faf53704bcdd52b8440da0777d81cbcbd'
-# These files carry the bundled public footer and legal navigation updates.
-allowed_ui_edits = {'assets/financing.html'}
+# These files contain explicitly approved shared UI and account navigation updates.
+allowed_ui_edits = {'assets/financing.html', 'assets/user-access.js'}
 allowed_ui_prefixes = ('source/index.html.gz.b64.part',)
 
 # Keep the original calculator source protected while allowing the targeted
