@@ -36,7 +36,7 @@ body.nic-home-active #nic-home-intro.nic-home-intro{display:flex;flex-direction:
 }
 
 /* Information routes retain the same application, main container and header. */
-body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.section{display:flex;flex-direction:column}
+body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.section{display:flex;flex-direction:column;padding-bottom:var(--nic-content-footer-gap,16px)}
 body:not(.nic-content-active) #nicContentView{display:none!important}
 body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.section>:not(#nicContentView):not(.footer-note):not(.nic-shared-footer),
 body.nic-content-active .app>.bottom,
