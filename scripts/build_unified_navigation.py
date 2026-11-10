@@ -41,6 +41,7 @@ nav=Path('assets/unified-calculator-navigation.js').read_text().replace('/* FINA
 nav=nav.replace("''/* HOME_MARKUP */",json.dumps(Path('assets/homepage.html').read_text()))
 import shutil
 shutil.copyfile('assets/homepage.css',site/'homepage.css')
+shutil.copyfile('assets/initial-layout.js',site/'initial-layout.js')
 nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calculators)+';')
 (site/'calculators.json').write_text(json.dumps(registry,ensure_ascii=False,indent=2)+'\n')
 # Finance shares the same loaded controller and initialization scope as all modes.
@@ -95,6 +96,8 @@ base=base.replace('!["budget","own","flip"].includes(document.documentElement.da
 print('Unified five-calculator document and financing module built')
 for page in site.rglob('*.html'):
  s=page.read_text()
+ if 'nic-published-settings' in s and re.search(r'class="[^"]*\bapp\b',s) and 'initial-layout.js' not in s:
+  s=s.replace('<head>','<head><script src="/initial-layout.js"></script>',1)
  s=re.sub(r'<script\b[^>]*src="[^"]*calculator-finance(?:\.[a-f0-9]{16})?\.js"[^>]*>\s*</script>','',s)
  # Shared calculator initialization may warm hidden controls on the homepage,
  # but only the route controller owns its header. Avoid the old title/restore race.

@@ -16,6 +16,13 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Interne Wechsel zwischen diesen Ansichten erfolgen über den gemeinsamen
   Routencontroller ohne vollständigen Dokumentneustart. URL und Browserhistorie
   werden korrekt aktualisiert; Zurück und Vorwärts müssen funktionieren.
+- Beim vollständigen Laden wird die gemeinsame App-Fläche erst sichtbar, wenn
+  die zentralen Layouteinstellungen, Footer-Inhalte und die Header-Höhenberechnung
+  angewendet wurden. `assets/initial-layout.js` läuft dafür bereits im HTML-Kopf;
+  unsichtbare Elemente bleiben messbar (`visibility`, kein `display: none`).
+  Nachgeladene Standard-/Admin-Typografie darf beim ersten Anzeigen keine
+  Zwischenansicht erzeugen. Bei Verbindungsfehlern bleibt die gebündelte
+  Konfiguration nutzbar; ein Sicherheits-Timeout verhindert dauerhaftes Ausblenden.
 - Direkte URLs bleiben aufrufbar und enthalten bereits passende Überschrift,
   Beschreibung, Inhaltsmarkup und SEO-Metadaten. Sie starten die gemeinsame Anwendung.
 - Der Aufruf `/` zeigt die Startseite, auch wenn zuvor ein Rechner verwendet wurde.
@@ -124,6 +131,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Bereich | Gepflegte Quellen / Build-Schritte |
 | --- | --- |
 | Gemeinsame Routen und aktive Ansicht | `assets/unified-calculator-navigation.js`, `scripts/build_unified_navigation.py` |
+| Erste stabile Darstellung | `assets/initial-layout.js`, Einbindung über `scripts/build_unified_navigation.py` |
 | Bildheader und Höhenreservierung | `assets/stable-header.js`, `assets/stable-header.css` |
 | Markenleiste, Logo, responsiver Footer | `assets/immocheck-brand-theme.css`, `assets/header-layout.css` |
 | Einstellungen, Meta, Ansichtsanbindung | `assets/site-settings.js`, `assets/site-integration.js` |

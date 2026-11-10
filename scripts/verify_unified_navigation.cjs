@@ -5,10 +5,20 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
  for(const width of [1440,390]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
   page.on('pageerror',e=>{const details=e.stack||e.message;errors.push(details);console.error('BROWSER PAGE ERROR '+width+' '+page.url()+'\\n'+details);});
+  let releaseInitialSettings,documentLoads=0;
+  const settingsArrival=new Promise(resolve=>{releaseInitialSettings=resolve;});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
+   if(route.request().resourceType()==='document')documentLoads++;
    if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
    if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:''});
+   if(u.hostname!=='localhost'&&u.searchParams.get('r')==='settings'&&documentLoads===1){
+    await settingsArrival;
+    const settings=JSON.parse(JSON.stringify(require('../assets/site-settings.json')));
+    settings.layout.bodySize=20;settings.layout.h1=30;
+    settings.company.email='layout-test@example.com';
+    return route.fulfill({status:200,json:{user:null,settings,csrf:'test'}});
+   }
    if(u.hostname!=='localhost')return route.fulfill({status:200,json:{user:null,settings:require('../assets/site-settings.json'),csrf:'test'}});
    let name=u.pathname;if(name.endsWith('/'))name+='index.html';
    const file=path.join(process.cwd(),'_site',name);
@@ -25,9 +35,17 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     }
    }).observe(document,{childList:true,subtree:true});
   });
-  await page.goto('http://localhost/');
+  await page.goto('http://localhost/',{waitUntil:'domcontentloaded'});
+  assert.equal(await page.locator('.app').evaluate(el=>getComputedStyle(el).visibility),'hidden','App must not display the bundled intermediate layout while published settings are pending');
+  releaseInitialSettings();
+  await page.locator('.app').waitFor({state:'visible'});
+  await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='ready');
+  assert.equal(await page.evaluate(()=>NICSettings.current.layout.bodySize),20,'Published typography must be applied before reveal');
+  assert.equal(await page.locator('#nicFooterEmail').innerText(),'layout-test@example.com','Footer must be populated before reveal');
+  const firstVisible=await page.locator('.app').evaluate(app=>['.nic-brand-bar','.hero','.footer-note'].map(selector=>{const r=app.querySelector(selector).getBoundingClientRect();return {height:r.height,top:r.top};}));
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   await page.waitForFunction(()=>document.body.dataset.calculator==='home');
+  assert.deepEqual(await page.locator('.app').evaluate(app=>['.nic-brand-bar','.hero','.footer-note'].map(selector=>{const r=app.querySelector(selector).getBoundingClientRect();return {height:r.height,top:r.top};})),firstVisible,'Header/footer areas must remain stable after the first visible layout');
   const homeHeading=await page.locator('#heroTitle').innerText();
   assert((await page.evaluate(()=>window.homeHeaderWrites)).every(title=>title===homeHeading),'Calculator startup must never overwrite the homepage heading');
   assert.equal(await page.evaluate(()=>NICCalculators.active),'home','Homepage uses the shared route controller');
@@ -197,6 +215,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     assert(await page.locator('[data-nic-site-nav] a[href="/preise/"]').isVisible(),'Desktop navigation missing on '+routeName);
    }
   }
+  await page.route('**/api/index.php?r=settings',route=>route.fulfill({status:503,json:{error:'offline fixture'}}));
+  await page.goto('http://localhost/finanzierungsrechner/');
+  await page.locator('.app').waitFor({state:'visible'});
+  await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='fallback');
+  assert(await page.locator('#nicFinanceModule #loan').isVisible(),'Direct finance must remain usable when published settings are unavailable');
   assert.deepEqual(errors,[]);
   console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
   await page.close();
