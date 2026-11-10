@@ -30,7 +30,7 @@ for mode,slug in [('budget','budget'),('own','eigennutzung'),('rent','vermietung
  else:
   ident={'budget':'Budget','own':'Own','flip':'Flip'}[mode]
   menu=menu.replace('for="dealType'+ident+'"','for="dealType'+ident+'" data-href="/'+slug+'/"',1)
-anchor='<a id="nicFinancingTab" class="deal-type-option" data-calculator="finance" data-href="/finanzierungsrechner/" href="/finanzierungsrechner/"><span><strong>Finanzierungsrechner</strong><small>Darlehen, Tilgung, Sondertilgung und Restschuld</small></span></a>'
+anchor='<a id="nicFinancingTab" class="deal-type-option" data-calculator="finance" data-href="/finanzierungsrechner/" href="/finanzierungsrechner/"><span><strong>Finanzierung &amp; Restschuld</strong><small>Ermittle Rate, Zinsen und Restschuld</small></span></a>'
 if 'id="nicFinancingTab"' not in menu:
  end=menu.rfind('</div>');menu=menu[:end]+anchor+menu[end:]
 for slug in ['', 'budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner']:
