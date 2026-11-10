@@ -215,6 +215,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     assert(await page.locator('[data-nic-site-nav] a[href="/preise/"]').isVisible(),'Desktop navigation missing on '+routeName);
    }
   }
+  await page.unroute('**/backend-config.json');
   await page.route('**/api/index.php?r=settings',route=>route.fulfill({status:503,json:{error:'offline fixture'}}));
   await page.goto('http://localhost/finanzierungsrechner/');
   await page.locator('.app').waitFor({state:'visible'});
