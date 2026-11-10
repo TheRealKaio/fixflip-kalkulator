@@ -722,3 +722,11 @@ body:not(.nic-embed) .nic-brand-bar .nic-brand-description{align-self:center;jus
  body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button>span{grid-column:2;grid-row:1;justify-self:center;white-space:nowrap}
  body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button::after{content:"Jetzt anmelden\a Zum Nutzerportal\a Zum Adminportal";grid-column:2;grid-row:1;white-space:pre;visibility:hidden;height:0;overflow:hidden;pointer-events:none}
 }
+
+/* One explicit text style for sign-in, user portal and admin portal labels. */
+body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button,
+body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button>span{
+ font-size:var(--nic-body-font-size,16px)!important;
+ font-weight:700!important;
+ line-height:1.2!important;
+}

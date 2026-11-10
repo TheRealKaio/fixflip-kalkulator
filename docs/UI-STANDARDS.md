@@ -46,6 +46,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Die bestehende Route `/nebenkostenabrechnung/` wird trotz Umbenennung beibehalten.
 - Mobile Hauptnavigation über das gemeinsame Burger-Menü; keine zusätzliche
   seiteneigene Navigation. Das aufgeklappte Menü sitzt unter der Markenleiste.
+- Die drei Beschriftungen „Jetzt anmelden“, „Zum Nutzerportal“ und „Zum Adminportal“
+  verwenden ausdrücklich dieselbe Schriftgröße (`--nic-body-font-size`, aktuell
+  20 px in der veröffentlichten Konfiguration), Schriftstärke 700 und Zeilenhöhe 1,2.
+  Diese Regel gilt für den Link und seinen Text-Span, unabhängig vom Anmeldestatus.
 - Anmeldung, Nutzerportal und Adminportal verwenden dieselbe Buttonbreite und
   -höhe. Bereits vor der Authentifizierungsantwort wird die breiteste mögliche
   Beschriftung reserviert; ein Labelwechsel darf keine Größenänderung auslösen.
