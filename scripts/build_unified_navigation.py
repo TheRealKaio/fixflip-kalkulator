@@ -97,7 +97,14 @@ for page in site.rglob('*.html'):
   s=s.replace('  initializeRepaymentDefaults();\n  installFinancingManualOverrideTracking();', '  window.NICReferenceInterest={rate:Number(value),source:localStorage.getItem("ff_reference_interest_source")};\n  window.dispatchEvent(new CustomEvent("nic-reference-interest",{detail:window.NICReferenceInterest}));\n  initializeRepaymentDefaults();\n  installFinancingManualOverrideTracking();',1)
  def variants(match):
   items=json.loads(match[2])
-  if finance_header not in items:items.append(finance_header)
+  config=json.loads((site/'site-settings.json').read_text())
+  home=config.get('meta',{}).get('website',{})
+  headers=[finance_header,[home.get('homeTitle','Deine Immobilie. Dein Plan. Dein Überblick.'),home.get('homeDescription','')]]
+  for content_key in ['settlement','prices','why']:
+   content=config.get('content',{}).get(content_key,{})
+   headers.append([content.get('title',''),content.get('metaDescription','')])
+  for header in headers:
+   if header[0] and header not in items:items.append(header)
   return match[1]+json.dumps(items,ensure_ascii=False).replace('<','\\u003c')+match[3]
  s=re.sub(r'(<script type="application/json" id="nic-header-variants">)(.*?)(</script>)',variants,s,flags=re.S)
  if page==site/'finanzierungsrechner/index.html':

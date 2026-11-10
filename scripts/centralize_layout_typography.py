@@ -11,7 +11,7 @@ source=Path("assets")/name
 if not source.is_file():
     raise SystemExit("Central typography stylesheet missing")
 shutil.copyfile(source,site/name)
-routes=["","budget","eigennutzung","vermietung","fix-flip","finanzierungsrechner"]
+routes=["","budget","eigennutzung","vermietung","fix-flip","finanzierungsrechner","nebenkostenabrechnung","preise","warum-immocheck","ueber-uns","kontakt","anmelden"]
 for slug in routes:
     page=site/slug/"index.html"
     if not page.is_file():raise SystemExit(f"Missing calculator: {slug}")

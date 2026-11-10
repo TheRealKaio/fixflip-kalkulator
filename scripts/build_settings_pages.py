@@ -127,7 +127,7 @@ for key in ['budget','own','rent','flip']:
 content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
-body.nic-content-page>.app>.hero,html[data-nic-page="settlement"] .app>.hero,html[data-nic-page="prices"] .app>.hero,html[data-nic-page="why"] .app>.hero,html[data-nic-page="about"] .app>.hero,html[data-nic-page="contact"] .app>.hero,html[data-nic-page="login"] .app>.hero{display:none!important}
+body.nic-content-page:not(.nic-standard-header-page)>.app>.hero,html[data-nic-page="about"] .app>.hero,html[data-nic-page="contact"] .app>.hero,html[data-nic-page="login"] .app>.hero{display:none!important}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
 body.nic-content-page>.app>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>.app>.bottom{display:none!important}
@@ -149,7 +149,8 @@ for key,path in content_routes.items():
     content=config.get('content',{}).get(key,{})
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
-    article='<article class="nic-content-card"><h1>'+title+'</h1><div>'+body+'</div></article>'
+    standard_header=key in {'settlement','prices','why'}
+    article='<article class="nic-content-card">'+('' if standard_header else '<h1>'+title+'</h1>')+'<div>'+body+'</div></article>'
     def replace_existing_content_container(match):
         return '<main class="section nic-content-main">'+article+footer_markup+'</main>'
     page,count=re.subn(r'<main\b[^>]*>[\s\S]*?</main>',replace_existing_content_container,root_calculators,count=1)
@@ -174,6 +175,10 @@ for key,path in content_routes.items():
         omit_calculator_inline,page,flags=re.I)
     if not removed_scripts[0]:
         raise SystemExit('No calculator bootstrap scripts found on '+key)
+    if standard_header:
+        subtitle=str(content.get('metaDescription') or '')
+        page=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+title+m[2],page,count=1,flags=re.S)
+        page=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(subtitle)+m[2],page,count=1,flags=re.S)
     page=page.replace('</head>',content_style+'</head>',1)
     def mark_content_page(match):
         attrs=match.group(1)
@@ -181,9 +186,10 @@ for key,path in content_routes.items():
         if class_match:
             classes=class_match.group(2).split()
             if 'nic-content-page' not in classes:classes.append('nic-content-page')
+            if standard_header:classes.append('nic-standard-header-page')
             attrs=attrs[:class_match.start()]+'class="'+ ' '.join(classes)+'"'+attrs[class_match.end():]
         else:
-            attrs+=' class="nic-content-page"'
+            attrs+=' class="nic-content-page'+(' nic-standard-header-page' if standard_header else '')+'"'
         return '<body'+attrs+'>'
     page=re.sub(r'<body\b([^>]*)>',mark_content_page,page,count=1)
     if key=='login':page=page.replace('</body>',login_activation+'</body>',1)

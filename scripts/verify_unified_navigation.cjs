@@ -138,10 +138,25 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.waitForURL('http://localhost/preise/');
   assert(!(await page.locator('body').evaluate(el=>el.classList.contains('nic-admin-open'))),'Admin header menu navigates to the selected content page');
   // Regression-check informational routes and their real responsive header.
+  await page.goto('http://localhost/');
+  await page.waitForFunction(()=>NICSettings.ready&&document.querySelector('.hero.nic-fixed-header'));
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const standardHeader=await page.locator('.app>.hero').evaluate(el=>({height:el.getBoundingClientRect().height,background:getComputedStyle(el).backgroundImage,font:getComputedStyle(el.querySelector('h1')).fontFamily,size:getComputedStyle(el.querySelector('h1')).fontSize,logo:document.querySelector('.brand-logo').getBoundingClientRect().width}));
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
    await page.goto('http://localhost/'+routeName+'/');
    await page.locator('.nic-content-card').waitFor({state:'visible'});
-   assert(await page.locator('.nic-content-card h1').isVisible(),'Content heading missing on '+routeName);
+   if(['preise','warum-immocheck','nebenkostenabrechnung'].includes(routeName)){
+    assert(await page.locator('.app>.hero').isVisible(),'Standard image header missing on '+routeName);
+    assert(await page.locator('.app>.hero h1').isVisible(),'Standard heading missing on '+routeName);
+    assert.equal(await page.locator('.nic-content-card h1').count(),0,'Content title must not be duplicated');
+    assert.equal(await page.locator('link[href*="calculator-typography"]').count(),1,'Shared typography missing on '+routeName);
+    await page.waitForFunction(()=>NICSettings.ready&&document.querySelector('.hero.nic-fixed-header'));
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const header=await page.locator('.app>.hero').evaluate(el=>({height:el.getBoundingClientRect().height,background:getComputedStyle(el).backgroundImage,font:getComputedStyle(el.querySelector('h1')).fontFamily,size:getComputedStyle(el.querySelector('h1')).fontSize,logo:document.querySelector('.brand-logo').getBoundingClientRect().width}));
+    for(const key of ['background','font','size','logo'])assert.equal(header[key],standardHeader[key],'Standard header '+key+' differs on '+routeName);
+    assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
+
+   }else assert(await page.locator('.nic-content-card h1').isVisible(),'Content heading missing on '+routeName);
    assert(await page.locator('.footer-legal-links a').count()>0,'Footer links missing on '+routeName);
    assert.deepEqual(errors,[],'JavaScript errors on /'+routeName+'/');
    const menuToggle=page.locator('.nic-brand-bar .nic-menu-toggle');

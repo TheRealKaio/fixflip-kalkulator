@@ -629,7 +629,7 @@ if not any("@media (min-width:1001px)" in rule and
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
 
-# Keep content pages on the shared shell while hiding the calculator-only hero.
+# Three main content routes use the standard public image header.
 # This final inline override is added after the shared calculator CSS is consolidated.
 content_pages={'settlement','prices','why','about','contact','login'}
 for page in site.rglob('*.html'):
@@ -642,7 +642,7 @@ for page in site.rglob('*.html'):
   '<style id="nic-content-page-layout">'
   'html[data-nic-page="'+key+'"] body{margin:0;min-height:100vh}'
   'html[data-nic-page="'+key+'"] body .app{min-height:100vh!important;display:flex!important;flex-direction:column!important}'
-  'html[data-nic-page="'+key+'"] body .app .hero{display:none!important}'
+  'html[data-nic-page="'+key+'"] body .app .hero{display:'+('block' if key in {'settlement','prices','why'} else 'none')+'!important}'
   'html[data-nic-page="'+key+'"] body .app main.nic-content-main{display:flex!important;flex-direction:column!important;flex:1 0 auto!important;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}'
   'html[data-nic-page="'+key+'"] body .app .nic-content-card{flex:1 0 auto!important;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}'
   '@media(max-width:760px){html[data-nic-page="'+key+'"] body .app main.nic-content-main{padding:24px 16px 16px}html[data-nic-page="'+key+'"] body .app .nic-content-card{padding:24px 18px}}'

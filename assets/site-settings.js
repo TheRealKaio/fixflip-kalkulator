@@ -95,7 +95,7 @@
     if(raw.access?.budgetInsightsLoginRequired===true)for(const [key,field] of [['wo-geht-das-geld-hin','guestAllowed'],['szenario-was-ware-wenn','guestAllowed']]){const match=Object.keys(s.contentSections).find(k=>k.includes(key));if(match)s.contentSections[match][field]=false;}
     return s;
   }
-  function pageMeta(s,key){const m=s.meta[key]||{};return {title:m.title||s.meta.website.title||'Neustart ImmoCheck',description:m.description||s.meta.website.description||''};}
+  function pageMeta(s,key){const c=s.content[key]||{},m=s.meta[key]||{};return {title:c.seoTitle||m.title||s.meta.website.title||'Neustart ImmoCheck',description:c.metaDescription||m.description||s.meta.website.description||''};}
   function setMeta(selector,attrs,value){let el=document.head.querySelector(selector);if(!el){el=document.createElement('meta');Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));document.head.append(el);}el.content=value;}
   function applyMeta(s,key){
     const m=pageMeta(s,key);document.title=m.title;
@@ -104,7 +104,7 @@
     setMeta('meta[property="og:description"]',{property:'og:description'},m.description);
     setMeta('meta[name="twitter:title"]',{name:'twitter:title'},m.title);
     setMeta('meta[name="twitter:description"]',{name:'twitter:description'},m.description);
-    const path=(key==='company' && /\/impressum\//.test(location.pathname))?'impressum/':(pages.find(p=>p[0]===key)?.[2]||'');
+    const path=(key==='company' && /\/impressum\//.test(location.pathname))?'impressum/':(pages.find(p=>p[0]===key)?.[2]||({settlement:'nebenkostenabrechnung/',prices:'preise/',why:'warum-immocheck/',about:'ueber-uns/',contact:'kontakt/',login:'anmelden/'}[key])||'');
     let canonical=document.querySelector('link[rel="canonical"]');if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.append(canonical);}canonical.href=new URL(path,ROOT).href;
     setMeta('meta[property="og:url"]',{property:'og:url'},canonical.href);
   }
@@ -201,6 +201,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
     setMeta('meta[property="og:image:alt"]',{property:'og:image:alt'},current.imageAlts.sharing);
     setMeta('meta[name="twitter:image:alt"]',{name:'twitter:image:alt'},current.imageAlts.sharing);
     if(key)applyMeta(current,key);
+    if(document.body?.classList.contains('nic-standard-header-page')&&current.content[key]){const c=current.content[key],h=document.getElementById('heroTitle'),p=document.getElementById('heroText');if(h&&h.textContent!==c.title)h.textContent=c.title;if(p&&p.textContent!==c.metaDescription)p.textContent=c.metaDescription;}
     syncCalculatorMenu(key);
     window.NICHome?.refresh();
     window.NICHeader?.refresh();
