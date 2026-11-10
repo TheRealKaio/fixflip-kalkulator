@@ -60,7 +60,7 @@ document.addEventListener('click',event=>{
 },true);
 window.addEventListener('popstate',()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);else if(['/', '/index.html'].includes(location.pathname.toLowerCase()))initWelcome();});
 function createSiteNavigation(){
- const links=[['/nebenkostenabrechnung/','Mieterabrechnung'],['/preise/','Preise'],['/warum-immocheck/','Warum ImmoCheck']];
+ const links=[['/nebenkostenabrechnung/','Mieterabrechnung'],['/preise/','Preise'],['/warum-immocheck/','Warum ImmoCheck?']];
  const header=document.querySelector('.nic-brand-bar')||document.querySelector('.brand-logo-wrap')?.closest('header')||document.querySelector('header');
  if(header&&!header.querySelector('[data-nic-site-nav]')){
   const nav=document.createElement('nav');nav.dataset.nicSiteNav='';nav.setAttribute('aria-label','Hauptnavigation');

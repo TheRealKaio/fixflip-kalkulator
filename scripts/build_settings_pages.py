@@ -22,7 +22,7 @@ share_name=render_share_image(config,site)
 share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
 content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','about':'ueber-uns/','contact':'kontakt/','login':'anmelden/'}
-content_nav=[('settlement','Mieterabrechnung'),('prices','Preise'),('why','Warum ImmoCheck')]
+content_nav=[('settlement','Mieterabrechnung'),('prices','Preise'),('why','Warum ImmoCheck?')]
 
 class ContentSanitizer(HTMLParser):
     allowed={'p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h2','h3','h4'}
