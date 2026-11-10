@@ -88,6 +88,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Karte und Footer dürfen sich weder berühren noch überlagern. Den Abstand
   auch bei kurzen, langen und mobil umgebrochenen Inhalten erhalten.
 - Keine leeren Buttons oder Platzhalter verwenden, um Desktop-Lücken zu kaschieren.
+- Direkte Inhaltsseiten liefern nur ihren passenden Haupttext im HTML aus. Die
+  für interne Rechnerwechsel benötigten inaktiven Formularfelder werden aus einem
+  gemeinsamen externen Skript vor der Rechnerinitialisierung eingebunden. Auf
+  Über uns und Kontakt enthält der ausgeblendete Bildheader keine Rechnertexte.
 
 ## 4. Texte, Typografie und Buttons
 

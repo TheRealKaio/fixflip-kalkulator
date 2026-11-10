@@ -139,4 +139,21 @@ for page in site.rglob('*.html'):
  key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck')] if page==site/slug/'index.html'),'budget'))
  s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)
+ # Keep inactive calculator form copy out of information pages' initial HTML.
+ # Restore the shared controls synchronously before legacy inline initialization,
+ # preserving IDs, event handlers and same-document navigation to calculators.
+ if page.parent.name in {'nebenkostenabrechnung','preise','warum-immocheck'}:
+  main=re.search(r'(<main\b[^>]*>)(.*?)(</main>)',s,re.S)
+  article=re.search(r'<article id="nicContentView"[^>]*>.*?</article>',main[2],re.S)
+  if not article:raise SystemExit('Missing static content article: '+str(page))
+  controls=main[2][:article.start()]+main[2][article.end():]
+  bundle='content-calculator-controls.js'
+  payload='document.currentScript.insertAdjacentHTML("beforebegin",'+json.dumps(controls).replace('<','\\u003c')+');\n'
+  target=site/bundle
+  if target.exists() and target.read_text()!=payload:raise SystemExit('Information routes must share identical calculator controls')
+  target.write_text(payload)
+  s=s[:main.start()]+main[1]+article[0]+'<script src="/'+bundle+'"></script>'+main[3]+s[main.end():]
+ if page.parent.name in {'ueber-uns','kontakt','anmelden'}:
+  s=re.sub(r'<h1\b([^>]*id="heroTitle"[^>]*)>.*?</h1>',r'<h1\1></h1>',s,count=1,flags=re.S)
+  s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',r'\1\2',s,count=1,flags=re.S)
  page.write_text(s)
