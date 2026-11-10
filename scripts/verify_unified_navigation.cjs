@@ -41,7 +41,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.locator('.app').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='ready');
   assert.equal(await page.evaluate(()=>NICSettings.current.layout.bodySize),20,'Published typography must be applied before reveal');
-  assert.equal(await page.locator('#nicFooterEmail').innerText(),'layout-test@example.com','Footer must be populated before reveal');
+  assert.equal(await page.locator('#nicFooterEmail').textContent(),'layout-test@example.com','Footer must be populated before reveal');
   const firstVisible=await page.locator('.app').evaluate(app=>['.nic-brand-bar','.hero','.footer-note'].map(selector=>{const r=app.querySelector(selector).getBoundingClientRect();return {height:r.height,top:r.top};}));
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   await page.waitForFunction(()=>document.body.dataset.calculator==='home');
