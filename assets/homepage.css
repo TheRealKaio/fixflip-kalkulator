@@ -26,3 +26,11 @@ body.nic-home-active #nic-home-intro.nic-home-intro{display:flex;flex-direction:
  #nic-home-intro .nic-home-planning>.nic-home-options,#nic-home-intro .nic-home-property>.nic-home-options{grid-template-columns:minmax(0,1fr)!important}
  #nic-home-intro .nic-home-group,#nic-home-intro .nic-home-copy{padding:20px}
 }
+
+/* Introduction uses the entire content card and German automatic hyphenation. */
+#nic-home-intro .nic-home-description,
+#nic-home-intro .nic-home-description :is(p,ul,ol,li){
+ width:100%;max-width:none;margin-right:0;box-sizing:border-box;
+ -webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:6 3 3;
+ word-break:normal;overflow-wrap:break-word;
+}

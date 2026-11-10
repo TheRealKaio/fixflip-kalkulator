@@ -22,7 +22,7 @@ share_name=render_share_image(config,site)
 share_url=base+share_name
 pages={'website':'','company':'unternehmen/','budget':'budget/','own':'eigennutzung/','rent':'vermietung/','flip':'fix-flip/','finance':'finanzierungsrechner/'}
 content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'warum-immocheck/','about':'ueber-uns/','contact':'kontakt/','login':'anmelden/'}
-content_nav=[('settlement','Nebenkostenabrechnung'),('prices','Preise'),('why','Warum Immo-Kalkulator')]
+content_nav=[('settlement','Mieterabrechnung'),('prices','Preise'),('why','Warum ImmoCheck')]
 
 class ContentSanitizer(HTMLParser):
     allowed={'p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h2','h3','h4'}
@@ -108,6 +108,15 @@ style='''<style>.nic-home-intro{margin:24px 0;padding:28px 30px;border:1px solid
 root=root.replace('</head>',style+'<link rel="stylesheet" href="/homepage.css"></head>',1)
 root=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+(re.sub(r'class="([^"]*)"',lambda c:'class="'+c[1]+' nic-home-active"',m[1]) if 'class="' in m[1] else m[1]+' class="nic-home-active"')+'>',root,count=1)
 root=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+intro,root,count=1)
+home_meta=config.get('meta',{}).get('website',{})
+home_header_title=home_meta.get('homeTitle') or 'Deine Immobilie. Dein Plan. Dein Überblick.'
+home_header_description=home_meta.get('homeDescription') or 'Plane deinen Immobilienkauf, prüfe deine Finanzierung und bereite deine Mieterabrechnung vor.'
+root=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+html.escape(home_header_title)+m[2],root,count=1,flags=re.S)
+root=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(home_header_description)+m[2],root,count=1,flags=re.S)
+def home_header_variant(match):
+    variants=json.loads(match[2]);variants.append([home_header_title,home_header_description])
+    return match[1]+json.dumps(variants,ensure_ascii=False).replace('<','\\u003c')+match[3]
+root=re.sub(r'(<script type="application/json" id="nic-header-variants">)(.*?)(</script>)',home_header_variant,root,flags=re.S)
 (site/'index.html').write_text(customize(root,'website',''))
 for key in ['budget','own','rent','flip']:
     path=pages[key];folder=site/path;folder.mkdir(exist_ok=True)

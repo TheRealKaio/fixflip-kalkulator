@@ -2,6 +2,7 @@
 (()=>{
 'use strict';
 const paths={
+ settlement:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M8 11h8M8 15h8M8 19h5"/>',
  budget:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 8h14M9 12h.01M15 12h.01M9 16h.01M15 16h.01M9 19h.01M15 19h.01"/>',
  own:'<path d="m3 10 9-8 9 8v12h-6v-8H9v8H3Z"/>',
  rent:'<ellipse cx="15" cy="5" rx="6" ry="3"/><path d="M9 5v8c0 1.7 2.7 3 6 3s6-1.3 6-3V5M9 9c0 1.7 2.7 3 6 3s6-1.3 6-3"/><ellipse cx="7" cy="15" rx="6" ry="3"/><path d="M1 15v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/>',
@@ -12,7 +13,7 @@ function decorate(){
  document.querySelectorAll('.deal-type-row>.deal-type-option').forEach(el=>{
   if(el.querySelector('.nic-menu-icon'))return;
   const routed={'/budget/':'budget','/eigennutzung/':'own','/vermietung/':'rent','/fix-flip/':'flip','/finanzierungsrechner/':'finance'};
-  const key=routed[el.dataset.href]||(el.id==='dealTypeRent'?'rent':el.id==='nicFinancingTab'?'finance':el.querySelector('input[name="dealType"]')?.value);
+  const key=el.dataset.icon||el.dataset.calculator||routed[el.dataset.href]||(el.id==='dealTypeRent'?'rent':el.id==='nicFinancingTab'?'finance':el.querySelector('input[name="dealType"]')?.value);
   if(!paths[key])return;
   const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
   icon.setAttribute('class','nic-menu-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('fill','none');icon.setAttribute('stroke','currentColor');icon.setAttribute('stroke-width','1.7');icon.setAttribute('stroke-linecap','round');icon.setAttribute('stroke-linejoin','round');icon.setAttribute('aria-hidden','true');icon.innerHTML=paths[key];

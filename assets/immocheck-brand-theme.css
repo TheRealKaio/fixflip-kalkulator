@@ -684,3 +684,16 @@ body.nic-admin-open #nicAdminPanel{height:auto!important;max-height:none!importa
 .nic-native-admin{display:block;flex:1 0 auto;min-width:0;width:100%;max-width:100%;box-sizing:border-box;background:transparent}
 .nic-native-admin>.admin-shell{max-width:none;width:100%;box-sizing:border-box}
 .nic-native-admin .admin-header,.nic-native-admin .admin-heading{display:none!important}
+
+/* Larger brand mark, centered on the same horizontal line as its descriptor. */
+body:not(.nic-embed) .nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:204px minmax(0,1fr) auto}
+body:not(.nic-embed) .nic-brand-bar .brand-logo-wrap{align-self:center;justify-self:center;width:100%;display:flex;align-items:center;justify-content:center}
+body:not(.nic-embed) .nic-brand-bar .nic-logo-link{display:flex;align-items:center;justify-content:center;width:100%}
+body:not(.nic-embed) .nic-brand-bar .brand-logo{width:204px!important;margin:0 auto}
+body:not(.nic-embed) .nic-brand-bar .nic-brand-description{align-self:center;margin-top:0;margin-bottom:0}
+@media(max-width:700px),(max-width:1024px) and (max-height:600px) and (orientation:landscape){
+ body:not(.nic-embed) .nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:minmax(0,1fr) auto auto!important}
+ body:not(.nic-embed) .nic-brand-bar .brand-logo-wrap{justify-self:start;justify-content:flex-start}
+ body:not(.nic-embed) .nic-brand-bar .nic-logo-link{justify-content:flex-start}
+ body:not(.nic-embed) .nic-brand-bar .brand-logo{width:176px!important;margin:0}
+}

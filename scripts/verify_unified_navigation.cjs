@@ -37,9 +37,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 
   assert(await page.locator('#nic-home-intro .nic-home-copy').isVisible());
   assert.equal(await page.locator('[data-home-title]').innerText(),require('../assets/site-settings.json').content.welcome.title);
-  const pending=page.getByRole('button',{name:'Mieterabrechnung erstellen',exact:true});
-  assert.equal(await pending.getAttribute('aria-disabled'),'true');
-  assert.equal(await pending.getAttribute('href'),null);
+  const settlement=page.locator('[data-home-settlement]');
+  assert.equal(await settlement.getAttribute('href'),'/nebenkostenabrechnung/');
+  assert.equal(await settlement.locator('.nic-menu-icon').count(),1);
+  assert((await settlement.locator('small').innerText()).length>0);
+  assert.equal(homeHeading,require('../assets/site-settings.json').meta.website.homeTitle);
   for(const key of ['budget','finance','own','rent','flip']){
    await page.locator('#nic-home-intro a[data-calculator="'+key+'"]').click();
    await page.waitForFunction(k=>document.body.dataset.calculator===k,key);

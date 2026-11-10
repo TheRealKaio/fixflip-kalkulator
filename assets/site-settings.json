@@ -73,7 +73,12 @@
     "website": {
       "title": "Neustart ImmoCheck – Immobilien verstehen und kalkulieren",
       "description": "Berechne dein Immobilienbudget und prüfe Eigennutzung, Vermietung sowie Fix & Flip mit den vier Immobilien-Kalkulatoren von Neustart ImmoCheck.",
-      "googleTag": ""
+      "googleTag": "",
+      "homeTitle": "Deine Immobilie. Dein Plan. Dein Überblick.",
+      "homeDescription": "Plane deinen Immobilienkauf, prüfe deine Finanzierung und vergleiche deine Möglichkeiten. Oder bereite die Mieterabrechnung vor – wähle einfach das passende Werkzeug für dein Vorhaben.",
+      "settlementButtonTitle": "Mieterabrechnung erstellen",
+      "settlementButtonText": "Nebenkosten erfassen und für deine Mieter abrechnen",
+      "settlementButtonUrl": "/nebenkostenabrechnung/"
     },
     "company": {
       "title": "Über Neustart ImmoCheck",
@@ -138,33 +143,33 @@
   "content": {
     "welcome": {
       "title": "Deine Immobilien. Klar gerechnet.",
-      "description": "<p>Für private Vermieter, die ihre Immobilien selbst im Blick behalten möchten: verständliche Rechner und eine schlanke Nebenkostenabrechnung – ohne die Komplexität einer großen Verwaltungssoftware.</p><p>Von der ersten Kaufentscheidung bis zur jährlichen Abrechnung bekommst du klare Schritte und nachvollziehbare Ergebnisse – alles an einem Ort.</p>",
-      "seoTitle": "Immobilienrechner & Nebenkostenabrechnung | ImmoCheck",
+      "description": "<p>Für private Vermieter, die ihre Immobilien selbst im Blick behalten möchten: verständliche Rechner und eine schlanke Mieterabrechnung – ohne die Komplexität einer großen Verwaltungssoftware.</p><p>Von der ersten Kaufentscheidung bis zur jährlichen Abrechnung bekommst du klare Schritte und nachvollziehbare Ergebnisse – alles an einem Ort.</p>",
+      "seoTitle": "Immobilienrechner & Mieterabrechnung | ImmoCheck",
       "metaDescription": "Immobilien einfach berechnen und Nebenkosten für Mieter verständlich abrechnen. Schlanke Online-Tools für private Vermieter in Deutschland."
     },
     "settlement": {
-      "title": "Nebenkostenabrechnung für private Vermieter – einfach und nachvollziehbar",
-      "description": "<p>Erstelle die jährliche Nebenkostenabrechnung für deine Mietwohnung Schritt für Schritt. Erfasse Kosten, ordne sie verständlich zu und behalte die Abrechnung für deine Mieter im Blick.</p><p>ImmoCheck konzentriert sich auf das, was private Vermieter wirklich brauchen: eine klare Abrechnung ohne den Ballast einer umfassenden Hausverwaltungssoftware.</p>",
-      "seoTitle": "Nebenkostenabrechnung für Vermieter einfach erstellen | ImmoCheck",
-      "metaDescription": "Nebenkostenabrechnung für Mietwohnungen in Deutschland einfach vorbereiten: Kosten erfassen, übersichtlich zuordnen und die Jahresabrechnung nachvollziehbar erstellen."
+      "title": "Mieterabrechnung für private Vermieter – einfach und nachvollziehbar",
+      "description": "<p>Erstelle die jährliche Mieterabrechnung für deine Mietwohnung Schritt für Schritt. Erfasse Kosten, ordne sie verständlich zu und behalte die Abrechnung für deine Mieter im Blick.</p><p>ImmoCheck konzentriert sich auf das, was private Vermieter wirklich brauchen: eine klare Abrechnung ohne den Ballast einer umfassenden Hausverwaltungssoftware.</p>",
+      "seoTitle": "Mieterabrechnung für Vermieter einfach erstellen | ImmoCheck",
+      "metaDescription": "Mieterabrechnung für Mietwohnungen in Deutschland einfach vorbereiten: Kosten erfassen, übersichtlich zuordnen und die Jahresabrechnung nachvollziehbar erstellen."
     },
     "prices": {
-      "title": "Klare Preise für deine Nebenkostenabrechnung",
+      "title": "Klare Preise für deine Mieterabrechnung",
       "description": "<p>Du siehst vor dem Start, welche Leistung enthalten ist und was deine Abrechnung kostet. So kannst du den Aufwand und den Preis für deine Mietwohnung klar einschätzen.</p><p>Die Abrechnung bleibt eine gezielte Einzelfunktion – ohne ein umfangreiches Verwaltungspaket buchen zu müssen.</p>",
-      "seoTitle": "Preise für die Nebenkostenabrechnung | ImmoCheck",
-      "metaDescription": "Informiere dich über Preise und enthaltene Leistungen für die digitale Nebenkostenabrechnung deiner Mietwohnung. Klar ausgewiesen vor dem Start."
+      "seoTitle": "Preise für die Mieterabrechnung | ImmoCheck",
+      "metaDescription": "Informiere dich über Preise und enthaltene Leistungen für die digitale Mieterabrechnung deiner Mietwohnung. Klar ausgewiesen vor dem Start."
     },
     "why": {
       "title": "Warum ImmoCheck? Immobilien im Blick, ohne Verwaltungsballast",
-      "description": "<p>ImmoCheck verbindet verständliche Rechner für Immobilienentscheidungen mit einer gezielten Nebenkostenabrechnung für private Vermieter. Du nutzt genau die Werkzeuge, die du brauchst – ohne dich erst in eine große Verwaltungsplattform einarbeiten zu müssen.</p><ul><li>Klare Schritte statt komplizierter Software</li><li>Rechner und Nebenkostenabrechnung an einem Ort</li><li>Für private Vermieter mit überschaubarem Immobilienbestand</li></ul>",
+      "description": "<p>ImmoCheck verbindet verständliche Rechner für Immobilienentscheidungen mit einer gezielten Mieterabrechnung für private Vermieter. Du nutzt genau die Werkzeuge, die du brauchst – ohne dich erst in eine große Verwaltungsplattform einarbeiten zu müssen.</p><ul><li>Klare Schritte statt komplizierter Software</li><li>Rechner und Mieterabrechnung an einem Ort</li><li>Für private Vermieter mit überschaubarem Immobilienbestand</li></ul>",
       "seoTitle": "Warum ImmoCheck? Immobilien einfach berechnen & abrechnen",
-      "metaDescription": "ImmoCheck bietet privaten Vermietern verständliche Immobilienrechner und eine schlanke Nebenkostenabrechnung – fokussiert, übersichtlich und ohne Verwaltungsballast."
+      "metaDescription": "ImmoCheck bietet privaten Vermietern verständliche Immobilienrechner und eine schlanke Mieterabrechnung – fokussiert, übersichtlich und ohne Verwaltungsballast."
     },
     "contact": {
       "title": "Fragen zu ImmoCheck? Wir helfen dir weiter.",
-      "description": "<p>Du möchtest wissen, wie ImmoCheck deine Immobilienberechnung oder Nebenkostenabrechnung unterstützt? Schreib uns – wir beantworten deine Fragen verständlich und direkt.</p><p><a href=\"mailto:{{company.email}}\">Kontakt per E-Mail aufnehmen</a></p>",
-      "seoTitle": "Kontakt zu ImmoCheck | Immobilienrechner & Nebenkostenabrechnung",
-      "metaDescription": "Kontaktiere ImmoCheck bei Fragen zu Immobilienrechnern und zur Nebenkostenabrechnung für private Vermieter. Wir helfen dir gerne weiter."
+      "description": "<p>Du möchtest wissen, wie ImmoCheck deine Immobilienberechnung oder Mieterabrechnung unterstützt? Schreib uns – wir beantworten deine Fragen verständlich und direkt.</p><p><a href=\"mailto:{{company.email}}\">Kontakt per E-Mail aufnehmen</a></p>",
+      "seoTitle": "Kontakt zu ImmoCheck | Immobilienrechner & Mieterabrechnung",
+      "metaDescription": "Kontaktiere ImmoCheck bei Fragen zu Immobilienrechnern und zur Mieterabrechnung für private Vermieter. Wir helfen dir gerne weiter."
     },
     "login": {
       "title": "Bei ImmoCheck anmelden",
@@ -177,7 +182,7 @@
       "title": "Über uns",
       "description": "<p>Neustart ImmoCheck unterstützt private Eigentümerinnen und Eigentümer dabei, Immobilienentscheidungen verständlich zu berechnen und Nebenkosten nachvollziehbar abzurechnen.</p><p>Die digitalen Werkzeuge konzentrieren sich auf die Aufgaben, die im Alltag wirklich zählen – klar geführt und ohne unnötigen Verwaltungsaufwand.</p>",
       "seoTitle": "Über uns | Neustart ImmoCheck",
-      "metaDescription": "Erfahre, wie Neustart ImmoCheck private Eigentümerinnen und Eigentümer bei Immobilienentscheidungen und der Nebenkostenabrechnung unterstützt."
+      "metaDescription": "Erfahre, wie Neustart ImmoCheck private Eigentümerinnen und Eigentümer bei Immobilienentscheidungen und der Mieterabrechnung unterstützt."
     }
   }
 }

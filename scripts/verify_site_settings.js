@@ -6,7 +6,11 @@ const context={URL,console,document:{currentScript:{src:'https://www.neustart-im
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync(site+'/site-settings.js','utf8'),context);const S=context.window?.NICSettings;
 
 (async()=>{
- const s=await S.init();assert.equal(S.portals.length,10);assert.equal(S.pages.length,7);assert.equal(S.companyFields.length,29);
+ const s=await S.init();
+ assert.equal(s.meta.website.homeTitle,S.homeFields.homeTitle.default);
+ for(const url of ['/nebenkostenabrechnung/','https://example.com/abrechnung/'])assert.equal(S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonUrl:url}}}).meta.website.settlementButtonUrl,url);
+ for(const url of ['javascript:alert(1)','/\\example.com','//example.com'])assert(!S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonUrl:url}}}).meta.website.settlementButtonUrl,'Unsafe action URL accepted');
+assert.equal(S.portals.length,10);assert.equal(S.pages.length,7);assert.equal(S.companyFields.length,29);
  assert.equal(s.layout.subtextSize,14);assert.equal(s.layout.hintSize,12);
  const secondary=S.normalize({...s,layout:{...s.layout,subtextSize:17,hintSize:11}});S.save(secondary);assert.equal((await S.init()).layout.subtextSize,17);assert.equal((await S.init()).layout.hintSize,11);S.discard();
  const accessKeys=['calculators','pdfDownload','pdfShare'];
