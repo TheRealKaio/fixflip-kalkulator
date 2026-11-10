@@ -730,3 +730,12 @@ body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button>span{
  font-weight:700!important;
  line-height:1.2!important;
 }
+
+/* When no social links exist, use both desktop columns for the remaining
+   sections without moving DOM nodes or adding another settings request. */
+@media(min-width:1025px),(min-width:701px) and (min-height:601px) and (orientation:landscape){
+ body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden])>.nic-footer-left{display:none!important}
+ body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden])>.nic-footer-right{display:contents!important}
+ body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]) #nicFooterAboutSection{grid-column:1!important;grid-row:1!important;align-self:start}
+ body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]) #nicFooterContactSection{grid-column:2!important;grid-row:1!important;align-self:start}
+}

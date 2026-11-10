@@ -128,6 +128,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   keine JavaScript-Nachmessung oder seitenspezifische Verschiebung.
 - Bereiche „Folge uns“, „Über uns“, „Kontakt“ sowie die gemeinsamen rechtlichen
   Links und Cookie-Einstellungen wiederverwenden. Keine doppelten Footer-Blöcke.
+- Wenn keine Social-Media-Einträge gepflegt sind, steht auf Desktop „Über uns“
+  links oben und „Kontakt“ rechts oben. Die rechtlichen Links bleiben darunter
+  über beide Spalten. Die vorhandene Social-Sichtbarkeit steuert dies per CSS;
+  keine zusätzlichen Serverabfragen oder nachträgliches Verschieben von DOM-Knoten.
+  Mit Social-Einträgen gilt das bisherige Raster.
 - Desktop nutzt das gemeinsame Raster; mobil stehen die Bereiche untereinander
   und verwenden die bestehenden aufklappbaren Abschnitte.
 - Farben und Typografie kommen aus den gemeinsamen Einstellungen. Deutsche
