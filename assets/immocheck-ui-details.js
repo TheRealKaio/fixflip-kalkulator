@@ -20,7 +20,7 @@ function decorate(){
   el.prepend(icon);
   if(key==='finance'){
    el.querySelector('strong').textContent='Finanzierung & Restschuld';
-   el.querySelector('small').textContent='Finanzierung und Restschuld berechnen';
+   el.querySelector('small').textContent='Ermittle Rate, Zinsen und Restschuld';
   }
  });
 }
