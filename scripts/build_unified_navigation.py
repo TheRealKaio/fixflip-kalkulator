@@ -74,6 +74,16 @@ print('Unified five-calculator document and financing module built')
 for page in site.rglob('*.html'):
  s=page.read_text()
  s=re.sub(r'<script\b[^>]*src="[^"]*calculator-finance(?:\.[a-f0-9]{16})?\.js"[^>]*>\s*</script>','',s)
+ # Shared calculator initialization may warm hidden controls on the homepage,
+ # but only the route controller owns its header. Avoid the old title/restore race.
+ if 'function updateDealTypeUI(){' in s:
+  for target in ['heroTitle','heroText']:
+   old='if($("'+target+'")){'
+   new='if($("'+target+'")&&!document.body.classList.contains("nic-home-active")){'
+   if s.count(old)!=1:raise SystemExit('Header ownership guard missing: '+str(page)+' '+target)
+   s=s.replace(old,new,1)
+  s=s.replace('if(heroTitle) heroTitle.innerHTML=', 'if(heroTitle&&!document.body.classList.contains("nic-home-active")) heroTitle.innerHTML=')
+  s=s.replace('if(heroText) heroText.textContent=', 'if(heroText&&!document.body.classList.contains("nic-home-active")) heroText.textContent=')
  if 'async function initializeReferenceInterest()' in s:
   anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
   if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))
@@ -93,7 +103,7 @@ for page in site.rglob('*.html'):
  if page==site/'finanzierungsrechner/index.html':
   s=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+finance_header[0]+m[2],s,count=1,flags=re.S)
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
- key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'budget')
+ key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else 'budget')
  s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)
  page.write_text(s)

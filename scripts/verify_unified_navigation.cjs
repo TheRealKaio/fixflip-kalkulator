@@ -15,10 +15,23 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
    await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'})[path.extname(file)]||'text/plain'});
   });
+  await page.addInitScript(()=>{
+   if(location.pathname!=='/')return;
+   localStorage.setItem('ff_dealType','own');
+   window.homeHeaderWrites=[];
+   new MutationObserver(records=>{
+    for(const record of records)if(record.target.id==='heroTitle'){
+     for(const node of record.addedNodes)if(node.textContent.trim())window.homeHeaderWrites.push(node.textContent.trim());
+    }
+   }).observe(document,{childList:true,subtree:true});
+  });
   await page.goto('http://localhost/');
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
   await page.waitForFunction(()=>document.body.dataset.calculator==='home');
   const homeHeading=await page.locator('#heroTitle').innerText();
+  assert((await page.evaluate(()=>window.homeHeaderWrites)).every(title=>title===homeHeading),'Calculator startup must never overwrite the homepage heading');
+  assert.equal(await page.evaluate(()=>NICCalculators.active),'home','Homepage uses the shared route controller');
+  assert.equal(await page.locator('#nic-home-intro').evaluate(el=>el.parentElement.matches('.app>main.section')),true,'Homepage uses the shared content container');
   assert.equal(new URL(page.url()).pathname,'/','Bare domain must stay on the homepage');
   assert.equal(await page.locator('#nic-home-intro .nic-home-group').count(),3);
   const homeLayout=await page.locator('#nic-home-intro').evaluate(el=>{
