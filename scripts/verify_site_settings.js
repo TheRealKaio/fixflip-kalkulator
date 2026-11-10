@@ -7,6 +7,9 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
 (async()=>{
  const s=await S.init();
+ const legacySettlement=S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonTitle:'Mieterabrechnung erstellen',settlementButtonText:'Nebenkosten erfassen und Abrechnen'}}});
+ assert.equal(legacySettlement.meta.website.settlementButtonTitle,'Nebenkosten abrechnen');
+ assert.equal(legacySettlement.meta.website.settlementButtonText,'Betriebskosten erfassen und versenden');
  assert.equal(s.meta.website.homeTitle,S.homeFields.homeTitle.default);
  for(const url of ['/nebenkostenabrechnung/','https://example.com/abrechnung/'])assert.equal(S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonUrl:url}}}).meta.website.settlementButtonUrl,url);
  for(const url of ['javascript:alert(1)','/\\example.com','//example.com'])assert(!S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonUrl:url}}}).meta.website.settlementButtonUrl,'Unsafe action URL accepted');

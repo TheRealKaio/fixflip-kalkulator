@@ -114,8 +114,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Inhalte wachsen mit der eingestellten Schriftgröße. Überschriften, Buttons
   und Untertexte weder abschneiden noch auf feste Texthöhen begrenzen.
 - Sichtbare Bezeichnungen: „Mieterabrechnung“, „Warum ImmoCheck?“ sowie am
-  Startseitenbutton „Mieterabrechnung erstellen“ mit Dokument-Symbol und
-  Untertext „Nebenkosten erfassen und Abrechnen“.
+  Startseitenbutton „Nebenkosten abrechnen“ mit Dokument-Symbol und
+  Untertext „Betriebskosten erfassen und versenden“. Die Gruppenüberschrift lautet
+  „Mieterabrechnung“. Das Symbol steht bereits im HTML, auch bei internem
+  Wechsel zur Startseite.
 - Titel, Texte und Zielverknüpfung des Mieterabrechnungsbuttons bleiben wie die
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.

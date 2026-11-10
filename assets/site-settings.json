@@ -76,8 +76,8 @@
       "googleTag": "",
       "homeTitle": "Deine Immobilie. Dein Plan. Dein Überblick.",
       "homeDescription": "Plane deinen Immobilienkauf, prüfe deine Finanzierung und vergleiche deine Möglichkeiten. Oder bereite die Mieterabrechnung vor – wähle einfach das passende Werkzeug für dein Vorhaben.",
-      "settlementButtonTitle": "Mieterabrechnung erstellen",
-      "settlementButtonText": "Nebenkosten erfassen und Abrechnen",
+      "settlementButtonTitle": "Nebenkosten abrechnen",
+      "settlementButtonText": "Betriebskosten erfassen und versenden",
       "settlementButtonUrl": "/nebenkostenabrechnung/"
     },
     "company": {

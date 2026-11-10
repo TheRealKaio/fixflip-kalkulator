@@ -71,6 +71,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   const settlement=page.locator('[data-home-settlement]');
   assert.equal(await settlement.getAttribute('href'),'/nebenkostenabrechnung/');
   assert.equal(await settlement.locator('.nic-menu-icon').count(),1);
+  assert.equal(await page.locator('#nicHomeSettlementTitle').innerText(),'Mieterabrechnung');
+  assert.equal(await settlement.locator('strong').innerText(),'Nebenkosten abrechnen');
+  assert.equal(await settlement.locator('small').innerText(),'Betriebskosten erfassen und versenden');
   assert((await settlement.locator('small').innerText()).length>0);
   assert.equal(homeHeading,require('../assets/site-settings.json').meta.website.homeTitle);
   for(const key of ['budget','finance','own','rent','flip']){
@@ -80,6 +83,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await page.goBack();
    await page.waitForFunction(()=>document.body.dataset.calculator==='home');
    assert(await page.locator('#nic-home-intro').isVisible());
+   assert.equal(await page.locator('[data-home-settlement] .nic-menu-icon').count(),1,'Settlement symbol survives return to homepage');
    assert.equal(await page.locator('#heroTitle').innerText(),homeHeading);
   }
   await page.reload();
