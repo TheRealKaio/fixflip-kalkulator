@@ -33,6 +33,7 @@ for mode,slug in [('budget','budget'),('own','eigennutzung'),('rent','vermietung
 anchor='<a id="nicFinancingTab" class="deal-type-option" data-calculator="finance" data-href="/finanzierungsrechner/" href="/finanzierungsrechner/"><span><strong>Finanzierung &amp; Restschuld</strong><small>Ermittle Rate, Zinsen und Restschuld</small></span></a>'
 if 'id="nicFinancingTab"' not in menu:
  end=menu.rfind('</div>');menu=menu[:end]+anchor+menu[end:]
+menu=menu.replace('<strong>Eigennutzung</strong>','<strong>Eigenheim &amp; Eigennutzung</strong>').replace('Kauf und Sanierung zur Selbstnutzung','Haus oder Wohnung kaufen und selbst nutzen')
 for slug in ['', 'budget','eigennutzung','vermietung','fix-flip','finanzierungsrechner']:
  p=site/slug/'index.html';source=p.read_text();_,a,b=element(source,'deal-type-card');shared=menu
  if slug=='finanzierungsrechner':

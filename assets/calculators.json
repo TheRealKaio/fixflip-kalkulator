@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "calculators": [
     {"id":"budget","path":"/budget/","label":"Budget","root":"budgetSection"},
-    {"id":"own","path":"/eigennutzung/","label":"Eigennutzung","root":"dealCalculatorContent"},
+    {"id":"own","path":"/eigennutzung/","label":"Eigenheim & Eigennutzung","root":"dealCalculatorContent"},
     {"id":"rent","path":"/vermietung/","label":"Vermietung","root":"rentSection"},
     {"id":"flip","path":"/fix-flip/","label":"Fix & Flip","root":"dealCalculatorContent"},
     {"id":"finance","path":"/finanzierungsrechner/","label":"Finanzierung","root":"nicFinanceModule"}

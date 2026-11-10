@@ -37,6 +37,13 @@ window.NICCalculators=Object.freeze({
 });
 let active=null,financeRoot=null,bypass=false;
 function select(key,push=false){
+ const ownIntro=document.getElementById('nicOwnIntro');
+ if(key!=='own')ownIntro?.remove();
+ else if(!ownIntro){
+  const main=document.querySelector('.app>main.section');
+  if(main)main.insertAdjacentHTML('afterbegin',''/* OWN_INTRO_MARKUP */);
+ }
+
  if(key==='home'||contentRoutes[key]){
   const previousURL=location.href;
   if(push)pushRoute(key,previousURL);

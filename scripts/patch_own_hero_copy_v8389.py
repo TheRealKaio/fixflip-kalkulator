@@ -3,8 +3,8 @@ from pathlib import Path
 import json,re,sys
 path=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 html=path.read_text(encoding="utf-8")
-title="Lohnt sich der Kauf dieser Ei&shy;gen&shy;tums&shy;woh&shy;nung?"
-description="Was kostet dich deine Eigentumswohnung wirklich? Berechne Kaufnebenkosten, Sanierungsbudget, Zinsen, Tilgung und monatliche Finanzierungskosten. Unser interaktiver Immobilienrechner zeigt dir, ob deine Wunschimmobilie zu deinem Budget passt."
+title="Kannst Du Dir Dein Eigenheim leisten?"
+description="Berechne Kaufpreis, Kaufnebenkosten, Sanierung und Finanzierung für Dein Eigenheim. Prüfe die monatliche Belastung für ein Haus oder eine Eigentumswohnung zur Eigennutzung und finde heraus, ob Deine Wunschimmobilie zu Deinem Budget passt."
 old_title='"Lohnt sich diese Eigentumswohnung?"'
 count=html.count(old_title)
 if count<1:raise SystemExit("Expected runtime owner-use heading")

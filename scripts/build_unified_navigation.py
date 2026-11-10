@@ -39,6 +39,7 @@ if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({i
  raise SystemExit('Expected five unique calculator IDs and routes')
 nav=Path('assets/unified-calculator-navigation.js').read_text().replace('/* FINANCE_MODULE */',factory)
 nav=nav.replace("''/* HOME_MARKUP */",json.dumps(Path('assets/homepage.html').read_text()))
+nav=nav.replace("''/* OWN_INTRO_MARKUP */",json.dumps(Path("assets/own-intro.html").read_text()))
 import shutil
 shutil.copyfile('assets/homepage.css',site/'homepage.css')
 shutil.copyfile('assets/initial-layout.js',site/'initial-layout.js')
@@ -156,4 +157,6 @@ for page in site.rglob('*.html'):
  if page.parent.name in {'ueber-uns','kontakt','anmelden'}:
   s=re.sub(r'<h1\b([^>]*id="heroTitle"[^>]*)>.*?</h1>',r'<h1\1></h1>',s,count=1,flags=re.S)
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',r'\1\2',s,count=1,flags=re.S)
+ if page==site/'eigennutzung/index.html':
+  s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+Path('assets/own-intro.html').read_text(),s,count=1)
  page.write_text(s)

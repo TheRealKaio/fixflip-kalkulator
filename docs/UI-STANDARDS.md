@@ -176,3 +176,13 @@ Quellcode bearbeiten oder veröffentlichungsrelevante Änderungen nur dort ableg
    `scripts/verify_calculator_styles.cjs` decken gemeinsame Navigation und Styles ab.
 
 Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAYOUT.md).
+
+## Eigenheim und Eigennutzung
+
+- Die Route `/eigennutzung/` heißt in den Rechnerbuttons „Eigenheim & Eigennutzung“,
+  mit Untertext „Haus oder Wohnung kaufen und selbst nutzen“.
+- Die H1 lautet „Kannst Du Dir Dein Eigenheim leisten?“. Die Seite erläutert
+  Hauskauf und Eigentumswohnung sowie die manuelle Erfassung laufender Kosten.
+- Der Budgetrechner prüft den allgemeinen Spielraum, der Eigenheim-Rechner eine
+  konkrete Immobilie. Der Einführungstext ist auf der direkten Route im HTML
+  vorhanden und bei internen Wechseln nur im Modus Eigennutzung sichtbar.
