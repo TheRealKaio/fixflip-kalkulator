@@ -699,16 +699,17 @@ body:not(.nic-embed) .nic-brand-bar .nic-brand-description{align-self:center;jus
  body:not(.nic-embed) .nic-brand-bar .brand-logo{width:176px!important;margin:0}
 }
 
-/* Equal outer columns center the logo/descriptor group in the whole white bar,
-   independently of the width of the account button on its right. */
+/* Keep the brand on the left and center it vertically in the complete white
+   bar, including the navigation row, rather than only in the account row. */
 @media(min-width:1025px),(min-width:701px) and (min-height:601px){
- body:not(.nic-embed) .nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:minmax(0,1fr) 250px max-content minmax(0,1fr)}
- body:not(.nic-embed) .nic-brand-bar .brand-logo-wrap{grid-column:2;grid-row:1}
- body:not(.nic-embed) .nic-brand-bar .nic-brand-description{grid-column:3;grid-row:1}
- body:not(.nic-embed) .nic-brand-bar a.nic-login-button{grid-column:4;grid-row:1;justify-self:end}
+ body:not(.nic-embed) .nic-brand-bar .brand-logo-wrap{grid-column:1;grid-row:1/3;align-self:center;justify-self:start}
+ body:not(.nic-embed) .nic-brand-bar .nic-logo-link{justify-content:flex-start}
+ body:not(.nic-embed) .nic-brand-bar .brand-logo{margin:0}
+ body:not(.nic-embed) .nic-brand-bar .nic-brand-description{grid-column:2;grid-row:1/3;align-self:center}
+ body:not(.nic-embed) .nic-brand-bar a.nic-login-button{grid-column:3;grid-row:1;justify-self:end}
+ body:not(.nic-embed) .nic-brand-bar [data-nic-site-nav]{grid-column:3;grid-row:2}
 }
-/* Give the account action its own row when the centered brand and action
-   cannot fit alongside each other; retain the shared mobile menu breakpoint. */
 @media(min-width:701px) and (max-width:1000px) and (min-height:601px){
- body:not(.nic-embed) .nic-brand-bar a.nic-login-button{grid-column:1/-1;grid-row:3}
+ body:not(.nic-embed) .nic-brand-bar .nic-brand-description{grid-row:1}
+ body:not(.nic-embed) .nic-brand-bar [data-nic-site-nav]{grid-column:2/-1}
 }

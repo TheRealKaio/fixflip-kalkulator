@@ -27,12 +27,13 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## 2. Header und Navigation
 
-- Auf Desktop steht die gesamte Logo-/Textgruppe horizontal in der Mitte der
-  weißen Markenleiste, unabhängig von der Breite des Anmelde-/Portalzugangs rechts.
-  Die beiden äußeren Rasterspalten sind dafür gleich breit. Desktop-Logo: 250 px
-  breit, proportional skaliert und vertikal über beide Beschreibungszeilen zentriert.
-  Auf schmaleren Desktop-/Tabletansichten erhält der Portalzugang bei Platzmangel
-  eine eigene Zeile. Mobil: Logo links mit 176 px gemäß gemeinsamem Breakpoint.
+- Das Logo bleibt linksbündig in der weißen Markenleiste. Es wird ausschließlich
+  **vertikal in der gesamten weißen Fläche zentriert**, einschließlich der
+  Navigationszeile; keine horizontale Zentrierung der Logo-/Textgruppe.
+  Desktop-Logo: 250 px breit und proportional skaliert. Der zweizeilige
+  Beschreibungstext steht daneben, Anmelde-/Portalzugang und Navigation rechts.
+  Auf breiten Ansichten sind Logo und Beschreibung über beide Rasterzeilen
+  vertikal zentriert. Mobil bleibt das Logo links mit 176 px gemäß gemeinsamem Breakpoint.
 - Beschreibung: „Immobilienrechner für“ / „Kauf, Sanierung und Investment“.
 - Hauptnavigation: „Mieterabrechnung“, „Preise“, „Warum ImmoCheck?“.
   Die bestehende Route `/nebenkostenabrechnung/` wird trotz Umbenennung beibehalten.
