@@ -42,7 +42,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Anmeldung, Nutzerportal und Adminportal verwenden dieselbe Buttonbreite und
   -höhe. Bereits vor der Authentifizierungsantwort wird die breiteste mögliche
   Beschriftung reserviert; ein Labelwechsel darf keine Größenänderung auslösen.
-  Die Größe wächst weiterhin mit der gemeinsamen Typografie.
+  Auf Desktop sind ab dem ersten Rendern mindestens 224 × 46 px reserviert,
+  damit auch der Wechsel von der gebündelten zur gespeicherten Schriftgröße
+  (aktuell 16 → 20 px) die Buttonfläche nicht verändert. Größere benutzerdefinierte
+  Schriften dürfen bei Bedarf mehr Platz erhalten; mobil bleiben die Iconflächen 44 × 44 px.
 - Anmelde-/Portalzugang verwendet den tatsächlichen Anmeldestatus. Auf schmalen
   Ansichten bleiben zugängliche Icon-Schaltflächen mit 44 × 44 px Bedienfläche.
 - Startseite, Rechner und die drei Informationsseiten verwenden denselben

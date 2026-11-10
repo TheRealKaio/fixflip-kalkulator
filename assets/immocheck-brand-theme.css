@@ -717,7 +717,7 @@ body:not(.nic-embed) .nic-brand-bar .nic-brand-description{align-self:center;jus
 /* Reserve the widest role label from the first paint, so authentication can
    change the text without changing the account button's width or height. */
 @media(min-width:1025px),(min-width:701px) and (min-height:601px){
- body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button{display:inline-grid!important;grid-template-columns:24px max-content;column-gap:8px;row-gap:0;box-sizing:border-box;white-space:nowrap}
+ body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button{display:inline-grid!important;grid-template-columns:24px max-content;column-gap:8px;row-gap:0;box-sizing:border-box;white-space:nowrap;min-width:224px!important;min-height:46px!important;justify-content:center}
  body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button>svg{grid-column:1;grid-row:1}
  body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button>span{grid-column:2;grid-row:1;justify-self:center;white-space:nowrap}
  body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button::after{content:"Jetzt anmelden\a Zum Nutzerportal\a Zum Adminportal";grid-column:2;grid-row:1;white-space:pre;visibility:hidden;height:0;overflow:hidden;pointer-events:none}
