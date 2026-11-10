@@ -4,7 +4,7 @@
 /* FINANCE_MODULE */
 /* CALCULATOR_REGISTRY */
 const routes=Object.fromEntries(calculators.map(item=>[item.path,item.id]));
-routes['/']=routes['/index.html']='home';
+routes['/']='home';routes['/index.html']='home';
 const contentRoutes={settlement:'/nebenkostenabrechnung/',prices:'/preise/',why:'/warum-immocheck/'};
 for(const [key,path] of Object.entries(contentRoutes)){routes[path]=key;routes[path+'index.html']=key;}
 function setPage(key){

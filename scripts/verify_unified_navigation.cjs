@@ -162,7 +162,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goForward();await page.waitForURL('http://localhost/warum-immocheck/');
   assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.why.title);
   await page.goBack();await page.goBack();await page.goBack();await page.waitForURL('http://localhost/');
-  assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Logo returns home within the shared application');
+  assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Browser history returns home within the shared application');
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
    await page.goto('http://localhost/'+routeName+'/');
    await page.locator('.nic-content-card').waitFor({state:'visible'});
