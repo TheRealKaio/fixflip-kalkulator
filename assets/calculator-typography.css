@@ -144,3 +144,10 @@ html body:not(.nic-admin) .app :is(h1,h2,h3,h4) {
 html body:not(.nic-admin) .app .field > label .hint {
   display: none !important;
 }
+
+/* Keep Admin sizes stable when mobile browsers rotate or reflow long copy.
+   Percentage 100 preserves browser zoom and user accessibility scaling. */
+html body .app > :is(.nic-brand-bar,.hero,main) {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

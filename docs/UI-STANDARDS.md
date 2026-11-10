@@ -95,6 +95,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## 4. Texte, Typografie und Buttons
 
+- Markenleiste, Bildheader und Hauptinhalt verwenden `text-size-adjust: 100%`
+  (einschließlich `-webkit-`), damit mobile Browser Texte beim Drehen nicht
+  eigenständig vergrößern. Admin-Schriftgrößen und Browserzoom bleiben erhalten.
+
 - Schriftfamilie und Größen für Fließtext, H1–H4, Untertexte und Hinweise kommen
   aus Admin → Layout und den gemeinsamen CSS-Variablen. Keine unabhängigen
   Schriftwerte nur für eine Informationsroute einführen.
