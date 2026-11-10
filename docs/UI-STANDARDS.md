@@ -44,6 +44,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Beschreibung: „Immobilienrechner für“ / „Kauf, Sanierung und Investment“.
 - Hauptnavigation: „Mieterabrechnung“, „Preise“, „Warum ImmoCheck?“.
   Die bestehende Route `/nebenkostenabrechnung/` wird trotz Umbenennung beibehalten.
+- Die Admin-Bereichsauswahl verwendet auf Desktop und Mobil dasselbe
+  aufklappbare „Admin-Menü“ mit aktivem Bereich im Auslöser und senkrechter Liste.
+  Die Liste startet geschlossen und schließt nach Auswahl, Escape oder Außenklick.
+  Keine dauerhafte horizontale Tab-Leiste nur auf Desktop.
 - Mobile Hauptnavigation über das gemeinsame Burger-Menü; keine zusätzliche
   seiteneigene Navigation. Das aufgeklappte Menü sitzt unter der Markenleiste.
 - Die drei Beschriftungen „Jetzt anmelden“, „Zum Nutzerportal“ und „Zum Adminportal“

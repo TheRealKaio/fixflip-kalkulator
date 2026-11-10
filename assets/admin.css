@@ -43,9 +43,7 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
  }
 }
 
-/* Mobile admin section navigation: one trigger, then full-width rows. */
-.admin-menu-toggle{display:none}
-@media(max-width:1024px){
+/* Shared admin section navigation on desktop, portrait and landscape. */
  body.nic-admin .admin-menu-toggle{
   display:flex!important;align-items:center;justify-content:space-between;gap:12px;
   width:100%;max-width:100%;min-width:0;min-height:48px;box-sizing:border-box;
@@ -67,4 +65,3 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
   white-space:normal;overflow-wrap:break-word;hyphens:auto;font-size:var(--nic-body-font-size,16px);line-height:1.4;
  }
  body.nic-admin .admin-tabs button[aria-selected=true]{background:var(--nic-green-bg,#075c55);color:var(--nic-green-text,#fff);border:0}
-}

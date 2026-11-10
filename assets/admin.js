@@ -116,9 +116,8 @@ if(adminNav){
  adminMenuButton.addEventListener('click',()=>setAdminMenuOpen(adminMenuButton.getAttribute('aria-expanded')!=='true'));
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&adminMenuButton.getAttribute('aria-expanded')==='true'){setAdminMenuOpen(false);adminMenuButton.focus();}});
  document.addEventListener('click',event=>{if(!adminNav.contains(event.target)&&!adminMenuButton.contains(event.target))setAdminMenuOpen(false);});
- const mobile=window.matchMedia('(max-width:1024px)');
- const sync=()=>{adminNav.setAttribute('aria-orientation',mobile.matches?'vertical':'horizontal');setAdminMenuOpen(false);};
- mobile.addEventListener('change',sync);sync();
+ adminNav.setAttribute('aria-orientation','vertical');
+ setAdminMenuOpen(false);
 }
 const tabs=Array.from(document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]'));tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectTab(tab.id.replace('tab-','')));tab.addEventListener('keydown',e=>{let i;if(e.key==='ArrowRight'||e.key==='ArrowDown')i=(index+1)%tabs.length;else if(e.key==='ArrowLeft'||e.key==='ArrowUp')i=(index-1+tabs.length)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});});
 form.addEventListener('input',e=>{if(e.target.closest('[data-stats-filter]'))return;markDirty();updatePreview();});
