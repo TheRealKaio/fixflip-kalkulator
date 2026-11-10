@@ -16,6 +16,9 @@ Für Anmeldung, zentrale Einstellungen und Statistiken liegt ein optionales PHP-
 
 ## Dokumentation
 
+- [Verbindliche UI-Standards: Header, Inhaltsseiten, Texte und Footer](docs/UI-STANDARDS.md)
+- [Arbeitsregeln für künftige Änderungen](AGENTS.md)
+
 - [Vollständige Projektdokumentation (Markdown)](docs/PROJEKTSTATUS.md)
 - [Projektdokumentation als PDF](docs/README-Projektdokumentation.pdf)
 

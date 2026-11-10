@@ -1,5 +1,10 @@
 # Gemeinsame Layoutarchitektur – V8.364
 
+Für die aktuelle verbindliche Darstellung und das Verhalten gelten die
+[UI-Standards](UI-STANDARDS.md). Die folgenden Abschnitte beschreiben auch
+historische Build-Stände; insbesondere die Informationsseiten verwenden
+inzwischen den gemeinsamen Routencontroller und Header.
+
 Die komprimierten Originale unter `source/`, `assets/financing.html`,
 `assets/pdf-reports.js` und `assets/user-access.js` bleiben unverändert. Der
 bestehende Originalvergleich im Build erzwingt dies weiterhin.
