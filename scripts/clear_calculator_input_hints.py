@@ -4,8 +4,9 @@ import re
 SITE = Path("_site")
 SCRIPT = r'''<script id="nic-clear-calculator-input-hints">
 (function(){
-  const page=document.documentElement;
-  if(!page || !/^(budget|own|rent|flip|finance)$/.test(page.getAttribute('data-nic-page')||''))return;
+  // The shared document can start on Home or a content route before opening
+  // a calculator. Scope cleanup to main, not to the initial route attribute.
+  const observed=new WeakSet();
   function clearHints(root){
     const fields=[];
     if(root instanceof Element && root.matches('input[placeholder],textarea[placeholder]'))fields.push(root);
@@ -14,19 +15,29 @@ SCRIPT = r'''<script id="nic-clear-calculator-input-hints">
       if(field.closest('#ownBudgetTransferCard'))return;
       field.removeAttribute('placeholder');
     });
+    // Financing has its own open Shadow DOM, outside document selectors.
+    const elements=root.querySelectorAll?[...root.querySelectorAll('*')]:[];
+    if(root instanceof Element)elements.unshift(root);
+    for(const element of elements)if(element.shadowRoot)watch(element.shadowRoot);
   }
-  clearHints(document);
-  new MutationObserver(records=>records.forEach(record=>{
-    if(record.type==='attributes')clearHints(record.target);
-    record.addedNodes.forEach(node=>{if(node.nodeType===1)clearHints(node);});
-  })).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['placeholder']});
+  function watch(root){
+    if(observed.has(root))return;
+    observed.add(root);
+    clearHints(root);
+    new MutationObserver(records=>records.forEach(record=>{
+      if(record.type==='attributes')clearHints(record.target);
+      record.addedNodes.forEach(node=>{if(node.nodeType===1)clearHints(node);});
+    })).observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:['placeholder']});
+  }
+  const main=document.querySelector('.app > main, main.section');
+  if(main)watch(main);
 })();
 </script>'''
 
 pages=0
 for path in SITE.rglob('*.html'):
     source=path.read_text(encoding='utf-8')
-    if not re.search(r'<html\b[^>]*\bdata-nic-page="(?:budget|own|rent|flip|finance)"',source):
+    if "function updateDealTypeUI(){" not in source:
         continue
     if 'id="nic-clear-calculator-input-hints"' not in source:
         if '</body>' not in source:

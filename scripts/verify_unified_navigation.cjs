@@ -102,6 +102,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
    assert.equal(await page.evaluate(()=>performance.timeOrigin),origin,'calculator changes must keep same document');
    assert.equal(await page.locator('.nic-tile-active').count(),1);
+   await page.waitForFunction(()=>[...document.querySelectorAll('.app>main input[placeholder],.app>main textarea[placeholder]')].every(field=>field.closest('#ownBudgetTransferCard')));
+   if(key==='finance')await page.waitForFunction(()=>!document.getElementById('nicFinanceModule').shadowRoot.querySelector('input[placeholder],textarea[placeholder]'));
+
    if(key==='own'){
     assert.equal(await page.locator('#heroTitle').innerText(),'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');

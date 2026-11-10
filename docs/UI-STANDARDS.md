@@ -192,3 +192,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Der Budgetrechner prüft den allgemeinen Spielraum, der Eigenheim-Rechner eine
   konkrete Immobilie. Der Einführungstext ist auf der direkten Route im HTML
   vorhanden und bei internen Wechseln nur im Modus Eigennutzung sichtbar.
+
+## Eingabefelder: Beispieltexte
+
+- Keine grauen Platzhalter in Rechnereingaben; Ausnahme ist die Karte
+  „Budget übernehmen“ (`#ownBudgetTransferCard`). Einheiten bleiben erhalten.
+- Die Bereinigung gilt auch bei Einstieg über die Startseite/Inhaltsseiten,
+  internen Rechnerwechseln und im Shadow DOM des Finanzierungsrechners.
