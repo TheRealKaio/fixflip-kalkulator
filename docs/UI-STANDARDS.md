@@ -39,6 +39,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Die bestehende Route `/nebenkostenabrechnung/` wird trotz Umbenennung beibehalten.
 - Mobile Hauptnavigation über das gemeinsame Burger-Menü; keine zusätzliche
   seiteneigene Navigation. Das aufgeklappte Menü sitzt unter der Markenleiste.
+- Anmeldung, Nutzerportal und Adminportal verwenden dieselbe Buttonbreite und
+  -höhe. Bereits vor der Authentifizierungsantwort wird die breiteste mögliche
+  Beschriftung reserviert; ein Labelwechsel darf keine Größenänderung auslösen.
+  Die Größe wächst weiterhin mit der gemeinsamen Typografie.
 - Anmelde-/Portalzugang verwendet den tatsächlichen Anmeldestatus. Auf schmalen
   Ansichten bleiben zugängliche Icon-Schaltflächen mit 44 × 44 px Bedienfläche.
 - Startseite, Rechner und die drei Informationsseiten verwenden denselben
