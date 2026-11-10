@@ -3,11 +3,11 @@ const site=process.argv[2]||'_site',start=fs.readFileSync('assets/calculator-sta
 function open(path,store={},hash='',search=''){
  const replaced=[];const ctx={Object,location:{pathname:path,hash,search,replace:u=>replaced.push(u)},localStorage:{getItem:k=>store[k]??null,setItem:(k,v)=>store[k]=v}};vm.runInNewContext(start,ctx);return {replaced,store};
 }
-assert.deepEqual(open('/').replaced,['/finanzierungsrechner/']);
+assert.deepEqual(open('/').replaced,[]);
 for(const [key,path]of Object.entries({budget:'/budget/',own:'/eigennutzung/',rent:'/vermietung/',flip:'/fix-flip/',finance:'/finanzierungsrechner/'})){
- const store={};assert.deepEqual(open(path,store).replaced,[]);assert.equal(store.nic_last_calculator_v1,key);assert.deepEqual(open('/',store).replaced,[path]);assert.deepEqual(open(path,store).replaced,[]);
+ const store={};assert.deepEqual(open(path,store).replaced,[]);assert.equal(store.nic_last_calculator_v1,key);assert.deepEqual(open('/',store).replaced,[]);assert.deepEqual(open(path,store).replaced,[]);
 }
-assert.deepEqual(open('/',{},'#admin').replaced,[]);assert.deepEqual(open('/',{},'#datenschutz').replaced,[]);assert.deepEqual(open('/',{},'','?utm_source=test').replaced,['/finanzierungsrechner/?utm_source=test']);
+assert.deepEqual(open('/',{},'#admin').replaced,[]);assert.deepEqual(open('/',{},'#datenschutz').replaced,[]);assert.deepEqual(open('/',{},'','?utm_source=test').replaced,[]);
 const html=fs.readFileSync(site+'/finanzierungsrechner/index.html','utf8'),from=html.indexOf('function calculate(){'),to=html.indexOf('\nfunction drawRates',from),els={};const $=id=>els[id]??=( {textContent:'',innerHTML:'',value:'0',setAttribute(){}} );
 let values={loan:300000,interest:4,repay:2,extra:5,years:10};const fmt=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}),whole=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
 const ctx={$: $,values:()=>values,money:x=>fmt.format(x),euro:x=>whole.format(x),pct:x=>x+' %',grid:()=>'',line:()=>'',drawRates(){},localStorage:{setItem(){}},F:'test',Math,refinanceBase:null,refinanceDistance:null};vm.createContext(ctx);vm.runInContext(html.slice(from,to),ctx);vm.runInContext('calculate()',ctx);

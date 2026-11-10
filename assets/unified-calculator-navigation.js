@@ -9,9 +9,10 @@ window.NICCalculators=Object.freeze({
  get active(){return active;},
  get(id){return calculators.find(item=>item.id===id)||null;}
 });
-let active=null,financeRoot=null,bypass=false;
+let active=null,financeRoot=null,bypass=false,homeHeader=null;
 function select(key,push=false){
  if(!calculators.some(item=>item.id===key))throw new Error('Unknown calculator: '+key);
+ document.body.classList.remove('nic-home-active');
  if(active===key)return;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
@@ -57,7 +58,7 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();financeRoot.getElementById(id).click();
  }
 },true);
-window.addEventListener('popstate',()=>{const key=routes[location.pathname.toLowerCase()]||'budget';select(key);});
+window.addEventListener('popstate',()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);else if(['/', '/index.html'].includes(location.pathname.toLowerCase()))initWelcome();});
 function createSiteNavigation(){
  const links=[['/nebenkostenabrechnung/','Nebenkostenabrechnung'],['/preise/','Preise'],['/warum-immocheck/','Warum Immo-Kalkulator']];
  const header=document.querySelector('.nic-brand-bar')||document.querySelector('.brand-logo-wrap')?.closest('header')||document.querySelector('header');
@@ -78,22 +79,45 @@ function initWelcome(){
  if(document.documentElement.dataset.nicPage!=='website')return;
  const main=document.querySelector('main.section')||document.querySelector('main'),menu=document.querySelector('.deal-type-card');
  if(!main)return;
+ const title=document.getElementById('heroTitle'),text=document.getElementById('heroText');
+ if(!homeHeader)homeHeader={title:title?.innerHTML,text:text?.textContent,documentTitle:document.title};
+ else if(!location.hash){if(title)title.innerHTML=homeHeader.title;if(text)text.textContent=homeHeader.text;document.title=homeHeader.documentTitle;window.NICHeader?.refresh();}
  let intro=document.getElementById('nic-home-intro');
  if(!intro){
-  intro=document.createElement('section');intro.id='nic-home-intro';intro.className='nic-home-intro';
-  const content=window.NICSettings.current.content.welcome;
-  const h=document.createElement('h2');h.textContent=content.title;
-  const body=document.createElement('div');body.className='nic-home-description';body.append(window.NICSettings.legalFragment(content.description,window.NICSettings.current));
-  const actions=document.createElement('div');actions.className='nic-home-actions';const button=document.createElement('button');button.type='button';button.dataset.nicShowCalculators='';button.textContent='Immobilie berechnen';const link=document.createElement('a');link.href='/nebenkostenabrechnung/';link.textContent='Nebenkosten abrechnen';actions.append(button,link);intro.append(h,body,actions);
-  (menu||main.firstElementChild)?.before(intro);
+  const template=document.createElement('template');template.innerHTML=''/* HOME_MARKUP */;
+  intro=template.content.firstElementChild;
  }
- if(menu){menu.hidden=true;menu.setAttribute('aria-hidden','true');}
+ if(intro.parentElement!==main)main.prepend(intro);
+ const content=window.NICSettings.current.content.welcome;
+ intro.querySelector('[data-home-title]').textContent=content.title;
+ intro.querySelector('[data-home-description]').replaceChildren(window.NICSettings.legalFragment(content.description,window.NICSettings.current));
+
+ // Copy the existing controls' content and classes; do not create a second
+ // visual button system or duplicate calculator radio inputs and IDs.
+ if(menu&&!intro.dataset.controlsSynced){
+  for(const link of intro.querySelectorAll('a[data-calculator]')){
+   const item=calculators.find(item=>item.id===link.dataset.calculator);
+   const original=menu.querySelector('[data-href="'+item.path+'"]');
+   if(!original)continue;
+   link.className=original.className.replace(/\b(?:nic-tile-active|current)\b/g,'').trim();
+   link.innerHTML=original.innerHTML;
+   link.querySelectorAll('input').forEach(input=>input.remove());
+  }
+  intro.dataset.controlsSynced='true';
+ }
+ document.body.classList.remove('nic-finance-active');
+ document.body.classList.add('nic-home-active');
+ active=null;
+ document.documentElement.dataset.calculator='home';document.body.dataset.calculator='home';
+ // The real calculator menu becomes visible again when a calculator opens.
+ if(menu){menu.hidden=false;menu.removeAttribute('aria-hidden');}
 }
 document.addEventListener('click',event=>{const button=event.target.closest('[data-nic-show-calculators]');if(!button)return;const menu=document.querySelector('.deal-type-card');if(menu){menu.hidden=false;menu.removeAttribute('aria-hidden');menu.scrollIntoView({behavior:'smooth',block:'start'});}});
+window.addEventListener('nic-settings-updated',()=>{if(document.body.classList.contains('nic-home-active'))initWelcome();});
 window.addEventListener('DOMContentLoaded',()=>{
  const css=document.createElement('style');css.textContent='.nic-finance-active main.section > :not(.deal-type-card):not(#nicFinanceModule):not(#nic-home-intro){display:none!important}#nicFinanceModule[hidden]{display:none!important}.deal-type-card[hidden]{display:none!important}.nic-home-intro{margin:20px 0 24px;padding:26px 30px;border:1px solid #e2e9e5;border-radius:12px;background:#f6f1e9;color:#263b3a}.nic-home-intro h2{margin:0;color:#075c55;font-size:26px}.nic-home-description{margin-top:10px;max-width:780px;line-height:1.55}.nic-home-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.nic-home-actions a,.nic-home-actions button{display:inline-flex;min-height:44px;align-items:center;padding:10px 18px;border:1px solid #075c55;border-radius:12px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}.nic-home-actions a{background:#fff;color:#075c55}[data-nic-site-nav]{display:flex;align-items:center;justify-content:flex-end;gap:clamp(10px,1.4vw,20px);margin-left:auto}[data-nic-site-nav] a{color:#263b3a;font-size:14px;text-decoration:none;white-space:nowrap}.nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:170px minmax(0,1fr) auto}.nic-brand-bar [data-nic-site-nav]{grid-column:1/-1;grid-row:2;padding-top:9px;border-top:1px solid #e9e1d6}.nic-menu-toggle{display:none;border:1px solid #dce6e1;border-radius:10px;background:#fff;color:#075c55;font-size:22px;padding:5px 10px}@media(max-width:700px),(max-width:1024px) and (max-height:600px) and (orientation:landscape){.nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:minmax(0,1fr) auto auto!important;position:relative}.nic-brand-bar a.nic-login-button{grid-column:2!important;grid-row:1!important}.nic-brand-bar .nic-brand-description{display:none!important}.nic-brand-bar [data-nic-site-nav]{display:none;position:absolute;z-index:100;top:100%;left:0;right:0;grid-column:auto;grid-row:auto;margin:0;padding:16px;background:#fff;border-top:1px solid #e2e9e5;box-shadow:0 10px 20px #263b3a18;flex-direction:column;align-items:flex-start}.nic-brand-bar [data-nic-site-nav].is-open{display:flex}.nic-brand-bar .nic-menu-toggle{display:inline-flex!important;grid-column:3!important;grid-row:1!important;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;min-width:44px;padding:9px;margin:0;flex:none;cursor:pointer}.nic-brand-bar .nic-menu-toggle:focus-visible{outline:3px solid #b37b00;outline-offset:3px}.nic-home-intro{padding:22px 18px}.nic-home-actions{flex-direction:column}.nic-home-actions>*{justify-content:center}}';css.textContent+='@media(max-width:700px) and (orientation:portrait){.nic-brand-bar a.nic-login-button{box-sizing:border-box!important;width:44px!important;height:44px!important;padding:9px!important;gap:0!important}.nic-brand-bar a.nic-login-button>span{display:none!important}}';document.head.append(css);
  createSiteNavigation();
- window.NICSettings.init().then(()=>{initWelcome();select(routes[location.pathname.toLowerCase()]||'budget');}).catch(console.error);
+ window.NICSettings.init().then(()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);else if(document.documentElement.dataset.nicPage==='website')initWelcome();}).catch(console.error);
 });
 window.NICCalculatorNavigation={select,restore(){}};
 })();

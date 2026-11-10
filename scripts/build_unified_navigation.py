@@ -38,6 +38,9 @@ calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
  raise SystemExit('Expected five unique calculator IDs and routes')
 nav=Path('assets/unified-calculator-navigation.js').read_text().replace('/* FINANCE_MODULE */',factory)
+nav=nav.replace("''/* HOME_MARKUP */",json.dumps(Path('assets/homepage.html').read_text()))
+import shutil
+shutil.copyfile('assets/homepage.css',site/'homepage.css')
 nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calculators)+';')
 (site/'calculators.json').write_text(json.dumps(registry,ensure_ascii=False,indent=2)+'\n')
 # Finance shares the same loaded controller and initialization scope as all modes.
@@ -45,8 +48,20 @@ nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calc
 # Remove obsolete split bundles if rebuilding an existing output directory.
 for obsolete in site.glob('calculator-finance*.js'):obsolete.unlink()
 # Direct finance URLs boot the identical application, with finance selected.
-base=(site/'index.html').read_text()
-base=re.sub(r'<section id="nic-home-intro"[^>]*>.*?</section>','',base,flags=re.S)
+base=(site/'index.html').read_text().replace(' nic-home-active','').replace('class="nic-home-active"','class=""')
+# The homepage contains nested sections; remove its complete balanced element.
+from unify_finance_footer_markup import FooterParser
+class HomeParser(FooterParser):
+ def handle_starttag(self,tag,attrs):
+  home=any(k=='id' and v=='nic-home-intro' for k,v in attrs)
+  attrs=[(k,v) for k,v in attrs if not(home and k=='class')]
+  if home:attrs.append(('class','footer-note'))
+  elif any(k=='class' and v and 'footer-note' in v.split() for k,v in attrs):
+   attrs=[(k,'' if k=='class' else v) for k,v in attrs]
+  super().handle_starttag(tag,attrs)
+home=HomeParser(base);home.feed(base)
+if home.start is not None and home.end is not None:base=base[:home.start]+base[home.end:]
+
 base=re.sub(r'data-nic-page="[^"]+"','data-nic-page="finance"',base,count=1)
 for pattern in [r'<title>.*?</title>',r'<link rel="canonical"[^>]*>',r'<meta (?:name="description"|property="og:[^"]+"|name="twitter:[^"]+")[^>]*>']:
  old=re.findall(pattern,finance,re.S)

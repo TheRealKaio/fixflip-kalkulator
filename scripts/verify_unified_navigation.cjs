@@ -15,8 +15,45 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
    await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'})[path.extname(file)]||'text/plain'});
   });
-  await page.goto('http://localhost/budget/');
+  await page.goto('http://localhost/');
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+  await page.waitForFunction(()=>document.body.dataset.calculator==='home');
+  const homeHeading=await page.locator('#heroTitle').innerText();
+  assert.equal(new URL(page.url()).pathname,'/','Bare domain must stay on the homepage');
+  assert.equal(await page.locator('#nic-home-intro .nic-home-group').count(),3);
+  const homeLayout=await page.locator('#nic-home-intro').evaluate(el=>{
+   const rect=selector=>{const r=el.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,bottom:r.bottom};};
+   return {settlement:rect('.nic-home-settlement'),planning:rect('.nic-home-planning'),property:rect('.nic-home-property'),buttons:[...el.querySelectorAll('.nic-home-options>.deal-type-option')].map(button=>{const r=button.getBoundingClientRect();return {x:r.x,y:r.y,bottom:r.bottom};})};
+  });
+  if(width>700){
+   assert(homeLayout.settlement.x<homeLayout.planning.x,'Settlement must be on the left');
+   assert(Math.abs(homeLayout.settlement.y-homeLayout.planning.y)<2,'Top groups must share one row');
+   assert(homeLayout.property.y>=homeLayout.planning.bottom,'Property group must be below the top row');
+  }else{
+   assert(homeLayout.planning.y>=homeLayout.settlement.bottom,'Mobile groups must stack');
+   assert(homeLayout.property.y>=homeLayout.planning.bottom,'Mobile property group must stack');
+   homeLayout.buttons.slice(1).forEach((button,i)=>assert(button.y>=homeLayout.buttons[i].bottom-1,'Every mobile button must be below its predecessor'));
+  }
+
+  assert(await page.locator('#nic-home-intro .nic-home-copy').isVisible());
+  assert.equal(await page.locator('[data-home-title]').innerText(),require('../assets/site-settings.json').content.welcome.title);
+  const pending=page.getByRole('button',{name:'Mieterabrechnung erstellen',exact:true});
+  assert.equal(await pending.getAttribute('aria-disabled'),'true');
+  assert.equal(await pending.getAttribute('href'),null);
+  for(const key of ['budget','finance','own','rent','flip']){
+   await page.locator('#nic-home-intro a[data-calculator="'+key+'"]').click();
+   await page.waitForFunction(k=>document.body.dataset.calculator===k,key);
+   assert.equal(await page.locator('#nic-home-intro').isVisible(),false);
+   await page.goBack();
+   await page.waitForFunction(()=>document.body.dataset.calculator==='home');
+   assert(await page.locator('#nic-home-intro').isVisible());
+   assert.equal(await page.locator('#heroTitle').innerText(),homeHeading);
+  }
+  await page.reload();
+  await page.waitForFunction(()=>document.body.dataset.calculator==='home');
+  assert.equal(new URL(page.url()).pathname,'/','Remembered calculator must not redirect home');
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Homepage overflows horizontally');
+  await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
   assert.deepEqual(errors,[], 'Page initialization must complete without JavaScript errors');

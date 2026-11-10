@@ -211,7 +211,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
       const page=route||document.documentElement?.dataset?.nicPage;
       active=calculatorKeys.includes(page)?page:document.getElementById('dealTypeRent')?.getAttribute('aria-pressed')==='true'?'rent':document.querySelector('input[name="dealType"]:checked')?.value||'budget';
     }
-    document.querySelectorAll('.deal-type-row > .deal-type-option').forEach((tile,index)=>{
+    document.querySelectorAll('.deal-type-card .deal-type-row > .deal-type-option').forEach((tile,index)=>{
       const key=tile.dataset.calculator||calculatorKeys[index];
       const selected=key===active;
       tile.dataset.calculator=key;
