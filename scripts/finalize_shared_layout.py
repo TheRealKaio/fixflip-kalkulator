@@ -139,6 +139,13 @@ for p in site.rglob('*.html'):
 rules.append('body:not(.nic-embed) .deal-type-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}body:not(.nic-embed) .deal-type-row>.deal-type-option{grid-column:auto!important}@media(max-width:700px){body:not(.nic-embed) .deal-type-row{grid-template-columns:minmax(0,1fr)!important}}')
 rules.append('body:not(.nic-admin) :is(.field,.input-wrap,.finance-check-label,.finance-check-label>span){min-width:0!important;max-width:100%!important}body:not(.nic-admin) label{white-space:normal!important;overflow-wrap:anywhere}body:not(.nic-admin) .finance-check-label{flex-wrap:wrap}body:not(.nic-admin) .field input{max-width:100%;box-sizing:border-box}')
 rules.append('body:not(.nic-admin) :is(.kpis,.kpi,.kpi>*,.rent-kpi-value-row){min-width:0!important;max-width:100%!important;box-sizing:border-box}body:not(.nic-admin) .kpis{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))!important}body:not(.nic-admin) .kpi{overflow-wrap:anywhere}body:not(.nic-admin) :is(#rentSection,#result.own-use) .kpi,body:not(.nic-admin) :is(#rentSection,#result.own-use) .kpi :is(.name,.name>span,.note){overflow-wrap:normal!important;word-break:normal!important;hyphens:none!important}body:not(.nic-admin) .kpi:not(:has(.info-btn)) .name,body:not(.nic-admin) .kpi .rent-kpi-name{padding-right:0!important}body:not(.nic-admin) .rent-kpi-name>span{min-width:0;flex:1 1 auto}body:not(.nic-admin) .rent-kpi-value-row{flex-wrap:wrap}')
+rules.append("""
+:root{--nic-content-footer-gap:16px}
+body:not(.nic-embed):not(.nic-admin) .app{display:flex!important;flex-direction:column!important;min-height:100vh!important;min-height:100dvh!important}
+body:not(.nic-embed):not(.nic-admin) .app>main{flex:1 0 auto!important}
+body:not(.nic-embed):not(.nic-admin) .app>:is(.nic-brand-bar,.hero,.footer-note,.nic-shared-footer){flex-shrink:0!important}
+body.nic-admin-open .app>#nicAdminPanel{padding-bottom:var(--nic-content-footer-gap,16px)!important;box-sizing:border-box}
+""")
 rules.append('body:not(.nic-embed) .app>.footer-note{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin:0!important;transform:none!important;border-radius:16px!important}')
 rules.append('body:not(.nic-embed) .deal-type-row>:is(label,#dealTypeRent,#nicFinancingTab,.deal-type-option){border:2px solid #dce8e2!important;box-sizing:border-box!important}body:not(.nic-embed) .deal-type-row>:is(label,#dealTypeRent,#nicFinancingTab,.deal-type-option).nic-tile-active{border:2px solid var(--nic-green-bg,#075c55)!important;background:var(--nic-green-bg,#075c55)!important;color:var(--nic-green-text,#fff)!important}')
 # Single final action sizing rule for Budget and modernization proposal controls.
@@ -637,7 +644,7 @@ for page in site.rglob('*.html'):
   'html[data-nic-page="'+key+'"] body .app{min-height:100vh!important;display:flex!important;flex-direction:column!important}'
   'html[data-nic-page="'+key+'"] body .app .hero{display:none!important}'
   'html[data-nic-page="'+key+'"] body .app main.nic-content-main{display:flex!important;flex-direction:column!important;flex:1 0 auto!important;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}'
-  'html[data-nic-page="'+key+'"] body .app .nic-content-card{flex:1 0 auto!important;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto 16px;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}'
+  'html[data-nic-page="'+key+'"] body .app .nic-content-card{flex:1 0 auto!important;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}'
   '@media(max-width:760px){html[data-nic-page="'+key+'"] body .app main.nic-content-main{padding:24px 16px 16px}html[data-nic-page="'+key+'"] body .app .nic-content-card{padding:24px 18px}}'
   '</style>'
  )

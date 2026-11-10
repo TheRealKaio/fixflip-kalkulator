@@ -45,7 +45,7 @@ body.nic-legal-open #nicLegalPanel{
   flex-direction:column;
   min-width:0;
   box-sizing:border-box;
-  padding:16px 0 0;
+  padding:16px 0 var(--nic-content-footer-gap,16px);
 }
 body.nic-legal-open #nicLegalPanel .nic-legal-card{
   flex:1 0 auto;
