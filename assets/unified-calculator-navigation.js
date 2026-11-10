@@ -5,6 +5,31 @@
 /* CALCULATOR_REGISTRY */
 const routes=Object.fromEntries(calculators.map(item=>[item.path,item.id]));
 routes['/']=routes['/index.html']='home';
+const contentRoutes={settlement:'/nebenkostenabrechnung/',prices:'/preise/',why:'/warum-immocheck/'};
+for(const [key,path] of Object.entries(contentRoutes)){routes[path]=key;routes[path+'index.html']=key;}
+function setPage(key){
+ document.documentElement.dataset.nicPage=key==='home'?'website':key;
+ window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
+}
+function showContent(key,refresh=false){
+ const main=document.querySelector('.app>main.section');if(!main)return;
+ document.body.classList.remove('nic-home-active','nic-finance-active');
+ document.body.classList.add('nic-content-active','nic-standard-header-page');
+ let panel=document.getElementById('nicContentView');
+ if(!panel){panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';main.prepend(panel);}
+ const settings=window.NICSettings.current,c=settings.content[key];
+ const signature=JSON.stringify([key,c.description,settings.company]);
+ if(panel.dataset.signature!==signature){panel.replaceChildren(window.NICSettings.legalFragment(c.description,settings));panel.dataset.signature=signature;}
+ active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;
+ if(!refresh)setPage(key);window.NICHeader?.refresh();
+}
+function pushRoute(key,previousURL){
+ const path=Object.keys(routes).find(p=>routes[p]===key);
+ history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',path+location.search);
+ // Close native admin/legal views before rendering the destination header.
+ if(new URL(previousURL).hash)window.dispatchEvent(new HashChangeEvent('hashchange',{oldURL:previousURL,newURL:location.href}));
+}
+
 window.NICCalculators=Object.freeze({
  list:Object.freeze(calculators.map(item=>Object.freeze(item))),
  get active(){return active;},
@@ -12,9 +37,16 @@ window.NICCalculators=Object.freeze({
 });
 let active=null,financeRoot=null,bypass=false;
 function select(key,push=false){
- if(key==='home'){initWelcome();return;}
+ if(key==='home'||contentRoutes[key]){
+  const previousURL=location.href;
+  if(push)pushRoute(key,previousURL);
+  if(key==='home'){document.body.classList.remove('nic-content-active','nic-standard-header-page');document.documentElement.dataset.nicPage='website';initWelcome();setPage('home');}else showContent(key);
+  if(push)window.scrollTo({top:0,left:0,behavior:'instant'});
+  return;
+ }
  if(!calculators.some(item=>item.id===key))throw new Error('Unknown calculator: '+key);
- document.body.classList.remove('nic-home-active');
+ document.body.classList.remove('nic-home-active','nic-content-active','nic-standard-header-page');
+ document.documentElement.dataset.nicPage=key;
  if(active===key)return;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
@@ -40,14 +72,21 @@ function select(key,push=false){
  document.documentElement.dataset.calculator=key;
  document.body.dataset.calculator=key;
  window.dispatchEvent(new CustomEvent('nic-calculator-changed',{detail:{id:key}}));
- const path=Object.keys(routes).find(p=>routes[p]===key);
- if(push){history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',path+location.search);}
+ if(push)pushRoute(key,previousURL);
  try{localStorage.setItem('nic_last_calculator_v1',key);}catch(_){}
+ setPage(key);
  window.NICSettings?.syncCalculatorMenu(key);
  window.scrollTo({top:y,left:0,behavior:'instant'});
 }
 document.addEventListener('click',event=>{
  if(bypass||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+ const link=event.target.closest('a[href]');
+ if(link&&document.querySelector('.app>main.section .deal-type-card')){
+  const url=new URL(link.href,location.href),key=routes[url.pathname.toLowerCase()];
+  if(url.origin===location.origin&&key&&!url.hash&&!link.download&&(!link.target||link.target==='_self')){
+   event.preventDefault();select(key,true);return;
+  }
+ }
  const tile=event.target.closest('.deal-type-row > .deal-type-option');
  if(tile){
   const key=tile.dataset.calculator||routes[new URL(tile.dataset.href||tile.href||location.href,location.href).pathname.toLowerCase()];
@@ -136,6 +175,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  createSiteNavigation();
  window.NICSettings.init().then(()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);}).catch(console.error);
 });
+window.NICContent={refresh(){if(document.body.classList.contains('nic-content-active')&&contentRoutes[active])showContent(active,true);}};
 window.NICHome={refresh(){if(document.body.classList.contains('nic-home-active'))initWelcome();}};
 window.NICCalculatorNavigation={select,restore(){}};
 })();

@@ -62,6 +62,28 @@ class HomeParser(FooterParser):
 home=HomeParser(base);home.feed(base)
 if home.start is not None and home.end is not None:base=base[:home.start]+base[home.end:]
 
+# Direct information URLs boot the complete shared application as well.
+# Retain their static SEO metadata and rendered article for direct visits/crawlers.
+shared=base
+for content_key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck')]:
+ destination=site/slug/'index.html'
+ old=destination.read_text()
+ article=re.search(r'<article class="nic-content-card">(.*?)</article>',old,re.S)
+ if not article:raise SystemExit('Content article missing: '+slug)
+ document=shared
+ document=re.sub(r'data-nic-page="[^"]+"','data-nic-page="'+content_key+'"',document,count=1)
+ document=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+m[1]+' class="nic-content-active nic-standard-header-page">' if 'class=' not in m[1] else '<body'+re.sub(r'class="([^"]*)"',lambda c:'class="'+c[1]+' nic-content-active nic-standard-header-page"',m[1])+'>',document,count=1)
+ document=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+'<article id="nicContentView" class="nic-content-card">'+article[1]+'</article>',document,count=1)
+ for pattern in [r'<title>.*?</title>',r'<link rel="canonical"[^>]*>',r'<meta (?:name="description"|property="og:[^"]+"|name="twitter:[^"]+")[^>]*>']:
+  metadata=re.findall(pattern,old,re.S)
+  document=re.sub(pattern,'',document,flags=re.S)
+  document=document.replace('</head>',''.join(metadata)+'</head>',1)
+ for tag,identifier in [('h1','heroTitle'),('p','heroText')]:
+  pattern=r'(<'+tag+r'\b[^>]*id="'+identifier+r'"[^>]*>).*?(</'+tag+'>)'
+  heading=re.search(pattern,old,re.S)
+  if heading:document=re.sub(pattern,lambda m:heading[0],document,count=1,flags=re.S)
+ destination.write_text(document)
+
 base=re.sub(r'data-nic-page="[^"]+"','data-nic-page="finance"',base,count=1)
 for pattern in [r'<title>.*?</title>',r'<link rel="canonical"[^>]*>',r'<meta (?:name="description"|property="og:[^"]+"|name="twitter:[^"]+")[^>]*>']:
  old=re.findall(pattern,finance,re.S)
@@ -79,11 +101,11 @@ for page in site.rglob('*.html'):
  if 'function updateDealTypeUI(){' in s:
   for target in ['heroTitle','heroText']:
    old='if($("'+target+'")){'
-   new='if($("'+target+'")&&!document.body.classList.contains("nic-home-active")){'
+   new='if($("'+target+'")&&!document.body.matches(".nic-home-active,.nic-content-active")){'
    if s.count(old)!=1:raise SystemExit('Header ownership guard missing: '+str(page)+' '+target)
    s=s.replace(old,new,1)
-  s=s.replace('if(heroTitle) heroTitle.innerHTML=', 'if(heroTitle&&!document.body.classList.contains("nic-home-active")) heroTitle.innerHTML=')
-  s=s.replace('if(heroText) heroText.textContent=', 'if(heroText&&!document.body.classList.contains("nic-home-active")) heroText.textContent=')
+  s=s.replace('if(heroTitle) heroTitle.innerHTML=', 'if(heroTitle&&!document.body.matches(".nic-home-active,.nic-content-active")) heroTitle.innerHTML=')
+  s=s.replace('if(heroText) heroText.textContent=', 'if(heroText&&!document.body.matches(".nic-home-active,.nic-content-active")) heroText.textContent=')
  if 'async function initializeReferenceInterest()' in s:
   anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
   if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))
@@ -110,7 +132,8 @@ for page in site.rglob('*.html'):
  if page==site/'finanzierungsrechner/index.html':
   s=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+finance_header[0]+m[2],s,count=1,flags=re.S)
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
- key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else 'budget')
+ if 'homepage.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/homepage.css"></head>',1)
+ key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck')] if page==site/slug/'index.html'),'budget'))
  s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)
  page.write_text(s)

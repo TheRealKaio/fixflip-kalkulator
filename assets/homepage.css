@@ -34,3 +34,13 @@ body.nic-home-active #nic-home-intro.nic-home-intro{display:flex;flex-direction:
  -webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:6 3 3;
  word-break:normal;overflow-wrap:break-word;
 }
+
+/* Information routes retain the same application, main container and header. */
+body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.section{display:flex;flex-direction:column}
+body:not(.nic-content-active) #nicContentView{display:none!important}
+body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.section>:not(#nicContentView):not(.footer-note):not(.nic-shared-footer),
+body.nic-content-active .app>.bottom,
+body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
+#nicContentView.nic-content-card{flex:1;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff;hyphens:auto;overflow-wrap:break-word}
+#nicContentView p{margin:12px 0}
+@media(max-width:760px){#nicContentView.nic-content-card{padding:24px 18px}}

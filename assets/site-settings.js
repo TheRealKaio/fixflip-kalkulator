@@ -204,6 +204,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
     if(document.body?.classList.contains('nic-standard-header-page')&&current.content[key]){const c=current.content[key],h=document.getElementById('heroTitle'),p=document.getElementById('heroText');if(h&&h.textContent!==c.title)h.textContent=c.title;if(p&&p.textContent!==c.metaDescription)p.textContent=c.metaDescription;}
     syncCalculatorMenu(key);
     window.NICHome?.refresh();
+    window.NICContent?.refresh();
     window.NICHeader?.refresh();
   }
   if(typeof window.addEventListener==='function')window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});

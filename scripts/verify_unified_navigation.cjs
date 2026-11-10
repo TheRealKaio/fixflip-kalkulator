@@ -16,7 +16,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'})[path.extname(file)]||'text/plain'});
   });
   await page.addInitScript(()=>{
-   if(location.pathname!=='/')return;
+   if(!['/','/preise/','/warum-immocheck/','/nebenkostenabrechnung/'].includes(location.pathname))return;
    localStorage.setItem('ff_dealType','own');
    window.homeHeaderWrites=[];
    new MutationObserver(records=>{
@@ -142,10 +142,37 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.waitForFunction(()=>NICSettings.ready&&document.querySelector('.hero.nic-fixed-header'));
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const standardHeader=await page.locator('.app>.hero').evaluate(el=>({height:el.getBoundingClientRect().height,background:getComputedStyle(el).backgroundImage,font:getComputedStyle(el.querySelector('h1')).fontFamily,size:getComputedStyle(el.querySelector('h1')).fontSize,logo:document.querySelector('.brand-logo').getBoundingClientRect().width}));
+  // Menu/content links use the same loaded application as calculator tiles.
+  const sharedOrigin=await page.evaluate(()=>performance.timeOrigin);
+  const headerNode=await page.locator('.app>.hero').elementHandle();
+  for(const slug of ['nebenkostenabrechnung','preise','warum-immocheck']){
+   const menu=page.locator('.nic-brand-bar .nic-menu-toggle');
+   if(await menu.isVisible())await menu.click();
+   await page.locator('[data-nic-site-nav] a[href="/'+slug+'/"]').click();
+   await page.waitForURL('http://localhost/'+slug+'/');
+   await page.locator('#nicContentView').waitFor({state:'visible'});
+   assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Information menu must retain the document');
+   assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
+   assert(await page.locator('#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
+   const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
+   assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes header height');
+  }
+  await page.goBack();await page.waitForURL('http://localhost/preise/');
+  assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.title);
+  await page.goForward();await page.waitForURL('http://localhost/warum-immocheck/');
+  assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.why.title);
+  await page.goBack();await page.goBack();await page.goBack();await page.waitForURL('http://localhost/');
+  assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Logo returns home within the shared application');
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
    await page.goto('http://localhost/'+routeName+'/');
    await page.locator('.nic-content-card').waitFor({state:'visible'});
    if(['preise','warum-immocheck','nebenkostenabrechnung'].includes(routeName)){
+    const key=({'preise':'prices','warum-immocheck':'why','nebenkostenabrechnung':'settlement'})[routeName];
+    await page.waitForFunction(k=>window.NICCalculators?.active===k,key);
+    assert((await page.evaluate(()=>window.homeHeaderWrites)).every(title=>title===require('../assets/site-settings.json').content[key].title),'Legacy initialization must not overwrite the information header');
+    assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content[key].title,'Direct content startup must preserve its heading');
+    assert.equal(await page.evaluate(()=>NICCalculators.active),key,'Direct content URL must use the shared controller');
+    assert(await page.locator('.deal-type-card').count(),'Direct content route retains calculator controls for shared navigation');
     assert(await page.locator('.app>.hero').isVisible(),'Standard image header missing on '+routeName);
     assert(await page.locator('.app>.hero h1').isVisible(),'Standard heading missing on '+routeName);
     assert.equal(await page.locator('.nic-content-card h1').count(),0,'Content title must not be duplicated');
