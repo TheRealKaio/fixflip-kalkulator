@@ -235,6 +235,10 @@ Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`)
   bestehen. Keine abgeschaltete Zertifikatspruefung, kein `--insecure`.
 - `/api/index.php?r=health` muss auf derselben STRATO-Adresse `ok` und `ready`
   melden. Dabei werden keine Konten, Sitzungen, Einstellungen oder Daten geaendert.
+- Dieser API-Einstieg wird auch mit www als SNI/Host direkt an der STRATO-Adresse
+  geprueft. Ein www-Zertifikat allein beweist noch keine passende interne
+  Verzeichniszuordnung. Beide Hostnamen muessen denselben vorhandenen API-Einstieg
+  aus `immocheck-web` erreichen, bevor eine Aktivierung erlaubt wird.
 - `check` liest nur: bekannte Root-Regeln, Release-Schutz, Fertig-Markierung und
   jede Frontend-Datei mit vollstaendigem Hashvergleich. Keine Serverdatei wird geschrieben.
 - Vor `activate` muss der Zugriffsschutz im Release-Speicher zum bekannten Zustand

@@ -67,6 +67,16 @@ def preflight(ips, request=origin_request):
         health = json.loads(body)
         if status != 200 or health.get('ok') is not True or health.get('ready') is not True:
             raise CheckError('Bestehende API meldet keinen bereiten Zustand. Nicht umschalten.')
+        # A valid www certificate does not prove that its virtual host points to
+        # immocheck-web. The same physical api/index.php must be reachable there
+        # before rewriting any frontend URLs into the stored release.
+        status, _, body, _ = request(WWW, ip, '/api/index.php?r=health', 'GET')
+        try:
+            www_health = json.loads(body)
+        except (ValueError, UnicodeError):
+            www_health = {}
+        if status != 200 or not isinstance(www_health, dict) or www_health.get('ok') is not True or www_health.get('ready') is not True:
+            raise CheckError('www hat ein gueltiges Zertifikat, zeigt am STRATO-Ziel aber nicht auf dieselbe bereite API (HTTP ' + str(status) + '). Interne www-Verzeichniszuordnung zu immocheck-web pruefen. Keine Umschaltung oder DNS-Aenderung ausgefuehrt.')
     return lines
 
 

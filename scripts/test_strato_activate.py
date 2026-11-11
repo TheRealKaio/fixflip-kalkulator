@@ -124,6 +124,17 @@ class OriginTests(unittest.TestCase):
         with self.assertRaises(CheckError):
             preflight(['1.1.1.1'], Mock(return_value=response))
 
+    def test_www_certificate_alone_does_not_prove_the_webspace_mapping(self):
+        cert = {'notAfter':'2027'}
+        def request(host, ip, path='/', method='HEAD'):
+            if method == 'HEAD':
+                return 200, {}, b'', cert
+            if host == APEX:
+                return 200, {}, b'{"ok":true,"ready":true}', cert
+            return 404, {}, b'<html>different webspace</html>', cert
+        with self.assertRaisesRegex(CheckError, 'Verzeichniszuordnung'):
+            preflight(['1.1.1.1'], request)
+
 
 if __name__ == '__main__':
     unittest.main()
