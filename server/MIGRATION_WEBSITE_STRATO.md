@@ -328,3 +328,54 @@ Die Umschaltpruefung ist noch kein Ersatz fuer die Abnahme nach dem DNS-Wechsel:
 IPv6/AAAA-Zuordnung, Anmeldung, Browsernavigation und Mobilansicht anschliessend
 ebenfalls gegen den neuen oeffentlichen Host pruefen. Automatische Produktion
 und Abschalten von Pages folgen erst nach dieser Abnahme.
+
+## Direkte erste Auslieferung nach bestaetigtem Rewrite-404
+
+Lauf `43113144583` bestaetigt trotz `RewriteBase /` einen echten HTTP 404 fuer
+die Startseite beim Origin-Test. Die Dateien und Hashes im Release-Speicher sind
+vorhanden; die Root-Regeln wurden automatisch wiederhergestellt. Die genaue
+serverinterne Ursache wird nicht als geklaert behauptet. Die Erstbereitstellung
+vermeidet deshalb die problematische Umschreibung in das versteckte Release-Verzeichnis:
+
+- `prepare` bei noch vorhandenen urspruenglichen GitHub-Root-Regeln kopiert die
+  163 geprueften Frontend-Dateien direkt nach `/immocheck-web` und dessen oeffentliche
+  Routenordner. API, private Dateien und nicht im Frontend-Manifest enthaltene
+  Serverdateien werden weder hochgeladen noch geloescht.
+- Alle Quelldateien werden zuerst vollstaendig geprueft und fuer die Uebertragung
+  zwischengespeichert. Identische vorhandene Dateien werden uebersprungen;
+  jede abweichende vorhandene Frontend-Datei wird vor der ersten Ersetzung gesichert.
+- Die Sicherung liegt unter `.nic-releases/.backups/<run>-<attempt>.files/`.
+  `<run>-<attempt>.files.json` erfasst Original- und neue Pruefsummen sowie neu
+  angelegte Dateien. Symbolische Links werden nicht verfolgt.
+- Jede Datei wird neben ihrem endgueltigen Ziel geschrieben, zurueckgelesen und
+  mit `posix_rename` atomar ersetzt. Waehrenddessen bleiben die urspruenglichen
+  Root-Regeln aktiv: normale Frontend-Aufrufe gehen weiter zu www/GitHub. Erst nach
+  vollstaendiger Kopie wird die Root-Datei zuletzt atomar umgeschaltet.
+- Die Root-Datei traegt `NIC-DIRECT-FILES: v1`. Sie laesst nur bekannte
+  oeffentliche Dateien und Routen zu und verwendet dafuer keine internen
+  Umschreibungen in `.nic-releases`. API-Ausnahme, Canonical, HTTPS, verdeckte
+  Pfade und der technische Hauptdomain-Test bleiben wirksam.
+- Der Release-Speicher bleibt als gepruefte Quelle und fuer Sicherungen bestehen.
+  HTTP-Zugriffe auf dessen interne Dateipfade werden nicht mehr benoetigt.
+- Bei Fehlern werden zuerst die alten Root-Regeln wiederhergestellt. Anschliessend
+  werden gesicherte Frontend-Dateien zurueckkopiert und nur unveraenderte, von genau
+  diesem Vorgang neu angelegte Dateien entfernt. Externe Aenderungen werden nicht
+  geloescht oder ueberschrieben; der Ablauf meldet dann eine nicht vollstaendige
+  Dateiruecknahme. API und DNS bleiben bestehen.
+- `activate` nach Zuordnung von www prueft beim bereits direkt bereitgestellten
+  Release auch die oeffentlichen Dateihashes und die wirkliche www-Auslieferung.
+  Der erste manuelle Rueckweg mit bestaetigtem GitHub-DNS stellt ebenfalls die
+  urspruenglichen oeffentlichen Dateien wieder her. Neue leere Ordner duerfen
+  bestehen bleiben; Verzeichnisse werden nicht pauschal entfernt.
+
+Der Apache-Test prueft vier Varianten: direkte und interne Domainzuordnung,
+jeweils mit Release-Rewrites und mit normalen Frontend-Dateien. Die direkte
+Erstbereitstellung wird auf STRATO weiterhin mit `prepare` geprueft. Eine erfolgreiche
+Vorab-Pruefung ist noch keine Bestaetigung eines erfolgreichen prepare-Laufs.
+
+**Noch offen nach der ersten oeffentlichen Abnahme:** Der laufende Releasewechsel
+fuer diese direkte Dateiauslieferung und dessen automatische Ausfuehrung aus main.
+Ein anderer Release ist beim Layout `NIC-DIRECT-FILES: v1` vorerst ausdruecklich
+gesperrt, damit keine ungetestete gemischte Live-Version entstehen kann. Der bereits
+bereitgestellte Release kann geprueft und zurueckgenommen werden. Pages bleibt bis
+zur abschliessenden Umstellung des Veroeffentlichungsworkflows aktiv.

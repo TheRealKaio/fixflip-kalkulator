@@ -22,7 +22,7 @@ def free_port():
         return stream.getsockname()[1]
 
 
-def main(internal_mapping=False):
+def main(internal_mapping=False, direct=False):
     with tempfile.TemporaryDirectory(prefix='nic-apache-') as directory:
         temp = Path(directory)
         root = temp / 'www'
@@ -38,9 +38,13 @@ def main(internal_mapping=False):
             path = target / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(payload)
+            if direct:
+                public = root / name
+                public.parent.mkdir(parents=True, exist_ok=True)
+                public.write_bytes(payload)
             manifest['files'][name] = {'sha256': hashlib.sha256(payload).hexdigest(), 'bytes': len(payload)}
         (target / '.ready.json').write_text('not public')
-        (root / '.htaccess').write_bytes(render_rules(manifest, '123-1'))
+        (root / '.htaccess').write_bytes(render_rules(manifest, '123-1', direct=direct))
         (root / 'api').mkdir()
         (root / 'api/index.php').write_text('existing API')
         (root / '.well-known').mkdir()
@@ -145,7 +149,7 @@ TypesConfig /etc/mime.types
             response = connection.getresponse()
             assert response.status == 302 and response.getheader('Location') == 'https://'+WWW+'/budget/?test=1'
             connection.close()
-            print('Apache release rules passed (' + ('internal domain mapping' if internal_mapping else 'direct document root') + '): TLS routes, public redirects, API exclusion, query preservation, HTTPS, hidden storage and 404.')
+            print('Apache release rules passed (' + ('internal domain mapping' if internal_mapping else 'direct document root') + ', ' + ('direct frontend files' if direct else 'release rewrites') + '): TLS routes, public redirects, API exclusion, query preservation, HTTPS, hidden storage and 404.')
         finally:
             process.terminate()
             try:
@@ -158,3 +162,5 @@ TypesConfig /etc/mime.types
 if __name__ == '__main__':
     main()
     main(internal_mapping=True)
+    main(direct=True)
+    main(internal_mapping=True, direct=True)

@@ -40,7 +40,7 @@ jobs:
   switch:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
       - name: Verify transfer and rollback boundaries

@@ -69,7 +69,7 @@ class ActivationTests(unittest.TestCase):
         self.assertEqual(sftp.files[STORE + '/.backups/321-1.htaccess'], original)
         second = 'b' * 40 + '-124-1'
         stage(sftp, ROOT, second, collect_files(self.site))
-        with self.assertRaisesRegex(CheckError, 'ersten Umzug'):
+        with self.assertRaisesRegex(CheckError, 'Folge-Deployment'):
             switch(sftp, ROOT, 'prepare', second, '323-1', [], http_verify=Mock())
         self.assertEqual(sftp.files[ROOT + '/.htaccess'], prepared)
 
@@ -79,6 +79,51 @@ class ActivationTests(unittest.TestCase):
         with self.assertRaisesRegex(CheckError, 'automatisch atomar wiederhergestellt'):
             switch(sftp, ROOT, 'prepare', RELEASE, '321-1', [], http_verify=Mock(side_effect=CheckError('probe failed')))
         self.assertEqual(sftp.files[ROOT + '/.htaccess'], original)
+        self.assertTrue(all(ROOT + '/' + name not in sftp.files for name in fixtures.REQUIRED))
+
+    def test_direct_preparation_restores_overwritten_placeholder_on_rollback(self):
+        sftp = self.fixture()
+        original_api = sftp.files[ROOT + '/api/index.php']
+        sftp.files[ROOT + '/index.html'] = b'previous public placeholder'
+        switch(sftp, ROOT, 'prepare', RELEASE, '321-1', [], http_verify=Mock())
+        self.assertIn(b'# NIC-DIRECT-FILES: v1', sftp.files[ROOT + '/.htaccess'])
+        for name in fixtures.REQUIRED:
+            self.assertEqual(sftp.files[ROOT + '/' + name], (self.site / name).read_bytes())
+        switch(sftp, ROOT, 'rollback', RELEASE, '322-1', [], dns_restored=True)
+        self.assertEqual(sftp.files[ROOT + '/index.html'], b'previous public placeholder')
+        self.assertEqual(sftp.files[ROOT + '/api/index.php'], original_api)
+        self.assertTrue(all(ROOT + '/' + name not in sftp.files for name in fixtures.REQUIRED if name != 'index.html'))
+
+    def test_interrupted_direct_copy_preserves_api_and_original_files(self):
+        sftp = self.fixture()
+        original_root = sftp.files[ROOT + '/.htaccess']
+        original_api = sftp.files[ROOT + '/api/index.php']
+        sftp.files[ROOT + '/index.html'] = b'old public placeholder'
+        rename = sftp.posix_rename
+        failed = False
+        def fail_once(source, destination):
+            nonlocal failed
+            if destination == ROOT + '/eigennutzung/index.html' and not failed:
+                failed = True
+                raise OSError('interrupted upload')
+            return rename(source, destination)
+        sftp.posix_rename = fail_once
+        with self.assertRaisesRegex(CheckError, 'automatisch atomar wiederhergestellt'):
+            switch(sftp, ROOT, 'prepare', RELEASE, '321-1', [], http_verify=Mock())
+        self.assertTrue(failed)
+        self.assertEqual(sftp.files[ROOT + '/.htaccess'], original_root)
+        self.assertEqual(sftp.files[ROOT + '/api/index.php'], original_api)
+        self.assertEqual(sftp.files[ROOT + '/index.html'], b'old public placeholder')
+
+    def test_rollback_does_not_delete_a_subsequent_external_edit(self):
+        sftp = self.fixture()
+        original_root = sftp.files[ROOT + '/.htaccess']
+        switch(sftp, ROOT, 'prepare', RELEASE, '321-1', [], http_verify=Mock())
+        sftp.files[ROOT + '/index.html'] = b'external change after deployment'
+        with self.assertRaisesRegex(CheckError, 'extern geaendert'):
+            switch(sftp, ROOT, 'rollback', RELEASE, '322-1', [], dns_restored=True)
+        self.assertEqual(sftp.files[ROOT + '/.htaccess'], original_root)
+        self.assertEqual(sftp.files[ROOT + '/index.html'], b'external change after deployment')
 
     def test_preparation_http_checks_use_apex_but_activation_requires_www(self):
         sftp = self.fixture()

@@ -13,7 +13,7 @@ import stat
 
 from strato_sftp_check import CheckError, fingerprint, inspect_target, validate_host, validate_root
 from strato_stage import (ACTIVE_GUARD, GUARD, REQUIRED, STORE, ensure_directory,
-                          read_regular, validate_file, validate_release, write_new)
+                          existing, read_regular, validate_file, validate_release, write_new)
 
 APEX = 'neustart-immocheck.de'
 WWW = 'www.' + APEX
@@ -89,7 +89,7 @@ def preflight(ips, request=origin_request, require_www=True):
     return lines
 
 
-def load_release(sftp, root, release):
+def load_release(sftp, root, release, contents=None):
     validate_release(release)
     target = root + '/' + STORE + '/' + release
     # Each known directory must be real, never a symlink into private storage.
@@ -113,13 +113,15 @@ def load_release(sftp, root, release):
         payload = read_regular(sftp, target + '/' + name, meta['bytes'])
         if len(payload) != meta['bytes'] or not hmac.compare_digest(hashlib.sha256(payload).hexdigest(), meta['sha256']):
             raise CheckError('Release-Dateien stimmen nicht mit dem erfolgreichen Upload ueberein.')
+        if contents is not None:
+            contents[name] = payload
     config = json.loads(read_regular(sftp, target + '/backend-config.json', 4096))
     if config.get('enabled') is not True or config.get('apiUrl') != 'https://' + APEX + '/api/index.php':
         raise CheckError('Release verwendet eine abweichende API-Konfiguration.')
     return manifest
 
 
-def render_rules(manifest, backup):
+def render_rules(manifest, backup, direct=False):
     release = validate_release(manifest['release'])
     operation_id(backup)
     files = manifest['files']
@@ -149,14 +151,16 @@ def render_rules(manifest, backup):
              'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=302,L]',
              'RewriteCond %{HTTPS} !=on',
              'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=302,L]']
+    if direct:
+        rules.insert(2, '# NIC-DIRECT-FILES: v1')
     for name in sorted(files):
         validate_file(name)
         if name.endswith('/index.html'):
             directory = name[:-len('/index.html')]
             rules += ['RewriteRule ^' + re.escape(directory) + '$ /' + directory + '/ [R=302,L]',
-                      'RewriteRule ^' + re.escape(directory) + '/$ ' + STORE + '/' + release + '/' + name + ' [END]']
+                      'RewriteRule ^' + re.escape(directory) + '/$ ' + ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]')]
         pattern = '(?:index\\.html)?' if name == 'index.html' else re.escape(name)
-        rules.append('RewriteRule ^' + pattern + '$ ' + STORE + '/' + release + '/' + name + ' [END]')
+        rules.append('RewriteRule ^' + pattern + '$ ' + ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'))
     rules.append('RewriteRule ^ - [R=404,END]')
     return ('\n'.join(rules) + '\n').encode()
 
@@ -164,6 +168,10 @@ def render_rules(manifest, backup):
 def managed_header(payload):
     match = re.match(rb'# NIC-RELEASE: ([a-f0-9]{40}-[1-9][0-9]*-[1-9][0-9]*)\n# NIC-ROLLBACK: ([1-9][0-9]*-[1-9][0-9]*)\n', payload)
     return (match[1].decode(), match[2].decode()) if match else None
+
+
+def direct_delivery(payload):
+    return b'\n# NIC-DIRECT-FILES: v1\n' in payload
 
 
 def legacy_rules(payload):
@@ -180,8 +188,9 @@ def verify_known_rules(sftp, root, payload):
     if not header:
         raise CheckError('Unbekannte Root-.htaccess; nicht automatisch ueberschreiben.')
     manifest = load_release(sftp, root, header[0])
-    if render_rules(manifest, header[1]) != payload:
+    if render_rules(manifest, header[1], direct=direct_delivery(payload)) != payload:
         raise CheckError('Verwaltete Root-.htaccess wurde ausserhalb des Workflows geaendert.')
+    return manifest
 
 
 def atomic_replace(sftp, path, payload, token):
@@ -192,6 +201,98 @@ def atomic_replace(sftp, path, payload, token):
         raise CheckError('Vorbereiteter Dateitausch konnte nicht verifiziert werden.')
     # No delete+rename fallback. A failure must leave the old file in place.
     sftp.posix_rename(temporary, path)
+
+
+def path_parents(sftp, base, name):
+    validate_file(name)
+    current = base
+    for part in name.split('/')[:-1]:
+        current += '/' + part
+        ensure_directory(sftp, current)
+
+
+def backup_direct_files(sftp, root, manifest, token):
+    """Initial copy only: save every overwritten public file BEFORE any replacement."""
+    operation_id(token)
+    snapshot = {'operation': token, 'changes': {}}
+    backup_base = root + '/' + STORE + '/.backups/' + token + '.files'
+    for name, meta in manifest['files'].items():
+        validate_file(name)
+        path_parents(sftp, root, name)
+        live = root + '/' + name
+        entry = existing(sftp, live)
+        previous_hash = None
+        if entry is not None:
+            previous = read_regular(sftp, live, 12_000_000)
+            previous_hash = hashlib.sha256(previous).hexdigest()
+            if previous_hash == meta['sha256']:
+                continue
+            ensure_directory(sftp, backup_base)
+            path_parents(sftp, backup_base, name)
+            write_new(sftp, backup_base + '/' + name, previous)
+            if read_regular(sftp, backup_base + '/' + name, len(previous)) != previous:
+                raise CheckError('Frontend-Sicherung konnte nicht bestaetigt werden.')
+        snapshot['changes'][name] = {'previous': previous_hash, 'installed': meta['sha256']}
+    write_new(sftp, root + '/' + STORE + '/.backups/' + token + '.files.json',
+              (json.dumps(snapshot, indent=2) + '\n').encode())
+    return snapshot
+
+
+def install_direct_files(sftp, root, snapshot, contents, token):
+    for number, name in enumerate(snapshot['changes'], 1):
+        live = root + '/' + name
+        entry = snapshot['changes'][name]
+        present = existing(sftp, live)
+        digest = hashlib.sha256(read_regular(sftp, live, 12_000_000)).hexdigest() if present is not None else None
+        if digest != entry['previous']:
+            raise CheckError('Frontend-Datei zwischen Sicherung und Uebertragung geaendert; nicht ueberschreiben.')
+        atomic_replace(sftp, root + '/' + name, contents[name], token)
+        if number % 20 == 0 or number == len(snapshot['changes']):
+            print('Frontend-Dateien atomar bereitgestellt: ' + str(number) + '/' + str(len(snapshot['changes'])), flush=True)
+
+
+def restore_direct_files(sftp, root, token):
+    operation_id(token)
+    base = root + '/' + STORE + '/.backups/' + token + '.files'
+    snapshot = json.loads(read_regular(sftp, base + '.json', 500_000))
+    if snapshot.get('operation') != token or len(snapshot.get('changes', {})) > 1000:
+        raise CheckError('Ungueltige Frontend-Sicherung.')
+    for name, entry in snapshot['changes'].items():
+        validate_file(name)
+        for value in [entry.get('installed'), entry.get('previous')]:
+            if value is not None and not re.fullmatch('[a-f0-9]{64}', value):
+                raise CheckError('Ungueltige Sicherungspruefsumme.')
+        path_parents(sftp, root, name)
+        live = root + '/' + name
+        current = existing(sftp, live)
+        if current is None and entry['previous'] is None:
+            continue
+        digest = hashlib.sha256(read_regular(sftp, live, 12_000_000)).hexdigest() if current is not None else None
+        if digest == entry['previous']:
+            continue
+        if digest not in {None, entry['installed']}:
+            raise CheckError('Frontend-Datei extern geaendert; nicht automatisch loeschen oder ueberschreiben.')
+        if entry['previous'] is None:
+            if current is not None:
+                sftp.remove(live)  # Only an unchanged file created by this operation.
+        else:
+            real_directory(sftp, base)
+            previous = read_regular(sftp, base + '/' + name, 12_000_000)
+            if hashlib.sha256(previous).hexdigest() != entry['previous']:
+                raise CheckError('Frontend-Sicherung hat eine abweichende Pruefsumme.')
+            atomic_replace(sftp, live, previous, token + '0')
+
+
+def verify_direct_files(sftp, root, manifest):
+    for name, meta in manifest['files'].items():
+        validate_file(name)
+        parent = root
+        for part in name.split('/')[:-1]:
+            parent += '/' + part
+            real_directory(sftp, parent)
+        data = read_regular(sftp, root + '/' + name, meta['bytes'])
+        if hashlib.sha256(data).hexdigest() != meta['sha256']:
+            raise CheckError('Oeffentliche Frontend-Dateien stimmen nicht mit dem Release ueberein.')
 
 
 def verify_http(ips, manifest, request=origin_request, preparation=False):
@@ -251,16 +352,24 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
         if read_regular(sftp, live_path, 200_000) != original:
             raise CheckError('Root-Regeln zwischenzeitlich geaendert; Rueckweg gestoppt.')
         atomic_replace(sftp, live_path, previous, token)
+        if direct_delivery(original) and legacy_rules(previous):
+            restore_direct_files(sftp, root, header[1])
         return ['Vorherige Root-Regeln atomar wiederhergestellt.', 'API und DNS unveraendert.']
-    verify_known_rules(sftp, root, original)
-    manifest = load_release(sftp, root, release)
+    known = verify_known_rules(sftp, root, original)
+    current_header = managed_header(original)
+    if direct_delivery(original):
+        if current_header[0] != release:
+            raise CheckError('Direkte Erstbereitstellung ist aktiv. Einen anderen Release erst nach Einrichtung des geprueften Folge-Deployments veroeffentlichen.')
+    contents = {} if mode == 'prepare' and legacy_rules(original) else None
+    manifest = known if known is not None and known['release'] == release and contents is None else load_release(sftp, root, release, contents=contents)
+    if direct_delivery(original):
+        verify_direct_files(sftp, root, manifest)
     if mode == 'check':
         return ['Release-Dateien vollstaendig per SHA256 geprueft.',
                 'Root-Regeln und Zugriffsschutz entsprechen dem erwarteten Stand.',
                 'Nur gelesen: keine Dateien oder DNS-Eintraege geaendert.']
     if mode not in {'prepare', 'activate'}:
         raise CheckError('Unbekannter Modus.')
-    current_header = managed_header(original)
     if mode == 'prepare' and current_header and current_header[0] != release:
         raise CheckError('prepare ist nur fuer den ersten Umzug vorgesehen. Spaetere Releases mit activate umschalten.')
     if managed_header(original) and managed_header(original)[0] == release:
@@ -271,25 +380,35 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
     write_new(sftp, backup, original)
     if read_regular(sftp, backup, len(original)) != original:
         raise CheckError('Root-Sicherung konnte nicht bestaetigt werden.')
-    replacement = render_rules(manifest, token)
+    use_direct = mode == 'prepare' and legacy_rules(original)
+    snapshot = backup_direct_files(sftp, root, manifest, token) if use_direct else None
+    replacement = render_rules(manifest, token, direct=use_direct)
     if read_regular(sftp, live_path, 200_000) != original:
         raise CheckError('Root-Regeln wurden zwischenzeitlich geaendert; nicht ueberschreiben.')
     # The old root still redirects all storage requests. New root blocks decoded
     # dot paths BEFORE rewriting public URLs, so this guard swap exposes no files.
-    if guard == GUARD:
-        atomic_replace(sftp, guard_path, ACTIVE_GUARD, token)
-    atomic_replace(sftp, live_path, replacement, token)
     try:
+        if use_direct:
+            install_direct_files(sftp, root, snapshot, contents, token)
+            if read_regular(sftp, live_path, 200_000) != original:
+                raise CheckError('Root-Regeln waehrend der Erstbereitstellung extern geaendert.')
+        elif guard == GUARD:
+            atomic_replace(sftp, guard_path, ACTIVE_GUARD, token)
+        atomic_replace(sftp, live_path, replacement, token)
         http_verify(ips, manifest)
     except Exception as failure:
         try:
-            if read_regular(sftp, live_path, 200_000) != replacement:
+            current = read_regular(sftp, live_path, 200_000)
+            if current not in {replacement, original}:
                 raise CheckError('Root-Regeln extern geaendert.')
-            atomic_replace(sftp, live_path, original, token + '0')
+            if current == replacement:
+                atomic_replace(sftp, live_path, original, token + '0')
+            if snapshot is not None:
+                restore_direct_files(sftp, root, token)
         except Exception:
-            raise CheckError('HTTP-Pruefung UND automatische Ruecknahme fehlgeschlagen. DNS nicht umstellen; Root-Sicherung in .nic-releases/.backups wiederherstellen.') from None
+            raise CheckError('Bereitstellung UND vollstaendige automatische Ruecknahme fehlgeschlagen. DNS nicht umstellen; Sicherungen in .nic-releases/.backups pruefen.') from None
         reason = str(failure) if isinstance(failure, CheckError) else type(failure).__name__
-        raise CheckError('HTTP-Pruefung fehlgeschlagen (' + reason + '). Vorherige Root-Regeln automatisch atomar wiederhergestellt; DNS unveraendert.') from None
+        raise CheckError('Bereitstellung fehlgeschlagen (' + reason + '). Vorherige Root-Regeln automatisch atomar wiederhergestellt; Frontend-Dateien zurueckgenommen; DNS unveraendert.') from None
     if mode == 'prepare':
         return ['STRATO-Release vor der DNS-Umstellung bereitgestellt: `' + release + '`.',
                 'Startseiten-Hash, direkte Routen, API, Schutz und Canonical ueber die Hauptdomain erfolgreich geprueft.',
