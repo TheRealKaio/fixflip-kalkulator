@@ -1,0 +1,63 @@
+name: STRATO Website umschalten
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/strato-activate.yml'
+      - 'scripts/strato_activate.py'
+      - 'scripts/test_strato_activate.py'
+      - 'scripts/verify_strato_apache.py'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'check: nur pruefen; activate: Release aktivieren; rollback: vorherige Root-Regeln'
+        type: choice
+        options: [check, activate, rollback]
+        default: check
+        required: true
+      release:
+        description: 'Vollstaendige Release-ID aus dem erfolgreichen Test-Upload'
+        type: string
+        default: '6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2'
+        required: true
+      original_dns_restored:
+        description: 'Nur erster Rueckweg zu GitHub: www-DNS bereits wieder auf GitHub Pages gesetzt'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: strato-production
+  cancel-in-progress: false
+
+jobs:
+  switch:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify transfer and rollback boundaries
+        run: python -m unittest discover -s scripts -p 'test_strato_*.py'
+      - name: Verify rewrite rules with Apache
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq apache2
+          python scripts/verify_strato_apache.py
+      - name: Install SFTP client
+        run: python -m pip install --disable-pip-version-check paramiko==5.1.0
+      - name: Check or switch the prepared release
+        env:
+          STRATO_MODE: ${{ inputs.mode || 'check' }}
+          STRATO_RELEASE_ID: ${{ inputs.release || '6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2' }}
+          STRATO_OPERATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          STRATO_ORIGINAL_DNS_RESTORED: ${{ inputs.original_dns_restored || false }}
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
+          STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
+        run: python scripts/strato_activate.py

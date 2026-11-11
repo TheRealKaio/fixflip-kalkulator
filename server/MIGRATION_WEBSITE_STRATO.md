@@ -1,6 +1,6 @@
 # Vollständige Website von GitHub Pages auf STRATO übertragen
 
-Planungsstand: 11. November 2026. **SFTP geprueft; Test-Upload vorbereitet, noch nicht auf STRATO aktiviert.**
+Planungsstand: 11. November 2026. **SFTP und Test-Upload erfolgreich; Aktivierung vorbereitet, Domain noch auf GitHub Pages.**
 Dieser Plan ersetzt für den vollständigen Website-Umzug die frühere Aufteilung
 „www bei GitHub Pages / Hauptdomain für die STRATO-API“. Die vorhandene API und
 Datenbank bleiben bestehen. Rechnerformeln und PDFs dürfen zunächst weiterhin
@@ -123,8 +123,15 @@ DNS-Rückkehr wirkt wegen zwischengespeicherter Einträge nicht zwingend sofort.
 - Manueller Modus `check` erfolgreich: `/immocheck-web`, `api/` und `api/index.php` vorhanden.
 - Lokale Sicherung des bestehenden Webspace wurde vom Nutzer als erledigt bestaetigt.
 - www zeigt weiterhin per CNAME auf `therealkaio.github.io.`; Hauptdomain intern auf `/immocheck-web`.
-- Offen: Test-Upload ausfuehren, atomaren Dateitausch bestaetigen, www-SSL pruefen,
-  Aktivierung und Rollback implementieren/testen, danach DNS umstellen und erst
+- Test-Upload `43093243842`, Versuch 2: erfolgreich, 163 Dateien per SHA256 geprueft;
+  atomarer Dateitausch im Testordner bestaetigt. Release-ID:
+  `6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2`.
+- Erster Versuch endete vor dem Upload mit einem sporadischen mobilen Navigationstest-Timeout;
+  dieselben vollstaendigen Pruefungen bestanden im zweiten Versuch.
+- Nutzer bestaetigt: STRATO-Zertifikat fuer Hauptdomain deckt auch www ab;
+  angegebene Gueltigkeit 17.10.2026 bis 16.04.2027. Direkte TLS-Pruefung folgt im Umschaltworkflow.
+- Offen: Umschaltworkflow im Modus check und danach activate ausfuehren,
+  danach DNS umstellen und erst
   nach Abnahme die automatische STRATO-Produktion einschalten und Pages abschalten.
 
 ## Offizielle Anleitungen
@@ -205,3 +212,55 @@ vorbereitet. Der Workflow hat bewusst keinen Push- oder Zeitplan-Trigger.
 Technische Referenzen:
 - Paramiko SFTP / `posix_rename`: https://docs.paramiko.org/en/stable/api/sftp.html
 - Apache Rewrite-Flags und interne Verarbeitung: https://httpd.apache.org/docs/2.4/rewrite/flags.html
+
+## Umschaltung mit direkter Origin-Pruefung und Rueckweg
+
+Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`):
+
+- Bei Aenderungen am Umschaltskript startet automatisch ausschliesslich `check`.
+  Manuell sind `check`, `activate` und `rollback` waehlbar; Branch immer `main`.
+- Standardmaessig wird der oben bestaetigte Release verwendet. Kein neuer Build
+  und kein erneuter Datei-Upload sind fuer die erste Umschaltung erforderlich.
+- Beide TLS-Hostnamen werden direkt an den oeffentlichen IPv4-Adressen der
+  Hauptdomain geprueft, die bereits auf STRATO liegt. SNI und HTTP-Host verwenden
+  jeweils den geprueften Namen. www-DNS wird dafuer bewusst nicht verwendet,
+  damit ein gueltiges GitHub-Zertifikat das STRATO-Ergebnis nicht verdeckt.
+- Zertifikatskette, Name und Laufzeit muessen mit dem normalen System-Truststore
+  bestehen. Keine abgeschaltete Zertifikatspruefung, kein `--insecure`.
+- `/api/index.php?r=health` muss auf derselben STRATO-Adresse `ok` und `ready`
+  melden. Dabei werden keine Konten, Sitzungen, Einstellungen oder Daten geaendert.
+- `check` liest nur: bekannte Root-Regeln, Release-Schutz, Fertig-Markierung und
+  jede Frontend-Datei mit vollstaendigem Hashvergleich. Keine Serverdatei wird geschrieben.
+- Vor `activate` muss der Zugriffsschutz im Release-Speicher zum bekannten Zustand
+  passen. Unbekannte Root-Regeln werden nicht ueberschrieben. Die bestehende
+  Root-`.htaccess` wird unter `.nic-releases/.backups/<run>-<attempt>.htaccess`
+  unveraendert gesichert und die Sicherung zurueckgelesen.
+- Die neue Root-Datei enthaelt alle konkreten Frontend-Dateipfade und oeffentlichen
+  Routen aus dem geprueften Manifest. Dadurch braucht die interne Verzeichniszuordnung
+  keine Annahme ueber den absoluten Apache-DocumentRoot. Direkte Zugriffe auf versteckte
+  Pfade und den Release-Speicher sind gesperrt; `/api/` und `/.well-known/` bleiben frei.
+- Der Staging-Schutz wird in den bekannten aktiven Speicherschutz ueberfuehrt, dann
+  wird die fertig geschriebene Root-Datei mit `posix_rename` atomar ersetzt. Es gibt
+  keinen Loeschen/Umbenennen-Ersatz. Keine Frontend-Datei wird einzeln live ueberschrieben.
+- Danach erfolgt eine direkte HTTP-Pruefung auf STRATO: exakter Startseiten-Hash,
+  alle direkten Seitenrouten, Service Worker, Backend-Konfiguration, Canonical mit
+  Query, 404 fuer unbekannte Pfade, 403 fuer den Speicher und weiterhin gesunde API.
+  Bei Fehlschlag werden die vorherigen Root-Regeln automatisch atomar wiederhergestellt.
+- Auch `activate` aendert keine DNS-Eintraege. Erst der erfolgreiche Origin-Test
+  macht die anschliessende manuelle www-DNS-Umstellung zum naechsten Schritt.
+
+Modus `rollback` liest den Rueckweg aus der aktiven Root-Datei und stellt die zuvor
+gesicherten Root-Regeln atomar wieder her. Die Pruefung der aktuellen TLS-Auslieferung
+wird dabei absichtlich uebersprungen, damit der Rueckweg bei defektem Frontend moeglich
+bleibt. Die vorherige STRATO-Version und ihre Dateien werden vor Rueckkehr geprueft.
+Fuer den **allerersten** Rueckweg zur alten GitHub-Weiterleitung muss der Nutzer zuerst
+www wieder auf `therealkaio.github.io.` setzen und im Workflow
+`original_dns_restored` bestaetigen. Ohne diesen Hinweis koennte die alte Regel bei
+weiterhin auf STRATO aufgeloestem www eine Schleife erzeugen. DNS-Caches koennen den
+Rueckweg verzoegern. Spaetere Rueckkehr zwischen zwei STRATO-Releases braucht keinen
+DNS-Wechsel. Vorherige Releases und Sicherungen werden nicht automatisch geloescht.
+
+Die Umschaltpruefung ist noch kein Ersatz fuer die Abnahme nach dem DNS-Wechsel:
+IPv6/AAAA-Zuordnung, Anmeldung, Browsernavigation und Mobilansicht anschliessend
+ebenfalls gegen den neuen oeffentlichen Host pruefen. Automatische Produktion
+und Abschalten von Pages folgen erst nach dieser Abnahme.

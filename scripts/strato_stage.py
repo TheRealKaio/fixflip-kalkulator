@@ -18,6 +18,9 @@ GUARD = b'''# ImmoCheck managed staging storage: no HTTP access before activatio
 Options -Indexes
 Require all denied
 '''
+ACTIVE_GUARD = b'''# ImmoCheck managed release storage; the root rules block direct access.
+Options -Indexes
+'''
 REQUIRED = {'index.html', 'service-worker.js', 'backend-config.json',
             'budget/index.html', 'finanzierungsrechner/index.html',
             'eigennutzung/index.html', 'vermietung/index.html', 'fix-flip/index.html',
@@ -117,7 +120,7 @@ def stage(sftp, root, release, files):
     guard = store + '/.htaccess'
     if existing(sftp, guard) is None:
         write_new(sftp, guard, GUARD)
-    elif read_regular(sftp, guard, 4096) != GUARD:
+    elif read_regular(sftp, guard, 4096) not in {GUARD, ACTIVE_GUARD}:
         raise CheckError('Unbekannter Zugriffsschutz im Release-Ordner; nicht ueberschreiben.')
     target = store + '/' + release
     if existing(sftp, target) is not None:
