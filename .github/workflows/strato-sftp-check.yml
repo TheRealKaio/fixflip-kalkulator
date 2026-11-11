@@ -1,0 +1,49 @@
+name: STRATO SFTP pruefen
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'fingerprint: ohne Anmeldung; check: lesender Test mit bestaetigtem Fingerabdruck'
+        type: choice
+        options:
+          - fingerprint
+          - check
+        default: fingerprint
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: strato-sftp-preflight
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check read-only scope and host-key verification
+        run: python -m unittest discover -s scripts -p test_strato_sftp_check.py
+      - name: Install SFTP client
+        run: python -m pip install --disable-pip-version-check paramiko==5.1.0
+      - name: Inspect host key without password authentication
+        if: inputs.mode == 'fingerprint'
+        env:
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+        run: python scripts/strato_sftp_check.py --mode fingerprint
+      - name: Verify pinned key and inspect public target read-only
+        if: inputs.mode == 'check'
+        env:
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
+          STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
+        run: python scripts/strato_sftp_check.py --mode check

@@ -132,3 +132,31 @@ Serveränderungen sind damit noch nicht eingerichtet oder als erledigt behauptet
 - STRATO SSL: https://www.strato.de/faq/domains/so-nutzen-sie-strato-ssl/
 - STRATO SFTP/SSH: https://www.strato.de/faq/hosting/so-nutzen-sie-ihren-ssh-sftp-zugang/
 - GitHub Deployment-Umgebungen: https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments
+
+
+## Manueller Verbindungstest (vor jedem Upload)
+
+Der Workflow **STRATO SFTP pruefen** (`.github/workflows/strato-sftp-check.yml`)
+ist ausschliesslich manuell startbar und laeuft nur auf `main`.
+
+1. Unter GitHub → Settings → Secrets and variables → Actions sind
+   `STRATO_SFTP_HOST`, `STRATO_SFTP_USER` und `STRATO_SFTP_PASSWORD` hinterlegt.
+   Die bereits gemeldeten Werte werden nicht in Quelltext oder Protokolle kopiert.
+2. Unter Actions den Workflow starten, Branch `main`, Modus `fingerprint`.
+   Dieser Modus ermittelt nur den SSH-Server-Fingerabdruck auf Port 22. Er
+   erhaelt keinen Benutzernamen und kein Passwort und meldet sich nicht an.
+3. Den SHA256-Fingerabdruck mit einem vorhandenen vertrauenswuerdigen
+   SFTP-Client-Eintrag oder STRATO abgleichen. Der Scan allein belegt noch keine
+   Serveridentitaet. Keinen HiDrive-Fingerabdruck fuer diesen Hosting-Server verwenden.
+4. Den bestaetigten Wert als `STRATO_SFTP_FINGERPRINT` speichern und erst dann
+   Modus `check` ausfuehren. Bei fehlendem oder abweichendem Fingerabdruck wird
+   vor der Passwortanmeldung abgebrochen.
+5. Der lesende Test prueft nur Metadaten von `/immocheck-web`, dessen `api/`
+   und `api/index.php`. Falls der SFTP-Zugang eine andere Pfadabbildung verwendet,
+   den bestaetigten Pfad als Actions-Variable `STRATO_SFTP_ROOT` hinterlegen.
+   Er muss weiterhin auf den oeffentlichen Ordner `immocheck-web` zeigen.
+
+Beide Modi veraendern keine Serverdateien, keine DNS-Eintraege und keine
+Veröffentlichung. Ein erfolgreicher lesender Test ist noch kein Schreibtest
+und aktiviert noch kein automatisches STRATO-Deployment. SSH-Shellzugriff ist
+fuer diese SFTP-Pruefung nicht erforderlich.
