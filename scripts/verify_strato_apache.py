@@ -53,7 +53,7 @@ def main():
         user, group = pwd.getpwuid(os.getuid()).pw_name, grp.getgrgid(os.getgid()).gr_name
         config = temp / 'apache.conf'
         modules = '\n'.join('LoadModule '+name+'_module /usr/lib/apache2/modules/mod_'+name+'.so'
-                            for name in ['mpm_event','authz_core','authz_host','rewrite','dir','mime','ssl'])
+                            for name in ['mpm_event','authz_core','authz_host','rewrite','dir','mime','ssl','headers'])
         config.write_text(f'''ServerRoot "/etc/apache2"
 ServerName {WWW}
 PidFile "{temp}/apache.pid"
@@ -84,10 +84,13 @@ TypesConfig /etc/mime.types
 ''')
         process = subprocess.Popen(['/usr/sbin/apache2','-f',str(config),'-DFOREGROUND'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         context = ssl.create_default_context(cafile=str(cert))
-        def request(path, host=WWW):
+        def request(path, host=WWW, preview=None):
             connection = http.client.HTTPSConnection('127.0.0.1', port, context=context, timeout=5)
             try:
-                connection.request('GET', path, headers={'Host':host})
+                headers = {'Host':host}
+                if preview is not None:
+                    headers['X-NIC-Origin-Release'] = preview
+                connection.request('GET', path, headers=headers)
                 response = connection.getresponse()
                 return response.status, dict(response.getheaders()), response.read()
             finally:
@@ -118,6 +121,19 @@ TypesConfig /etc/mime.types
                 assert request(path)[0] == 403, path
             assert request('/no-such-page/')[0] == 404
             assert request('/sample.js')[2] == b'test release sample.js'
+            # The initial release can be checked on the apex while www remains
+            # on GitHub. Ordinary requests must still canonicalize to www.
+            status, headers, body = request('/', APEX, release)
+            assert status == 200 and body == b'test release index.html'
+            assert headers.get('Cache-Control') == 'no-store'
+            assert headers.get('X-Robots-Tag') == 'noindex, nofollow'
+            assert 'X-NIC-Origin-Release' in headers.get('Vary','')
+            assert request('/', APEX)[0] == 302
+            assert request('/', APEX, 'wrong-release')[0] == 302
+            assert request('/budget/', APEX, release)[2] == b'test release budget/index.html'
+            assert request('/no-such-page/', APEX, release)[0] == 404
+            assert request('/'+STORE+'/'+release+'/.ready.json', APEX, release)[0] == 403
+            assert request('/api/index.php?r=health', APEX, release)[2] == b'existing API'
             connection = http.client.HTTPConnection('127.0.0.1', http_port, timeout=5)
             connection.request('GET','/budget/?test=1',headers={'Host':WWW})
             response = connection.getresponse()

@@ -11,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'check: nur pruefen; activate: Release aktivieren; rollback: vorherige Root-Regeln'
+        description: 'check: lesen; prepare: vor DNS bereitstellen; activate: www pruefen/umschalten; rollback: Rueckweg'
         type: choice
-        options: [check, activate, rollback]
+        options: [check, prepare, activate, rollback]
         default: check
         required: true
       release:
@@ -22,7 +22,7 @@ on:
         default: '6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2'
         required: true
       original_dns_restored:
-        description: 'Nur erster Rueckweg zu GitHub: www-DNS bereits wieder auf GitHub Pages gesetzt'
+        description: 'Nur erster Rueckweg: www-DNS zeigt wieder oder weiterhin auf GitHub Pages'
         type: boolean
         default: false
 
@@ -33,7 +33,7 @@ concurrency:
   # Read-only checks must not occupy the deployment lock. The old group was
   # stranded during the Nov 11 Actions incident; its only queued run is a push
   # check (no writes). Stage and all future mutations share the new lock below.
-  group: ${{ (inputs.mode == 'activate' || inputs.mode == 'rollback') && 'strato-production-v2' || format('strato-check-{0}', github.run_id) }}
+  group: ${{ (inputs.mode == 'prepare' || inputs.mode == 'activate' || inputs.mode == 'rollback') && 'strato-production-v2' || format('strato-check-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:

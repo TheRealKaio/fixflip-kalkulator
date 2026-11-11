@@ -39,16 +39,22 @@ def origin_ips():
     return ips
 
 
-def origin_request(host, ip, path='/', method='HEAD', limit=12_000_000):
+def origin_request(host, ip, path='/', method='HEAD', limit=12_000_000, preview_release=None):
     if host not in {APEX, WWW} or not ipaddress.ip_address(ip).is_global or method not in {'GET', 'HEAD'}:
         raise CheckError('Unerwartetes HTTP-Pruefziel.')
     context = ssl.create_default_context()
+    preview_header = ''
+    if preview_release is not None:
+        validate_release(preview_release)
+        if host != APEX:
+            raise CheckError('Technische Origin-Pruefung nur auf der Hauptdomain erlaubt.')
+        preview_header = 'X-NIC-Origin-Release: ' + preview_release + '\r\n'
     # Mandatory trusted chain, time validity AND hostname verification via SNI.
     with socket.create_connection((ip, 443), timeout=20) as raw:
         with context.wrap_socket(raw, server_hostname=host) as tls:
             certificate = tls.getpeercert()
             tls.sendall((method + ' ' + path + ' HTTP/1.1\r\nHost: ' + host
-                         + '\r\nAccept-Encoding: identity\r\nConnection: close\r\n\r\n').encode('ascii'))
+                         + '\r\n' + preview_header + 'Accept-Encoding: identity\r\nConnection: close\r\n\r\n').encode('ascii'))
             response = http.client.HTTPResponse(tls, method=method)
             response.begin()
             body = response.read(limit + 1)
@@ -57,7 +63,7 @@ def origin_request(host, ip, path='/', method='HEAD', limit=12_000_000):
             return response.status, dict((k.lower(), v) for k, v in response.getheaders()), body, certificate
 
 
-def preflight(ips, request=origin_request):
+def preflight(ips, request=origin_request, require_www=True):
     lines = []
     for ip in ips:
         for host in [APEX, WWW]:
@@ -76,7 +82,10 @@ def preflight(ips, request=origin_request):
         except (ValueError, UnicodeError):
             www_health = {}
         if status != 200 or not isinstance(www_health, dict) or www_health.get('ok') is not True or www_health.get('ready') is not True:
-            raise CheckError('www hat ein gueltiges Zertifikat, zeigt am STRATO-Ziel aber nicht auf dieselbe bereite API (HTTP ' + str(status) + '). Interne www-Verzeichniszuordnung zu immocheck-web pruefen. Keine Umschaltung oder DNS-Aenderung ausgefuehrt.')
+            message = 'www-Verzeichniszuordnung zu immocheck-web noch offen (API HTTP ' + str(status) + ').'
+            if require_www:
+                raise CheckError(message + ' Aktivierung gesperrt. Fuer den ersten Umzug zuerst prepare ohne DNS-Aenderung ausfuehren, danach www intern zuordnen und activate pruefen.')
+            lines.append(message + ' Nur Vorbereitung moeglich; keine Freigabe fuer den oeffentlichen www-Betrieb.')
     return lines
 
 
@@ -120,7 +129,20 @@ def render_rules(manifest, backup):
              'RewriteRule ^\\.well-known(?:/|$) - [L]',
              # Apache matches decoded paths, including encoded dot characters.
              'RewriteRule (^|/)\\. - [F,END]',
+             # A diagnostic header allows exact content checks on the already
+             # mapped apex before www DNS/webspace changes. No auth bypass:
+             # API exclusions and hidden-path blocks above always apply first.
+             'RewriteCond %{HTTP_HOST} ^neustart-immocheck\\.de$ [NC]',
+             'RewriteCond %{HTTPS} =on',
+             'RewriteCond %{HTTP:X-NIC-Origin-Release} ^' + re.escape(release) + '$',
+             'RewriteRule ^ - [E=NIC_ORIGIN_PREVIEW:1]',
+             '<IfModule mod_headers.c>',
+             'Header always merge Vary X-NIC-Origin-Release',
+             'Header always set Cache-Control "no-store" "expr=req(\'X-NIC-Origin-Release\') == \'' + release + '\'"',
+             'Header always set X-Robots-Tag "noindex, nofollow" "expr=req(\'X-NIC-Origin-Release\') == \'' + release + '\'"',
+             '</IfModule>',
              'RewriteCond %{HTTP_HOST} !^www\\.neustart-immocheck\\.de$ [NC]',
+             'RewriteCond %{ENV:NIC_ORIGIN_PREVIEW} !=1',
              'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=302,L]',
              'RewriteCond %{HTTPS} !=on',
              'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=302,L]']
@@ -169,28 +191,33 @@ def atomic_replace(sftp, path, payload, token):
     sftp.posix_rename(temporary, path)
 
 
-def verify_http(ips, manifest, request=origin_request):
+def verify_http(ips, manifest, request=origin_request, preparation=False):
     release = manifest['release']
+    host = APEX if preparation else WWW
+    def frontend(ip, path='/', method='HEAD'):
+        if preparation:
+            return request(host, ip, path, method, preview_release=release)
+        return request(host, ip, path, method)
     for ip in ips:
-        status, _, body, _ = request(WWW, ip, '/', 'GET')
+        status, _, body, _ = frontend(ip, '/', 'GET')
         if status != 200 or hashlib.sha256(body).hexdigest() != manifest['files']['index.html']['sha256']:
             raise CheckError('STRATO liefert nicht den aktivierten Startseiten-Release aus.')
         for name in manifest['files']:
             if name.endswith('/index.html'):
                 path = '/' + name[:-len('index.html')]
-                status, _, _, _ = request(WWW, ip, path)
+                status, _, _, _ = frontend(ip, path)
                 if status != 200:
                     raise CheckError('Direkter Inhalts- oder Rechneraufruf fehlgeschlagen.')
         for path in ['/service-worker.js', '/backend-config.json']:
-            if request(WWW, ip, path)[0] != 200:
+            if frontend(ip, path)[0] != 200:
                 raise CheckError('Zentrales Frontend-Asset nicht erreichbar.')
         for path, expected in [('/nic-unknown-page-test/', 404), ('/.' + 'nic-releases/' + release + '/.ready.json', 403)]:
-            if request(WWW, ip, path)[0] != expected:
+            if frontend(ip, path)[0] != expected:
                 raise CheckError('Unbekannte Pfade oder Release-Schutz funktionieren nicht wie erwartet.')
         status, headers, _, _ = request(APEX, ip, '/budget/?nic=check')
         if status != 302 or headers.get('location') != 'https://' + WWW + '/budget/?nic=check':
             raise CheckError('Canonical-Weiterleitung bewahrt Pfad und Query nicht korrekt.')
-    preflight(ips, request)
+    preflight(ips, request, require_www=not preparation)
 
 
 def switch(sftp, root, mode, release, token, ips, dns_restored=False,
@@ -225,11 +252,14 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
         return ['Release-Dateien vollstaendig per SHA256 geprueft.',
                 'Root-Regeln und Zugriffsschutz entsprechen dem erwarteten Stand.',
                 'Nur gelesen: keine Dateien oder DNS-Eintraege geaendert.']
-    if mode != 'activate':
+    if mode not in {'prepare', 'activate'}:
         raise CheckError('Unbekannter Modus.')
+    current_header = managed_header(original)
+    if mode == 'prepare' and current_header and current_header[0] != release:
+        raise CheckError('prepare ist nur fuer den ersten Umzug vorgesehen. Spaetere Releases mit activate umschalten.')
     if managed_header(original) and managed_header(original)[0] == release:
         http_verify(ips, manifest)
-        return ['Release ist bereits aktiv; HTTP-Pruefung erfolgreich.']
+        return ['Release ist vorbereitet; Hauptdomain-HTTP-Test erfolgreich. www-Zuordnung und activate stehen noch aus.'] if mode == 'prepare' else ['Release ist bereits aktiv; www-HTTP-Pruefung erfolgreich.']
     ensure_directory(sftp, store + '/.backups')
     backup = store + '/.backups/' + token + '.htaccess'
     write_new(sftp, backup, original)
@@ -253,6 +283,12 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
         except Exception:
             raise CheckError('HTTP-Pruefung UND automatische Ruecknahme fehlgeschlagen. DNS nicht umstellen; Root-Sicherung in .nic-releases/.backups wiederherstellen.') from None
         raise CheckError('HTTP-Pruefung fehlgeschlagen. Vorherige Root-Regeln automatisch atomar wiederhergestellt; DNS unveraendert.') from None
+    if mode == 'prepare':
+        return ['STRATO-Release vor der DNS-Umstellung bereitgestellt: `' + release + '`.',
+                'Startseiten-Hash, direkte Routen, API, Schutz und Canonical ueber die Hauptdomain erfolgreich geprueft.',
+                'Normale Hauptdomain-Aufrufe leiten weiterhin nach www; DNS unveraendert.',
+                'Root-Sicherung: `.nic-releases/.backups/' + token + '.htaccess`.',
+                'Naechster Schritt: www-CNAME auf STRATO-Standard zuruecksetzen und www intern auf /immocheck-web zuordnen. Danach activate ausfuehren.']
     return ['Release auf STRATO aktiviert: `' + release + '`.',
             'Startseiten-Inhalt, direkte Routen, Weiterleitung, Zugriffsschutz und API am STRATO-Ziel erfolgreich geprueft.',
             'Root-Sicherung: `.nic-releases/.backups/' + token + '.htaccess`.',
@@ -261,14 +297,14 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
 
 def run():
     mode = os.environ.get('STRATO_MODE', 'check')
-    if mode not in {'check', 'activate', 'rollback'}:
+    if mode not in {'check', 'prepare', 'activate', 'rollback'}:
         raise CheckError('Unbekannter Modus.')
     root = validate_root(os.environ.get('STRATO_SFTP_ROOT', '/immocheck-web').rstrip('/'))
     release = validate_release(os.environ.get('STRATO_RELEASE_ID', DEFAULT_RELEASE))
     token = operation_id(os.environ.get('STRATO_OPERATION_ID', ''))
     ips = origin_ips() if mode != 'rollback' else []
     # A rollback must remain available even if the current frontend/TLS is broken.
-    lines = preflight(ips) if mode != 'rollback' else []
+    lines = preflight(ips, require_www=mode == 'activate') if mode != 'rollback' else []
     import paramiko
     host = validate_host(os.environ.get('STRATO_SFTP_HOST', ''))
     pin = os.environ.get('STRATO_SFTP_FINGERPRINT', '').strip().rstrip('=')
@@ -289,7 +325,8 @@ def run():
             with paramiko.SFTPClient.from_transport(transport) as sftp:
                 sftp.get_channel().settimeout(30)
                 lines += switch(sftp, root, mode, release, token, ips,
-                                os.environ.get('STRATO_ORIGINAL_DNS_RESTORED') == 'true')
+                                os.environ.get('STRATO_ORIGINAL_DNS_RESTORED') == 'true',
+                                http_verify=(lambda addresses, manifest: verify_http(addresses, manifest, preparation=True)) if mode == 'prepare' else verify_http)
         finally:
             transport.close()
     return lines

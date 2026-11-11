@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 from strato_sftp_check import CheckError
 from strato_stage import ACTIVE_GUARD, collect_files, stage
 from strato_activate import (APEX, WWW, atomic_replace, origin_ips, preflight,
-                             render_rules, switch)
+                             render_rules, switch, verify_http)
 from test_strato_stage import MemorySFTP, RELEASE, ROOT, STORE
 import test_strato_stage as fixtures
 
@@ -56,6 +56,52 @@ class ActivationTests(unittest.TestCase):
             switch(sftp, ROOT, 'activate', RELEASE, '321-1', [], http_verify=Mock(side_effect=CheckError('broken HTTP')))
         self.assertEqual(sftp.files[ROOT + '/.htaccess'], original)
         self.assertEqual(sftp.removals, [ROOT + '/.nic-releases/' + RELEASE + '/.rename-target'])
+
+    def test_prepare_retains_original_backup_for_later_activation(self):
+        sftp = self.fixture()
+        original = sftp.files[ROOT + '/.htaccess']
+        result = switch(sftp, ROOT, 'prepare', RELEASE, '321-1', [], http_verify=Mock())
+        self.assertIn('vor der DNS-Umstellung', '\n'.join(result))
+        self.assertEqual(sftp.files[STORE + '/.backups/321-1.htaccess'], original)
+        prepared = sftp.files[ROOT + '/.htaccess']
+        switch(sftp, ROOT, 'activate', RELEASE, '322-1', [], http_verify=Mock())
+        self.assertEqual(sftp.files[ROOT + '/.htaccess'], prepared)
+        self.assertEqual(sftp.files[STORE + '/.backups/321-1.htaccess'], original)
+        second = 'b' * 40 + '-124-1'
+        stage(sftp, ROOT, second, collect_files(self.site))
+        with self.assertRaisesRegex(CheckError, 'ersten Umzug'):
+            switch(sftp, ROOT, 'prepare', second, '323-1', [], http_verify=Mock())
+        self.assertEqual(sftp.files[ROOT + '/.htaccess'], prepared)
+
+    def test_failed_preparation_restores_original(self):
+        sftp = self.fixture()
+        original = sftp.files[ROOT + '/.htaccess']
+        with self.assertRaisesRegex(CheckError, 'automatisch atomar wiederhergestellt'):
+            switch(sftp, ROOT, 'prepare', RELEASE, '321-1', [], http_verify=Mock(side_effect=CheckError('probe failed')))
+        self.assertEqual(sftp.files[ROOT + '/.htaccess'], original)
+
+    def test_preparation_http_checks_use_apex_but_activation_requires_www(self):
+        sftp = self.fixture()
+        manifest = json.loads(sftp.files[STORE + '/' + RELEASE + '/.ready.json'])
+        index = (self.site / 'index.html').read_bytes()
+        cert = {'notAfter':'2027'}
+        calls = []
+        def request(host, ip, path='/', method='HEAD', preview_release=None):
+            calls.append((host, path, preview_release))
+            if path == '/api/index.php?r=health':
+                return (200, {}, b'{"ok":true,"ready":true}', cert) if host == APEX else (404, {}, b'not mapped', cert)
+            if preview_release:
+                self.assertEqual(host, APEX)
+                self.assertEqual(preview_release, RELEASE)
+                status = 403 if path.startswith('/.nic-releases/') else 404 if path == '/nic-unknown-page-test/' else 200
+                return status, {}, index if path == '/' else b'', cert
+            if host == APEX:
+                return 302, {'location':'https://'+WWW+path}, b'', cert
+            return 200, {}, b'different www webspace', cert
+        verify_http(['1.1.1.1'], manifest, request, preparation=True)
+        self.assertTrue(any(preview == RELEASE for _,_,preview in calls))
+        with self.assertRaises(CheckError):
+            verify_http(['1.1.1.1'], manifest, request)
 
     def test_unsupported_atomic_replace_never_deletes_live_file(self):
         sftp = self.fixture()
@@ -134,6 +180,8 @@ class OriginTests(unittest.TestCase):
             return 404, {}, b'<html>different webspace</html>', cert
         with self.assertRaisesRegex(CheckError, 'Verzeichniszuordnung'):
             preflight(['1.1.1.1'], request)
+        report = preflight(['1.1.1.1'], request, require_www=False)
+        self.assertIn('Nur Vorbereitung', '\n'.join(report))
 
 
 if __name__ == '__main__':

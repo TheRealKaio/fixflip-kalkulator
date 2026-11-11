@@ -43,7 +43,8 @@ Sie enthält gemeinsame Formeln sowie Feldreferenz-Tabellen mit Erklärung und F
 Der Pages-Workflow startet bei Pushes auf `main`, kann manuell gestartet werden und veröffentlicht nur nach erfolgreichen Build- und Verifikationsschritten.
 
 Der STRATO-Umzug wird schrittweise vorbereitet: `strato-stage.yml` lädt isolierte
-Testversionen hoch; `strato-activate.yml` prüft TLS und Dateien, aktiviert manuell
+Testversionen hoch; `strato-activate.yml` prüft TLS und Dateien, stellt beim ersten
+Umzug mit `prepare` den Webspace vor dem DNS-Wechsel bereit, aktiviert manuell
 einen fertigen Release und kann die vorherigen Root-Regeln wiederherstellen.
 Automatisch läuft dort ausschließlich der lesende Modus `check`.
 Domainumstellung und Abschalten von Pages sind weiterhin getrennte Schritte;

@@ -218,9 +218,9 @@ Technische Referenzen:
 Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`):
 
 - Bei Aenderungen am Umschaltskript startet automatisch ausschliesslich `check`.
-  Manuell sind `check`, `activate` und `rollback` waehlbar; Branch immer `main`.
+  Manuell sind `check`, `prepare`, `activate` und `rollback` waehlbar; Branch immer `main`.
 - Lesende Checks haben eine eigene Warteschlange pro Lauf und belegen keine
-  Veroeffentlichungssperre. Upload, Aktivierung und Rollback teilen sich weiterhin
+  Veroeffentlichungssperre. Upload, Vorbereitung, Aktivierung und Rollback teilen sich weiterhin
   eine Sperre (`strato-production-v2`), ohne laufende Transfers abzubrechen.
   Die vorherige Sperre wurde nach der GitHub-Actions-Stoerung am 11. November
   abgeloest: Der dort nicht abbrechbare Lauf `43097933860` ist ein Push-Check ohne
@@ -238,7 +238,9 @@ Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`)
 - Dieser API-Einstieg wird auch mit www als SNI/Host direkt an der STRATO-Adresse
   geprueft. Ein www-Zertifikat allein beweist noch keine passende interne
   Verzeichniszuordnung. Beide Hostnamen muessen denselben vorhandenen API-Einstieg
-  aus `immocheck-web` erreichen, bevor eine Aktivierung erlaubt wird.
+  aus `immocheck-web` erreichen, bevor `activate` erlaubt wird. Bei `check` und
+  der erstmaligen Vorbereitung `prepare` darf www noch nicht zugeordnet sein;
+  dies wird ausdruecklich als offen gemeldet, nicht als fertiger www-Betrieb.
 - `check` liest nur: bekannte Root-Regeln, Release-Schutz, Fertig-Markierung und
   jede Frontend-Datei mit vollstaendigem Hashvergleich. Keine Serverdatei wird geschrieben.
 - Vor `activate` muss der Zugriffsschutz im Release-Speicher zum bekannten Zustand
@@ -258,6 +260,42 @@ Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`)
   Bei Fehlschlag werden die vorherigen Root-Regeln automatisch atomar wiederhergestellt.
 - Auch `activate` aendert keine DNS-Eintraege. Erst der erfolgreiche Origin-Test
   macht die anschliessende manuelle www-DNS-Umstellung zum naechsten Schritt.
+
+### Erster Umzug bei noch vorhandenem www-CNAME
+
+Der direkte Test vom 11. November bestaetigt: Hauptdomain/API und beide
+STRATO-TLS-Namen funktionieren; www erreicht auf STRATO jedoch `/api/index.php`
+noch nicht (404). Die CNAME-Ansicht bietet vor Entfernen des externen CNAME keine
+interne www-Verzeichniszuordnung. Deshalb wird der erste Umzug zweistufig erledigt:
+
+1. Workflow manuell mit `prepare` und der bestaetigten Release-ID starten. Er
+   prueft erneut TLS, Hauptdomain-API, Dateihashes und Sicherung, richtet die fertigen
+   Root-Regeln atomar ein und prueft alle oeffentlichen Frontend-Routen ueber die
+   **bereits richtig zugeordnete Hauptdomain**. Scheitert ein HTTP-Test, wird wie
+   bei `activate` automatisch die vorige Root-Datei wiederhergestellt.
+2. Dieser technische Test sendet `X-NIC-Origin-Release: <release-id>`.
+   Ausschliesslich auf der HTTPS-Hauptdomain erlaubt der genaue Headerwert die
+   Frontend-Pruefung ohne Canonical-Weiterleitung. Normale Browseranfragen bleiben
+   unveraendert nach www weitergeleitet; API und versteckte Pfade sind vorher ausgeschlossen.
+   Die Antwort ist per `Vary` getrennt und mit `Cache-Control: no-store` sowie
+   `X-Robots-Tag: noindex, nofollow` markiert, sofern mod_headers geladen ist.
+   Der Header ersetzt keine Anmeldung und oeffnet keine privaten Daten oder Test-URLs.
+3. Erst nach erfolgreichem `prepare` bei www den alten GitHub-CNAME deaktivieren
+   beziehungsweise auf STRATO-Standard zuruecksetzen. Danach unmittelbar unter
+   www → Webserver die interne Zuordnung `/immocheck-web` waehlen und speichern.
+   Keine Subdomain loeschen, kein fremdes Unterverzeichnis und keine externe URL-Umleitung.
+   Die zugeordneten Dateien und Root-Regeln stehen dann bereits bereit.
+4. Workflow erneut mit `activate` fuer **denselben** Release starten. Er verlangt
+   jetzt zwingend www-TLS, www-API und den exakten Frontend-Hash samt Routenchecks.
+   Ist dieser Release schon per `prepare` eingerichtet, entsteht dabei keine neue
+   Root-Sicherung; die urspruengliche Sicherung fuer den Rueckweg bleibt erhalten.
+5. Danach oeffentliche DNS-/IPv6-Aufloesung und die Browser-/Anmeldefunktionen abnehmen.
+
+`prepare` darf keinen spaeteren anderen Release an einem bereits verwalteten
+Frontend vorbeischalten. Nach dem ersten Umzug erfolgt jeder Releasewechsel ueber
+das streng pruefende `activate`. Eine erneute Vorbereitung desselben Release dient
+nur als idempotenter technischer Test. Die automatische Push-Ausfuehrung bleibt `check`
+und schreibt weiterhin nichts auf dem Webserver.
 
 Modus `rollback` liest den Rueckweg aus der aktiven Root-Datei und stellt die zuvor
 gesicherten Root-Regeln atomar wieder her. Die Pruefung der aktuellen TLS-Auslieferung
