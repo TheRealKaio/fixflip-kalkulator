@@ -22,7 +22,7 @@ def free_port():
         return stream.getsockname()[1]
 
 
-def main():
+def main(internal_mapping=False):
     with tempfile.TemporaryDirectory(prefix='nic-apache-') as directory:
         temp = Path(directory)
         root = temp / 'www'
@@ -53,7 +53,11 @@ def main():
         user, group = pwd.getpwuid(os.getuid()).pw_name, grp.getgrgid(os.getgid()).gr_name
         config = temp / 'apache.conf'
         modules = '\n'.join('LoadModule '+name+'_module /usr/lib/apache2/modules/mod_'+name+'.so'
-                            for name in ['mpm_event','authz_core','authz_host','rewrite','dir','mime','ssl','headers'])
+                            for name in ['mpm_event','authz_core','authz_host','rewrite','dir','mime','ssl','headers','alias'])
+        default_root = temp / 'default-root'
+        default_root.mkdir()
+        mapping = 'Alias / "' + str(root) + '/"' if internal_mapping else ''
+        document_root = default_root if internal_mapping else root
         config.write_text(f'''ServerRoot "/etc/apache2"
 ServerName {WWW}
 PidFile "{temp}/apache.pid"
@@ -73,13 +77,15 @@ TypesConfig /etc/mime.types
   Require all granted
 </Directory>
 <VirtualHost 127.0.0.1:{port}>
-  DocumentRoot "{root}"
+  DocumentRoot "{document_root}"
+  {mapping}
   SSLEngine on
   SSLCertificateFile "{cert}"
   SSLCertificateKeyFile "{key}"
 </VirtualHost>
 <VirtualHost 127.0.0.1:{http_port}>
-  DocumentRoot "{root}"
+  DocumentRoot "{document_root}"
+  {mapping}
 </VirtualHost>
 ''')
         process = subprocess.Popen(['/usr/sbin/apache2','-f',str(config),'-DFOREGROUND'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -139,7 +145,7 @@ TypesConfig /etc/mime.types
             response = connection.getresponse()
             assert response.status == 302 and response.getheader('Location') == 'https://'+WWW+'/budget/?test=1'
             connection.close()
-            print('Apache release rules passed: TLS routes, public redirects, API exclusion, query preservation, HTTPS, hidden storage and 404.')
+            print('Apache release rules passed (' + ('internal domain mapping' if internal_mapping else 'direct document root') + '): TLS routes, public redirects, API exclusion, query preservation, HTTPS, hidden storage and 404.')
         finally:
             process.terminate()
             try:
@@ -151,3 +157,4 @@ TypesConfig /etc/mime.types
 
 if __name__ == '__main__':
     main()
+    main(internal_mapping=True)

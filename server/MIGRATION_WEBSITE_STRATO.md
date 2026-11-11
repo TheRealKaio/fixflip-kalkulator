@@ -297,6 +297,22 @@ das streng pruefende `activate`. Eine erneute Vorbereitung desselben Release die
 nur als idempotenter technischer Test. Die automatische Push-Ausfuehrung bleibt `check`
 und schreibt weiterhin nichts auf dem Webserver.
 
+### Ergebnis des ersten prepare-Laufs
+
+Lauf `43111804537` verwendete `prepare`. Beim nachgelagerten HTTP-Test wurde
+abgebrochen; die vorherige Root-Datei wurde automatisch atomar wiederhergestellt.
+DNS wurde nicht geaendert. Die Sicherung und der isolierte Release bleiben erhalten.
+Das fruehere Sammelprotokoll nannte keine konkrete fehlgeschlagene URL; deshalb
+wird die genaue Ursache dieses ersten HTTP-Abbruchs nicht als bestaetigt behauptet.
+
+Fuer interne STRATO-Verzeichniszuordnungen setzen die generierten Regeln jetzt
+ausdruecklich `RewriteBase /`, damit relative Release-Ziele an der oeffentlichen
+URL-Wurzel aufgeloest werden. Der Apache-Test prueft sowohl einen direkten DocumentRoot
+als auch eine interne Alias-Zuordnung. Der naechste Origin-Test protokolliert den
+Host, oeffentlichen Pfad und HTTP-Status; nach automatischer Ruecknahme bleibt auch
+die konkrete sichere Fehlermeldung erhalten. Keine Antwortinhalte, Zugangsdaten
+oder privaten Serverdateien werden zu Diagnosezwecken ausgegeben.
+
 Modus `rollback` liest den Rueckweg aus der aktiven Root-Datei und stellt die zuvor
 gesicherten Root-Regeln atomar wieder her. Die Pruefung der aktuellen TLS-Auslieferung
 wird dabei absichtlich uebersprungen, damit der Rueckweg bei defektem Frontend moeglich

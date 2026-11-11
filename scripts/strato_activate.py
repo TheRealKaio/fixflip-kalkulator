@@ -125,6 +125,9 @@ def render_rules(manifest, backup):
     files = manifest['files']
     rules = ['# NIC-RELEASE: ' + release, '# NIC-ROLLBACK: ' + backup,
              'Options -Indexes', 'DirectoryIndex index.html', 'RewriteEngine On',
+             # STRATO maps a domain to an internal webspace subdirectory.
+             # Keep relative release substitutions rooted at the public URL /.
+             'RewriteBase /',
              'RewriteRule ^api(?:/|$) - [L]',
              'RewriteRule ^\\.well-known(?:/|$) - [L]',
              # Apache matches decoded paths, including encoded dot characters.
@@ -196,18 +199,21 @@ def verify_http(ips, manifest, request=origin_request, preparation=False):
     host = APEX if preparation else WWW
     def frontend(ip, path='/', method='HEAD'):
         if preparation:
-            return request(host, ip, path, method, preview_release=release)
-        return request(host, ip, path, method)
+            result = request(host, ip, path, method, preview_release=release)
+        else:
+            result = request(host, ip, path, method)
+        print('Origin-Test: ' + host + path + ' -> HTTP ' + str(result[0]), flush=True)
+        return result
     for ip in ips:
         status, _, body, _ = frontend(ip, '/', 'GET')
         if status != 200 or hashlib.sha256(body).hexdigest() != manifest['files']['index.html']['sha256']:
-            raise CheckError('STRATO liefert nicht den aktivierten Startseiten-Release aus.')
+            raise CheckError('Startseiten-Test: HTTP ' + str(status) + '; erwarteter Release-Inhalt fehlt.')
         for name in manifest['files']:
             if name.endswith('/index.html'):
                 path = '/' + name[:-len('index.html')]
                 status, _, _, _ = frontend(ip, path)
                 if status != 200:
-                    raise CheckError('Direkter Inhalts- oder Rechneraufruf fehlgeschlagen.')
+                    raise CheckError('Direkter Aufruf ' + path + ': HTTP ' + str(status) + '.')
         for path in ['/service-worker.js', '/backend-config.json']:
             if frontend(ip, path)[0] != 200:
                 raise CheckError('Zentrales Frontend-Asset nicht erreichbar.')
@@ -275,14 +281,15 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
     atomic_replace(sftp, live_path, replacement, token)
     try:
         http_verify(ips, manifest)
-    except Exception:
+    except Exception as failure:
         try:
             if read_regular(sftp, live_path, 200_000) != replacement:
                 raise CheckError('Root-Regeln extern geaendert.')
             atomic_replace(sftp, live_path, original, token + '0')
         except Exception:
             raise CheckError('HTTP-Pruefung UND automatische Ruecknahme fehlgeschlagen. DNS nicht umstellen; Root-Sicherung in .nic-releases/.backups wiederherstellen.') from None
-        raise CheckError('HTTP-Pruefung fehlgeschlagen. Vorherige Root-Regeln automatisch atomar wiederhergestellt; DNS unveraendert.') from None
+        reason = str(failure) if isinstance(failure, CheckError) else type(failure).__name__
+        raise CheckError('HTTP-Pruefung fehlgeschlagen (' + reason + '). Vorherige Root-Regeln automatisch atomar wiederhergestellt; DNS unveraendert.') from None
     if mode == 'prepare':
         return ['STRATO-Release vor der DNS-Umstellung bereitgestellt: `' + release + '`.',
                 'Startseiten-Hash, direkte Routen, API, Schutz und Canonical ueber die Hauptdomain erfolgreich geprueft.',
