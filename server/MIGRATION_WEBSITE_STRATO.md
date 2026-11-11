@@ -219,6 +219,12 @@ Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`)
 
 - Bei Aenderungen am Umschaltskript startet automatisch ausschliesslich `check`.
   Manuell sind `check`, `activate` und `rollback` waehlbar; Branch immer `main`.
+- Lesende Checks haben eine eigene Warteschlange pro Lauf und belegen keine
+  Veroeffentlichungssperre. Upload, Aktivierung und Rollback teilen sich weiterhin
+  eine Sperre (`strato-production-v2`), ohne laufende Transfers abzubrechen.
+  Die vorherige Sperre wurde nach der GitHub-Actions-Stoerung am 11. November
+  abgeloest: Der dort nicht abbrechbare Lauf `43097933860` ist ein Push-Check ohne
+  Schreibzugriff; es waren keine alten Upload-/Aktivierungslaeufe in der Warteschlange.
 - Standardmaessig wird der oben bestaetigte Release verwendet. Kein neuer Build
   und kein erneuter Datei-Upload sind fuer die erste Umschaltung erforderlich.
 - Beide TLS-Hostnamen werden direkt an den oeffentlichen IPv4-Adressen der

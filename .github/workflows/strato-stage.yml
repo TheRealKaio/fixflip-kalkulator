@@ -6,9 +6,9 @@ on:
 permissions:
   contents: read
 
-# Shared with the future activation workflow: never cancel a transfer midway.
+# Shared with activation/rollback: never cancel a transfer midway.
 concurrency:
-  group: strato-production
+  group: strato-production-v2
   cancel-in-progress: false
 
 jobs:

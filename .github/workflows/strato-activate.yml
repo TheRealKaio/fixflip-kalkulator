@@ -30,7 +30,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: strato-production
+  # Read-only checks must not occupy the deployment lock. The old group was
+  # stranded during the Nov 11 Actions incident; its only queued run is a push
+  # check (no writes). Stage and all future mutations share the new lock below.
+  group: ${{ (inputs.mode == 'activate' || inputs.mode == 'rollback') && 'strato-production-v2' || format('strato-check-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
