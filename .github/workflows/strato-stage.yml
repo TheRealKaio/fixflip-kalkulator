@@ -1,0 +1,37 @@
+name: STRATO Testversion hochladen
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Shared with the future activation workflow: never cancel a transfer midway.
+concurrency:
+  group: strato-production
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Check deployment boundaries and host-key verification
+        run: python -m unittest discover -s scripts -p 'test_strato_*.py'
+      - name: Build and verify website
+        uses: ./.github/actions/build-site
+      - name: Install SFTP client
+        run: python -m pip install --disable-pip-version-check paramiko==5.1.0
+      - name: Upload and verify isolated release without activating it
+        env:
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
+          STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
+          STRATO_RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python scripts/strato_stage.py --site _site

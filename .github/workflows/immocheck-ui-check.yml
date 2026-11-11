@@ -20,8 +20,8 @@ jobs:
           python3 - <<'PY'
           import yaml, subprocess
           from pathlib import Path
-          workflow=yaml.safe_load(Path('.github/workflows/pages.yml').read_text())
-          build=next(s['run'] for s in workflow['jobs']['deploy']['steps'] if s.get('name')=='Build static site')
+          action=yaml.safe_load(Path('.github/actions/build-site/action.yml').read_text())
+          build=next(s['run'] for s in action['runs']['steps'] if s.get('name')=='Build static site')
           subprocess.run(['bash','-e','-c',build],check=True)
           PY
           node server/tests/run.cjs

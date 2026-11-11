@@ -1,6 +1,6 @@
 # Vollständige Website von GitHub Pages auf STRATO übertragen
 
-Planungsstand: 11. November 2026. **Vorbereitet, noch nicht auf STRATO aktiviert.**
+Planungsstand: 11. November 2026. **SFTP geprueft; Test-Upload vorbereitet, noch nicht auf STRATO aktiviert.**
 Dieser Plan ersetzt für den vollständigen Website-Umzug die frühere Aufteilung
 „www bei GitHub Pages / Hauptdomain für die STRATO-API“. Die vorhandene API und
 Datenbank bleiben bestehen. Rechnerformeln und PDFs dürfen zunächst weiterhin
@@ -115,15 +115,17 @@ zur zuvor geprüften Pages-Auslieferung zurücksetzen und die alte Root-Weiterle
 wiederherstellen. API, Benutzerkonten und Datenbank dafür nicht löschen oder neu einrichten.
 DNS-Rückkehr wirkt wegen zwischengespeicherter Einträge nicht zwingend sofort.
 
-## Noch benötigte Angaben
+## Bestaetigter Stand und noch offene Schritte
 
-- STRATO-Paket beziehungsweise verfügbare SFTP-/SSH-Funktionen.
-- SFTP-/SSH-Hostname und das Startverzeichnis eines Deployment-Zugangs.
-- Tatsächlicher Zielpfad des öffentlichen Ordners `immocheck-web/`.
-- Bestätigung, welches STRATO-Zertifikat Hauptdomain und www abdeckt.
-
-Diese Angaben erlauben die konkrete Workflow-Vorbereitung. Zugangsdaten und
-Serveränderungen sind damit noch nicht eingerichtet oder als erledigt behauptet.
+- STRATO-Zugang verwendet SFTP auf Port 22, Startverzeichnis `/`; kein SSH-Shellzugriff vorausgesetzt.
+- Host, Benutzer, Passwort und Server-Fingerabdruck sind als Repository-Secrets hinterlegt.
+- `ssh-ed25519`-Fingerabdruck wurde mit der bestehenden FileZilla-Verbindung abgeglichen.
+- Manueller Modus `check` erfolgreich: `/immocheck-web`, `api/` und `api/index.php` vorhanden.
+- Lokale Sicherung des bestehenden Webspace wurde vom Nutzer als erledigt bestaetigt.
+- www zeigt weiterhin per CNAME auf `therealkaio.github.io.`; Hauptdomain intern auf `/immocheck-web`.
+- Offen: Test-Upload ausfuehren, atomaren Dateitausch bestaetigen, www-SSL pruefen,
+  Aktivierung und Rollback implementieren/testen, danach DNS umstellen und erst
+  nach Abnahme die automatische STRATO-Produktion einschalten und Pages abschalten.
 
 ## Offizielle Anleitungen
 
@@ -160,3 +162,46 @@ Beide Modi veraendern keine Serverdateien, keine DNS-Eintraege und keine
 Veröffentlichung. Ein erfolgreicher lesender Test ist noch kein Schreibtest
 und aktiviert noch kein automatisches STRATO-Deployment. SSH-Shellzugriff ist
 fuer diese SFTP-Pruefung nicht erforderlich.
+
+## Manueller Test-Upload ohne Aktivierung
+
+Workflow **STRATO Testversion hochladen** (`.github/workflows/strato-stage.yml`),
+manuell auf `main` starten. Es sind keine zusaetzlichen Secrets erforderlich.
+
+Der komplette bestehende Build und alle bisherigen PHP-, Rechner-, Browser-,
+PDF- und Navigationspruefungen liegen jetzt gemeinsam in
+`.github/actions/build-site/action.yml`. Pages und der STRATO-Test verwenden
+denselben Ablauf; die bisherigen Build-Befehle und ihre Reihenfolge sind erhalten.
+Pages bleibt weiterhin das aktive Veroeffentlichungsziel.
+
+Erst nach diesen Pruefungen wird eine frische Version nach
+`/immocheck-web/.nic-releases/<commit>-<run>-<attempt>/` uebertragen:
+
+- Nur statische Frontend-Dateien aus `_site/`. Keine PHP-Dateien, API, privaten
+  Verzeichnisse, Konfigurationen, symbolischen Links oder Datenbanksicherungen.
+  CNAME, Pages-Metadaten und `_checks/` werden nicht ausgeliefert.
+- Die vorhandene HTTPS-API-Adresse auf der Hauptdomain muss unveraendert sein.
+- Der gespeicherte Server-Fingerabdruck wird vor dem Senden des Passworts geprueft.
+- Ein `.htaccess`-Zugriffsschutz im Release-Speicher sperrt direkte Browserzugriffe
+  auf `.nic-releases/` mit `Require all denied`. Er veraendert nicht die aktive
+  Root-`.htaccess`. Bei der spaeteren Aktivierung muss dieser Staging-Schutz im
+  konkret getesteten Auslieferungsverfahren beruecksichtigt werden; ein blosser
+  interner Rewrite in den gesperrten Ordner reicht nicht aus.
+- Zwei ausschliesslich im neuen Release angelegte Testdateien pruefen die
+  SFTP-Erweiterung `posix-rename` durch Ersetzen einer bereits vorhandenen Testdatei.
+  Fehlt die Erweiterung, wird ohne unsicheren Loeschen/Umbenennen-Ersatz abgebrochen.
+- Jede uebertragene Datei wird zurueckgelesen und ihr SHA256-Hash verglichen.
+  Erst nach vollstaendiger Uebertragung wird `.ready.json` geschrieben.
+- Bei Abbruch bleibt ein nicht aktivierter, gegebenenfalls unvollstaendiger
+  Release-Ordner liegen. Es werden keine fremden Dateien oder aelteren Releases geloescht.
+  Ein neuer Workflow-Versuch verwendet eine neue Release-ID.
+
+Ein erfolgreicher Test-Upload ist **keine Aktivierung und noch kein HTTP-/SSL-Test**.
+DNS, die bestehende Root-Weiterleitung, API, private Daten und aktive Website bleiben
+unveraendert. Der Bericht nennt die Release-ID fuer die anschliessende Aktivierung.
+Erst nach bestaetigtem Test-Upload wird der konkrete atomare Wechsel samt Rueckweg
+vorbereitet. Der Workflow hat bewusst keinen Push- oder Zeitplan-Trigger.
+
+Technische Referenzen:
+- Paramiko SFTP / `posix_rename`: https://docs.paramiko.org/en/stable/api/sftp.html
+- Apache Rewrite-Flags und interne Verarbeitung: https://httpd.apache.org/docs/2.4/rewrite/flags.html

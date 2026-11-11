@@ -227,7 +227,7 @@ Weitere Felder verwenden die Startwerte in der jeweiligen Quellkomponente. Benut
 
 ## 6. Build, Tests und Veröffentlichung
 
-Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Er entpackt die Hauptseite, wendet fest definierte Inhalts- und Layoutänderungen an, erzeugt Routen und Einstellungsseiten, kopiert Rechnerassets und Dokumente und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Erst nach erfolgreichen Prüfungen wird nach GitHub Pages veröffentlicht.
+Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Der gemeinsame Build in `.github/actions/build-site/action.yml` entpackt die Hauptseite, wendet fest definierte Inhalts- und Layoutänderungen an, erzeugt Routen und Einstellungsseiten, kopiert Rechnerassets und Dokumente und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Erst nach erfolgreichen Prüfungen wird nach GitHub Pages veröffentlicht. Der manuelle Workflow `.github/workflows/strato-stage.yml` verwendet denselben Build, überträgt aber lediglich eine isolierte Testversion auf STRATO und aktiviert sie nicht. Der Umstellungsstand ist in `server/MIGRATION_WEBSITE_STRATO.md` dokumentiert.
 
 Für die Anschlussfinanzierung enthält `scripts/verify_finance_updates.js` Prüffälle für Monatsrate, Restschuld, Sondertilgung, Null-Darlehen, Ergebnisfarben, Downloadkarte und PDF-Datei. Ein Prüffall nutzt 300.000 € Darlehen, 4 % Sollzins, 2 % Tilgung und 5 % Sondertilgung über zehn Jahre. Der Release-Vertrag in `scripts/release_contract.py` leitet die sichtbare Versionsnummer aus dem neuesten `scripts/patch*_v8*.py`-Dateinamen ab.
 

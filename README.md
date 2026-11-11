@@ -38,7 +38,7 @@ Sie enthält gemeinsame Formeln sowie Feldreferenz-Tabellen mit Erklärung und F
 
 ## Entwicklung und Veröffentlichung
 
-Änderungen an der Hauptseite werden im GitHub-Actions-Workflow unter `.github/workflows/pages.yml` gebaut. Die eigenständige Finanzierungsseite wird aus `assets/financing.html` kopiert. Admin- und PDF-Quellen liegen in `assets/`; Prüfskripte und Build-Helfer in `scripts/`.
+Änderungen an der Hauptseite werden durch `.github/actions/build-site/action.yml` gebaut und geprüft. Diesen gemeinsamen Ablauf verwenden der aktive Pages-Workflow `.github/workflows/pages.yml` und der manuelle STRATO-Test-Upload `.github/workflows/strato-stage.yml`. Der Test-Upload aktiviert keine Website und ändert keine Domain. Die eigenständige Finanzierungsseite wird aus `assets/financing.html` kopiert. Admin- und PDF-Quellen liegen in `assets/`; Prüfskripte und Build-Helfer in `scripts/`.
 
 Der Pages-Workflow startet bei Pushes auf `main`, kann manuell gestartet werden und veröffentlicht nur nach erfolgreichen Build- und Verifikationsschritten.
 

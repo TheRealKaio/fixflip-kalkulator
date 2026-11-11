@@ -161,7 +161,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Startseite und integrierte Informationskarten | `assets/homepage.html`, `assets/homepage.css` |
 | Direkte Inhaltsrouten und gemeinsame Shell | `scripts/build_settings_pages.py`, `scripts/finalize_shared_layout.py` |
 | Gemeinsame Typografie | `scripts/centralize_layout_typography.py` |
-| Verbindlicher Veröffentlichungsablauf | `.github/workflows/pages.yml` |
+| Verbindlicher Build und vollständige Prüfungen | `.github/actions/build-site/action.yml` |
+| Aktive Veröffentlichung / noch nicht aktivierender STRATO-Test | `.github/workflows/pages.yml`, `.github/workflows/strato-stage.yml` |
 
 Die komprimierte Ausgangsseite und aktive historische Build-Patches werden
 weiter verarbeitet. Deshalb die endgültige generierte Ausgabe prüfen; eine
