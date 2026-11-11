@@ -1,0 +1,18 @@
+# Migration template: upload only with the complete tested frontend release.
+# Do not replace the currently installed file until the STRATO cutover is ready.
+Options -Indexes
+DirectoryIndex index.html
+RewriteEngine On
+
+# Preserve the existing API origin, endpoint and session cookies.
+# Do not canonicalize /api to www or let frontend rules consume API requests.
+RewriteRule ^api(?:/|$) - [L]
+
+# Canonical website host. The host condition prevents a www -> www loop.
+# Start with 302 for cutover testing; change to 301 only after acceptance.
+RewriteCond %{HTTP_HOST} !^www\.neustart-immocheck\.de$ [NC]
+RewriteRule ^(.*)$ https://www.neustart-immocheck.de/$1 [R=302,L]
+
+# HTTPS for website requests. API clients already use the configured HTTPS URL.
+RewriteCond %{HTTPS} !=on
+RewriteRule ^(.*)$ https://www.neustart-immocheck.de/$1 [R=302,L]

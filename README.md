@@ -16,6 +16,8 @@ Für Anmeldung, zentrale Einstellungen und Statistiken liegt ein optionales PHP-
 
 ## Dokumentation
 
+- [Vorbereiteter vollständiger Website-Umzug auf STRATO](server/MIGRATION_WEBSITE_STRATO.md) – Zielarchitektur, Domains, Auslieferung und Rückweg; noch nicht aktiviert.
+
 - [Verbindliche UI-Standards: Header, Inhaltsseiten, Texte und Footer](docs/UI-STANDARDS.md)
 - [Arbeitsregeln für künftige Änderungen](AGENTS.md)
 
