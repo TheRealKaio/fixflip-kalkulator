@@ -37,6 +37,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert(await card.isVisible(),'Explanation visible: '+key+' at '+width);
     if(key==='settlement'){assert.equal(await page.locator('#nicContentView').count(),0,'Settlement has one merged card');assert((await card.locator('.nic-explanation-intro').innerText()).startsWith('Erstelle die jährliche Mieterabrechnung'),'Previous product copy is the introduction');}
     assert(await card.evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first: '+key);
+    if(key==='settlement')assert.deepEqual(await card.evaluate(e=>({margin:getComputedStyle(e).marginBottom,gap:getComputedStyle(e.parentElement).paddingBottom})),{margin:'0px',gap:'16px'},'One shared footer gap');
     const geometry=await card.evaluate(e=>({height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontFamily,body:getComputedStyle(e.querySelector('p')).fontSize,h2:getComputedStyle(e.querySelector('h2')).fontSize,h3:getComputedStyle(e.querySelector('h3')).fontSize}));
     heights.push(geometry.height);
     assert(/verdana/i.test(geometry.font));assert.equal(geometry.body,'20px');assert.equal(geometry.h2,'24px');assert.equal(geometry.h3,'22px');
