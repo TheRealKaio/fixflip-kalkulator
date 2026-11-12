@@ -32,6 +32,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex,nofollow');
     assert(new URL(page.url()).pathname.startsWith('/fixflip-kalkulator/'),'Direct route remains in project');
     assert(await page.locator('.app > main.section').isVisible(),'Shared app visible: '+slug);
+    assert.equal(await page.locator('body').evaluate(e=>parseFloat(getComputedStyle(e).zoom)||1),width>=1024?.75:1,'Preview desktop density');
     assert.equal(await page.locator('body').evaluate(e=>getComputedStyle(e).fontSize),layout.bodySize+'px','Public body size');
     const heading=await page.locator('#heroTitle').evaluate(e=>({configured:getComputedStyle(document.documentElement).getPropertyValue('--nic-h1-font-size').trim(),actual:parseFloat(getComputedStyle(e).fontSize)}));
     assert.equal(heading.configured,layout.h1+'px','Public heading setting: '+width+' '+slug);

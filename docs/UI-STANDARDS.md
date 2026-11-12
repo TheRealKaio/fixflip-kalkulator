@@ -1,6 +1,6 @@
 # Verbindliche UI-Standards für Neustart ImmoCheck
 
-Stand: 10. November 2026. Diese Regeln halten die abgestimmte Darstellung fest,
+Stand: 12. November 2026. Diese Regeln halten die abgestimmte Darstellung fest,
 damit spätere Änderungen dieselben Entscheidungen wiederverwenden. Sie gelten
 für die öffentliche Website und deren gemeinsame Einbindung von Admin- und
 Nutzeransichten. PDFs behalten ihre getrennte Druckgestaltung.
@@ -31,6 +31,23 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Footer; lange Inhalte scrollen natürlich. Kein zusätzlicher innerer Seiten-Scrollbereich.
 - Admin- und Nutzeransichten verwenden den nativen Dokumentfluss und die
   gemeinsame Markenleiste. Keine zweite Kopfzeile oder separate iframe-Seite.
+
+## Desktop-Dichte: 75 %
+
+- Ab 1024 px Browserbreite wird die gesamte Bildschirmdarstellung in Vorschau
+  und Liveversion einheitlich auf 75 % skaliert (`assets/desktop-density.css`).
+  Der Browser bleibt für die Abnahme auf 100 %; ein zusätzlicher Browserzoom
+  multipliziert sich mit der Seitenskalierung.
+- Unter 1024 px bleiben Tablet-/Mobilansichten unverändert. Druck/PDF und
+  eingebettete Rechner erhalten ebenfalls keine zusätzliche Skalierung.
+- Logo, Abstände, Farben, Buttons und Admin-Schriften bleiben an dieselben
+  zentralen Regeln gebunden. Nachfolgende Pixelangaben sind Layoutwerte vor der
+  Desktop-Skalierung, beispielsweise 250 px Logo → 187,5 px sichtbare Breite.
+- Dynamische Header-Messungen müssen Bildschirmrechtecke in unskalierte
+  Layoutwerte zurückrechnen. Keine zweite Skalierung der reservierten Höhe.
+- Bei 100 % Browserzoom Desktopbreiten 1024/1440/1920 sowie den Wechsel zurück
+  zu Mobil prüfen: kein horizontaler Überlauf, kein abgeschnittener Header,
+  erreichbare Dialoge und gleichbleibende Höhe bei internen Seitenwechseln.
 
 ## 2. Header und Navigation
 
@@ -154,6 +171,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Bereich | Gepflegte Quellen / Build-Schritte |
 | --- | --- |
 | Gemeinsame Routen und aktive Ansicht | `assets/unified-calculator-navigation.js`, `scripts/build_unified_navigation.py` |
+| Gemeinsame Desktop-Skalierung | `assets/desktop-density.css`, Einbindung über `scripts/build_unified_navigation.py` |
 | Erste stabile Darstellung | `assets/initial-layout.js`, Einbindung über `scripts/build_unified_navigation.py` |
 | Bildheader und Höhenreservierung | `assets/stable-header.js`, `assets/stable-header.css` |
 | Markenleiste, Logo, responsiver Footer | `assets/immocheck-brand-theme.css`, `assets/header-layout.css` |

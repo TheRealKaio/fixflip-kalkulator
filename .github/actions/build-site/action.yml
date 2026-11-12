@@ -804,3 +804,4 @@ runs:
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_calculator_styles.cjs
 
+        NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_desktop_density.cjs

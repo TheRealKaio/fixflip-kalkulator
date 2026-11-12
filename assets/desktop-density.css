@@ -1,0 +1,7 @@
+/* Shared desktop presentation: 75% at normal browser zoom.
+   CSS zoom participates in layout; browser accessibility zoom remains available.
+   Tablets, phones, embedded calculators and printed/PDF content keep their scale. */
+@media screen and (min-width:1024px){
+ body:not(.nic-embed){zoom:.75;min-height:calc(100vh / .75)!important}
+ body:not(.nic-embed)>.app{min-height:calc(100vh / .75)!important}
+}

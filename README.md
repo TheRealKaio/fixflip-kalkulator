@@ -38,6 +38,8 @@ Sie enthält gemeinsame Formeln sowie Feldreferenz-Tabellen mit Erklärung und F
 
 ## Entwicklung und Veröffentlichung
 
+Die gemeinsame Desktopdarstellung ist ab 1024 px Fensterbreite auf 75 % verdichtet. Für den Vergleich Vorschau/Live den Browser auf 100 % lassen; ein zusätzlicher Browserzoom multipliziert die Skalierung. Mobil, eingebettete Rechner und Druck/PDF bleiben unverändert.
+
 Änderungen an der Hauptseite werden durch `.github/actions/build-site/action.yml` gebaut und geprüft. Der Workflow `.github/workflows/strato-production.yml` veröffentlicht erfolgreiche Builds von `main` automatisch auf STRATO. Rechner, PDF-Berichte, PHP-Regeln, Browsernavigation und Layout müssen zuvor die bestehenden Prüfungen bestehen. Die eigenständige Finanzierungsseite stammt aus `assets/financing.html`; Admin- und PDF-Quellen liegen ebenfalls in `assets/`.
 
 Neue Assets werden vor den Einstiegsseiten übertragen, ersetzte Dateien gesichert und einzeln atomar ausgetauscht. Bei Fehlern wird die vorherige Version wiederhergestellt. API, private Konfiguration und Datenbank werden nicht mit dem Frontend ersetzt. Bytegleiche Builds benötigen keinen erneuten Upload.

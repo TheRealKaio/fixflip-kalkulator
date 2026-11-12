@@ -43,6 +43,7 @@ nav=nav.replace("''/* OWN_INTRO_MARKUP */",json.dumps(Path("assets/own-intro.htm
 import shutil
 shutil.copyfile('assets/homepage.css',site/'homepage.css')
 shutil.copyfile('assets/initial-layout.js',site/'initial-layout.js')
+shutil.copyfile('assets/desktop-density.css',site/'desktop-density.css')
 nav=nav.replace('/* CALCULATOR_REGISTRY */','const calculators='+json.dumps(calculators)+';')
 (site/'calculators.json').write_text(json.dumps(registry,ensure_ascii=False,indent=2)+'\n')
 # Finance shares the same loaded controller and initialization scope as all modes.
@@ -159,4 +160,5 @@ for page in site.rglob('*.html'):
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',r'\1\2',s,count=1,flags=re.S)
  if page==site/'eigennutzung/index.html':
   s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+Path('assets/own-intro.html').read_text(),s,count=1)
+ if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
  page.write_text(s)
