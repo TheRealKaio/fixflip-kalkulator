@@ -20,6 +20,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    for(const slug of ['','budget/','eigennutzung/','vermietung/','fix-flip/','finanzierungsrechner/','nebenkostenabrechnung/','preise/','warum-immocheck/']){
     await page.goto('http://localhost/fixflip-kalkulator/'+slug,{waitUntil:'networkidle'});
     await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady);
+    if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
     assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex,nofollow');
     assert(new URL(page.url()).pathname.startsWith('/fixflip-kalkulator/'),'Direct route remains in project');
     assert(await page.locator('.app > main.section').isVisible(),'Shared app visible: '+slug);
