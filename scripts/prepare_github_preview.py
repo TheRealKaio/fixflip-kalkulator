@@ -79,6 +79,10 @@ def prepare(source, target, live_layout=False):
             if text.count(needle) != 2:
                 raise ValueError('Preview logo hook changed; review brand navigation')
             text = text.replace(needle, 'link.href=ROOT.href')
+            old_key = "const KEY='nic_site_settings_v1';"
+            if text.count(old_key) != 1:
+                raise ValueError('Preview settings storage hook changed')
+            text = text.replace(old_key, "const KEY='nic_preview_site_settings_v2';")
         if path.suffix == '.html':
             if layout is not None:
                 def bootstrap(match):

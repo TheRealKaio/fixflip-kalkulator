@@ -134,7 +134,7 @@ Domain wird ausschließlich bei STRATO zugeordnet. Das verändert keine DNS-Eint
 Der gemeinsame vollständige Build wird zuerst unverändert geprüft. Danach erzeugt
 `scripts/prepare_github_preview.py` eine separate Ausgabe `_preview/`: lokale URLs
 werden auf den Projekt-Unterpfad angepasst, Asset-Prüfsummen neu erzeugt, CNAME
-entfernt, robots/noindex gesetzt und das produktive Backend deaktiviert. Ein anonymer öffentlicher GET beim Build übernimmt ausschließlich die aktuellen Layoutwerte aus dem Adminbereich (Schriften, Größen, Farben, Radien); Texte und andere Vorschauinhalte stammen weiterhin aus `develop`. Das Logo führt innerhalb der Vorschau zurück zur Startseite. Im Browser werden dadurch keine Backend-Zugriffe oder produktiven Anmeldungen freigeschaltet. Der
+entfernt, robots/noindex gesetzt und das produktive Backend deaktiviert. Ein anonymer öffentlicher GET beim Build übernimmt ausschließlich die aktuellen Layoutwerte aus dem Adminbereich (Schriften, Größen, Farben, Radien); Texte und andere Vorschauinhalte stammen weiterhin aus `develop`. Das Logo führt innerhalb der Vorschau zurück zur Startseite. Im Browser werden dadurch keine Backend-Zugriffe oder produktiven Anmeldungen freigeschaltet. Lokale Vorschau-Einstellungen verwenden den eigenen Schlüssel `nic_preview_site_settings_v2`; historische Werte unter `nic_site_settings_v1` dürfen das veröffentlichte Layout nicht überschreiben. Alte Einstellungen und andere Browserdaten werden dabei nicht gelöscht. Der
 Browsertest `verify_github_preview.cjs` prüft direkte Routen, interne Wechsel,
 Zurück-Navigation und Assets auf Desktop/Mobil sowie fehlende Backend-Zugriffe.
 `_site/` und die Live-Konfiguration bleiben unverändert. Benutzeranmeldung und

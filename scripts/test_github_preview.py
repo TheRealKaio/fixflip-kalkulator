@@ -15,6 +15,7 @@ class PreviewTests(unittest.TestCase):
             (source/'budget').mkdir();(source/'budget/index.html').write_text('<head></head>')
             js="const routes={'/budget/':'budget'};routes['/']='home';new URL('/',ROOT);p.split('/');u.startsWith('/');const outside='https://example.com/budget/';"
             (source/'app.js').write_text(js)
+            (source/'site-settings.js').write_text("const KEY='nic_site_settings_v1';link.href=websiteUrl(website)||ROOT.href;link.href=websiteUrl(website)||ROOT.href;")
             hashed='app.'+hashlib.sha256(js.encode()).hexdigest()[:16]+'.js'
             (source/hashed).write_text(js)
             (source/'.asset-manifest.json').write_text(json.dumps({'app.js':hashed}))
@@ -28,6 +29,8 @@ class PreviewTests(unittest.TestCase):
             self.assertEqual(json.loads((target/'site-settings.json').read_text()),{'layout':{'bodySize':20,'h1':30},'content':{'title':'development draft'}})
             self.assertEqual(before,{p.relative_to(source):p.read_bytes() for p in source.rglob('*') if p.is_file()})
             self.assertFalse((target/'CNAME').exists())
+            self.assertIn("const KEY='nic_preview_site_settings_v2'",(target/'site-settings.js').read_text())
+            self.assertIn("const KEY='nic_site_settings_v1'",(source/'site-settings.js').read_text())
             self.assertEqual(json.loads((target/'backend-config.json').read_text()),{'enabled':False,'apiUrl':''})
             output=(target/'app.js').read_text()
             self.assertIn("routes['"+PREFIX+"']",output)

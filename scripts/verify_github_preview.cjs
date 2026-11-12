@@ -7,6 +7,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   for(const width of [1440,390]){
    const layout=JSON.parse(fs.readFileSync('_preview/site-settings.json','utf8')).layout;
    const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[],missing=[],backend=[];
+   const legacySettings=JSON.parse(fs.readFileSync('_preview/site-settings.json','utf8'));
+   legacySettings.layout.bodySize=32;legacySettings.layout.h1=60;
+   const legacyJSON=JSON.stringify(legacySettings);
+   await page.addInitScript(({legacyJSON})=>{
+    localStorage.setItem('nic_site_settings_v1',legacyJSON);
+    localStorage.setItem('nic_preview_input_preservation_test','keep-inputs');
+   },{legacyJSON});
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
@@ -40,6 +47,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await page.locator('html').getAttribute('data-nic-page'),'budget');
    await page.locator('.nic-logo-link').click();await page.waitForURL('http://localhost/fixflip-kalkulator/');
    assert.equal(await page.locator('html').getAttribute('data-nic-page'),'website');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('nic_site_settings_v1')),legacyJSON,'Old settings are preserved');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('nic_preview_input_preservation_test')),'keep-inputs','Other browser data preserved');
    assert.deepEqual(errors,[],'No browser errors');
    assert.deepEqual(missing,[],'No missing or origin-root assets');
    assert.deepEqual(backend,[],'No production backend access');
