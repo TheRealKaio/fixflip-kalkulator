@@ -26,7 +26,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(new URL(page.url()).pathname.startsWith('/fixflip-kalkulator/'),'Direct route remains in project');
     assert(await page.locator('.app > main.section').isVisible(),'Shared app visible: '+slug);
     assert.equal(await page.locator('body').evaluate(e=>getComputedStyle(e).fontSize),layout.bodySize+'px','Public body size');
-    assert.equal(await page.locator('#heroTitle').evaluate(e=>getComputedStyle(e).fontSize),layout.h1+'px','Public heading size');
+    const heading=await page.locator('#heroTitle').evaluate(e=>({configured:getComputedStyle(document.documentElement).getPropertyValue('--nic-h1-font-size').trim(),actual:parseFloat(getComputedStyle(e).fontSize)}));
+    assert.equal(heading.configured,layout.h1+'px','Public heading setting: '+width+' '+slug);
+    assert(heading.actual>0&&heading.actual<=layout.h1,'Shared responsive heading limit: '+width+' '+slug);
     assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
