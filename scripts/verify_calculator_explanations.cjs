@@ -28,7 +28,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     const card=page.locator('[data-nic-explanation]');
     assert.equal(await card.count(),1,'Only the current explanation exists');
     assert.equal(await card.getAttribute('data-nic-explanation'),key);
-    assert(await card.isVisible());
+    assert(await card.isVisible(),'Explanation visible: '+key+' at '+width);
     const geometry=await card.evaluate(e=>({height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontFamily,body:getComputedStyle(e.querySelector('p')).fontSize,h2:getComputedStyle(e.querySelector('h2')).fontSize,h3:getComputedStyle(e.querySelector('h3')).fontSize}));
     heights.push(geometry.height);
     assert(/verdana/i.test(geometry.font));assert.equal(geometry.body,'20px');assert.equal(geometry.h2,'24px');assert.equal(geometry.h3,'22px');
