@@ -47,11 +47,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(after.contentBottom<=after.bottom+1,'Header text not clipped at '+width+' '+key);
     assert(!after.overflow,'No route overflow at '+width+' '+key);
    }
-   const fills=await page.locator('.app').evaluate(e=>e.getBoundingClientRect().height>=innerHeight-1);
-   assert(fills,'Short pages fill the viewport at '+width);
+   const fill=await page.locator('.app').evaluate(e=>({height:e.getBoundingClientRect().height,minHeight:getComputedStyle(e).minHeight,viewport:innerHeight,bodyMin:getComputedStyle(document.body).minHeight}));
+   assert(fill.height>=fill.viewport-1,'Short pages fill the viewport at '+width+': '+JSON.stringify(fill));
   }
   await page.emulateMedia({media:'print'});
   assert.equal(await page.locator('body').evaluate(e=>parseFloat(getComputedStyle(e).zoom)||1),1,'Print is not scaled');
+  await page.emulateMedia({media:'screen'});
+  await page.goto('http://localhost/budget/?embed=1',{waitUntil:'networkidle'});
+  assert.equal(await page.locator('body').evaluate(e=>parseFloat(getComputedStyle(e).zoom)||1),1,'Embedded calculator is not scaled');
   assert.deepEqual(errors,[]);
   console.log('Desktop 75% passed: 1024/1440/1920, mobile unchanged, resize, header stability, controls, overflow and print.');
  }finally{await browser.close();}
