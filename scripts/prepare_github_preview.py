@@ -80,6 +80,12 @@ def prepare(source, target, live_layout=False):
                 raise ValueError('Preview logo hook changed; review brand navigation')
             text = text.replace(needle, 'link.href=ROOT.href')
         if path.suffix == '.html':
+            if layout is not None:
+                def bootstrap(match):
+                    settings = json.loads(match[2])
+                    settings['layout'] = layout
+                    return match[1] + json.dumps(settings, ensure_ascii=True).replace('<', r'\u003c') + match[3]
+                text = re.sub(r'(<script\b[^>]*id="nic-published-settings"[^>]*>)(.*?)(</script>)', bootstrap, text, flags=re.S)
             text = re.sub(r'(<a\b[^>]*class="nic-logo-link"[^>]*href=")[^"]*(")', r'\g<1>' + PREFIX + r'\2', text)
             text = re.sub(r'<meta\b[^>]*name=["\']robots["\'][^>]*>', '', text, flags=re.I)
             text = re.sub(r'<head\b[^>]*>', lambda m: m[0] + '<meta name="robots" content="noindex,nofollow">', text, count=1, flags=re.I)

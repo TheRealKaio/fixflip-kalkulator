@@ -18,7 +18,7 @@ class PreviewTests(unittest.TestCase):
             hashed='app.'+hashlib.sha256(js.encode()).hexdigest()[:16]+'.js'
             (source/hashed).write_text(js)
             (source/'.asset-manifest.json').write_text(json.dumps({'app.js':hashed}))
-            (source/'index.html').write_text('<head><base href="/"><script src="/'+hashed+'"></script></head><a href="/budget/">Budget</a>')
+            (source/'index.html').write_text('<head><base href="/"><script id="nic-published-settings">{"layout":{"bodySize":16,"h1":45},"content":"draft"}</script><script src="/'+hashed+'"></script></head><a href="/budget/">Budget</a>')
             (source/'CNAME').write_text('www.neustart-immocheck.de')
             (source/'backend-config.json').write_text('{"enabled":true,"apiUrl":"live"}')
             (source/'site-settings.json').write_text(json.dumps({'layout':{'bodySize':16,'h1':45},'content':{'title':'development draft'}}))
@@ -36,6 +36,8 @@ class PreviewTests(unittest.TestCase):
             self.assertIn("u.startsWith('/')",output)
             self.assertIn('https://example.com/budget/',output)
             self.assertIn('noindex,nofollow',(target/'index.html').read_text())
+            self.assertIn('\"bodySize\": 20',(target/'index.html').read_text())
+            self.assertIn('\"content\": \"draft\"',(target/'index.html').read_text())
             new_hashed=json.loads((target/'.asset-manifest.json').read_text())['app.js']
             self.assertNotEqual(hashed,new_hashed)
             self.assertIn(new_hashed,(target/'index.html').read_text())
