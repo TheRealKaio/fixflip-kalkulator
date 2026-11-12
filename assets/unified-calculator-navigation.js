@@ -17,7 +17,11 @@ function showContent(key,refresh=false){
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
  let panel=document.getElementById('nicContentView');
- if(!panel){panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';main.prepend(panel);}
+ if(!panel){
+  panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
+  const explanation=main.querySelector(':scope > .nic-explanation-card');
+  if(explanation)explanation.after(panel);else main.prepend(panel);
+ }
  const settings=window.NICSettings.current,c=settings.content[key];
  const signature=JSON.stringify([key,c.description,settings.company]);
  if(panel.dataset.signature!==signature){panel.replaceChildren(window.NICSettings.legalFragment(c.description,settings));panel.dataset.signature=signature;}

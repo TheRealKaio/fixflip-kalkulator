@@ -29,6 +29,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert.equal(await card.count(),1,'Only the current explanation exists');
     assert.equal(await card.getAttribute('data-nic-explanation'),key);
     assert(await card.isVisible(),'Explanation visible: '+key+' at '+width);
+    assert(await card.evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first: '+key);
     const geometry=await card.evaluate(e=>({height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontFamily,body:getComputedStyle(e.querySelector('p')).fontSize,h2:getComputedStyle(e.querySelector('h2')).fontSize,h3:getComputedStyle(e.querySelector('h3')).fontSize}));
     heights.push(geometry.height);
     assert(/verdana/i.test(geometry.font));assert.equal(geometry.body,'20px');assert.equal(geometry.h2,'24px');assert.equal(geometry.h3,'22px');
@@ -55,6 +56,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert.equal(await page.locator('[data-nic-explanation]').count(),routes[key]?1:0,'Route cleanup: '+key);
     if(routes[key]){
      assert.equal(await page.locator('[data-nic-explanation]').getAttribute('data-nic-explanation'),key);
+     assert(await page.locator('[data-nic-explanation]').evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first after navigation: '+key);
      if(width===390)assert.equal(await page.locator('[data-nic-explanation] details').evaluate(e=>e.open),false,'New mobile route starts collapsed');
     }
    }
