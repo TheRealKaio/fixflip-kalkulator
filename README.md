@@ -42,7 +42,7 @@ Sie enthält gemeinsame Formeln sowie Feldreferenz-Tabellen mit Erklärung und F
 
 Neue Assets werden vor den Einstiegsseiten übertragen, ersetzte Dateien gesichert und einzeln atomar ausgetauscht. Bei Fehlern wird die vorherige Version wiederhergestellt. API, private Konfiguration und Datenbank werden nicht mit dem Frontend ersetzt. Bytegleiche Builds benötigen keinen erneuten Upload.
 
-Der Pages-Workflow ist nur noch manuell als zusätzlicher Rückweg verfügbar. `strato-stage.yml` lädt ausschließlich isolierte Testversionen hoch; `strato-activate.yml` prüft den aktiven Release mit `current` und ermöglicht eine manuelle Rücknahme. Details: [server/MIGRATION_WEBSITE_STRATO.md](server/MIGRATION_WEBSITE_STRATO.md).
+Der Branch `develop` veröffentlicht automatisch eine getrennte GitHub-Pages-Entwicklungsvorschau unter <https://therealkaio.github.io/fixflip-kalkulator/>. Änderungen dort sind noch nicht live; erst die Übernahme nach `main` veröffentlicht auf STRATO. Die Vorschau verwendet eigene Unterpfade, ist für Suchmaschinen gesperrt und greift nicht auf die produktive Anmeldung oder Datenbank zu. Der Pages-Workflow läuft auf `develop` automatisch und kann dort manuell gestartet werden. `strato-stage.yml` lädt ausschließlich isolierte Testversionen hoch; `strato-activate.yml` prüft den aktiven Release mit `current` und ermöglicht eine manuelle Rücknahme. Details: [server/MIGRATION_WEBSITE_STRATO.md](server/MIGRATION_WEBSITE_STRATO.md).
 
 Live: <https://www.neustart-immocheck.de/>  
 Repository: <https://github.com/TheRealKaio/fixflip-kalkulator>

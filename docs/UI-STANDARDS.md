@@ -162,6 +162,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Direkte Inhaltsrouten und gemeinsame Shell | `scripts/build_settings_pages.py`, `scripts/finalize_shared_layout.py` |
 | Gemeinsame Typografie | `scripts/centralize_layout_typography.py` |
 | Verbindlicher Build und vollständige Prüfungen | `.github/actions/build-site/action.yml` |
+| GitHub-Entwicklungsvorschau (`develop`) | `.github/workflows/pages.yml`, `scripts/prepare_github_preview.py` |
 | Aktive STRATO-Veröffentlichung / isolierter Test | `.github/workflows/strato-production.yml`, `.github/workflows/strato-stage.yml` |
 
 Die komprimierte Ausgangsseite und aktive historische Build-Patches werden

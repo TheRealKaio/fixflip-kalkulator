@@ -39,7 +39,7 @@ bestehenden Rechner-, PDF-, PHP-, Browser- und Layoutprüfungen wie bisher.
 Danach laufen die SFTP-/Rückwegtests und echte Apache-Tests der Auslieferungsregeln.
 Nur nach erfolgreichen Prüfungen darf der getestete Build auf STRATO gelangen.
 
-Entwicklung erfolgt in GitHub, vorzugsweise auf Arbeitsbranches. Das Übernehmen
+Entwicklung erfolgt im Branch `develop` oder in Arbeitsbranches, die nach `develop` übernommen werden. `develop` veröffentlicht automatisch die getrennte Vorschau auf <https://therealkaio.github.io/fixflip-kalkulator/>. Das Übernehmen
 nach `main` veröffentlicht automatisch. Der Workflow lässt sich auf `main` auch
 manuell starten. Ein zuletzt überholter Commit wird unmittelbar vor dem
 Serverzugriff erkannt und übersprungen; ein neuerer Lauf übernimmt die Auslieferung.
@@ -124,11 +124,26 @@ Die Sicherungen liegen unter `.nic-releases/.backups/<operation>.htaccess`,
 `NIC-ROLLBACK`-Markierung benennt die nächste Rücknahme. Ein reines V1→V2-Upgrade
 hat eine leere Dateiliste und ändert keine Frontend-Inhalte.
 
-**GitHub Pages Rueckweg (manuell)** (`pages.yml`) hat ausschließlich einen
-manuellen Auslöser. Push- und Zeitplan-Veröffentlichungen sind entfernt. Die alte
-Pages-Veröffentlichung kann als zusätzlicher historischer Rückweg bestehen bleiben;
-sie wird nicht mehr automatisch aktualisiert. Eine vollständige Rückkehr zu Pages
-würde zusätzlich Domain-/DNS- und gegebenenfalls Zertifikatsänderungen erfordern.
+**GitHub Entwicklungsvorschau** (`pages.yml`) veröffentlicht automatisch bei Pushs
+auf `develop` und manuell ausschließlich aus diesem Branch. Die Vorschau bleibt
+unter `https://therealkaio.github.io/fixflip-kalkulator/` getrennt von STRATO.
+In GitHub Settings → Pages muss **Custom domain leer** bleiben; die produktive
+Domain wird ausschließlich bei STRATO zugeordnet. Das verändert keine DNS-Einträge.
+
+Der gemeinsame vollständige Build wird zuerst unverändert geprüft. Danach erzeugt
+`scripts/prepare_github_preview.py` eine separate Ausgabe `_preview/`: lokale URLs
+werden auf den Projekt-Unterpfad angepasst, Asset-Prüfsummen neu erzeugt, CNAME
+entfernt, robots/noindex gesetzt und das produktive Backend deaktiviert. Der
+Browsertest `verify_github_preview.cjs` prüft direkte Routen, interne Wechsel,
+Zurück-Navigation und Assets auf Desktop/Mobil sowie fehlende Backend-Zugriffe.
+`_site/` und die Live-Konfiguration bleiben unverändert. Benutzeranmeldung und
+serverseitige Speicherung sind nur in der Liveversion verfügbar; Recheneingaben
+und lokale Vorschau-Einstellungen bleiben im separaten GitHub-Origin.
+
+Neue Änderungen zuerst auf `develop` ansehen, danach durch Übernahme nach `main`
+für STRATO freigeben. Der normale Rückweg bleibt die Sicherung auf STRATO. Eine
+vollständige Rückkehr der Produktivdomain zu GitHub würde eine erneute Domain-/DNS-
+und Zertifikatsplanung benötigen; die Entwicklungsvorschau ersetzt diesen Schritt nicht.
 Nur bei der ersten Rücknahme zu den ursprünglichen Regeln verlangt der Workflow
 `original_dns_restored=true`. Nicht für eine normale STRATO-Rücknahme anhaken.
 

@@ -1,6 +1,8 @@
-name: GitHub Pages Rueckweg (manuell)
+name: GitHub Entwicklungsvorschau
 
 on:
+  push:
+    branches: [develop]
   workflow_dispatch:
 
 permissions:
@@ -14,6 +16,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/develop'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -27,6 +30,24 @@ jobs:
       - name: Build and verify website
         uses: ./.github/actions/build-site
 
+      - name: Prepare isolated project preview
+        run: |
+          python -m unittest discover -s scripts -p test_github_preview.py
+          python scripts/prepare_github_preview.py
+
+      - name: Verify preview navigation and backend isolation
+        run: NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_github_preview.cjs
+
+      - name: Check independent Pages address
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          nic_cname="$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.cname // ""')"
+          if [[ -n "$nic_cname" ]]; then
+            echo '::error::GitHub Settings > Pages > Custom domain: bisherige Domain entfernen. STRATO-DNS unveraendert lassen.'
+            exit 1
+          fi
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -34,7 +55,7 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
-          path: _site
+          path: _preview
 
       - name: Deploy to GitHub Pages
         id: deployment

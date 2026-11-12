@@ -1,3 +1,5 @@
 _site/
 tmp/
 __pycache__/
+
+_preview/
