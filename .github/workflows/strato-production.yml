@@ -1,0 +1,64 @@
+name: STRATO automatisch veroeffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: strato-production-v2
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: strato-production
+      url: https://www.neustart-immocheck.de/
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Build and verify website
+        uses: ./.github/actions/build-site
+      - name: Verify SFTP deployment and rollback
+        run: python -m unittest discover -s scripts -p 'test_strato_*.py'
+      - name: Verify production rules with Apache
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq apache2
+          python scripts/verify_strato_apache.py
+      - name: Reject obsolete main revisions
+        id: revision
+        shell: bash
+        run: |
+          nic_latest_main="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [[ -z "$nic_latest_main" ]]; then
+            echo 'Aktueller main-Stand konnte nicht ermittelt werden.'
+            exit 1
+          fi
+          if [[ "$nic_latest_main" != "$GITHUB_SHA" ]]; then
+            echo 'deploy=false' >> "$GITHUB_OUTPUT"
+            echo 'Neuerer main-Commit vorhanden. Dieser veraltete Lauf veraendert STRATO nicht.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install SFTP client
+        if: steps.revision.outputs.deploy == 'true'
+        run: python -m pip install --disable-pip-version-check paramiko==5.1.0
+      - name: Publish tested build and verify www
+        if: steps.revision.outputs.deploy == 'true'
+        env:
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
+          STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
+          STRATO_RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          STRATO_OPERATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: python scripts/strato_publish.py

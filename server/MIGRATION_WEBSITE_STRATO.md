@@ -1,381 +1,153 @@
-# Vollständige Website von GitHub Pages auf STRATO übertragen
+# Website auf STRATO: Betrieb und Rückweg
 
-Planungsstand: 11. November 2026. **SFTP und Test-Upload erfolgreich; Aktivierung vorbereitet, Domain noch auf GitHub Pages.**
-Dieser Plan ersetzt für den vollständigen Website-Umzug die frühere Aufteilung
-„www bei GitHub Pages / Hauptdomain für die STRATO-API“. Die vorhandene API und
-Datenbank bleiben bestehen. Rechnerformeln und PDFs dürfen zunächst weiterhin
-im Browser laufen; ihre PHP-Migration ist eine getrennte Aufgabe.
+Stand: 12.11.2026. Die Website wird unter <https://www.neustart-immocheck.de/>
+von STRATO ausgeliefert. GitHub bleibt Quelle für Entwicklung, Tests und die
+anschließende Veröffentlichung nach STRATO.
 
-## Ziel und Domainzuordnung
+Die abgeschlossene Erstumschaltung wurde mit
+[Lauf 43176907096](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/43176907096)
+im Modus `activate` erfolgreich geprüft: öffentliche Seiten, Startseiten-Prüfsumme,
+HTTPS-Zertifikate für beide Domainnamen, Canonical, Zugriffsschutz und API.
 
-| Name / Pfad | Ziel nach dem Umzug |
+## Domains und Verzeichnisse
+
+| Bestandteil | Verbindliches Ziel |
 | --- | --- |
-| `www.neustart-immocheck.de` | STRATO-Webspace, öffentlicher Website-Ordner `immocheck-web/` |
-| `neustart-immocheck.de` | Derselbe öffentliche STRATO-Ordner; Website-Pfade werden nach HTTPS/www weitergeleitet |
-| `https://neustart-immocheck.de/api/` | Bestehende API direkt auf STRATO, ohne Weiterleitung auf www |
-| `immocheck-private/` | Weiterhin außerhalb des öffentlichen Website-Ordners |
+| `neustart-immocheck.de` | STRATO-Webspace, intern `/immocheck-web` |
+| `www.neustart-immocheck.de` | STRATO-Standardzuordnung, intern ebenfalls `/immocheck-web` |
+| Öffentliche Hauptadresse | `https://www.neustart-immocheck.de/` |
+| Bestehende API | `https://neustart-immocheck.de/api/index.php` |
+| Frontend-Dateien | Direkt unter `/immocheck-web`, einschließlich Unterverzeichnissen |
+| Release- und Sicherungsspeicher | `/immocheck-web/.nic-releases/`, öffentlich gesperrt |
+| Private Backend-Konfiguration | Außerhalb des öffentlichen Webroots, `immocheck-private/` |
 
-Die veröffentlichte Hauptadresse bleibt `https://www.neustart-immocheck.de/`.
-Bestehende Seitenpfade, Canonicals und Links müssen dadurch nicht umbenannt werden.
-`assets/backend-config.json` behält zunächst die bestehende HTTPS-API-Adresse
-auf der Hauptdomain. Die vorhandenen API-Cookies und erlaubten Origins bleiben
-bei der Umstellung erhalten.
+Der frühere `www`-CNAME auf `therealkaio.github.io` ist entfernt. STRATO verwaltet
+die Standard-IP-Zuordnung; keine aus einer einzelnen DNS-Abfrage übernommenen IPs
+als feste Konfiguration eintragen. Mail-, TXT- und API-Subdomain-Einträge bleiben
+von der Website-Veröffentlichung unberührt. Ein leerer TXT-Eintrag für `www` ist
+für diesen Umzug nicht erforderlich.
 
-## DNS, Webspace und HTTPS
+Die Root-Regeln leiten HTTP und den Domainnamen ohne `www` dauerhaft mit 301 auf
+HTTPS und `www` um. Pfad und Query bleiben erhalten. `/api/` und `/.well-known/`
+werden vorher ausgenommen, damit API-Aufrufe und Zertifikatsprüfung funktionieren.
 
-1. Aktuelle Domainzuordnungen, CNAME-/A-/AAAA-Werte, Weiterleitungsdatei und
-   Zertifikatszuordnung dokumentieren, damit der Rückweg konkret feststeht.
-2. STRATO muss sowohl die Hauptdomain als auch www auf `immocheck-web/` ausliefern
-   können. Im Kundenbereich ist dafür die **interne Verzeichniszuordnung** gemeint,
-   keine pauschale externe URL-Weiterleitung. Der absolute Uploadpfad hängt vom
-   SFTP-/SSH-Zugang ab und ist vor der Workflow-Konfiguration zu bestätigen.
-3. Bei www den bisherigen GitHub-CNAME (`therealkaio.github.io`, falls weiterhin
-   gesetzt) entfernen und auf den paketbezogenen STRATO-DNS-Standard für den
-   Webspace umstellen. Keine Beispiel-IP oder GitHub-IP übernehmen. Auch IPv6
-   darf www anschließend nicht mehr zu GitHub führen.
-4. Die Hauptdomain liegt laut bisheriger Konfiguration bereits auf STRATO.
-   Ihre A-/AAAA-Ziele nur ändern, wenn die tatsächliche Prüfung dies erfordert.
-   MX, SPF, DKIM, DMARC und Nameserver nicht pauschal zurücksetzen.
-5. Vor dem Wechsel muss das STRATO-Zertifikat **beide Namen** gültig abdecken.
-   Das bisherige GitHub-Zertifikat für www wird nicht auf STRATO übertragen.
-   Ob das vorhandene STRATO-Zertifikat www einschließt, im konkreten Paket prüfen.
-6. DNS erst nach vollständigem Datei-Upload und erfolgreichem Vorabtest ändern.
-   Bis alle Resolver den neuen Stand verwenden, bleibt die geprüfte Pages-Version
-   als bisheriges Auslieferungsziel verfügbar.
+## Automatische Veröffentlichung
 
-STRATO weist darauf hin, dass eigene DNS-Einstellungen die Nutzung seiner
-SSL-Zertifikate einschränken können. Daher die Standardzuordnung des tatsächlichen
-Pakets verwenden und kein geratenes CNAME-/IP-Schema erzwingen.
+`.github/workflows/strato-production.yml` heißt **STRATO automatisch veroeffentlichen**.
+Jeder Push auf `main` startet denselben vollständigen Build und dieselben
+bestehenden Rechner-, PDF-, PHP-, Browser- und Layoutprüfungen wie bisher.
+Danach laufen die SFTP-/Rückwegtests und echte Apache-Tests der Auslieferungsregeln.
+Nur nach erfolgreichen Prüfungen darf der getestete Build auf STRATO gelangen.
 
-## Veröffentlichungsablauf
+Entwicklung erfolgt in GitHub, vorzugsweise auf Arbeitsbranches. Das Übernehmen
+nach `main` veröffentlicht automatisch. Der Workflow lässt sich auf `main` auch
+manuell starten. Ein zuletzt überholter Commit wird unmittelbar vor dem
+Serverzugriff erkannt und übersprungen; ein neuerer Lauf übernimmt die Auslieferung.
 
-Ziel: Entwicklung in GitHub → Übernahme nach main → vollständiger bestehender
-Build inklusive PHP-, Rechner-, Browser- und PDF-Prüfungen → Auslieferung des
-geprüften Release auf STRATO. Fehlerhafte Prüfungen dürfen keine Produktion ersetzen.
+Alle schreibenden STRATO-Workflows teilen die Sperre `strato-production-v2` und
+brechen einen laufenden Dateitausch nicht zugunsten eines neueren Pushs ab.
+Die API, PHP-Dateien, private Konfiguration, Datenbank, Uploads und DNS werden
+vom Frontend-Workflow nicht ersetzt oder neu installiert.
 
-- Das hochgeladene Frontend kommt aus der fertigen Build-Ausgabe `_site/`, nicht
-  aus einem direkten Upload des Quellrepositories.
-- Übertragung verschlüsselt per SFTP/SSH. Bevorzugt einen eigenen Deployment-Zugang
-  verwenden; dessen erreichbares Verzeichnis muss zum bestätigten Zielpfad passen.
-- Host, Port, Benutzer, bestätigter Server-Hostkey und Zielpfad werden für den
-  Workflow benötigt. Private Schlüssel/Passwörter ausschließlich als GitHub Actions
-  Secrets hinterlegen, nie im Repository oder im Chat.
-- In einen vorbereiteten Release-Bereich übertragen und erst nach vollständig
-  erfolgreicher Übertragung aktivieren. Das konkrete Aktivierungsverfahren ist
-  nach Prüfung der verfügbaren SSH-Funktionen und des Zielpfads festzulegen.
-- Vorherigen Frontend-Release für Rückkehr aufbewahren; keine automatische Löschung
-  unbekannter Dateien im Webspace. `api/`, `immocheck-private/`, `config.php`,
-  Datenbank, Uploads und sonstige persistente Daten nicht durch Frontend-Deployment ersetzen.
-- Die bestehende `.github/workflows/pages.yml` wird erst nach dem erfolgreichen
-  STRATO-Test auf das neue Produktionsziel umgeschaltet. Bis dahin bleibt die
-  aktuelle Pages-Veröffentlichung betriebsfähig. GitHub darf danach weiterhin
-  Quellcode, Tests und Build-Artefakte verwalten, ohne die Website produktiv zu hosten.
+### Ablauf des Dateitauschs
 
-## Weiterleitungen
+1. Lokalen Build auf erlaubte statische Dateien und unveränderte API-Adresse prüfen.
+2. TLS und API-Bereitschaft für Hauptdomain und `www` prüfen.
+3. SFTP-Server-Schlüssel mit dem bereits bestätigten Fingerabdruck vergleichen,
+   bevor ein Passwort gesendet wird.
+4. Aktiven Release, Root-Regeln und öffentliche Dateien anhand ihrer SHA256 prüfen.
+5. Falls nötig die bisherigen V1-Regeln einmalig auf V2 erweitern und per HTTP prüfen.
+6. Bei bytegleichen Frontend-Dateien erneuten Upload überspringen. Der aktive
+   Release behält dann seine bisherige ID; der geprüfte main-Commit steht im Bericht.
+7. Einen geänderten Build vollständig in einen neuen isolierten Release laden
+   und sämtliche übertragenen Dateien per SHA256 verifizieren.
+8. Root-Regeln und jede zu ersetzende Datei sichern, bevor öffentliche Dateien
+   verändert werden. Neue Assets zuerst installieren; anschließend beide
+   Asset-Generationen in den Root-Regeln freigeben.
+9. Weitere JavaScript-/CSS-Einstiegsdateien und danach HTML-Seiten austauschen.
+   Die neue Release-Markierung kommt zuletzt.
+10. Öffentliche Seiten, Startseiten-Prüfsumme, HTTPS, Canonical, API und Sperren prüfen.
+    Bei einem Fehler die vorherigen Dateien und Regeln wiederherstellen und prüfen.
 
-Die aktuelle Datei `server/webspace/immocheck-web/.htaccess` gehört zum bisherigen
-Split-Betrieb: Sie leitet sämtliche Nicht-API-Pfade nach www weiter. Nach dem
-www-Umzug würde diese bedingungslose Regel auf demselben Server eine Schleife erzeugen.
+Jede einzelne Datei wird mit geprüftem temporärem Inhalt und atomarem
+SFTP-`posix_rename` ersetzt. Der gesamte Satz aller Seiten ist kein einzelner
+atomarer Vorgang. Assets mit Prüfsumme im Dateinamen bleiben bei Wechseln und
+Rücknahmen erreichbar, damit bereits geöffnete Seiten weiter laden können.
+Alte Assets und Sicherungen werden nicht automatisch gelöscht. Eine spätere
+Bereinigung muss aktive Seiten, Cache-Nutzung und Rückweg ausdrücklich beachten.
 
-Für den vollständigen Umzug liegt eine **noch nicht aktivierte Vorlage** unter
-`server/deployment/frontend.htaccess`. Sie:
+V2-Regeln enthalten `NIC-RELEASE`, `NIC-ROLLBACK`, `NIC-DIRECT-FILES: v2` und eine
+geprüfte Liste zusätzlich erlaubter statischer Assets. Unbekannte URLs liefern
+404, versteckte Pfade und der Release-Speicher 403. Ein Diagnoseheader ermöglicht
+gezielte Inhaltsprüfungen über die Hauptdomain ohne Änderung der normalen
+Weiterleitung; solche Antworten sind `no-store` und `noindex`.
 
-- lässt `/api/` unverändert auf der bestehenden Hauptdomain;
-- leitet nur Website-Anfragen mit abweichendem Host nach www;
-- erzwingt HTTPS für Website-Anfragen;
-- bewahrt Seitenpfade und vorhandene Query-Parameter;
-- verwendet zunächst 302; erst nach Abnahme die Website-Weiterleitungen auf 301 ändern.
+## Zugang und Einstellungen
 
-Die Vorlage ersetzt die Root-`.htaccess` nur im Rahmen des getesteten Umzugs.
-Nicht zusätzlich eine externe Domainweiterleitung im STRATO-Panel aktivieren,
-die auch API-Anfragen umleitet. Das vorhandene Installationsformular nicht erneut
-hochladen oder ausführen. Die private Serverkonfiguration bleibt unverändert erhalten.
+Die vorhandenen GitHub Actions Secrets werden weiterverwendet:
 
-## Abnahme und Rückweg
+- `STRATO_SFTP_HOST`
+- `STRATO_SFTP_USER`
+- `STRATO_SFTP_PASSWORD`
+- `STRATO_SFTP_FINGERPRINT`
 
-Vor der DNS-Umschaltung die neue Auslieferung über eine geeignete Vorschau oder
-einen kontrollierten Host-Test prüfen. Ein öffentlich erreichbarer Testhost darf
-keine privaten Dateien offenlegen; Anmeldung nur mit dafür vorgesehenen Origins testen.
+Optional legt die Actions-Variable `STRATO_SFTP_ROOT` den Webroot fest;
+Standard ist `/immocheck-web`. Übertragung ausschließlich per SFTP auf Port 22,
+kein SSH-Shellzugang erforderlich. Keine Zugangsdaten in Repository oder Log ablegen.
+Der Host-Fingerabdruck wurde vor dem ersten authentifizierten Zugriff mit der
+bereits vertrauten FileZilla-Verbindung abgeglichen.
 
-Nach der Umschaltung:
+## Prüfung und Rückweg
 
-- HTTPS mit und ohne www und Canonical-Weiterleitung ohne Schleife prüfen.
-- Startseite, fünf Rechner, Mieterabrechnung, Preise, Warum ImmoCheck?, direkte
-  Seitenaufrufe, interne Navigation, Browserhistorie und unbekannte Pfade prüfen.
-- Anmeldung, Nutzer-/Adminportal, zentrale Einstellungen, PDF-Download/-Teilen
-  und `https://neustart-immocheck.de/api/index.php?r=health` prüfen.
-- API-Antworten dürfen nicht durch Website-HTML ersetzt werden.
-- Fingerprint-Assets, Service-Worker-Aktualisierung, Mobilansichten und Footer prüfen.
-- Erst nach Abnahme die dauerhaften Weiterleitungen und das Abschalten der
-  bisherigen Pages-Produktion durchführen.
+Der manuelle Workflow **STRATO Website umschalten** (`strato-activate.yml`)
+verwendet standardmäßig die Release-Eingabe `current`:
 
-Bei fehlerhaftem neuen Frontend den vorherigen STRATO-Release wieder aktivieren.
-Scheitert die grundsätzliche Hostingumstellung, die notierten DNS-/www-Zuordnungen
-zur zuvor geprüften Pages-Auslieferung zurücksetzen und die alte Root-Weiterleitung
-wiederherstellen. API, Benutzerkonten und Datenbank dafür nicht löschen oder neu einrichten.
-DNS-Rückkehr wirkt wegen zwischengespeicherter Einträge nicht zwingend sofort.
+| Modus | Zweck |
+| --- | --- |
+| `check` | Dateien, Prüfsummen und verwaltete Regeln ausschließlich lesen |
+| `activate` | Bereits aktiven Release einschließlich öffentlicher HTTP-Auslieferung prüfen |
+| `rollback` | Vorherige gesicherte Version auf STRATO wiederherstellen |
+| `prepare` | Historischer erster Umzug vor DNS-Wechsel; nicht für neue Produktivversionen |
 
-## Bestaetigter Stand und noch offene Schritte
+Neue Versionen werden über den Produktionsworkflow gebaut und ausgeliefert,
+nicht durch `activate` auf einen beliebigen alten Release umgeschaltet.
 
-- STRATO-Zugang verwendet SFTP auf Port 22, Startverzeichnis `/`; kein SSH-Shellzugriff vorausgesetzt.
-- Host, Benutzer, Passwort und Server-Fingerabdruck sind als Repository-Secrets hinterlegt.
-- `ssh-ed25519`-Fingerabdruck wurde mit der bestehenden FileZilla-Verbindung abgeglichen.
-- Manueller Modus `check` erfolgreich: `/immocheck-web`, `api/` und `api/index.php` vorhanden.
-- Lokale Sicherung des bestehenden Webspace wurde vom Nutzer als erledigt bestaetigt.
-- www zeigt weiterhin per CNAME auf `therealkaio.github.io.`; Hauptdomain intern auf `/immocheck-web`.
-- Test-Upload `43093243842`, Versuch 2: erfolgreich, 163 Dateien per SHA256 geprueft;
-  atomarer Dateitausch im Testordner bestaetigt. Release-ID:
-  `6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2`.
-- Erster Versuch endete vor dem Upload mit einem sporadischen mobilen Navigationstest-Timeout;
-  dieselben vollstaendigen Pruefungen bestanden im zweiten Versuch.
-- Nutzer bestaetigt: STRATO-Zertifikat fuer Hauptdomain deckt auch www ab;
-  angegebene Gueltigkeit 17.10.2026 bis 16.04.2027. Direkte TLS-Pruefung folgt im Umschaltworkflow.
-- Offen: Umschaltworkflow im Modus check und danach activate ausfuehren,
-  danach DNS umstellen und erst
-  nach Abnahme die automatische STRATO-Produktion einschalten und Pages abschalten.
+Für eine Rücknahme STRATO → vorherige STRATO-Version `rollback` und `current`
+auswählen. Eine DNS-Änderung ist dabei nicht nötig. Gesicherte Originaldateien
+werden vor den vorherigen Root-Regeln wiederhergestellt. Dateien, die jemand
+zwischenzeitlich außerhalb des Workflows verändert hat, werden nicht ungeprüft
+überschrieben. Bei einer solchen Abweichung stoppen und die im Bericht genannten
+Sicherungen gezielt prüfen.
 
-## Offizielle Anleitungen
+Die Sicherungen liegen unter `.nic-releases/.backups/<operation>.htaccess`,
+`<operation>.files.json` und gegebenenfalls `<operation>.files/`. Die aktive
+`NIC-ROLLBACK`-Markierung benennt die nächste Rücknahme. Ein reines V1→V2-Upgrade
+hat eine leere Dateiliste und ändert keine Frontend-Inhalte.
 
-- STRATO DNS: https://www.strato.de/faq/domains/wie-kann-ich-bei-strato-meine-dns-eintraege-verwalten/
-- STRATO Verzeichniszuordnung: https://www.strato.de/faq/domains/alles-zur-domainumleitung/
-- STRATO SSL: https://www.strato.de/faq/domains/so-nutzen-sie-strato-ssl/
-- STRATO SFTP/SSH: https://www.strato.de/faq/hosting/so-nutzen-sie-ihren-ssh-sftp-zugang/
-- GitHub Deployment-Umgebungen: https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments
+**GitHub Pages Rueckweg (manuell)** (`pages.yml`) hat ausschließlich einen
+manuellen Auslöser. Push- und Zeitplan-Veröffentlichungen sind entfernt. Die alte
+Pages-Veröffentlichung kann als zusätzlicher historischer Rückweg bestehen bleiben;
+sie wird nicht mehr automatisch aktualisiert. Eine vollständige Rückkehr zu Pages
+würde zusätzlich Domain-/DNS- und gegebenenfalls Zertifikatsänderungen erfordern.
+Nur bei der ersten Rücknahme zu den ursprünglichen Regeln verlangt der Workflow
+`original_dns_restored=true`. Nicht für eine normale STRATO-Rücknahme anhaken.
 
+## Verantwortliche Quellen
 
-## Manueller Verbindungstest (vor jedem Upload)
+- Gemeinsamer Build: `.github/actions/build-site/action.yml`
+- Produktionsworkflow: `.github/workflows/strato-production.yml`
+- Veröffentlichung: `scripts/strato_publish.py`
+- Auslieferungsregeln, HTTP-Prüfung und Rücknahme: `scripts/strato_activate.py`
+- Isolierte Übertragung: `scripts/strato_stage.py`, `strato-stage.yml`
+- Lesende Zugangskontrolle: `scripts/strato_sftp_check.py`, `strato-sftp-check.yml`
+- Fehlerfalltests: `scripts/test_strato_*.py`
+- Apache-/TLS-Integration: `scripts/verify_strato_apache.py`
 
-Der Workflow **STRATO SFTP pruefen** (`.github/workflows/strato-sftp-check.yml`)
-ist ausschliesslich manuell startbar und laeuft nur auf `main`.
+Die Templates unter `server/deployment/` und `server/webspace/` sind Referenzen
+für frühere Installation/Umstellung. Die produktive Root-`.htaccess` wird durch
+obige Skripte erzeugt; sie nicht nebenher per FileZilla überschreiben.
 
-1. Unter GitHub → Settings → Secrets and variables → Actions sind
-   `STRATO_SFTP_HOST`, `STRATO_SFTP_USER` und `STRATO_SFTP_PASSWORD` hinterlegt.
-   Die bereits gemeldeten Werte werden nicht in Quelltext oder Protokolle kopiert.
-2. Unter Actions den Workflow starten, Branch `main`, Modus `fingerprint`.
-   Dieser Modus ermittelt nur den SSH-Server-Fingerabdruck auf Port 22. Er
-   erhaelt keinen Benutzernamen und kein Passwort und meldet sich nicht an.
-3. Den SHA256-Fingerabdruck mit einem vorhandenen vertrauenswuerdigen
-   SFTP-Client-Eintrag oder STRATO abgleichen. Der Scan allein belegt noch keine
-   Serveridentitaet. Keinen HiDrive-Fingerabdruck fuer diesen Hosting-Server verwenden.
-4. Den bestaetigten Wert als `STRATO_SFTP_FINGERPRINT` speichern und erst dann
-   Modus `check` ausfuehren. Bei fehlendem oder abweichendem Fingerabdruck wird
-   vor der Passwortanmeldung abgebrochen.
-5. Der lesende Test prueft nur Metadaten von `/immocheck-web`, dessen `api/`
-   und `api/index.php`. Falls der SFTP-Zugang eine andere Pfadabbildung verwendet,
-   den bestaetigten Pfad als Actions-Variable `STRATO_SFTP_ROOT` hinterlegen.
-   Er muss weiterhin auf den oeffentlichen Ordner `immocheck-web` zeigen.
-
-Beide Modi veraendern keine Serverdateien, keine DNS-Eintraege und keine
-Veröffentlichung. Ein erfolgreicher lesender Test ist noch kein Schreibtest
-und aktiviert noch kein automatisches STRATO-Deployment. SSH-Shellzugriff ist
-fuer diese SFTP-Pruefung nicht erforderlich.
-
-## Manueller Test-Upload ohne Aktivierung
-
-Workflow **STRATO Testversion hochladen** (`.github/workflows/strato-stage.yml`),
-manuell auf `main` starten. Es sind keine zusaetzlichen Secrets erforderlich.
-
-Der komplette bestehende Build und alle bisherigen PHP-, Rechner-, Browser-,
-PDF- und Navigationspruefungen liegen jetzt gemeinsam in
-`.github/actions/build-site/action.yml`. Pages und der STRATO-Test verwenden
-denselben Ablauf; die bisherigen Build-Befehle und ihre Reihenfolge sind erhalten.
-Pages bleibt weiterhin das aktive Veroeffentlichungsziel.
-
-Erst nach diesen Pruefungen wird eine frische Version nach
-`/immocheck-web/.nic-releases/<commit>-<run>-<attempt>/` uebertragen:
-
-- Nur statische Frontend-Dateien aus `_site/`. Keine PHP-Dateien, API, privaten
-  Verzeichnisse, Konfigurationen, symbolischen Links oder Datenbanksicherungen.
-  CNAME, Pages-Metadaten und `_checks/` werden nicht ausgeliefert.
-- Die vorhandene HTTPS-API-Adresse auf der Hauptdomain muss unveraendert sein.
-- Der gespeicherte Server-Fingerabdruck wird vor dem Senden des Passworts geprueft.
-- Ein `.htaccess`-Zugriffsschutz im Release-Speicher sperrt direkte Browserzugriffe
-  auf `.nic-releases/` mit `Require all denied`. Er veraendert nicht die aktive
-  Root-`.htaccess`. Bei der spaeteren Aktivierung muss dieser Staging-Schutz im
-  konkret getesteten Auslieferungsverfahren beruecksichtigt werden; ein blosser
-  interner Rewrite in den gesperrten Ordner reicht nicht aus.
-- Zwei ausschliesslich im neuen Release angelegte Testdateien pruefen die
-  SFTP-Erweiterung `posix-rename` durch Ersetzen einer bereits vorhandenen Testdatei.
-  Fehlt die Erweiterung, wird ohne unsicheren Loeschen/Umbenennen-Ersatz abgebrochen.
-- Jede uebertragene Datei wird zurueckgelesen und ihr SHA256-Hash verglichen.
-  Erst nach vollstaendiger Uebertragung wird `.ready.json` geschrieben.
-- Bei Abbruch bleibt ein nicht aktivierter, gegebenenfalls unvollstaendiger
-  Release-Ordner liegen. Es werden keine fremden Dateien oder aelteren Releases geloescht.
-  Ein neuer Workflow-Versuch verwendet eine neue Release-ID.
-
-Ein erfolgreicher Test-Upload ist **keine Aktivierung und noch kein HTTP-/SSL-Test**.
-DNS, die bestehende Root-Weiterleitung, API, private Daten und aktive Website bleiben
-unveraendert. Der Bericht nennt die Release-ID fuer die anschliessende Aktivierung.
-Erst nach bestaetigtem Test-Upload wird der konkrete atomare Wechsel samt Rueckweg
-vorbereitet. Der Workflow hat bewusst keinen Push- oder Zeitplan-Trigger.
-
-Technische Referenzen:
-- Paramiko SFTP / `posix_rename`: https://docs.paramiko.org/en/stable/api/sftp.html
-- Apache Rewrite-Flags und interne Verarbeitung: https://httpd.apache.org/docs/2.4/rewrite/flags.html
-
-## Umschaltung mit direkter Origin-Pruefung und Rueckweg
-
-Workflow **STRATO Website umschalten** (`.github/workflows/strato-activate.yml`):
-
-- Bei Aenderungen am Umschaltskript startet automatisch ausschliesslich `check`.
-  Manuell sind `check`, `prepare`, `activate` und `rollback` waehlbar; Branch immer `main`.
-- Lesende Checks haben eine eigene Warteschlange pro Lauf und belegen keine
-  Veroeffentlichungssperre. Upload, Vorbereitung, Aktivierung und Rollback teilen sich weiterhin
-  eine Sperre (`strato-production-v2`), ohne laufende Transfers abzubrechen.
-  Die vorherige Sperre wurde nach der GitHub-Actions-Stoerung am 11. November
-  abgeloest: Der dort nicht abbrechbare Lauf `43097933860` ist ein Push-Check ohne
-  Schreibzugriff; es waren keine alten Upload-/Aktivierungslaeufe in der Warteschlange.
-- Standardmaessig wird der oben bestaetigte Release verwendet. Kein neuer Build
-  und kein erneuter Datei-Upload sind fuer die erste Umschaltung erforderlich.
-- Beide TLS-Hostnamen werden direkt an den oeffentlichen IPv4-Adressen der
-  Hauptdomain geprueft, die bereits auf STRATO liegt. SNI und HTTP-Host verwenden
-  jeweils den geprueften Namen. www-DNS wird dafuer bewusst nicht verwendet,
-  damit ein gueltiges GitHub-Zertifikat das STRATO-Ergebnis nicht verdeckt.
-- Zertifikatskette, Name und Laufzeit muessen mit dem normalen System-Truststore
-  bestehen. Keine abgeschaltete Zertifikatspruefung, kein `--insecure`.
-- `/api/index.php?r=health` muss auf derselben STRATO-Adresse `ok` und `ready`
-  melden. Dabei werden keine Konten, Sitzungen, Einstellungen oder Daten geaendert.
-- Dieser API-Einstieg wird auch mit www als SNI/Host direkt an der STRATO-Adresse
-  geprueft. Ein www-Zertifikat allein beweist noch keine passende interne
-  Verzeichniszuordnung. Beide Hostnamen muessen denselben vorhandenen API-Einstieg
-  aus `immocheck-web` erreichen, bevor `activate` erlaubt wird. Bei `check` und
-  der erstmaligen Vorbereitung `prepare` darf www noch nicht zugeordnet sein;
-  dies wird ausdruecklich als offen gemeldet, nicht als fertiger www-Betrieb.
-- `check` liest nur: bekannte Root-Regeln, Release-Schutz, Fertig-Markierung und
-  jede Frontend-Datei mit vollstaendigem Hashvergleich. Keine Serverdatei wird geschrieben.
-- Vor `activate` muss der Zugriffsschutz im Release-Speicher zum bekannten Zustand
-  passen. Unbekannte Root-Regeln werden nicht ueberschrieben. Die bestehende
-  Root-`.htaccess` wird unter `.nic-releases/.backups/<run>-<attempt>.htaccess`
-  unveraendert gesichert und die Sicherung zurueckgelesen.
-- Die neue Root-Datei enthaelt alle konkreten Frontend-Dateipfade und oeffentlichen
-  Routen aus dem geprueften Manifest. Dadurch braucht die interne Verzeichniszuordnung
-  keine Annahme ueber den absoluten Apache-DocumentRoot. Direkte Zugriffe auf versteckte
-  Pfade und den Release-Speicher sind gesperrt; `/api/` und `/.well-known/` bleiben frei.
-- Der Staging-Schutz wird in den bekannten aktiven Speicherschutz ueberfuehrt, dann
-  wird die fertig geschriebene Root-Datei mit `posix_rename` atomar ersetzt. Es gibt
-  keinen Loeschen/Umbenennen-Ersatz. Keine Frontend-Datei wird einzeln live ueberschrieben.
-- Danach erfolgt eine direkte HTTP-Pruefung auf STRATO: exakter Startseiten-Hash,
-  alle direkten Seitenrouten, Service Worker, Backend-Konfiguration, Canonical mit
-  Query, 404 fuer unbekannte Pfade, 403 fuer den Speicher und weiterhin gesunde API.
-  Bei Fehlschlag werden die vorherigen Root-Regeln automatisch atomar wiederhergestellt.
-- Auch `activate` aendert keine DNS-Eintraege. Erst der erfolgreiche Origin-Test
-  macht die anschliessende manuelle www-DNS-Umstellung zum naechsten Schritt.
-
-### Erster Umzug bei noch vorhandenem www-CNAME
-
-Der direkte Test vom 11. November bestaetigt: Hauptdomain/API und beide
-STRATO-TLS-Namen funktionieren; www erreicht auf STRATO jedoch `/api/index.php`
-noch nicht (404). Die CNAME-Ansicht bietet vor Entfernen des externen CNAME keine
-interne www-Verzeichniszuordnung. Deshalb wird der erste Umzug zweistufig erledigt:
-
-1. Workflow manuell mit `prepare` und der bestaetigten Release-ID starten. Er
-   prueft erneut TLS, Hauptdomain-API, Dateihashes und Sicherung, richtet die fertigen
-   Root-Regeln atomar ein und prueft alle oeffentlichen Frontend-Routen ueber die
-   **bereits richtig zugeordnete Hauptdomain**. Scheitert ein HTTP-Test, wird wie
-   bei `activate` automatisch die vorige Root-Datei wiederhergestellt.
-2. Dieser technische Test sendet `X-NIC-Origin-Release: <release-id>`.
-   Ausschliesslich auf der HTTPS-Hauptdomain erlaubt der genaue Headerwert die
-   Frontend-Pruefung ohne Canonical-Weiterleitung. Normale Browseranfragen bleiben
-   unveraendert nach www weitergeleitet; API und versteckte Pfade sind vorher ausgeschlossen.
-   Die Antwort ist per `Vary` getrennt und mit `Cache-Control: no-store` sowie
-   `X-Robots-Tag: noindex, nofollow` markiert, sofern mod_headers geladen ist.
-   Der Header ersetzt keine Anmeldung und oeffnet keine privaten Daten oder Test-URLs.
-3. Erst nach erfolgreichem `prepare` bei www den alten GitHub-CNAME deaktivieren
-   beziehungsweise auf STRATO-Standard zuruecksetzen. Danach unmittelbar unter
-   www → Webserver die interne Zuordnung `/immocheck-web` waehlen und speichern.
-   Keine Subdomain loeschen, kein fremdes Unterverzeichnis und keine externe URL-Umleitung.
-   Die zugeordneten Dateien und Root-Regeln stehen dann bereits bereit.
-4. Workflow erneut mit `activate` fuer **denselben** Release starten. Er verlangt
-   jetzt zwingend www-TLS, www-API und den exakten Frontend-Hash samt Routenchecks.
-   Ist dieser Release schon per `prepare` eingerichtet, entsteht dabei keine neue
-   Root-Sicherung; die urspruengliche Sicherung fuer den Rueckweg bleibt erhalten.
-5. Danach oeffentliche DNS-/IPv6-Aufloesung und die Browser-/Anmeldefunktionen abnehmen.
-
-`prepare` darf keinen spaeteren anderen Release an einem bereits verwalteten
-Frontend vorbeischalten. Nach dem ersten Umzug erfolgt jeder Releasewechsel ueber
-das streng pruefende `activate`. Eine erneute Vorbereitung desselben Release dient
-nur als idempotenter technischer Test. Die automatische Push-Ausfuehrung bleibt `check`
-und schreibt weiterhin nichts auf dem Webserver.
-
-### Ergebnis des ersten prepare-Laufs
-
-Lauf `43111804537` verwendete `prepare`. Beim nachgelagerten HTTP-Test wurde
-abgebrochen; die vorherige Root-Datei wurde automatisch atomar wiederhergestellt.
-DNS wurde nicht geaendert. Die Sicherung und der isolierte Release bleiben erhalten.
-Das fruehere Sammelprotokoll nannte keine konkrete fehlgeschlagene URL; deshalb
-wird die genaue Ursache dieses ersten HTTP-Abbruchs nicht als bestaetigt behauptet.
-
-Fuer interne STRATO-Verzeichniszuordnungen setzen die generierten Regeln jetzt
-ausdruecklich `RewriteBase /`, damit relative Release-Ziele an der oeffentlichen
-URL-Wurzel aufgeloest werden. Der Apache-Test prueft sowohl einen direkten DocumentRoot
-als auch eine interne Alias-Zuordnung. Der naechste Origin-Test protokolliert den
-Host, oeffentlichen Pfad und HTTP-Status; nach automatischer Ruecknahme bleibt auch
-die konkrete sichere Fehlermeldung erhalten. Keine Antwortinhalte, Zugangsdaten
-oder privaten Serverdateien werden zu Diagnosezwecken ausgegeben.
-
-Modus `rollback` liest den Rueckweg aus der aktiven Root-Datei und stellt die zuvor
-gesicherten Root-Regeln atomar wieder her. Die Pruefung der aktuellen TLS-Auslieferung
-wird dabei absichtlich uebersprungen, damit der Rueckweg bei defektem Frontend moeglich
-bleibt. Die vorherige STRATO-Version und ihre Dateien werden vor Rueckkehr geprueft.
-Fuer den **allerersten** Rueckweg zur alten GitHub-Weiterleitung muss der Nutzer zuerst
-www wieder auf `therealkaio.github.io.` setzen und im Workflow
-`original_dns_restored` bestaetigen. Ohne diesen Hinweis koennte die alte Regel bei
-weiterhin auf STRATO aufgeloestem www eine Schleife erzeugen. DNS-Caches koennen den
-Rueckweg verzoegern. Spaetere Rueckkehr zwischen zwei STRATO-Releases braucht keinen
-DNS-Wechsel. Vorherige Releases und Sicherungen werden nicht automatisch geloescht.
-
-Die Umschaltpruefung ist noch kein Ersatz fuer die Abnahme nach dem DNS-Wechsel:
-IPv6/AAAA-Zuordnung, Anmeldung, Browsernavigation und Mobilansicht anschliessend
-ebenfalls gegen den neuen oeffentlichen Host pruefen. Automatische Produktion
-und Abschalten von Pages folgen erst nach dieser Abnahme.
-
-## Direkte erste Auslieferung nach bestaetigtem Rewrite-404
-
-Lauf `43113144583` bestaetigt trotz `RewriteBase /` einen echten HTTP 404 fuer
-die Startseite beim Origin-Test. Die Dateien und Hashes im Release-Speicher sind
-vorhanden; die Root-Regeln wurden automatisch wiederhergestellt. Die genaue
-serverinterne Ursache wird nicht als geklaert behauptet. Die Erstbereitstellung
-vermeidet deshalb die problematische Umschreibung in das versteckte Release-Verzeichnis:
-
-- `prepare` bei noch vorhandenen urspruenglichen GitHub-Root-Regeln kopiert die
-  163 geprueften Frontend-Dateien direkt nach `/immocheck-web` und dessen oeffentliche
-  Routenordner. API, private Dateien und nicht im Frontend-Manifest enthaltene
-  Serverdateien werden weder hochgeladen noch geloescht.
-- Alle Quelldateien werden zuerst vollstaendig geprueft und fuer die Uebertragung
-  zwischengespeichert. Identische vorhandene Dateien werden uebersprungen;
-  jede abweichende vorhandene Frontend-Datei wird vor der ersten Ersetzung gesichert.
-- Die Sicherung liegt unter `.nic-releases/.backups/<run>-<attempt>.files/`.
-  `<run>-<attempt>.files.json` erfasst Original- und neue Pruefsummen sowie neu
-  angelegte Dateien. Symbolische Links werden nicht verfolgt.
-- Jede Datei wird neben ihrem endgueltigen Ziel geschrieben, zurueckgelesen und
-  mit `posix_rename` atomar ersetzt. Waehrenddessen bleiben die urspruenglichen
-  Root-Regeln aktiv: normale Frontend-Aufrufe gehen weiter zu www/GitHub. Erst nach
-  vollstaendiger Kopie wird die Root-Datei zuletzt atomar umgeschaltet.
-- Die Root-Datei traegt `NIC-DIRECT-FILES: v1`. Sie laesst nur bekannte
-  oeffentliche Dateien und Routen zu und verwendet dafuer keine internen
-  Umschreibungen in `.nic-releases`. API-Ausnahme, Canonical, HTTPS, verdeckte
-  Pfade und der technische Hauptdomain-Test bleiben wirksam.
-- Der Release-Speicher bleibt als gepruefte Quelle und fuer Sicherungen bestehen.
-  HTTP-Zugriffe auf dessen interne Dateipfade werden nicht mehr benoetigt.
-- Bei Fehlern werden zuerst die alten Root-Regeln wiederhergestellt. Anschliessend
-  werden gesicherte Frontend-Dateien zurueckkopiert und nur unveraenderte, von genau
-  diesem Vorgang neu angelegte Dateien entfernt. Externe Aenderungen werden nicht
-  geloescht oder ueberschrieben; der Ablauf meldet dann eine nicht vollstaendige
-  Dateiruecknahme. API und DNS bleiben bestehen.
-- `activate` nach Zuordnung von www prueft beim bereits direkt bereitgestellten
-  Release auch die oeffentlichen Dateihashes und die wirkliche www-Auslieferung.
-  Der erste manuelle Rueckweg mit bestaetigtem GitHub-DNS stellt ebenfalls die
-  urspruenglichen oeffentlichen Dateien wieder her. Neue leere Ordner duerfen
-  bestehen bleiben; Verzeichnisse werden nicht pauschal entfernt.
-
-Der Apache-Test prueft vier Varianten: direkte und interne Domainzuordnung,
-jeweils mit Release-Rewrites und mit normalen Frontend-Dateien. Die direkte
-Erstbereitstellung wird auf STRATO weiterhin mit `prepare` geprueft. Eine erfolgreiche
-Vorab-Pruefung ist noch keine Bestaetigung eines erfolgreichen prepare-Laufs.
-
-**Noch offen nach der ersten oeffentlichen Abnahme:** Der laufende Releasewechsel
-fuer diese direkte Dateiauslieferung und dessen automatische Ausfuehrung aus main.
-Ein anderer Release ist beim Layout `NIC-DIRECT-FILES: v1` vorerst ausdruecklich
-gesperrt, damit keine ungetestete gemischte Live-Version entstehen kann. Der bereits
-bereitgestellte Release kann geprueft und zurueckgenommen werden. Pages bleibt bis
-zur abschliessenden Umstellung des Veroeffentlichungsworkflows aktiv.
+Interne Umschreibungen auf versteckte Release-Verzeichnisse funktionierten auf
+dem tatsächlichen STRATO-Webspace nicht zuverlässig. Deshalb liegen die
+öffentlichen Dateien direkt im Webroot; isolierte Releases dienen der geprüften
+Übertragung und Sicherung. Diese Architektur nicht ohne erneuten Origin-Test ändern.

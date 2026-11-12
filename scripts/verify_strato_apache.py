@@ -22,7 +22,7 @@ def free_port():
         return stream.getsockname()[1]
 
 
-def main(internal_mapping=False, direct=False):
+def main(internal_mapping=False, direct=False, version=1):
     with tempfile.TemporaryDirectory(prefix='nic-apache-') as directory:
         temp = Path(directory)
         root = temp / 'www'
@@ -44,7 +44,11 @@ def main(internal_mapping=False, direct=False):
                 public.write_bytes(payload)
             manifest['files'][name] = {'sha256': hashlib.sha256(payload).hexdigest(), 'bytes': len(payload)}
         (target / '.ready.json').write_text('not public')
-        (root / '.htaccess').write_bytes(render_rules(manifest, '123-1', direct=direct))
+        retained = ['retained-image.png'] if direct and version == 2 else []
+        if retained:
+            (root / 'retained-image.png').write_bytes(b'previous public asset')
+            (root / 'future.0123456789abcdef.js').write_bytes(b'new immutable asset')
+        (root / '.htaccess').write_bytes(render_rules(manifest, '123-1', direct=direct, version=version, retained=retained))
         (root / 'api').mkdir()
         (root / 'api/index.php').write_text('existing API')
         (root / '.well-known').mkdir()
@@ -121,10 +125,11 @@ TypesConfig /etc/mime.types
                 status, _, body = request(path)
                 assert status == 200 and body == ('test release '+name).encode(), (path,status)
             status, headers, _ = request('/budget?test=1')
-            assert status == 302 and urlsplit(headers['Location']).path == '/budget/'
+            redirect = 301 if direct and version == 2 else 302
+            assert status == redirect and urlsplit(headers['Location']).path == '/budget/'
             assert urlsplit(headers['Location']).query == 'test=1'
             status, headers, _ = request('/budget/?test=1', APEX)
-            assert status == 302 and headers['Location'] == 'https://'+WWW+'/budget/?test=1'
+            assert status == redirect and headers['Location'] == 'https://'+WWW+'/budget/?test=1'
             assert request('/api/index.php?r=health', APEX)[2] == b'existing API'
             assert request('/.well-known/test.txt')[2] == b'certificate challenge'
             for path in ['/'+STORE+'/'+release+'/index.html','/%2enic-releases/'+release+'/.ready.json','/.htaccess','/budget/.secret']:
@@ -138,8 +143,8 @@ TypesConfig /etc/mime.types
             assert headers.get('Cache-Control') == 'no-store'
             assert headers.get('X-Robots-Tag') == 'noindex, nofollow'
             assert 'X-NIC-Origin-Release' in headers.get('Vary','')
-            assert request('/', APEX)[0] == 302
-            assert request('/', APEX, 'wrong-release')[0] == 302
+            assert request('/', APEX)[0] == redirect
+            assert request('/', APEX, 'wrong-release')[0] == redirect
             assert request('/budget/', APEX, release)[2] == b'test release budget/index.html'
             assert request('/no-such-page/', APEX, release)[0] == 404
             assert request('/'+STORE+'/'+release+'/.ready.json', APEX, release)[0] == 403
@@ -147,8 +152,13 @@ TypesConfig /etc/mime.types
             connection = http.client.HTTPConnection('127.0.0.1', http_port, timeout=5)
             connection.request('GET','/budget/?test=1',headers={'Host':WWW})
             response = connection.getresponse()
-            assert response.status == 302 and response.getheader('Location') == 'https://'+WWW+'/budget/?test=1'
+            assert response.status == redirect and response.getheader('Location') == 'https://'+WWW+'/budget/?test=1'
             connection.close()
+            if direct and version == 2:
+                assert request('/retained-image.png')[2] == b'previous public asset'
+                assert request('/future.0123456789abcdef.js')[2] == b'new immutable asset'
+                (root / 'unknown.json').write_text('must not expose unknown files')
+                assert request('/unknown.json')[0] == 404
             print('Apache release rules passed (' + ('internal domain mapping' if internal_mapping else 'direct document root') + ', ' + ('direct frontend files' if direct else 'release rewrites') + '): TLS routes, public redirects, API exclusion, query preservation, HTTPS, hidden storage and 404.')
         finally:
             process.terminate()
@@ -164,3 +174,5 @@ if __name__ == '__main__':
     main(internal_mapping=True)
     main(direct=True)
     main(internal_mapping=True, direct=True)
+    main(direct=True, version=2)
+    main(internal_mapping=True, direct=True, version=2)

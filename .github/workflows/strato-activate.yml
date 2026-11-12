@@ -1,13 +1,6 @@
 name: STRATO Website umschalten
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/strato-activate.yml'
-      - 'scripts/strato_activate.py'
-      - 'scripts/test_strato_activate.py'
-      - 'scripts/verify_strato_apache.py'
   workflow_dispatch:
     inputs:
       mode:
@@ -17,9 +10,9 @@ on:
         default: check
         required: true
       release:
-        description: 'Vollstaendige Release-ID aus dem erfolgreichen Test-Upload'
+        description: 'current fuer den aktiven Release; konkrete ID nur bei Erstbereitstellung'
         type: string
-        default: '6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2'
+        default: current
         required: true
       original_dns_restored:
         description: 'Nur erster Rueckweg: www-DNS zeigt wieder oder weiterhin auf GitHub Pages'
@@ -55,7 +48,7 @@ jobs:
       - name: Check or switch the prepared release
         env:
           STRATO_MODE: ${{ inputs.mode || 'check' }}
-          STRATO_RELEASE_ID: ${{ inputs.release || '6093643fb0a68d874481899dabd3af814659f7dd-43093243842-2' }}
+          STRATO_RELEASE_ID: ${{ inputs.release || 'current' }}
           STRATO_OPERATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
           STRATO_ORIGINAL_DNS_RESTORED: ${{ inputs.original_dns_restored || false }}
           STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}

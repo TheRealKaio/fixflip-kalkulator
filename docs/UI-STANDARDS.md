@@ -162,7 +162,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Direkte Inhaltsrouten und gemeinsame Shell | `scripts/build_settings_pages.py`, `scripts/finalize_shared_layout.py` |
 | Gemeinsame Typografie | `scripts/centralize_layout_typography.py` |
 | Verbindlicher Build und vollständige Prüfungen | `.github/actions/build-site/action.yml` |
-| Aktive Veröffentlichung / noch nicht aktivierender STRATO-Test | `.github/workflows/pages.yml`, `.github/workflows/strato-stage.yml` |
+| Aktive STRATO-Veröffentlichung / isolierter Test | `.github/workflows/strato-production.yml`, `.github/workflows/strato-stage.yml` |
 
 Die komprimierte Ausgangsseite und aktive historische Build-Patches werden
 weiter verarbeitet. Deshalb die endgültige generierte Ausgabe prüfen; eine
@@ -178,7 +178,7 @@ Quellcode bearbeiten oder veröffentlichungsrelevante Änderungen nur dort ableg
 4. Schrift-/Farb-/Radius-Einstellungen aus dem Adminbereich berücksichtigen.
 5. Weiße Inhaltskarte bis Footer prüfen: 16 px Abstand, keine Überlagerung,
    keine abgeschnittenen Texte oder horizontalen Überläufe.
-6. Die erforderlichen Prüfungen des Pages-Workflows bestehen lassen. Die
+6. Die erforderlichen Prüfungen des STRATO-Produktionsworkflows bestehen lassen. Die
    vorhandenen Browserprüfungen in `scripts/verify_unified_navigation.cjs` und
    `scripts/verify_calculator_styles.cjs` decken gemeinsame Navigation und Styles ab.
 

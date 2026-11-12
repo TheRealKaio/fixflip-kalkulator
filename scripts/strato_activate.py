@@ -121,10 +121,40 @@ def load_release(sftp, root, release, contents=None):
     return manifest
 
 
-def render_rules(manifest, backup, direct=False):
+def fingerprinted(name):
+    return bool(re.fullmatch(r'[A-Za-z0-9_-][A-Za-z0-9_.-]*\.[a-f0-9]{16}\.(?:js|css)', name))
+
+
+def retained_assets(*collections):
+    result = set()
+    for names in collections:
+        for name in names:
+            validate_file(name)
+            if not name.endswith('.html') and not fingerprinted(name):
+                result.add(name)
+    return sorted(result)
+
+
+def direct_version(payload):
+    match = re.search(rb'^# NIC-DIRECT-FILES: v([12])$', payload, re.M)
+    return int(match[1]) if match else 0
+
+
+def stored_assets(payload):
+    names = [x.decode('ascii') for x in re.findall(rb'^# NIC-RETAIN-ASSET: (.+)$', payload, re.M)]
+    if len(names) > 1000 or retained_assets(names) != names:
+        raise CheckError('Ungueltige gespeicherte Frontend-Assetliste.')
+    return names
+
+
+def render_rules(manifest, backup, direct=False, version=1, retained=()):
     release = validate_release(manifest['release'])
     operation_id(backup)
-    files = manifest['files']
+    if version not in {1, 2}:
+        raise CheckError('Unbekannte Auslieferungsversion.')
+    assets = retained_assets(retained) if direct and version == 2 else []
+    redirect = '301' if direct and version == 2 else '302'
+    files = set(manifest['files']) | set(assets)
     rules = ['# NIC-RELEASE: ' + release, '# NIC-ROLLBACK: ' + backup,
              'Options -Indexes', 'DirectoryIndex index.html', 'RewriteEngine On',
              # STRATO maps a domain to an internal webspace subdirectory.
@@ -148,16 +178,21 @@ def render_rules(manifest, backup, direct=False):
              '</IfModule>',
              'RewriteCond %{HTTP_HOST} !^www\\.neustart-immocheck\\.de$ [NC]',
              'RewriteCond %{ENV:NIC_ORIGIN_PREVIEW} !=1',
-             'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=302,L]',
+             'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=' + redirect + ',L]',
              'RewriteCond %{HTTPS} !=on',
-             'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=302,L]']
+             'RewriteRule ^(.*)$ https://' + WWW + '/$1 [R=' + redirect + ',L]']
     if direct:
-        rules.insert(2, '# NIC-DIRECT-FILES: v1')
+        rules.insert(2, '# NIC-DIRECT-FILES: v' + str(version))
+        if version == 2:
+            rules[3:3] = ['# NIC-RETAIN-ASSET: ' + name for name in assets]
+            # Immutable, content-hashed assets are installed before entry pages.
+            # Keep both old and new hashes addressable during deploy/rollback.
+            rules.append(r'RewriteRule ^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.[a-f0-9]{16}\.(?:js|css)$ - [L]')
     for name in sorted(files):
         validate_file(name)
         if name.endswith('/index.html'):
             directory = name[:-len('/index.html')]
-            rules += ['RewriteRule ^' + re.escape(directory) + '$ /' + directory + '/ [R=302,L]',
+            rules += ['RewriteRule ^' + re.escape(directory) + '$ /' + directory + '/ [R=' + redirect + ',L]',
                       'RewriteRule ^' + re.escape(directory) + '/$ ' + ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]')]
         pattern = '(?:index\\.html)?' if name == 'index.html' else re.escape(name)
         rules.append('RewriteRule ^' + pattern + '$ ' + ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'))
@@ -171,7 +206,7 @@ def managed_header(payload):
 
 
 def direct_delivery(payload):
-    return b'\n# NIC-DIRECT-FILES: v1\n' in payload
+    return bool(direct_version(payload))
 
 
 def legacy_rules(payload):
@@ -188,7 +223,7 @@ def verify_known_rules(sftp, root, payload):
     if not header:
         raise CheckError('Unbekannte Root-.htaccess; nicht automatisch ueberschreiben.')
     manifest = load_release(sftp, root, header[0])
-    if render_rules(manifest, header[1], direct=direct_delivery(payload)) != payload:
+    if render_rules(manifest, header[1], direct=direct_delivery(payload), version=direct_version(payload) or 1, retained=stored_assets(payload)) != payload:
         raise CheckError('Verwaltete Root-.htaccess wurde ausserhalb des Workflows geaendert.')
     return manifest
 
@@ -212,7 +247,7 @@ def path_parents(sftp, base, name):
 
 
 def backup_direct_files(sftp, root, manifest, token):
-    """Initial copy only: save every overwritten public file BEFORE any replacement."""
+    """Save every overwritten public file BEFORE any replacement."""
     operation_id(token)
     snapshot = {'operation': token, 'changes': {}}
     backup_base = root + '/' + STORE + '/.backups/' + token + '.files'
@@ -238,8 +273,11 @@ def backup_direct_files(sftp, root, manifest, token):
     return snapshot
 
 
-def install_direct_files(sftp, root, snapshot, contents, token):
-    for number, name in enumerate(snapshot['changes'], 1):
+def install_direct_files(sftp, root, snapshot, contents, token, names=None):
+    selected = list(snapshot['changes']) if names is None else list(names)
+    if not set(selected).issubset(snapshot['changes']):
+        raise CheckError('Unerwartete Datei ausserhalb der gesicherten Aenderungsliste.')
+    for number, name in enumerate(selected, 1):
         live = root + '/' + name
         entry = snapshot['changes'][name]
         present = existing(sftp, live)
@@ -247,11 +285,11 @@ def install_direct_files(sftp, root, snapshot, contents, token):
         if digest != entry['previous']:
             raise CheckError('Frontend-Datei zwischen Sicherung und Uebertragung geaendert; nicht ueberschreiben.')
         atomic_replace(sftp, root + '/' + name, contents[name], token)
-        if number % 20 == 0 or number == len(snapshot['changes']):
-            print('Frontend-Dateien atomar bereitgestellt: ' + str(number) + '/' + str(len(snapshot['changes'])), flush=True)
+        if number % 20 == 0 or number == len(selected):
+            print('Frontend-Dateien atomar bereitgestellt: ' + str(number) + '/' + str(len(selected)), flush=True)
 
 
-def restore_direct_files(sftp, root, token):
+def restore_direct_files(sftp, root, token, preserve_assets=False):
     operation_id(token)
     base = root + '/' + STORE + '/.backups/' + token + '.files'
     snapshot = json.loads(read_regular(sftp, base + '.json', 500_000))
@@ -273,7 +311,7 @@ def restore_direct_files(sftp, root, token):
         if digest not in {None, entry['installed']}:
             raise CheckError('Frontend-Datei extern geaendert; nicht automatisch loeschen oder ueberschreiben.')
         if entry['previous'] is None:
-            if current is not None:
+            if current is not None and not (preserve_assets and not name.endswith('.html')):
                 sftp.remove(live)  # Only an unchanged file created by this operation.
         else:
             real_directory(sftp, base)
@@ -322,7 +360,7 @@ def verify_http(ips, manifest, request=origin_request, preparation=False):
             if frontend(ip, path)[0] != expected:
                 raise CheckError('Unbekannte Pfade oder Release-Schutz funktionieren nicht wie erwartet.')
         status, headers, _, _ = request(APEX, ip, '/budget/?nic=check')
-        if status != 302 or headers.get('location') != 'https://' + WWW + '/budget/?nic=check':
+        if status not in {301, 302} or headers.get('location') != 'https://' + WWW + '/budget/?nic=check':
             raise CheckError('Canonical-Weiterleitung bewahrt Pfad und Query nicht korrekt.')
     preflight(ips, request, require_www=not preparation)
 
@@ -346,20 +384,28 @@ def switch(sftp, root, mode, release, token, ips, dns_restored=False,
             raise CheckError('Kein aktivierter STRATO-Release mit Rueckweg vorhanden.')
         real_directory(sftp, store + '/.backups')
         previous = read_regular(sftp, store + '/.backups/' + header[1] + '.htaccess', 200_000)
-        verify_known_rules(sftp, root, previous)
+        previous_manifest = verify_known_rules(sftp, root, previous)
         if legacy_rules(previous) and not dns_restored:
             raise CheckError('Erster Rueckweg fuehrt zu GitHub: zuerst www-DNS zuruecksetzen und original_dns_restored bestaetigen.')
         if read_regular(sftp, live_path, 200_000) != original:
             raise CheckError('Root-Regeln zwischenzeitlich geaendert; Rueckweg gestoppt.')
-        atomic_replace(sftp, live_path, previous, token)
-        if direct_delivery(original) and legacy_rules(previous):
-            restore_direct_files(sftp, root, header[1])
+        if direct_version(original) == 2 and direct_delivery(previous):
+            # Restore pages while both asset generations remain addressable.
+            restore_direct_files(sftp, root, header[1], preserve_assets=True)
+            previous_header = managed_header(previous)
+            previous = render_rules(previous_manifest, previous_header[1], direct=True, version=2,
+                                    retained=retained_assets(stored_assets(previous), stored_assets(original), previous_manifest['files']))
+            atomic_replace(sftp, live_path, previous, token)
+        else:
+            atomic_replace(sftp, live_path, previous, token)
+            if direct_delivery(original) and legacy_rules(previous):
+                restore_direct_files(sftp, root, header[1])
         return ['Vorherige Root-Regeln atomar wiederhergestellt.', 'API und DNS unveraendert.']
     known = verify_known_rules(sftp, root, original)
     current_header = managed_header(original)
     if direct_delivery(original):
         if current_header[0] != release:
-            raise CheckError('Direkte Erstbereitstellung ist aktiv. Einen anderen Release erst nach Einrichtung des geprueften Folge-Deployments veroeffentlichen.')
+            raise CheckError('Folge-Deployment: Einen anderen Release mit dem Workflow STRATO automatisch veroeffentlichen aus main bauen und ausliefern.')
     contents = {} if mode == 'prepare' and legacy_rules(original) else None
     manifest = known if known is not None and known['release'] == release and contents is None else load_release(sftp, root, release, contents=contents)
     if direct_delivery(original):
@@ -426,7 +472,8 @@ def run():
     if mode not in {'check', 'prepare', 'activate', 'rollback'}:
         raise CheckError('Unbekannter Modus.')
     root = validate_root(os.environ.get('STRATO_SFTP_ROOT', '/immocheck-web').rstrip('/'))
-    release = validate_release(os.environ.get('STRATO_RELEASE_ID', DEFAULT_RELEASE))
+    requested_release = os.environ.get('STRATO_RELEASE_ID', 'current')
+    release = None if requested_release == 'current' else validate_release(requested_release)
     token = operation_id(os.environ.get('STRATO_OPERATION_ID', ''))
     ips = origin_ips() if mode != 'rollback' else []
     # A rollback must remain available even if the current frontend/TLS is broken.
@@ -450,6 +497,12 @@ def run():
             transport.auth_password(username, password, fallback=False)
             with paramiko.SFTPClient.from_transport(transport) as sftp:
                 sftp.get_channel().settimeout(30)
+                if release is None:
+                    inspect_target(sftp, root)
+                    active = managed_header(read_regular(sftp, root + '/.htaccess', 200_000))
+                    if active is None:
+                        raise CheckError('Noch kein aktiver Release. Fuer die Erstbereitstellung eine konkrete Release-ID angeben.')
+                    release = active[0]
                 lines += switch(sftp, root, mode, release, token, ips,
                                 os.environ.get('STRATO_ORIGINAL_DNS_RESTORED') == 'true',
                                 http_verify=(lambda addresses, manifest: verify_http(addresses, manifest, preparation=True)) if mode == 'prepare' else verify_http)

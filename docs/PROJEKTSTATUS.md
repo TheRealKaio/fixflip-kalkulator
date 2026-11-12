@@ -1,7 +1,7 @@
 # Neustart ImmoCheck – Projektdokumentation
 
 **Repository:** `TheRealKaio/fixflip-kalkulator`  
-**Stand:** 26.10.2026 · Release V8.349  
+**Stand:** Veröffentlichung aktualisiert 12.11.2026; Rechnerreferenz 26.10.2026
 **Produktivadresse:** <https://www.neustart-immocheck.de/>  
 **GitHub-Pages-Adresse:** <https://therealkaio.github.io/fixflip-kalkulator/>
 
@@ -11,13 +11,13 @@ Die veröffentlichte App wird im GitHub-Actions-Workflow aus der aufgeteilten gz
 
 ## 1. Aktueller Stand
 
-- Responsive Web-App auf GitHub Pages; die Produktivdomain `www.neustart-immocheck.de` wird mitveröffentlicht.
+- Responsive Web-App auf STRATO unter `www.neustart-immocheck.de`; GitHub bleibt Entwicklungs- und Testplattform.
 - Rechner: Budget, Eigennutzung, Vermietung, Fix und Flip sowie Finanzierungsrechner.
 - Die fünf Rechner haben eigene Routen und teilen die Navigation, den stabilisierten Header, Admin-Einstellungen und PDF-Branding.
-- `source/index.html.gz.b64.part*` enthält die komprimierte Hauptseite. Der Finanzierungsrechner liegt in `assets/financing.html`. Admin- und PDF-Bausteine liegen in `assets/`; der Build und die Versionsverarbeitung liegen in `.github/workflows/pages.yml` und `scripts/`.
+- `source/index.html.gz.b64.part*` enthält die komprimierte Hauptseite. Der Finanzierungsrechner liegt in `assets/financing.html`. Admin- und PDF-Bausteine liegen in `assets/`; der gemeinsame Build und die Versionsverarbeitung liegen in `.github/actions/build-site/action.yml` und `scripts/`.
 - In der Anschlussfinanzierung heißen die drei Varianten „Zinssatz fällt“, „Zinssatz stabil“ und „Zinssatz steigt“. Die Beträge werden ohne Nachkommastellen angezeigt; „Zinssatz stabil“ ist gelb, „Zinssatz steigt“ rot.
 - Die Projektdokumentation ist unter Admin → Layout als letzte Karte zum Herunterladen vorgesehen. Die PDF nutzt das vorhandene Berichtsbranding.
-- Admin-Einstellungen werden lokal im Browser gespeichert. Eine serverseitige Anmeldung, zentrale Speicherung und Datenbank sind noch nicht eingerichtet.
+- Admin-Einstellungen werden lokal im Browser gespeichert. Das bestehende PHP-/MySQL-Backend auf STRATO bleibt für Anmeldung und zentrale Speicherung angebunden; es wird nicht durch den Frontend-Workflow ersetzt.
 - `assets/site-settings.json` enthält noch Platzhalterangaben zu Anbieter- und Impressumsdaten. Vor Bestätigung des öffentlichen Impressums müssen die freigegebenen Unternehmensdaten eingetragen werden.
 - PDF-Berichte nutzen die gemeinsame Implementierung in `assets/pdf-reports.js` für Kopfbereich, Logo, Fußzeile und rechtliche Hinweise.
 
@@ -26,11 +26,11 @@ Die veröffentlichte App wird im GitHub-Actions-Workflow aus der aufgeteilten gz
 - Dieses GitHub-Repository ist der maßgebliche aktuelle Quellstand. Vor Änderungen den Stand auf `main` prüfen; generierte `_site/`-Dateien nicht als Quelle bearbeiten. Rechner, Adminbereich und bestehende Funktionen bleiben erhalten, sofern eine Änderung sie nicht ausdrücklich betrifft.
 - Die fünf Rechner bleiben über eigene Routen erreichbar. Neue oder geänderte Rechnerlogik muss Eingaben und gespeicherte Werte der übrigen Rechner erhalten. Finanzierungslogik und sonstige Formeln nicht stillschweigend vereinfachen oder ändern.
 - Änderungen an der Hauptseite gehören in `source/` bzw. in die vorgesehenen Build-Patches; die eigenständige Finanzierungsseite liegt in `assets/financing.html`. Gemeinsame PDF-Berichte nutzen `assets/pdf-reports.js`. Release-Versionen werden durch den höchsten Patch-Dateinamen `scripts/patch*_v8*.py` festgelegt; der nächste Patch braucht deshalb eine höhere V8-Nummer.
-- Admin-Vorschauen und „Lokal speichern“ ändern nur den aktuellen Browser. Globale Einstellungen werden über `assets/site-settings.json` veröffentlicht: Konfiguration exportieren, Datei im Repository ersetzen, committen und erfolgreichen Pages-Workflow abwarten.
+- Admin-Vorschauen und „Lokal speichern“ ändern nur den aktuellen Browser. Globale Einstellungen werden über `assets/site-settings.json` veröffentlicht: Konfiguration exportieren, Datei im Repository ersetzen, committen und erfolgreichen STRATO-Produktionsworkflow abwarten.
 - Header, Sticky-Verhalten und Navigation sollen auf allen fünf Rechnern derselben gemeinsamen Höhen- und Scrolllogik folgen. Gemeinsame Layoutregeln bevorzugt in den gemeinsamen Header-Dateien pflegen und Sonderregeln nur ergänzen, wenn die Produktanforderung sie begründet.
 - Buttons unter „Rechtliche Pflichtangaben“ (`.legal-section-links button` in `assets/admin.css`) sollen flach ohne 3D-Schatten oder abweichende Rahmen bleiben; der Radius beträgt 9 px. Beim Social-Setup Logo, Favicon und Apple-Touch-Icon getrennt behandeln; das Website-Logo steuert den gemeinsamen Header. Richtwerte: Favicon 32 × 32 px oder ICO, Apple-Touch-Icon PNG 180 × 180 px.
-- Die Domain `www.neustart-immocheck.de` wird derzeit über GitHub Pages ausgeliefert. Eine spätere Verlagerung der Live-Version zu STRATO oder eine Datenbank-/Loginlösung ist noch eine Architekturentscheidung; bestehende Domain-, Pages- und CNAME-Einstellungen bis zu einer geplanten Migration erhalten.
-- Statistik bleibt zustimmungsabhängig. Finanz- und Objektdaten werden nicht an Google Analytics übermittelt. Serverseitige Anmeldung und zentrale Speicherung erst nach gesonderter Planung mit geschützter Konfiguration und passenden Geheimnissen umsetzen.
+- Die Domain `www.neustart-immocheck.de` wird über STRATO ausgeliefert. Hauptdomain und www zeigen intern auf `/immocheck-web`; GitHub Pages veröffentlicht nur noch manuell als zusätzlicher Rückweg. DNS nicht bei normalen Frontend-Veröffentlichungen verändern.
+- Statistik bleibt zustimmungsabhängig. Finanz- und Objektdaten werden nicht an Google Analytics übermittelt. Bestehende serverseitige Anmeldung und zentrale Speicherung mit geschützter Konfiguration erhalten; Zugangsdaten nie in Frontend-Dateien aufnehmen.
 
 ## 2. Navigation und Layoutregeln
 
@@ -227,7 +227,7 @@ Weitere Felder verwenden die Startwerte in der jeweiligen Quellkomponente. Benut
 
 ## 6. Build, Tests und Veröffentlichung
 
-Der Workflow `.github/workflows/pages.yml` läuft bei Änderungen an `main`, manuell und als regelmäßiger Fallback. Der gemeinsame Build in `.github/actions/build-site/action.yml` entpackt die Hauptseite, wendet fest definierte Inhalts- und Layoutänderungen an, erzeugt Routen und Einstellungsseiten, kopiert Rechnerassets und Dokumente und prüft HTML/JavaScript, Rechnerlogik, PDFs, Metadaten und Assets. Erst nach erfolgreichen Prüfungen wird nach GitHub Pages veröffentlicht. Der manuelle Workflow `.github/workflows/strato-stage.yml` verwendet denselben Build, überträgt aber lediglich eine isolierte Testversion auf STRATO und aktiviert sie nicht. Der Umstellungsstand ist in `server/MIGRATION_WEBSITE_STRATO.md` dokumentiert.
+Der Workflow `.github/workflows/strato-production.yml` läuft bei Änderungen an `main` und manuell. Der gemeinsame Build in `.github/actions/build-site/action.yml` erzeugt die Website und prüft Rechner, PDFs, PHP-Regeln, Browsernavigation, Metadaten und Assets. Anschließend prüfen SFTP-/Rückwegtests sowie Apache-Integration die Auslieferung. Erst danach wird das Frontend auf STRATO veröffentlicht. Assets kommen vor Einstiegsseiten; Sicherungen ermöglichen die automatische Rücknahme bei Fehlern. API, private Konfiguration und Datenbank bleiben erhalten. GitHub Pages hat nur noch einen manuellen Auslöser. Der isolierte Test-Upload `strato-stage.yml` aktiviert keine Website. Details stehen in `server/MIGRATION_WEBSITE_STRATO.md`.
 
 Für die Anschlussfinanzierung enthält `scripts/verify_finance_updates.js` Prüffälle für Monatsrate, Restschuld, Sondertilgung, Null-Darlehen, Ergebnisfarben, Downloadkarte und PDF-Datei. Ein Prüffall nutzt 300.000 € Darlehen, 4 % Sollzins, 2 % Tilgung und 5 % Sondertilgung über zehn Jahre. Der Release-Vertrag in `scripts/release_contract.py` leitet die sichtbare Versionsnummer aus dem neuesten `scripts/patch*_v8*.py`-Dateinamen ab.
 

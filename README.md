@@ -4,7 +4,7 @@ Responsive Immobilien-Kalkulatoren für Budget, Eigennutzung, Vermietung, Fix & 
 
 ## Aktueller Stand
 
-Die App wird als statische Website über GitHub Pages veröffentlicht. Die Hauptseite wird im GitHub-Actions-Workflow aus den komprimierten Dateien unter `source/` gebaut. Rechner, Adminbereich, PDF-Berichte und Build-Verarbeitung liegen ergänzend in `assets/` und `scripts/`.
+Die App wird als statische Website auf STRATO veröffentlicht. GitHub dient Entwicklung, Tests und anschließender automatischer Auslieferung. Die Hauptseite wird im GitHub-Actions-Workflow aus den komprimierten Dateien unter `source/` gebaut. Rechner, Adminbereich, PDF-Berichte und Build-Verarbeitung liegen ergänzend in `assets/` und `scripts/`.
 
 - Rechnernavigation mit eigenen URLs und zuletzt gewähltem Rechner
 - Finanzierungsrechner mit Restschuldverlauf, Bundesbank-Zinsreihe und den Szenarien „Zinssatz fällt“, „Zinssatz stabil“ und „Zinssatz steigt“
@@ -12,11 +12,11 @@ Die App wird als statische Website über GitHub Pages veröffentlicht. Die Haupt
 - Gemeinsame PDF-Berichtsfunktionen für Logo, Kopfbereich, Fußzeile und rechtliche Hinweise
 - Die Projektdokumentation kann unter Admin → Layout als letzte Karte heruntergeladen werden
 
-Für Anmeldung, zentrale Einstellungen und Statistiken liegt ein optionales PHP-/MySQL-Backend unter `server/webspace/` vor. Seine Installation und der tatsächliche Betrieb sind getrennt vom statischen Pages-Deployment. Die Rechnerformeln laufen weiterhin im Browser; Bezahlfunktionen und serverseitige Berechnungen sind noch nicht umgesetzt.
+Für Anmeldung, zentrale Einstellungen und Statistiken liegt ein optionales PHP-/MySQL-Backend unter `server/webspace/` vor. Seine Installation und der tatsächliche Betrieb sind getrennt vom statischen Frontend-Deployment. Die Rechnerformeln laufen weiterhin im Browser; Bezahlfunktionen und serverseitige Berechnungen sind noch nicht umgesetzt.
 
 ## Dokumentation
 
-- [Vorbereiteter vollständiger Website-Umzug auf STRATO](server/MIGRATION_WEBSITE_STRATO.md) – Zielarchitektur, Domains, Auslieferung und Rückweg; noch nicht aktiviert.
+- [Website-Betrieb auf STRATO](server/MIGRATION_WEBSITE_STRATO.md) – Domains, automatische Auslieferung, Prüfungen und Rückweg.
 
 - [Verbindliche UI-Standards: Header, Inhaltsseiten, Texte und Footer](docs/UI-STANDARDS.md)
 - [Arbeitsregeln für künftige Änderungen](AGENTS.md)
@@ -38,17 +38,11 @@ Sie enthält gemeinsame Formeln sowie Feldreferenz-Tabellen mit Erklärung und F
 
 ## Entwicklung und Veröffentlichung
 
-Änderungen an der Hauptseite werden durch `.github/actions/build-site/action.yml` gebaut und geprüft. Diesen gemeinsamen Ablauf verwenden der aktive Pages-Workflow `.github/workflows/pages.yml` und der manuelle STRATO-Test-Upload `.github/workflows/strato-stage.yml`. Der Test-Upload aktiviert keine Website und ändert keine Domain. Die eigenständige Finanzierungsseite wird aus `assets/financing.html` kopiert. Admin- und PDF-Quellen liegen in `assets/`; Prüfskripte und Build-Helfer in `scripts/`.
+Änderungen an der Hauptseite werden durch `.github/actions/build-site/action.yml` gebaut und geprüft. Der Workflow `.github/workflows/strato-production.yml` veröffentlicht erfolgreiche Builds von `main` automatisch auf STRATO. Rechner, PDF-Berichte, PHP-Regeln, Browsernavigation und Layout müssen zuvor die bestehenden Prüfungen bestehen. Die eigenständige Finanzierungsseite stammt aus `assets/financing.html`; Admin- und PDF-Quellen liegen ebenfalls in `assets/`.
 
-Der Pages-Workflow startet bei Pushes auf `main`, kann manuell gestartet werden und veröffentlicht nur nach erfolgreichen Build- und Verifikationsschritten.
+Neue Assets werden vor den Einstiegsseiten übertragen, ersetzte Dateien gesichert und einzeln atomar ausgetauscht. Bei Fehlern wird die vorherige Version wiederhergestellt. API, private Konfiguration und Datenbank werden nicht mit dem Frontend ersetzt. Bytegleiche Builds benötigen keinen erneuten Upload.
 
-Der STRATO-Umzug wird schrittweise vorbereitet: `strato-stage.yml` lädt isolierte
-Testversionen hoch; `strato-activate.yml` prüft TLS und Dateien, stellt beim ersten
-Umzug mit `prepare` den Webspace vor dem DNS-Wechsel bereit, aktiviert manuell
-einen fertigen Release und kann die vorherigen Root-Regeln wiederherstellen.
-Automatisch läuft dort ausschließlich der lesende Modus `check`.
-Domainumstellung und Abschalten von Pages sind weiterhin getrennte Schritte;
-Details und Rückweg stehen in [server/MIGRATION_WEBSITE_STRATO.md](server/MIGRATION_WEBSITE_STRATO.md).
+Der Pages-Workflow ist nur noch manuell als zusätzlicher Rückweg verfügbar. `strato-stage.yml` lädt ausschließlich isolierte Testversionen hoch; `strato-activate.yml` prüft den aktiven Release mit `current` und ermöglicht eine manuelle Rücknahme. Details: [server/MIGRATION_WEBSITE_STRATO.md](server/MIGRATION_WEBSITE_STRATO.md).
 
 Live: <https://www.neustart-immocheck.de/>  
 Repository: <https://github.com/TheRealKaio/fixflip-kalkulator>
