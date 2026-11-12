@@ -127,6 +127,7 @@ hat eine leere Dateiliste und ändert keine Frontend-Inhalte.
 **GitHub Entwicklungsvorschau** (`pages.yml`) veröffentlicht automatisch bei Pushs
 auf `develop` und manuell ausschließlich aus diesem Branch. Die Vorschau bleibt
 unter `https://therealkaio.github.io/fixflip-kalkulator/` getrennt von STRATO.
+Unter Settings → Environments → github-pages muss `develop` als Deployment-Branch zugelassen werden; vorhandene Schutzregeln nicht durch eine zweite Umgebung umgehen.
 In GitHub Settings → Pages muss **Custom domain leer** bleiben; die produktive
 Domain wird ausschließlich bei STRATO zugeordnet. Das verändert keine DNS-Einträge.
 
