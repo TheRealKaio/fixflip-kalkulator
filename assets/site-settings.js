@@ -38,7 +38,7 @@
       const href=el.getAttribute('href'),align=el.style.textAlign||el.getAttribute('align');
       for(const attr of [...el.attributes])el.removeAttribute(attr.name);
       if(['left','right','center','justify'].includes(align))el.style.textAlign=align;
-      if(el.tagName==='A'&&href){let value=href.replace(/{{\s*company\.(\w+)\s*}}/g,(_,k)=>s.company[k]||'');try{const u=new URL(value.startsWith('/')&&!value.startsWith('//')?value.slice(1):value,ROOT);if(['https:','http:','mailto:','tel:'].includes(u.protocol)){el.setAttribute('href',u.href);el.setAttribute('rel','noopener noreferrer');}}catch(_){}}
+      if(el.tagName==='A'&&href){let value=href.replace(/{{\s*company\.(\w+)\s*}}/g,(_,k)=>s.company[k]||'');try{const u=new URL(value.startsWith('/')&&!value.startsWith('//')&&!value.startsWith(ROOT.pathname)?value.slice(1):value,ROOT);if(['https:','http:','mailto:','tel:'].includes(u.protocol)){el.setAttribute('href',u.href);el.setAttribute('rel','noopener noreferrer');}}catch(_){}}
     }
     const walker=document.createTreeWalker(tpl.content,4);let node;while((node=walker.nextNode()))node.textContent=node.textContent.replace(/{{\s*company\.(\w+)\s*}}/g,(token,k)=>Object.hasOwn(s.company,k)?s.company[k]:token);
     return tpl.content;

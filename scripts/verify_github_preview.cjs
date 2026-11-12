@@ -39,8 +39,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(heading.actual>0&&heading.actual<=layout.h1,'Shared responsive heading limit: '+width+' '+slug);
     assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
-    assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
+    assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')&&!new URL(u).pathname.startsWith('/fixflip-kalkulator/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
    }
+   await page.goto('http://localhost/fixflip-kalkulator/nebenkostenabrechnung/',{waitUntil:'networkidle'});
+   const disclosure=page.locator('[data-nic-explanation] summary');
+   if(await disclosure.isVisible())await disclosure.click();
+   await page.locator('[data-nic-explanation] a[href="http://localhost/fixflip-kalkulator/vermietung/"]').click();
+   await page.waitForURL('http://localhost/fixflip-kalkulator/vermietung/');
    await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
    const budget=page.locator('a[href="/fixflip-kalkulator/budget/"]').first();
    await budget.click();
