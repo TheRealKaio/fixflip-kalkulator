@@ -24,6 +24,9 @@ if($mode==='normal'){
 
  $s=nic_clean_settings(['version'=>1,'secret'=>'must disappear','access'=>['pdfDownload'=>false,'pdfShare'=>true]]);
  check(!isset($s['secret']),'unknown top-level settings retained');check($s['access']['calculators']===true,'missing defaults');check($s['access']['pdfDownload']===false,'false lost');
+ $content=['settlement'=>['title'=>'Mieterabrechnung','boxTitle'=>'Meine Box','description'=>'<p>Einleitung</p><h3>Mehr</h3><p>Text</p>']];
+ $wire=nic_clean_settings(['version'=>1,'meta'=>['content'=>$content]]);
+ check($wire['meta']['content']===$content,'legacy settings API must retain editable content transport');
  check(nic_email(' TEST@EXAMPLE.COM ')==='test@example.com','email normalization');check(nic_name(' Kai ')==='Kai','name trim');
  check(nic_hash('session|one',$c)!==nic_hash('session|two',$c),'hash separation');
  $test=new PDO('sqlite::memory:');$test->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);$test->exec('PRAGMA foreign_keys=ON');

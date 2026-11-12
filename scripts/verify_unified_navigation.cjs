@@ -181,10 +181,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(await menu.isVisible())await menu.click();
    await page.locator('[data-nic-site-nav] a[href="/'+slug+'/"]').click();
    await page.waitForURL('http://localhost/'+slug+'/');
-   await page.locator('#nicContentView').waitFor({state:'visible'});
+   await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').waitFor({state:'visible'});
    assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Information menu must retain the document');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
-   assert(await page.locator('#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
+   assert(await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
    assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes header height');
   }
@@ -196,7 +196,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Browser history returns home within the shared application');
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
    await page.goto('http://localhost/'+routeName+'/');
-   await page.locator('.nic-content-card').waitFor({state:'visible'});
+   await page.locator(routeName==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'.nic-content-card').waitFor({state:'visible'});
    if(['preise','warum-immocheck','nebenkostenabrechnung'].includes(routeName)){
     const key=({'preise':'prices','warum-immocheck':'why','nebenkostenabrechnung':'settlement'})[routeName];
     await page.waitForFunction(k=>window.NICCalculators?.active===k,key);

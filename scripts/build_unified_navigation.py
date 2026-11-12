@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,re,sys,html
 from build_calculator_explanations import templates, ROUTES
-explanation_templates=templates()
+explanation_templates=templates(json.loads((Path(sys.argv[1] if len(sys.argv)>1 else '_site')/'site-settings.json').read_text()))
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 finance=(site/'finanzierungsrechner/index.html').read_text()
 source=Path('assets/financing.html').read_text()
@@ -164,6 +164,7 @@ for page in site.rglob('*.html'):
  for explanation_key,slug in ROUTES.items():
   if page==site/slug/'index.html':
    s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+explanation_templates[explanation_key],s,count=1)
+ if page.parent.name=='nebenkostenabrechnung':s=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>','',s,flags=re.S)
  if 'calculator-explanations.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/calculator-explanations.css"></head>',1)
  if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
  page.write_text(s)

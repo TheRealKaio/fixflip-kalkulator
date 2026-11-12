@@ -95,9 +95,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 - Mieterabrechnung, Preise und Warum ImmoCheck? zeigen ihre H1 im Bildheader;
   die weiße Inhaltskarte wiederholt keine zweite H1.
-- Weiße Inhaltskarte: zentriert, volle verfügbare Breite bis maximal 980 px,
-  `border-box`, Rahmen 1 px `#e2e9e5`, Radius 16 px.
-- Karten-Innenabstand: Desktop 32 px; bis 760 px Breite 24 px vertikal und 18 px horizontal.
+- Weiße Inhaltskarte: zentriert, volle verfügbare Breite ohne zusätzliche schmale Textspalte,
+  `border-box`, Rahmen 1 px `#e2e9e5`, Radius aus `--nic-brand-radius`.
+- Karten-Innenabstand: 18 px auf Desktop und Mobil. Die gemeinsame Erklärbox ist der Standard für neue Contentkarten.
 - Zwischen Unterkante der weißen Textkarte und Oberkante des Footers liegen
   **16 px**, wie auf den anderen Inhaltsseiten. Gemeinsamer Token:
   `--nic-content-footer-gap: 16px`. Bei den integrierten Informationsseiten setzt
@@ -143,12 +143,13 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 - Budget, Eigenheim, Vermietung, Fix & Flip, Finanzierung und Mieterabrechnung
   erhalten genau eine gemeinsame Erklärbox direkt unter dem Grafikheader.
-  Andere Ansichten erhalten keine fremden Erklärtexte. Bestehende Inhalte und
-  Rechnerfunktionen bleiben daneben erhalten.
-- Quelle: `assets/calculator-explanations.json`; je Box etwa 1.000 Zeichen mit
+  Andere Ansichten erhalten keine fremden Erklärtexte. Auf der Mieterabrechnung werden Produkt-Einleitung und Erklärung in genau einer Box zusammengeführt; keine zusätzliche untere Textbox. Rechnerfunktionen bleiben erhalten.
+- Quelle: `assets/site-settings.json` → `content` und Admin → Content; je Box etwa 1.000 Zeichen mit
   H2, einleitendem Absatz und zwei ergänzenden H3-/Textabschnitten. Keine Kopie
   der Überschrift oder Beschreibung aus dem Grafikheader. Deutschlandbezug und
   passende interne Links verwenden, keine unbelegten Leistungsversprechen.
+- Alle sechs Boxen sind unter Admin → Content bearbeitbar. `description` enthält den vollständigen Text als HTML; der erste Absatz bildet die mobile Einleitung. Bei Mieterabrechnung bleibt der Bildheader-Titel getrennt von `boxTitle`. Neue/angepasste Inhalte ersetzen die Anzeige und werden bei der Höhenmessung berücksichtigt.
+- Die bestehende Server-Schnittstelle speichert die normalisierten Contentdaten kompatibel unter `meta.content`; `content` und `meta.content` referenzieren im Frontend dieselben Daten. Beim Laden werden beide Formate unterstützt. Keine zweite redaktionelle Quelle und keine Änderung an Datenbank, Zugangsdaten oder Serverinstallation.
 - Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
   Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
 - Bei gleicher Fensterbreite und Typografie haben alle Boxen dieselbe minimale
@@ -195,7 +196,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Bereich | Gepflegte Quellen / Build-Schritte |
 | --- | --- |
 | Gemeinsame Routen und aktive Ansicht | `assets/unified-calculator-navigation.js`, `scripts/build_unified_navigation.py` |
-| Erklärboxen / mobiles Weiterlesen | `assets/calculator-explanations.json`, `.js`, `.css`, `scripts/build_calculator_explanations.py` |
+| Erklärboxen / mobiles Weiterlesen | `assets/site-settings.json`, `assets/calculator-explanations.js`, `.css`, `scripts/build_calculator_explanations.py` |
 | Gemeinsame Desktop-Skalierung | `assets/desktop-density.css`, Einbindung über `scripts/build_unified_navigation.py` |
 | Erste stabile Darstellung | `assets/initial-layout.js`, Einbindung über `scripts/build_unified_navigation.py` |
 | Bildheader und Höhenreservierung | `assets/stable-header.js`, `assets/stable-header.css` |

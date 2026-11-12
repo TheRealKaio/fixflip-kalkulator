@@ -17,6 +17,7 @@ function showContent(key,refresh=false){
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
  let panel=document.getElementById('nicContentView');
+ if(key==='settlement'){panel?.remove();active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);window.NICHeader?.refresh();return;}
  if(!panel){
   panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
   const explanation=main.querySelector(':scope > .nic-explanation-card');

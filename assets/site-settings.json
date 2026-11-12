@@ -149,9 +149,10 @@
     },
     "settlement": {
       "title": "Mieterabrechnung für private Vermieter – einfach und nachvollziehbar",
-      "description": "<p>Erstelle die jährliche Mieterabrechnung für deine Mietwohnung Schritt für Schritt. Erfasse Kosten, ordne sie verständlich zu und behalte die Abrechnung für deine Mieter im Blick.</p><p>ImmoCheck konzentriert sich auf das, was private Vermieter wirklich brauchen: eine klare Abrechnung ohne den Ballast einer umfassenden Hausverwaltungssoftware.</p>",
+      "description": "<p>Erstelle die jährliche Mieterabrechnung für deine Mietwohnung Schritt für Schritt. Erfasse Kosten, ordne sie verständlich zu und behalte die Abrechnung für deine Mieter im Blick.</p><h3>Betriebskosten nachvollziehbar zuordnen</h3><p>ImmoCheck konzentriert sich auf das, was private Vermieter wirklich brauchen: eine klare Abrechnung ohne den Ballast einer umfassenden Hausverwaltungssoftware. Eine Mieterabrechnung stellt den Betriebskostenanteil der Wohnung den Vorauszahlungen gegenüber. Daraus ergibt sich ein Guthaben oder eine Nachzahlung.</p><h3>Unterlagen, Verteilung und Wirtschaftlichkeit prüfen</h3><p>Für Mietwohnungen in Deutschland brauchst Du Belege, Abrechnungszeitraum und einen passenden Verteilerschlüssel. Berücksichtige Mietdauer, Fläche oder Verbrauch und trenne umlagefähige Betriebskosten von Eigentümerkosten. Eine Hausgeldabrechnung ist noch keine fertige Mieterabrechnung. Den wirtschaftlichen Überblick bietet der <a href=\"/vermietung/\">Vermietungsrechner</a>; Informationen zum Abrechnungsangebot findest Du unter <a href=\"/preise/\">Preise</a>.</p>",
       "seoTitle": "Mieterabrechnung für Vermieter einfach erstellen | ImmoCheck",
-      "metaDescription": "Mieterabrechnung für Mietwohnungen in Deutschland einfach vorbereiten: Kosten erfassen, übersichtlich zuordnen und die Jahresabrechnung nachvollziehbar erstellen."
+      "metaDescription": "Mieterabrechnung für Mietwohnungen in Deutschland einfach vorbereiten: Kosten erfassen, übersichtlich zuordnen und die Jahresabrechnung nachvollziehbar erstellen.",
+      "boxTitle": "Was gehört in eine nachvollziehbare Mieterabrechnung?"
     },
     "prices": {
       "title": "Klare Preise für deine Mieterabrechnung",
@@ -183,6 +184,36 @@
       "description": "<p>Neustart ImmoCheck unterstützt private Eigentümerinnen und Eigentümer dabei, Immobilienentscheidungen verständlich zu berechnen und Nebenkosten nachvollziehbar abzurechnen.</p><p>Die digitalen Werkzeuge konzentrieren sich auf die Aufgaben, die im Alltag wirklich zählen – klar geführt und ohne unnötigen Verwaltungsaufwand.</p>",
       "seoTitle": "Über uns | Neustart ImmoCheck",
       "metaDescription": "Erfahre, wie Neustart ImmoCheck private Eigentümerinnen und Eigentümer bei Immobilienentscheidungen und der Mieterabrechnung unterstützt."
+    },
+    "budget": {
+      "title": "Welches Immobilienbudget passt zu Deinem Alltag?",
+      "description": "<p>Ein tragfähiges Immobilienbudget beginnt mit dem Betrag, der nach Deinen regelmäßigen Ausgaben und einer Reserve übrig bleibt. Zusammen mit dem verfügbaren Eigenkapital ergibt sich daraus eine Orientierung für die Immobiliensuche in Deutschland. Entscheidend ist, welche Belastung langfristig zu Deinem Haushalt passt.</p><h3>Einnahmen, Ausgaben und Reserven vollständig erfassen</h3><p>Berücksichtige sichere Einnahmen, bestehende Verpflichtungen und absehbare Veränderungen. Plane Rücklagen für unerwartete Ausgaben ein. Kaufnebenkosten und geplante Sanierungen gehören zusätzlich zum Kaufpreis in Deine Rechnung; setze die Annahmen passend zum Standort und zum Zustand des Objekts an.</p><h3>Vom Suchbudget zur konkreten Wunschimmobilie</h3><p>Mit dem <a href=\"/eigennutzung/\">Eigenheim-Rechner</a> prüfst Du anschließend ein bestimmtes Haus oder eine Eigentumswohnung. Der <a href=\"/finanzierungsrechner/\">Finanzierungsrechner</a> vertieft Rate, Zinsbindung und Restschuld. Das Budget ist eine Planungshilfe und ersetzt keine individuelle Kreditzusage.</p>",
+      "seoTitle": "",
+      "metaDescription": ""
+    },
+    "own": {
+      "title": "Welche Gesamtkosten entstehen beim eigenen Haus oder der eigenen Wohnung?",
+      "description": "<p>Für ein selbst genutztes Eigenheim zählt neben dem Kaufpreis auch, was nach dem Einzug monatlich übrig bleibt. Kaufnebenkosten, Sanierung und laufende Ausgaben verändern die tatsächliche Belastung. Eine gemeinsame Übersicht hilft Dir, Häuser und Eigentumswohnungen in Deutschland auf derselben Grundlage zu vergleichen.</p><h3>Laufende Kosten nachvollziehbar eintragen</h3><p>Erfasse beim Haus Energie, Grundsteuer, Versicherungen und Instandhaltung. Bei einer Eigentumswohnung berücksichtige das Hausgeld und zusätzliche Kosten, die darin noch nicht enthalten sind. Trage jeden Posten nur einmal ein und halte eine Reserve für Reparaturen und Veränderungen Deiner Lebenssituation frei.</p><h3>Budget und Finanzierung sinnvoll verbinden</h3><p>Der <a href=\"/budget/\">Budgetrechner</a> klärt zuerst Deinen grundsätzlichen Spielraum. Hier ordnest Du die Kosten einer konkreten Immobilie ein. Im <a href=\"/finanzierungsrechner/\">Finanzierungsrechner</a> vergleichst Du anschließend Rate, Sondertilgungen und die verbleibende Restschuld.</p>",
+      "seoTitle": "",
+      "metaDescription": ""
+    },
+    "finance": {
+      "title": "Wie verteilen sich Kreditrate, Zinsen und Tilgung?",
+      "description": "<p>Bei einem Annuitätendarlehen besteht die regelmäßige Kreditrate aus Zinsen und Tilgung. Die Tilgung verringert die Darlehensschuld; die Zinsen sind die Kosten für das geliehene Geld. Für Deine Immobilienfinanzierung in Deutschland lohnt sich deshalb der Blick auf den gesamten Verlauf und nicht nur auf die erste Monatsrate.</p><h3>Zinsbindung, Sondertilgung und Restschuld vergleichen</h3><p>Erfasse Darlehensbetrag, Zinssatz und Tilgung mit nachvollziehbaren Annahmen. Vergleiche, wie Sondertilgungen und unterschiedliche Zeiträume die Restschuld beeinflussen. Eine niedrige Anfangsrate bedeutet nicht automatisch, dass die Finanzierung insgesamt günstiger ist; betrachte auch die Anschlussfinanzierung.</p><h3>Kreditplanung mit dem Kaufvorhaben abstimmen</h3><p>Im <a href=\"/budget/\">Budgetrechner</a> ordnest Du die Rate in Deinen Haushalt ein. Der <a href=\"/eigennutzung/\">Eigenheim-Rechner</a> ergänzt Kaufnebenkosten, Sanierung und laufende Objektkosten. Verwende für einen konkreten Vergleich die Konditionen Deiner vorliegenden Darlehensangebote.</p>",
+      "seoTitle": "",
+      "metaDescription": ""
+    },
+    "rent": {
+      "title": "Was bleibt von der Miete nach Kosten und Finanzierung?",
+      "description": "<p>Eine vermietete Wohnung ist nicht allein wegen einer hohen Mieteinnahme wirtschaftlich. Entscheidend ist, welcher Betrag nach laufenden Eigentümerkosten, Rücklagen und Kreditrate übrig bleibt. Die Vermietungskalkulation hilft Dir, eine Kapitalanlage in Deutschland anhand Deiner eigenen Annahmen einzuordnen.</p><h3>Mietrendite und laufenden Geldfluss unterscheiden</h3><p>Die Mietrendite beschreibt das Verhältnis von Mieteinnahmen zum eingesetzten Kauf- oder Gesamtaufwand. Der Cashflow betrachtet dagegen die laufenden Ein- und Auszahlungen. Berücksichtige auch Leerstand, Instandhaltung und nicht umlagefähige Kosten, statt die Warmmiete vollständig als verfügbaren Ertrag anzusetzen.</p><h3>Finanzierung und Betriebskosten getrennt betrachten</h3><p>Mit dem <a href=\"/finanzierungsrechner/\">Finanzierungsrechner</a> prüfst Du die Darlehensbelastung genauer. Die <a href=\"/nebenkostenabrechnung/\">Mieterabrechnung</a> betrifft die Zuordnung und Abrechnung von Betriebskosten mit Deinen Mietern. Passe Miete und Kosten an das konkrete Objekt und seinen Standort an.</p>",
+      "seoTitle": "",
+      "metaDescription": ""
+    },
+    "flip": {
+      "title": "Welche Kosten bestimmen den Erfolg eines Fix-&-Flip-Projekts?",
+      "description": "<p>Beim Fix &amp; Flip soll eine Immobilie nach dem Kauf und einer Aufwertung wieder verkauft werden. Ob sich das Vorhaben rechnet, hängt vom gesamten Projektaufwand und einem realistischen Verkaufserlös ab. Für Objekte in Deutschland sollten deshalb auch Nebenkosten, Finanzierung und die geplante Haltedauer in die Kalkulation einfließen.</p><h3>Sanierung, Zeitbedarf und Verkauf realistisch ansetzen</h3><p>Gliedere Maßnahmen und Kostenschätzungen nachvollziehbar und ergänze eine Reserve. Prüfe, was längere Bauzeiten, höhere Ausgaben oder ein niedrigerer Verkaufspreis am Ergebnis ändern. Ein rechnerischer Überschuss ist noch kein gesicherter Gewinn; auch Steuern und Verkaufsnebenkosten hängen vom konkreten Fall ab.</p><h3>Kapitalbedarf und Kreditbelastung abgleichen</h3><p>Der <a href=\"/budget/\">Budgetrechner</a> hilft Dir, den eigenen finanziellen Spielraum einzuordnen. Mit dem <a href=\"/finanzierungsrechner/\">Finanzierungsrechner</a> betrachtest Du die Darlehensrate genauer. Vergleiche Deine Annahmen mit Angeboten und passenden Objekten im örtlichen Markt.</p>",
+      "seoTitle": "",
+      "metaDescription": ""
     }
   }
 }

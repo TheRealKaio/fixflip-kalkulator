@@ -6,13 +6,19 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
  try{
   for(const width of [1440,390]){
    const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[];
-   const settings=JSON.parse(fs.readFileSync('assets/site-settings.json','utf8'));
+   let admin=false,saves=0;
+   let settings=JSON.parse(fs.readFileSync('assets/site-settings.json','utf8'));
    Object.assign(settings.layout,{font:'verdana',bodySize:20,h2:24,h3:22});
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
     if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
-    if(u.hostname!=='localhost')return route.fulfill(route.request().resourceType()==='script'?{contentType:'application/javascript',body:''}:{json:{user:null,settings,csrf:'explanation-test',ok:true,ready:true}});
+    if(u.hostname!=='localhost'){
+     if(u.searchParams.get('r')==='settings'&&route.request().method()==='POST'){
+      settings=route.request().postDataJSON().settings;delete settings.content;saves++;
+     }
+     return route.fulfill(route.request().resourceType()==='script'?{contentType:'application/javascript',body:''}:{json:{user:admin?{id:'admin',role:'admin',email:'admin@example.test'}:null,settings,revision:saves+1,authControlsVersion:1,csrf:'explanation-test',ok:true,ready:true,users:[],rows:[]}});
+    }
     let name=u.pathname;if(name.endsWith('/'))name+='index.html';
     const file=path.join(process.cwd(),'_site',name);
     if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
@@ -29,6 +35,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert.equal(await card.count(),1,'Only the current explanation exists');
     assert.equal(await card.getAttribute('data-nic-explanation'),key);
     assert(await card.isVisible(),'Explanation visible: '+key+' at '+width);
+    if(key==='settlement'){assert.equal(await page.locator('#nicContentView').count(),0,'Settlement has one merged card');assert((await card.locator('.nic-explanation-intro').innerText()).startsWith('Erstelle die jährliche Mieterabrechnung'),'Previous product copy is the introduction');}
     assert(await card.evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first: '+key);
     const geometry=await card.evaluate(e=>({height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontFamily,body:getComputedStyle(e.querySelector('p')).fontSize,h2:getComputedStyle(e.querySelector('h2')).fontSize,h3:getComputedStyle(e.querySelector('h3')).fontSize}));
     heights.push(geometry.height);
@@ -60,6 +67,25 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
      if(width===390)assert.equal(await page.locator('[data-nic-explanation] details').evaluate(e=>e.open),false,'New mobile route starts collapsed');
     }
    }
+   admin=true;
+   await page.goto('http://localhost/#admin-content',{waitUntil:'networkidle'});
+   await page.locator('#settingsForm').waitFor({state:'visible'});
+   for(const key of Object.keys(routes))assert.equal(await page.locator('#content-'+key+'-description').count(),1,'Admin editor for '+key);
+   await page.locator('#content-settlement-boxTitle').fill('Meine Mieterabrechnung');
+   await page.locator('#content-settlement-description').fill('<p>Meine eigene Einleitung</p><h3>Meine Details</h3><p>Weitere Informationen <a href="/vermietung/">Vermietung</a></p><script>window.explanationInjected=true</script>');
+   await page.locator('#content-budget-title').fill('Mein Budgettext');
+   await page.locator('#saveSettings').click();
+   await page.waitForFunction(()=>NICSettings.current.content.settlement.boxTitle==='Meine Mieterabrechnung');
+   assert.equal(saves,1,'Admin saves through existing settings API');
+   assert(!settings.content&&settings.meta.content.settlement.boxTitle==='Meine Mieterabrechnung','Legacy API retains the content transport');
+   await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
+   const edited=page.locator('[data-nic-explanation]');
+   assert.equal(await edited.locator('h2').innerText(),'Meine Mieterabrechnung');
+   assert.equal(await edited.locator('.nic-explanation-intro').innerText(),'Meine eigene Einleitung');
+   assert.equal(await page.evaluate(()=>window.explanationInjected),undefined,'Active HTML is removed');
+   assert.equal(await page.locator('#nicContentView').count(),0);
+   await page.goto('http://localhost/budget/',{waitUntil:'networkidle'});
+   assert.equal(await page.locator('[data-nic-explanation] h2').innerText(),'Mein Budgettext','Another box survives save and full reload');
    assert.deepEqual(errors,[]);await page.close();
   }
   console.log('Six explanations passed: static HTML, equal sizes, admin typography, mobile first paragraph, read-more/keyboard and route cleanup.');

@@ -15,7 +15,7 @@ class Markup(HTMLParser):
 
 class ExplanationTests(unittest.TestCase):
     def test_six_complete_unique_explanations(self):
-        cards=templates();sources=json.loads(Path('assets/calculator-explanations.json').read_text())
+        cards=templates();sources=json.loads(Path('assets/site-settings.json').read_text())['content']
         self.assertEqual(set(cards),set(ROUTES))
         titles=set()
         for key,markup in cards.items():
@@ -31,9 +31,21 @@ class ExplanationTests(unittest.TestCase):
                 text=' '.join(parsed.text)
                 self.assertTrue(900<=len(text)<=1200,(key,len(text)))
                 self.assertIn('Deutschland',text)
-                titles.add(sources[key]['title'])
+                titles.add(sources[key].get('boxTitle') or sources[key]['title'])
                 self.assertIn('data-nic-explanation="'+key+'"',markup)
         self.assertEqual(len(titles),6)
         self.assertIn('id="nicOwnIntro"',cards['own'])
+
+    def test_runtime_defaults_match_published_source(self):
+        source=Path('assets/site-settings.js').read_text()
+        defaults=json.loads(re.search(r'const contentPageDefaults=(.*?);\n',source)[1])
+        self.assertEqual(defaults,json.loads(Path('assets/site-settings.json').read_text())['content'])
+
+    def test_custom_content_is_static_and_safe(self):
+        config=json.loads(Path('assets/site-settings.json').read_text())
+        config['content']['budget'].update(title='Mein Budget',description='<p>Eigene Einleitung</p><h3>Mehr</h3><p>Eigener Text <a href="/eigennutzung/">weiter</a><script>alert(1)</script></p>')
+        markup=templates(config)['budget']
+        self.assertIn('Mein Budget',markup);self.assertIn('Eigene Einleitung',markup)
+        self.assertNotIn('alert(1)',markup);self.assertNotIn('<script',markup)
 
 if __name__=='__main__':unittest.main()
