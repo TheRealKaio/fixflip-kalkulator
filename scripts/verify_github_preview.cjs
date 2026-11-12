@@ -5,6 +5,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  const browser=await chromium.launch({headless:true});
  try{
   for(const width of [1440,390]){
+   const layout=JSON.parse(fs.readFileSync('_preview/site-settings.json','utf8')).layout;
    const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[],missing=[],backend=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
@@ -24,6 +25,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex,nofollow');
     assert(new URL(page.url()).pathname.startsWith('/fixflip-kalkulator/'),'Direct route remains in project');
     assert(await page.locator('.app > main.section').isVisible(),'Shared app visible: '+slug);
+    assert.equal(await page.locator('body').evaluate(e=>getComputedStyle(e).fontSize),layout.bodySize+'px','Public body size');
+    assert.equal(await page.locator('#heroTitle').evaluate(e=>getComputedStyle(e).fontSize),layout.h1+'px','Public heading size');
+    assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
    }
@@ -32,7 +36,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await budget.click();
    await page.waitForURL('**/fixflip-kalkulator/budget/');
    assert.equal(await page.locator('html').getAttribute('data-nic-page'),'budget');
-   await page.goBack();await page.waitForURL('http://localhost/fixflip-kalkulator/');
+   await page.locator('.nic-logo-link').click();await page.waitForURL('http://localhost/fixflip-kalkulator/');
    assert.equal(await page.locator('html').getAttribute('data-nic-page'),'website');
    assert.deepEqual(errors,[],'No browser errors');
    assert.deepEqual(missing,[],'No missing or origin-root assets');
