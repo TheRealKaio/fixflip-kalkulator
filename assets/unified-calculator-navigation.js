@@ -3,6 +3,7 @@
 'use strict';
 /* FINANCE_MODULE */
 /* CALCULATOR_REGISTRY */
+/* EXPLANATION_MODULE */
 const routes=Object.fromEntries(calculators.map(item=>[item.path,item.id]));
 routes['/']='home';routes['/index.html']='home';
 const contentRoutes={settlement:'/nebenkostenabrechnung/',prices:'/preise/',why:'/warum-immocheck/'};
@@ -37,12 +38,7 @@ window.NICCalculators=Object.freeze({
 });
 let active=null,financeRoot=null,bypass=false;
 function select(key,push=false){
- const ownIntro=document.getElementById('nicOwnIntro');
- if(key!=='own')ownIntro?.remove();
- else if(!ownIntro){
-  const main=document.querySelector('.app>main.section');
-  if(main)main.insertAdjacentHTML('afterbegin',''/* OWN_INTRO_MARKUP */);
- }
+ window.NICExplanations.show(key);
 
  if(key==='home'||contentRoutes[key]){
   const previousURL=location.href;

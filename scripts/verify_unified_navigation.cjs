@@ -108,7 +108,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(key==='own'){
     assert.equal(await page.locator('#heroTitle').innerText(),'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');
-    assert((await page.locator('#nicOwnIntro').innerText()).includes('Hausgeld'),'House and apartment running costs explained');
+    assert((await page.locator('#nicOwnIntro').textContent()).includes('Hausgeld'),'House and apartment running costs explained');
    }else assert.equal(await page.locator('#nicOwnIntro').count(),0,'Eigenheim explanation must leave other routes clean');
 
    if(key==='finance'){assert(await page.locator('#nicFinanceModule #loan').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}

@@ -206,6 +206,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
     window.NICHome?.refresh();
     window.NICContent?.refresh();
     window.NICHeader?.refresh();
+    window.NICExplanations?.refresh();
   }
   if(typeof window.addEventListener==='function')window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});
   // Shared five-tile active state for all calculator routes.

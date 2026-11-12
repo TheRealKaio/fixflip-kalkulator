@@ -139,6 +139,30 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.
 
+## Erklärboxen der sechs Werkzeuge
+
+- Budget, Eigenheim, Vermietung, Fix & Flip, Finanzierung und Mieterabrechnung
+  erhalten genau eine gemeinsame Erklärbox direkt unter dem Grafikheader.
+  Andere Ansichten erhalten keine fremden Erklärtexte. Bestehende Inhalte und
+  Rechnerfunktionen bleiben daneben erhalten.
+- Quelle: `assets/calculator-explanations.json`; je Box etwa 1.000 Zeichen mit
+  H2, einleitendem Absatz und zwei ergänzenden H3-/Textabschnitten. Keine Kopie
+  der Überschrift oder Beschreibung aus dem Grafikheader. Deutschlandbezug und
+  passende interne Links verwenden, keine unbelegten Leistungsversprechen.
+- Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
+  Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
+- Bei gleicher Fensterbreite und Typografie haben alle Boxen dieselbe minimale
+  Höhe: vollständiger Text auf Desktop, eingeklappte Fassung mobil. Die größte
+  benötigte Höhe wird ohne Abschneiden aus allen sechs Texten ermittelt; die
+  Desktop-Skalierung wird dabei berücksichtigt.
+- Mobil (bis 760 px bzw. gemeinsame schmale Querformatansicht) zunächst nur
+  Titel und erster Absatz; rechts unten steht `weiterlesen`. Ein natives
+  `details`/`summary` öffnet die beiden restlichen Abschnitte. Danach kann über
+  `weniger anzeigen` geschlossen werden. Beim neuen Seitenaufruf bzw. Wechsel
+  zu einem anderen Werkzeug beginnt die mobile Box wieder eingeklappt.
+- Der vollständige Text steht bereits im HTML der direkten Route, auch mobil.
+  Öffnen erfordert keinen Netzwerkabruf; Tastaturbedienung bleibt möglich.
+
 ## 5. Startseite
 
 - Desktop: Mieterabrechnung links; daneben Kaufplanung mit Budget und
@@ -171,6 +195,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Bereich | Gepflegte Quellen / Build-Schritte |
 | --- | --- |
 | Gemeinsame Routen und aktive Ansicht | `assets/unified-calculator-navigation.js`, `scripts/build_unified_navigation.py` |
+| Erklärboxen / mobiles Weiterlesen | `assets/calculator-explanations.json`, `.js`, `.css`, `scripts/build_calculator_explanations.py` |
 | Gemeinsame Desktop-Skalierung | `assets/desktop-density.css`, Einbindung über `scripts/build_unified_navigation.py` |
 | Erste stabile Darstellung | `assets/initial-layout.js`, Einbindung über `scripts/build_unified_navigation.py` |
 | Bildheader und Höhenreservierung | `assets/stable-header.js`, `assets/stable-header.css` |
