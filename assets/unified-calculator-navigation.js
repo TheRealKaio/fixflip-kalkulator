@@ -102,7 +102,7 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();select(key,true);return;
  }
  if(active==='finance'){
-  const button=event.target.closest('.bottom button');if(!button)return;
+  const button=event.target.closest('.bottom button');if(!button||button.closest('#nicFinanceModule'))return;
   const id=button.classList.contains('bottom-primary')?'newCalc':button.classList.contains('bottom-save')?'download':'share';
   event.preventDefault();event.stopImmediatePropagation();financeHost.querySelector('[data-finance-id="'+id+'"]').click();
  }
