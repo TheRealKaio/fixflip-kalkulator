@@ -180,7 +180,7 @@ function nic_run(): void {
     if ($route === 'health' && $method === 'GET') {
         $ready = false;
         try { $ready = (bool)nic_query($db, 'SELECT id FROM nic_settings WHERE id=1')->fetchColumn(); } catch (PDOException) {}
-        nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360']);
+        nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360','usersImportVersion'=>1]);
     }
     if ($route === 'setup' && $method === 'POST') {
         if (!is_string($input['key'] ?? null) || !hash_equals($c['setup_key'], $input['key'])) nic_fail('Einrichtungsschlüssel ungültig.', 403);

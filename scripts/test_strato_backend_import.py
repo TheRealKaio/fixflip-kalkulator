@@ -6,7 +6,7 @@ from strato_sftp_check import CheckError
 class BackendImportTests(unittest.TestCase):
     def setUp(self):
         self.tested = APP.read_text(encoding='utf-8')
-        self.old = self.tested.replace(import_block(self.tested), '')
+        self.old = self.tested.replace(import_block(self.tested), '').replace(CAPABLE, HEALTH)
 
     def test_only_import_route_and_health_capability_are_added(self):
         patched = patch_application(self.old, self.tested)
