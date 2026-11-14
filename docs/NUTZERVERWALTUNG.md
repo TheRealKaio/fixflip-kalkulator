@@ -17,6 +17,7 @@ Die Zieladresse lautet `https://neustart-immocheck.de/api/index.php`; die Hauptd
 - Globale Daten werden auf öffentlichen Seiten bei sichtbarer Seite alle 30 Sekunden nachgeladen. PDF-Aktionen prüfen die aktuellen Zugangsregeln; ein Teilen-Fallback benötigt Download-Berechtigung.
 - Nur normale Benutzer können sich öffentlich registrieren. Der erste Admin wird einmalig mit einem geheimen Einrichtungsschlüssel aus der privaten Serverkonfiguration angelegt und muss seine E-Mail bestätigen.
 - Admins können Konten sperren, freigeben und löschen. Sperren entfernen Sitzungen und offene Codes, Zugriffsprüfungen lesen den aktuellen Kontostatus. Das eigene Konto und der letzte aktive Admin sind geschützt.
+- Admins können alle Nutzerkonten getrennt von der Website-Konfiguration als CSV sichern. Der Export enthält Vorname, Nachname und E-Mail, schließt auch unbestätigte/gesperrte Konten ein und wird über die authentifizierte, paginierte Nutzer-API geladen.
 - Anmeldecodes: acht Stellen, zehn Minuten Gültigkeit, maximal fünf Fehlversuche, einmalige Verwendung, HMAC-gehasht gespeichert und begrenzte Anforderungs-/Verifikationsraten.
 - Sitzungen: sichere HttpOnly-Cookies, SameSite=Lax, 14 Tage maximale Laufzeit; CSRF-Schutz und genaue CORS-Freigaben.
 
