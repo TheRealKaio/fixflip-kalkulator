@@ -135,7 +135,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   });
   await page.goBack();await page.waitForFunction(()=>!document.body.classList.contains('nic-finance-active'));
   await page.goForward();await page.waitForFunction(()=>document.body.classList.contains('nic-finance-active'));
-  await page.reload();await page.waitForSelector('#nicFinanceModule #loan');
+  await page.reload();await page.waitForSelector('#nicFinanceModule [data-finance-id="loan"]');
   assert.equal(await page.locator('.nic-tile-active').getAttribute('data-calculator'),'finance');
   await page.evaluate(()=>{const root=document.getElementById('nicFinanceModule');root.querySelector('[data-finance-id="newCalc"]').click();if(Number(root.querySelector('[data-finance-id="interest"]').value)!==4.09)throw Error('Finance reset must use shared reference');});
   await page.evaluate(()=>{
@@ -246,7 +246,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/finanzierungsrechner/');
   await page.locator('.app').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='fallback');
-  assert(await page.locator('#nicFinanceModule #loan').isVisible(),'Direct finance must remain usable when published settings are unavailable');
+  assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible(),'Direct finance must remain usable when published settings are unavailable');
   assert.deepEqual(errors,[]);
   console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
   await page.close();
