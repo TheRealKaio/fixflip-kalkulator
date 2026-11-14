@@ -123,9 +123,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     const grids=await page.evaluate(()=>[...document.querySelectorAll('.app>main .kpis,.app>main .budget-result-grid,#nicFinanceModule .grid:has(> .kpi)')].filter(grid=>{const r=grid.getBoundingClientRect();return r.width>0&&r.height>0}).map(grid=>{
      const cells=[...grid.children].flatMap(child=>child.classList.contains('kpi-triple')?[...child.children]:[child]).filter(cell=>{const r=cell.getBoundingClientRect();return r.width>0&&r.height>0});
      const rows=new Map();for(const cell of cells){const top=Math.round(cell.getBoundingClientRect().top);rows.set(top,(rows.get(top)||0)+1);}
-     return [...rows.values()];
+     return {id:grid.id,className:grid.className,width:grid.getBoundingClientRect().width,columns:getComputedStyle(grid).gridTemplateColumns,cells:cells.map(cell=>cell.innerText.trim().slice(0,55)),rows:[...rows.values()]};
     }));
-    for(const rows of grids){assert(rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,rows}));if(rows.length>1)assert(rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,rows}));}
+    for(const grid of grids){assert(grid.rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,grid}));if(grid.rows.length>1)assert(grid.rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,grid}));}
    }
 
    if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
