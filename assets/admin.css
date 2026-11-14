@@ -76,8 +76,8 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
 #panel-users .user-access-choice>span{display:block!important;flex:1 1 auto!important;min-width:0;margin:0!important;text-align:left!important}
 
 /* Shared column sizing keeps labels and checkbox headings aligned in the native admin. */
-.content-section-header,.content-section-row{grid-template-columns:minmax(0,1fr) 7ch 6ch;column-gap:10px;font-size:var(--nic-subtext-font-size,14px)}
+.content-section-header,.content-section-row{grid-template-columns:minmax(0,1fr) 8.2ch 6ch;column-gap:10px;font-size:var(--nic-subtext-font-size,14px)}
 .content-section-header>strong{min-width:0;font-size:inherit!important;line-height:1.25!important;overflow-wrap:normal;word-break:normal;hyphens:none;text-align:center}
 .content-section-header>strong:first-child{text-align:left}
 .content-section-row>span{min-width:0;font-size:var(--nic-body-font-size,16px);line-height:1.45;word-break:normal;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
-@media(max-width:520px){.content-section-header,.content-section-row{column-gap:8px;padding:10px 8px;font-size:var(--nic-hint-font-size,12px)}}
+@media(max-width:520px){.content-section-header,.content-section-row{column-gap:4px;padding:10px 4px;font-size:var(--nic-hint-font-size,12px)}}
