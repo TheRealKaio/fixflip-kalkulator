@@ -37,7 +37,7 @@ window.addEventListener('nic-reference-interest',event=>applyReferenceRate(event
 applyReferenceRate(window.NICReferenceInterest?.rate??4.0);
 """
 shared_layout=(site/'calculator-layout.css').read_text(encoding='utf-8')
-factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+'\\n'+shared_layout+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
+factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+shared_layout+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
 calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
