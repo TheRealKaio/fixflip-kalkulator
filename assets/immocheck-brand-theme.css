@@ -743,21 +743,25 @@ body:not(.nic-embed) .nic-brand-bar a#nicAccountLink.nic-login-button>span{
  body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]) #nicFooterContactSection{grid-column:2!important;grid-row:1!important;align-self:start}
 }
 
-/* Responsive calculator result cards: two to four columns on desktop, one on mobile. */
-body:not(.nic-embed) :is(.kpis,.budget-result-grid){
-  display:grid!important;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,max(190px,calc(25% - 9px))),1fr))!important;
-  gap:11px!important;
-}
+/* Calculator result grids: cap desktop rows at four, balance each calculator's cards. */
+body:not(.nic-embed) :is(.kpis,.budget-result-grid){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,max(190px,calc(25% - 9px))),1fr))!important;gap:11px!important}
 body:not(.nic-embed) .kpis>.kpi-triple{display:contents!important}
 body:not(.nic-embed) .kpis>.kpi.wide:not(.own-budget-transfer){grid-column:auto!important}
 body:not(.nic-embed) .kpis>.kpi.own-budget-transfer{grid-column:1/-1!important}
 body:not(.nic-embed) :is(.kpis,.budget-result-grid)>:is(.kpi,.budget-result-card){min-width:0}
-body:not(.nic-embed) #standardKpis:has(#kpiMarketDiff:not(.mode-hidden)){grid-template-columns:repeat(3,minmax(0,1fr))!important}
-body:not(.nic-embed) .kpis:not(#standardKpis):has(>:nth-child(5):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
-body:not(.nic-embed) .kpis:has(>:nth-child(7):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+@media(min-width:701px){
+ body:not(.nic-embed) #standardKpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) #standardKpis:has(#kpiMarketDiff:not(.mode-hidden)){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) #ownUseKpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) #rentSection .rent-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) .budget-result-grid:has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(5):last-child),
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) #result.own-use .kpi-triple{display:contents!important;grid-column:auto!important}
+ body:not(.nic-embed) #result.own-use :is(#kpiEquity,#kpiMaxBuy){display:none!important}
+}
 @media(max-width:700px){
-  body:not(.nic-embed) :is(.kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
-  body:not(.nic-embed) :is(#rentSection,#result) .kpis{grid-template-columns:minmax(0,1fr)!important}
-  body:not(.nic-embed) :is(#rentSection,#result) .kpis :is(.name,.note,.value){overflow-wrap:anywhere}
+ body:not(.nic-embed) :is(.kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
+ body:not(.nic-embed) :is(#standardKpis,#ownUseKpis,#rentSection .rent-kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
+ body:not(.nic-embed) :is(#rentSection,#result) .kpis :is(.name,.note,.value){overflow-wrap:anywhere}
 }
