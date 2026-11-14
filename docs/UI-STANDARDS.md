@@ -144,7 +144,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
   ausbalanciert und bleiben bei höchstens vier Boxen pro Zeile: Fix & Flip
   zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
-  Die sieben Eigenheim-Kosten-KPIs stehen als 4 + 3. Die zwei projektbezogenen
+  Die acht Eigenheim-Kosten-KPIs stehen als 4 + 4. Die zwei projektbezogenen
   Fix-&-Flip-KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
   werden im Eigenheim ausgeblendet. Sechs Budget-Kacheln stehen als 3 + 3;
   sieben Vermietungsergebnisse als 4 + 3.
