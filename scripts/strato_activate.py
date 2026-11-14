@@ -188,14 +188,25 @@ def render_rules(manifest, backup, direct=False, version=1, retained=()):
             # Immutable, content-hashed assets are installed before entry pages.
             # Keep both old and new hashes addressable during deploy/rollback.
             rules.append(r'RewriteRule ^[A-Za-z0-9_-][A-Za-z0-9_.-]*\.[a-f0-9]{16}\.(?:js|css)$ - [L]')
+    server_gate = direct and 'content-gate.php' in files
+    if server_gate:
+        # Keep PHP endpoint directly executable and route every public HTML
+        # document through it so disabled sections are removed before delivery.
+        rules.append(r'RewriteRule ^content-gate\\.php$ - [L]')
     for name in sorted(files):
         validate_file(name)
         if name.endswith('/index.html'):
             directory = name[:-len('/index.html')]
+            target = ('/content-gate.php?path=' + name + ' [END,QSA]'
+                      if server_gate else ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'))
             rules += ['RewriteRule ^' + re.escape(directory) + '$ /' + directory + '/ [R=' + redirect + ',L]',
-                      'RewriteRule ^' + re.escape(directory) + '/$ ' + ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]')]
+                      'RewriteRule ^' + re.escape(directory) + '/$ ' + target]
         pattern = '(?:index\\.html)?' if name == 'index.html' else re.escape(name)
-        rules.append('RewriteRule ^' + pattern + '$ ' + ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'))
+        if server_gate and name.endswith('.html'):
+            target = '/content-gate.php?path=' + name + ' [END,QSA]'
+        else:
+            target = '- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'
+        rules.append('RewriteRule ^' + pattern + '$ ' + target)
     rules.append('RewriteRule ^ - [R=404,END]')
     return ('\n'.join(rules) + '\n').encode()
 
