@@ -1,6 +1,8 @@
 import unittest
-from strato_backend_import import APP, START, HEALTH, CAPABLE, import_block, patch_application
+from unittest.mock import patch
+from strato_backend_import import APP, START, HEALTH, CAPABLE, import_block, patch_application, cache_refresher
 from strato_sftp_check import CheckError
+from test_strato_stage import MemorySFTP, ROOT
 
 
 class BackendImportTests(unittest.TestCase):
@@ -18,6 +20,24 @@ class BackendImportTests(unittest.TestCase):
                        self.tested.replace('count($rows)>2000', 'count($rows)>5000')]:
             with self.subTest(source=source[:30]), self.assertRaises(CheckError):
                 patch_application(source, self.tested)
+
+    def test_cache_refresh_is_secret_protected_narrow_and_removed_after_use(self):
+        sftp = MemorySFTP()
+        sftp.chmod = lambda *args: None
+        def request(host, ip, path, method, preview_token=None):
+            return (403, {}, b'{}', {}) if preview_token is None else (200, {}, b'{"ok":true,"invalidated":true}', {})
+        with patch('strato_backend_import.secrets.token_hex', side_effect=['a'*64, 'b'*16]), patch('strato_backend_import.origin_request', side_effect=request):
+            with cache_refresher(sftp, ROOT, '123-1', ['1.1.1.1']) as refresh:
+                files = [name for name in sftp.files if 'nic-import-refresh-' in name]
+                self.assertEqual(len(files), 1)
+                code = sftp.files[files[0]].decode()
+                self.assertNotIn('a'*64, code)
+                self.assertIn('hash_equals', code)
+                self.assertIn('time() >', code)
+                self.assertIn("'/immocheck-private/app.php'", code)
+                self.assertNotIn('opcache_reset', code)
+                refresh()
+            self.assertNotIn(files[0], sftp.files)
 
 
 if __name__ == '__main__':

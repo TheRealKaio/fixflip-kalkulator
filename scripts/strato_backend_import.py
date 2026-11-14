@@ -8,6 +8,8 @@ import stat
 import subprocess
 import tempfile
 import time
+import secrets
+from contextlib import contextmanager
 
 from strato_activate import APEX, WWW, operation_id, origin_ips, origin_request
 from strato_publish import connection
@@ -73,6 +75,52 @@ def verify_health(ips, require_import=False):
                 raise CheckError('Aktualisierte Import-Route noch nicht bestaetigt: ' + host)
 
 
+@contextmanager
+def cache_refresher(sftp, root, token, ips):
+    """Invalidate this app's opcode cache through a temporary secret-protected endpoint."""
+    secret = secrets.token_hex(32)
+    name = 'nic-import-refresh-' + token + '-' + secrets.token_hex(8) + '.php'
+    path = root + '/api/' + name
+    digest = hashlib.sha256(secret.encode()).hexdigest()
+    code = ('''<?php
+declare(strict_types=1);
+ini_set('display_errors', '0');
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, private');
+header('X-Content-Type-Options: nosniff');
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET' || time() > EXPIRY ||
+    !hash_equals('DIGEST', hash('sha256', $_SERVER['HTTP_X_NIC_PREVIEW_TOKEN'] ?? ''))) {
+    http_response_code(403); echo '{"error":"Nicht verfuegbar"}'; exit;
+}
+$target = dirname(__DIR__, 2) . '/immocheck-private/app.php';
+clearstatcache(true, $target);
+$invalidated = function_exists('opcache_invalidate') ? opcache_invalidate($target, true) : false;
+echo json_encode(['ok'=>true,'invalidated'=>$invalidated]);
+'''.replace('EXPIRY', str(int(time.time()) + 300)).replace('DIGEST', digest)).encode()
+    write_new(sftp, path, code)
+    try:
+        if read_regular(sftp, path, 20000) != code:
+            raise CheckError('Geschuetzter Cache-Refresh nicht vollstaendig uebertragen.')
+        for ip in ips:
+            for host in [APEX, WWW]:
+                if origin_request(host, ip, '/api/' + name, 'GET')[0] != 403:
+                    raise CheckError('Cache-Refresh ist nicht gegen unbestaetigte Aufrufe geschuetzt.')
+        def refresh():
+            for ip in ips:
+                for host in [APEX, WWW]:
+                    status, _, body, _ = origin_request(host, ip, '/api/' + name, 'GET', preview_token=secret)
+                    result = json.loads(body)
+                    if status != 200 or result.get('ok') is not True:
+                        raise CheckError('Geschuetzter Cache-Refresh fehlgeschlagen: ' + host)
+                    print(host + ': Cache der API-Anwendungsdatei invalidiert=' + str(result.get('invalidated')), flush=True)
+        yield refresh
+    finally:
+        if read_regular(sftp, path, 20000) == code:
+            sftp.remove(path)
+        else:
+            raise CheckError('Temporaerer Cache-Refresh extern geaendert; nicht automatisch entfernen.')
+
+
 def main():
     try:
         mode = os.environ.get('STRATO_BACKEND_IMPORT_MODE', 'inspect')
@@ -122,22 +170,25 @@ def main():
             if read_regular(sftp, backup, 500000) != original or read_regular(sftp, path, 500000) != original:
                 raise CheckError('API-Sicherung oder unveraenderter Ausgangsstand nicht bestaetigt.')
             permissions = stat.S_IMODE(sftp.lstat(path).st_mode)
-            private_replace(sftp, path, patched, token, permissions)
-            try:
-                for attempt in range(10):
-                    try:
-                        verify_health(ips, require_import=True)
-                        break
-                    except CheckError:
-                        if attempt == 9:
-                            raise
-                        time.sleep(2)  # Allow the existing PHP opcode cache to observe the atomic rename.
-            except Exception:
-                if read_regular(sftp, path, 500000) != patched:
-                    raise CheckError('API extern geaendert; Ruecknahme nicht automatisch ueberschreiben.')
-                private_replace(sftp, path, original, token + '0', permissions)
-                verify_health(ips)
-                raise CheckError('Import-Aktivierung nicht bestaetigt; vorherige API atomar wiederhergestellt und geprueft.')
+            with cache_refresher(sftp, root, token, ips) as refresh:
+                private_replace(sftp, path, patched, token, permissions)
+                try:
+                    refresh()
+                    for attempt in range(10):
+                        try:
+                            verify_health(ips, require_import=True)
+                            break
+                        except CheckError:
+                            if attempt == 9:
+                                raise
+                            time.sleep(2)
+                except Exception as failure:
+                    if read_regular(sftp, path, 500000) != patched:
+                        raise CheckError('API extern geaendert; Ruecknahme nicht automatisch ueberschreiben.')
+                    private_replace(sftp, path, original, token + '0', permissions)
+                    refresh()
+                    verify_health(ips)
+                    raise CheckError('Import-Aktivierung nicht bestaetigt; vorherige API atomar wiederhergestellt und geprueft. Grund: ' + str(failure))
             print('Admin-Import-Route atomar aktiviert; HTTP-Faehigkeit auf Hauptdomain und www bestaetigt.')
             print('Keine Nutzerdaten importiert; Datenbank, Konfiguration, Berechtigungen und andere API-Routen unveraendert.')
         return 0
