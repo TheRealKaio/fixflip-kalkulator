@@ -108,6 +108,14 @@ html body:not(.nic-admin) .app :is(h1,h2,h3,h4) {
   line-height: 1.2;
 }
 @media (max-width: 700px) {
+  /* Every calculator result tile occupies its own mobile row. */
+  html body:not(.nic-admin) .app :is(
+    .deal-type-row,.kpis,.kpi-triple,.quick-grid,
+    .budget-result-grid,.refinance-grid
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
   html body:not(.nic-admin) .app :is(.card,.hero,.deal-type-card) {
     max-width: 100%;
     box-sizing: border-box;
