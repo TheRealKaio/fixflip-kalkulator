@@ -798,3 +798,19 @@ body[data-calculator="own"] #result :is(#kpiEquity,#kpiMaxBuy){display:none!impo
 body:not(.nic-embed) .rent-kpi-name{gap:12px!important}
 body:not(.nic-embed) .rent-kpi-value-row{gap:12px!important;margin-top:8px!important}
 body:not(.nic-embed) .rent-kpi-rating{flex:0 0 auto!important;margin-left:4px!important}
+
+
+/* The rental and budget grids have their own selectors, so balance their
+   row counts explicitly as well. */
+@media(min-width:701px){
+ body:not(.nic-embed) .rent-kpis:has(>:nth-child(5):last-child),
+ body:not(.nic-embed) .rent-kpis:has(>:nth-child(6):last-child),
+ body:not(.nic-embed) .budget-result-grid:has(>:nth-child(5):last-child),
+ body:not(.nic-embed) .budget-result-grid:has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) .rent-kpis:has(>:nth-child(7):last-child),
+ body:not(.nic-embed) .rent-kpis:has(>:nth-child(8):last-child),
+ body:not(.nic-embed) .budget-result-grid:has(>:nth-child(7):last-child),
+ body:not(.nic-embed) .budget-result-grid:has(>:nth-child(8):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) .rent-kpis:has(>:nth-child(9):last-child),
+ body:not(.nic-embed) .budget-result-grid:has(>:nth-child(9):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
