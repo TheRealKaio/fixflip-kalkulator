@@ -13,6 +13,7 @@ runs:
         base64 -d /tmp/index.b64 > /tmp/index.html.gz
         gunzip -c /tmp/index.html.gz > _site/index.html
         cp service-worker.js _site/service-worker.js
+        cp server/webspace/immocheck-web/content-gate.php _site/content-gate.php
         cp assets/blank-zero-calculator-inputs.js _site/blank-zero-calculator-inputs.js
         printf 'www.neustart-immocheck.de\n' > _site/CNAME
 
