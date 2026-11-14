@@ -97,7 +97,10 @@ def load_release(sftp, root, release, contents=None):
         real_directory(sftp, directory)
     manifest = json.loads(read_regular(sftp, target + '/.ready.json', 500_000))
     files = manifest.get('files', {})
-    if manifest.get('release') != release or manifest.get('commit') != release[:40] or not REQUIRED.issubset(files) or len(files) > 1000:
+    # content-gate.php became mandatory for new builds later. Existing active
+    # releases remain verifiable during the first transition to server gating.
+    legacy_required = REQUIRED - {'content-gate.php'}
+    if manifest.get('release') != release or manifest.get('commit') != release[:40] or not legacy_required.issubset(files) or len(files) > 1000:
         raise CheckError('Fertig-Markierung des Release fehlt oder ist unvollstaendig.')
     checked_dirs = {target}
     for name, meta in files.items():
