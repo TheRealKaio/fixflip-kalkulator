@@ -243,7 +243,11 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
       const response=await fetch(new URL('site-settings.json',ROOT),{cache:'no-store'});
       if(!response.ok)throw new Error('Veröffentlichte Einstellungen konnten nicht geladen werden.');
       const bundled=normalize(await response.json());
-      const cloud=window.NICAccess?await window.NICAccess.loadSettings():null;
+      let cloud=null;
+      if(window.NICAccess){
+        try{cloud=await window.NICAccess.loadSettings();}
+        catch(error){console.warn('Cloud-Einstellungen nicht erreichbar; gebündelte Einstellungen werden verwendet.',error);}
+      }
       if(epoch!==settingsEpoch)return current;
       published=cloud?normalize(cloud):bundled;
       current=cloud?published:(readLocal()||published);
