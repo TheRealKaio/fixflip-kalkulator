@@ -765,3 +765,36 @@ body:not(.nic-embed) :is(.kpis,.budget-result-grid)>:is(.kpi,.budget-result-card
  body:not(.nic-embed) :is(#standardKpis,#ownUseKpis,#rentSection .rent-kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
  body:not(.nic-embed) :is(#rentSection,#result) .kpis :is(.name,.note,.value){overflow-wrap:anywhere}
 }
+
+
+/* Balanced KPI grids per calculator. Keep each desktop row at four or fewer,
+   and distribute common result counts evenly instead of leaving short rows. */
+@media(min-width:701px){
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(5):last-child),
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(7):last-child),
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(8):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(9):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(10):last-child),
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(11):last-child),
+ body:not(.nic-embed) .kpis:not(#standardKpis):not(#ownUseKpis):not(.rent-kpis):has(>:nth-child(12):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) #standardKpis:has(>:nth-child(8):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) #standardKpis:has(>:nth-child(9):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body:not(.nic-embed) #ownUseKpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ body:not(.nic-embed) #rentSection .rent-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:700px){
+ body:not(.nic-embed) :is(.kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
+}
+/* Calculator-specific result visibility: Fix & Flip keeps its original result set. */
+html[data-calculator="flip"] #ownUseKpis,
+body[data-calculator="flip"] #ownUseKpis,
+html[data-calculator="flip"] #ownBudgetTransferCard,
+body[data-calculator="flip"] #ownBudgetTransferCard{display:none!important}
+/* Eigenheim shows its eight purchase and monthly-cost KPIs only. */
+html[data-calculator="own"] #result :is(#kpiEquity,#kpiMaxBuy),
+body[data-calculator="own"] #result :is(#kpiEquity,#kpiMaxBuy){display:none!important}
+/* Keep traffic-light badges below the title/info row with a visible gap. */
+body:not(.nic-embed) .rent-kpi-name{gap:12px!important}
+body:not(.nic-embed) .rent-kpi-value-row{gap:12px!important;margin-top:8px!important}
+body:not(.nic-embed) .rent-kpi-rating{flex:0 0 auto!important;margin-left:4px!important}
