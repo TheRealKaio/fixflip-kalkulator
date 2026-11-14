@@ -152,8 +152,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   ihrer Kachel lesbar.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
   werden nicht in Ergebnisraster einsortiert.
-- Finanzierung und Restschuld verwenden dieselbe rechnerbezogene Verteilung
-  innerhalb des Shadow-Roots. Andere Eingabegruppen bleiben unberührt.
+- Finanzierung und Restschuld stehen als normaler DOM-Abschnitt im gemeinsamen
+  `main.section`-Rahmen. Das Ergebnisraster verwendet dieselben Layoutregeln wie
+  die anderen Rechner; Finanzierungselemente erhalten eindeutige IDs und lokal
+  begrenzte Sonderregeln, damit keine Eingabefelder oder Styles anderer Rechner
+  überschrieben werden.
 
 ## Erklärboxen der sechs Werkzeuge
 
@@ -259,8 +262,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 - Keine grauen Platzhalter in Rechnereingaben; Ausnahme ist die Karte
   „Budget übernehmen“ (`#ownBudgetTransferCard`). Einheiten bleiben erhalten.
-- Die Bereinigung gilt auch bei Einstieg über die Startseite/Inhaltsseiten,
-  internen Rechnerwechseln und im Shadow DOM des Finanzierungsrechners.
+- Die Bereinigung gilt auch bei Einstieg über die Startseite/Inhaltsseiten und
+  internen Rechnerwechseln. Finanzierung verwendet dieselbe Dokument-Typografie
+  und keine separate Shadow-DOM-Ansicht.
 
 
 ## Nutzerdaten sichern und importieren
