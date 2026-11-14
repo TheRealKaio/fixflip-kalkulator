@@ -254,7 +254,7 @@ Der PHP-Unterbau für Konten, Einstellungen und Statistiken liegt bereits unter 
 Bereinigung: Die parallele Routentabelle der Navigation wurde durch die zentrale Registrierung ersetzt. Historische Patches werden vom Workflow vielfach weiterhin ausgeführt und sind daher nicht pauschal löschbar. Ein Repository wurde nicht gelöscht. Der bestehende PDF-Dokumentationsstand muss beim abschließenden Dokumentationslauf neu erzeugt werden; dieser Markdown-Nachtrag ist bis dahin der neuere Stand.
 
 
-CSS-Zwischenstand: Statische Inline-Blöcke werden nach `shared`, `budget`, `own`, `rent` und `flip` in wiederverwendbare CSS-Dateien ausgelagert. Der Build behält die ursprünglichen Einfügepositionen und damit die Kaskadenreihenfolge bei. Laufzeitgesteuerte Styles bleiben bestehen; Finanzierung behält seine Shadow-DOM-Isolation. Diese technische Auslagerung ersetzt noch nicht die vollständige semantische Konsolidierung aller historischen Regeln. Es werden weder fünf vollständige Kopien des gemeinsamen CSS noch neue überschreibende Korrekturregeln angelegt.
+CSS-Zwischenstand: Statische Inline-Blöcke werden nach `shared`, `budget`, `own`, `rent` und `flip` in wiederverwendbare CSS-Dateien ausgelagert. Der Build behält die ursprünglichen Einfügepositionen und damit die Kaskadenreihenfolge bei. Laufzeitgesteuerte Styles bleiben bestehen. Finanzierung wird im gemeinsamen Dokument gerendert; eindeutig benannte IDs und auf den Rechner begrenzte Sonderregeln verhindern Kollisionen. Diese technische Auslagerung ersetzt noch nicht die vollständige semantische Konsolidierung aller historischen Regeln. Es werden weder fünf vollständige Kopien des gemeinsamen CSS noch neue überschreibende Korrekturregeln angelegt.
 
 
 ### CSS-Bereinigung vom 4. November 2026
