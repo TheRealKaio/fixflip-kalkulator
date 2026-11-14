@@ -109,9 +109,27 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     assert.equal(await page.locator('#heroTitle').innerText(),'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');
     assert((await page.locator('#nicOwnIntro').textContent()).includes('Hausgeld'),'House and apartment running costs explained');
+    assert.equal(await page.locator('#result #kpiEquity').isVisible(),false,'Project-specific KPI is hidden in Eigenheim');
+    assert.equal(await page.locator('#result #kpiMaxBuy').isVisible(),false,'Project purchase-price KPI is hidden in Eigenheim');
    }else assert.equal(await page.locator('#nicOwnIntro').count(),0,'Eigenheim explanation must leave other routes clean');
+   if(key==='flip'){
+    assert.equal(await page.locator('#ownUseKpis').isVisible(),false,'Eigenheim-only result KPIs are hidden in Fix & Flip');
+    assert.equal(await page.locator('#ownBudgetTransferCard').isVisible(),false,'Household budget transfer is hidden in Fix & Flip');
+   }
+   if(width>700){
+    const grids=await page.evaluate(()=>[...document.querySelectorAll('.app>main .kpis,.app>main .budget-result-grid,#nicFinanceModule .grid:has(> .kpi)')].filter(grid=>{const r=grid.getBoundingClientRect();return r.width>0&&r.height>0}).map(grid=>{
+     const cells=[...grid.children].flatMap(child=>child.classList.contains('kpi-triple')?[...child.children]:[child]).filter(cell=>{const r=cell.getBoundingClientRect();return r.width>0&&r.height>0});
+     const rows=new Map();for(const cell of cells){const top=Math.round(cell.getBoundingClientRect().top);rows.set(top,(rows.get(top)||0)+1);}
+     return [...rows.values()];
+    }));
+    for(const rows of grids){assert(rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards');if(rows.length>1)assert(rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card');}
+   }
 
    if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
+   if(key==='rent'){
+    const spacing=await page.evaluate(()=>['rentCashflowKpi','rentFactorKpi'].map(id=>{const card=document.getElementById(id);const info=card?.querySelector('.rent-kpi-info'),badge=card?.querySelector('.rent-kpi-rating');return {infoBottom:info?.getBoundingClientRect().bottom,badgeTop:badge?.getBoundingClientRect().top};}));
+    for(const pair of spacing)assert(pair.infoBottom!=null&&pair.badgeTop>=pair.infoBottom+4,'Traffic badge has visible spacing below its info icon');
+   }
    if(key==='finance'){
     const geometry=await page.locator('#nicFinanceModule').evaluate(host=>{
      const cards=[...host.querySelectorAll(':scope > .card')].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};});
