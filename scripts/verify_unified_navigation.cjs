@@ -187,6 +187,20 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    const sectionToggle=page.locator('#nicAdminContent .admin-menu-toggle');
    if(await sectionToggle.isVisible()){await sectionToggle.click();await page.locator('#nicAdminContent #tab-layout').click();assert(await page.locator('#nicAdminContent #panel-layout').isVisible());}
   }
+  // Real native-admin cascade: headings must fit inside their own grid cells.
+  for(const viewport of [{width:320,height:740},{width:390,height:844},{width:844,height:390},{width:768,height:1024},{width:1440,height:900}]){
+   await page.setViewportSize(viewport);
+   await page.evaluate(()=>{NICAdminUI.select('users');document.documentElement.style.setProperty('--nic-body-font-size','20px');document.documentElement.style.setProperty('--nic-subtext-font-size','18px');document.documentElement.style.setProperty('--nic-hint-font-size','18px');});
+   const matrix=await page.locator('#nicAdminContent .content-section-controls').evaluate(root=>{
+    const header=root.querySelector('.content-section-header');const bounds=header.getBoundingClientRect();
+    return {headers:[...header.children].map(el=>{const r=el.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(el);return {left:r.left,right:r.right,lines:[...range.getClientRects()].map(x=>({left:x.left,right:x.right}))}}),left:bounds.left,right:bounds.right,
+     labels:[...root.querySelectorAll('.content-section-row>span')].map(el=>({hyphens:getComputedStyle(el).hyphens,wordBreak:getComputedStyle(el).wordBreak})),checkboxes:[...root.querySelectorAll('input')].map(el=>el.getBoundingClientRect().width)};
+   });
+   for(const cell of matrix.headers)assert(cell.lines.every(r=>r.left>=cell.left-.5&&r.right<=cell.right+.5),'Admin heading overlaps another column at '+viewport.width+': '+JSON.stringify(matrix));
+   assert(matrix.labels.every(el=>el.hyphens==='auto'&&el.wordBreak==='normal'),'German content labels use word/syllable wrapping');
+   assert(matrix.checkboxes.every(w=>w<=20),'Compact checkboxes retained');
+  }
+  await page.setViewportSize({width,height:900});
   const toggle=page.locator('.nic-brand-bar .nic-menu-toggle');if(await toggle.isVisible())await toggle.click();
   // Check every standard legal view on desktop and mobile, not just the imprint.
   for(const legalKey of ['impressum','agbs','datenschutz','haftungsausschluss','cookie-hinweis']){
