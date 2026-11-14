@@ -6,10 +6,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
  const baseline=fs.existsSync(baselinePath)?JSON.parse(fs.readFileSync(baselinePath,'utf8')):{};
  const browser=await chromium.launch({headless:true});
  try{
- for(const width of [320,390,1440]){
+ for(const viewport of [{width:320,height:740},{width:390,height:844},{width:768,height:1024},{width:844,height:390},{width:1024,height:768},{width:1366,height:900},{width:1920,height:1080}]){
+  const width=viewport.width;
   const results=[];
   for(const inline of [true,false]){
-   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
+   const page=await browser.newPage({viewport}),errors=[];
    page.on('pageerror',error=>errors.push(error.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
@@ -34,6 +35,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
      const tracks=await page.evaluate(()=>{const count=selector=>{const value=getComputedStyle(document.querySelector(selector)).gridTemplateColumns;return value.match(/\d+(?:\.\d+)?px/g)?.length||0};return {results:count('#nicFinanceModule .finance-result-grid'),scenarios:count('#nicFinanceModule .refinance-grid')}});
      assert.equal(tracks.results,width<=700?1:2,'Financing result tiles must stack on mobile at '+width+'px: '+JSON.stringify(tracks));
      assert.equal(tracks.scenarios,width<=700?1:3,'Refinancing scenarios must stack on mobile at '+width+'px: '+JSON.stringify(tracks));
+     await page.waitForFunction(()=>document.querySelector('#nicFinanceModule #nicFinance-rateChart text'));
+     await page.evaluate(()=>document.documentElement.style.setProperty('--nic-subtext-font-size','18px'));
+     const chart=await page.evaluate(()=>{const svg=document.querySelector('#nicFinanceModule #nicFinance-rateChart');return [...svg.querySelectorAll('text')].map(node=>{const box=node.getBBox();return {text:node.textContent,x:box.x,right:box.x+box.width}})});
+     assert(chart.length>=5,'Rate chart axis/year labels rendered at '+width+'px');
+     assert(chart.every(label=>label.x>=-0.5&&label.right<=560.5),'Rate chart labels stay inside the SVG at '+width+'px: '+JSON.stringify(chart));
     }
     snapshots.push(await page.evaluate(()=>{
      const props=['display','width','height','fontSize','fontFamily','fontWeight','lineHeight','color','backgroundColor','padding','margin','borderWidth','borderRadius','gridTemplateColumns','gap'];
