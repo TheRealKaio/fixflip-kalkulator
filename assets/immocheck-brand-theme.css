@@ -478,6 +478,9 @@ body:not(.nic-embed) .rent-grade-red{background:var(--nic-highlight-warning-bg,#
 /* Shared, admin-controlled positive result highlight. */
 body:not(.nic-embed) .rent-grade-green{background:var(--nic-highlight-good-bg,#F0FDF4)!important}
 
+/* Critical result hint: add 3px to the existing 13px card inset. */
+body:not(.nic-embed) .kpi.negative{padding:16px!important}
+
 /* Version and cookie notice form one compact line across all calculator footers. */
 body:not(.nic-embed) .nic-footer-cookie-pair{
  display:inline-flex!important;
