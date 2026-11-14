@@ -24,6 +24,11 @@ css = """/* Authoritative calculator action bar (all five routes).
   --nic-action-secondary: var(--nic-button-bg, #0F172A);
   --nic-action-color: #fff;
 }
+/* The viewport inset and the in-flow footer gap are independent. Keep a
+   margin even when the sticky row reaches its normal position above footer. */
+html body:not(.nic-admin):not(.nic-embed) .app > .bottom.nic-actions-above-footer {
+  margin-bottom: var(--nic-content-footer-gap, 16px) !important;
+}
 html body:not(.nic-admin) .bottom .bottom-actions {
   display: flex !important;
   flex-direction: row !important;

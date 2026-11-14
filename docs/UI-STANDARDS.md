@@ -166,6 +166,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Im Zinsszenario der Anschlussfinanzierung stehen die Markierungen „0 %“, der aktuelle Sollzins und „10 %“ linksbündig in einer Zeile beziehungsweise bei schmalem Platz linksbündig umbrochen.
 - Das Zinsdiagramm trägt die Überschrift „Hypothekenzinsen – 10 Jahre“; die historische Datenreihe bleibt vollständig erhalten.
 - Im Eingabebereich zur Immobilie lautet die Feldbezeichnung „Grundstück“.
+- Zwischen gemeinsamer Buttonleiste und Footer bleiben mindestens 16 px
+  Layoutabstand, auch am Ende des Scrollbereichs. Dies gilt für Desktop, Mobil,
+  Querformat und Tablet sowie alle fünf Rechner. Die Desktop-Skalierung bleibt
+  gemäß Abschnitt Desktop-Dichte erhalten. Der davon unabhängige Sticky-Abstand
+  zum unteren Fensterrand bleibt 5 px.
 - Finanzierung und Restschuld stehen als normaler DOM-Abschnitt im gemeinsamen
   `main.section`-Rahmen. Das Ergebnisraster verwendet dieselben Layoutregeln wie
   die anderen Rechner; Finanzierungselemente erhalten eindeutige IDs und lokal
