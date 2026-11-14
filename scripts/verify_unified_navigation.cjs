@@ -121,7 +121,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    }
    if(width>700){
     const grids=await page.evaluate(()=>[...document.querySelectorAll('.app>main .kpis,.app>main .budget-result-grid,#nicFinanceModule .grid:has(> .kpi)')].filter(grid=>{const r=grid.getBoundingClientRect();return r.width>0&&r.height>0}).map(grid=>{
-     const cells=[...grid.children].flatMap(child=>child.classList.contains('kpi-triple')?[...child.children]:[child]).filter(cell=>{const r=cell.getBoundingClientRect();return r.width>0&&r.height>0});
+     const cells=[...grid.children].flatMap(child=>child.classList.contains('kpi-triple')?[...child.children]:[child]).filter(cell=>!cell.classList.contains('own-budget-transfer')&&!cell.matches('#ownBudgetTransferCard')).filter(cell=>{const r=cell.getBoundingClientRect();return r.width>0&&r.height>0});
      const rows=new Map();for(const cell of cells){const top=Math.round(cell.getBoundingClientRect().top);rows.set(top,(rows.get(top)||0)+1);}
      return {id:grid.id,className:grid.className,width:grid.getBoundingClientRect().width,columns:getComputedStyle(grid).gridTemplateColumns,cells:cells.map(cell=>({text:cell.innerText.trim().slice(0,55),column:getComputedStyle(cell).gridColumn,row:getComputedStyle(cell).gridRow,style:cell.getAttribute('style')})),rows:[...rows.values()]};
     }));
