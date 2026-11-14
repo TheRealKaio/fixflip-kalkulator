@@ -100,6 +100,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   for(const key of ['finance','own','rent','flip','budget','finance']){
    await page.locator(`.deal-type-option[data-calculator="${key}"]`).click();
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
+   const stickyGap=await page.locator('.nic-actions-above-footer').evaluate(el=>({position:getComputedStyle(el).position,bottom:getComputedStyle(el).bottom}));
+   assert.equal(stickyGap.position,'sticky','Calculator action row remains sticky');
+   assert.equal(stickyGap.bottom,'5px','Sticky calculator action row stays five pixels above the viewport edge');
    assert.equal(await page.evaluate(()=>performance.timeOrigin),origin,'calculator changes must keep same document');
    assert.equal(await page.locator('.nic-tile-active').count(),1);
    await page.waitForFunction(()=>[...document.querySelectorAll('.app>main input[placeholder],.app>main textarea[placeholder]')].every(field=>field.closest('#ownBudgetTransferCard')));
