@@ -200,13 +200,13 @@ def render_rules(manifest, backup, direct=False, version=1, retained=()):
         validate_file(name)
         if name.endswith('/index.html'):
             directory = name[:-len('/index.html')]
-            target = ('content-gate.php?path=' + name + ' [END,QSA]'
+            target = ('content-gate.php?path=' + name + ' [L,QSA]'
                       if server_gate else ('- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'))
             rules += ['RewriteRule ^' + re.escape(directory) + '$ /' + directory + '/ [R=' + redirect + ',L]',
                       'RewriteRule ^' + re.escape(directory) + '/$ ' + target]
         pattern = '(?:index\\.html)?' if name == 'index.html' else re.escape(name)
         if server_gate and name.endswith('.html'):
-            target = 'content-gate.php?path=' + name + ' [END,QSA]'
+            target = 'content-gate.php?path=' + name + ' [L,QSA]'
         else:
             target = '- [L]' if direct else STORE + '/' + release + '/' + name + ' [END]'
         rules.append('RewriteRule ^' + pattern + '$ ' + target)
@@ -240,7 +240,7 @@ def verify_known_rules(sftp, root, payload):
     expected = render_rules(manifest, header[1], direct=direct_delivery(payload), version=direct_version(payload) or 1, retained=stored_assets(payload))
     # Recognize the exact historical rules for recovery; new rules stay relative
     # to STRATO's mapped webspace directory.
-    historical = expected.replace(b' content-gate.php?path=', b' /content-gate.php?path=')
+    historical = expected.replace(b' content-gate.php?path=', b' /content-gate.php?path=').replace(b'[L,QSA]', b'[END,QSA]')
     if payload not in {expected, historical}:
         raise CheckError('Verwaltete Root-.htaccess wurde ausserhalb des Workflows geaendert.')
     return manifest
