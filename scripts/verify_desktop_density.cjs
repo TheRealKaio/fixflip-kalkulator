@@ -26,7 +26,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     app:document.querySelector('.app').getBoundingClientRect().width,height:box.height,
     contentBottom:Math.max(...[...hero.children].map(e=>e.getBoundingClientRect().bottom)),bottom:box.bottom,
     overflow:document.documentElement.scrollWidth>innerWidth+1,
-    button:document.querySelector('.bottom-actions .bottom-primary')?.getBoundingClientRect().height};
+    button:document.querySelector('.bottom-actions>button')?.getBoundingClientRect().height};
   });
   for(const width of [1440,1920,1024,1023,844,390,1440]){
    await page.setViewportSize({width,height:900});
