@@ -42,7 +42,7 @@ css=r'''
 .rent-kpi-value-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
 .rent-kpi-value-row .value{min-width:0}
 #rentFactorResult{display:inline-flex;align-items:center;column-gap:3px;white-space:nowrap}
-.rent-kpi-rating{font-size:12px;font-weight:700;line-height:1.25;text-align:right;max-width:none;flex-shrink:0;padding:6px;border-radius:999px;white-space:nowrap}
+.rent-kpi-rating{font-size:12px;font-weight:700;line-height:1.25;text-align:right;max-width:none;flex-shrink:0;padding:7px;border-radius:999px;white-space:nowrap}
 #rentCashflowKpi,#rentFactorKpi{transition:border-color .18s ease,background .18s ease}
 .rent-grade-green{border-color:#86efac!important;background:#f0fdf4!important}
 .rent-grade-lime{border-color:#bef264!important;background:#f7fee7!important}
