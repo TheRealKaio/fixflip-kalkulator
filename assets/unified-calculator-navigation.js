@@ -58,7 +58,7 @@ function select(key,push=false){
  document.documentElement.dataset.nicPage=key;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
- if(key==='finance'&&!financeRoot){
+ if(key==='finance'&&!financeHost){
   const host=document.createElement('div');host.id='nicFinanceModule';host.hidden=true;menu.after(host);
   financeHost=createFinance(host);
  }
