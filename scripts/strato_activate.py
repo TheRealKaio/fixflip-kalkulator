@@ -192,7 +192,7 @@ def render_rules(manifest, backup, direct=False, version=1, retained=()):
     if server_gate:
         # Keep PHP endpoint directly executable and route every public HTML
         # document through it so disabled sections are removed before delivery.
-        rules.append(r'RewriteRule ^content-gate\\.php$ - [L]')
+        rules.append(r'RewriteRule ^content-gate\.php$ - [L]')
     for name in sorted(files):
         validate_file(name)
         if name.endswith('/index.html'):
