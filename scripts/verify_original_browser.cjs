@@ -452,8 +452,9 @@ const assert=require('node:assert/strict');
       const font=getComputedStyle(document.body).fontFamily;
       const sample=document.querySelector('.app .sub,.app .subtitle,.app .section-subtitle');
       const subSize=sample?getComputedStyle(sample).fontSize:null;
-      return {pageWidth:document.documentElement.scrollWidth,viewport:innerWidth,
-       bodyFont:font,subSize,boxes};
+      const overflow=[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,cls:typeof el.className==='string'?el.className.slice(0,80):'',left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,position:getComputedStyle(el).position};}).filter(x=>x.right>innerWidth+1||x.left< -1||x.scrollWidth>x.clientWidth+1).sort((a,b)=>b.right-a.right).slice(0,18);
+       return {pageWidth:document.documentElement.scrollWidth,viewport:innerWidth,
+       bodyFont:font,subSize,boxes,overflow};
      });
      assert(result.bodyFont.includes('Segoe UI'),'Systemschrift active: '+JSON.stringify(result));
      if(result.subSize)assert.equal(result.subSize,'15px','Admin Untertexte stay at 15px');

@@ -750,11 +750,14 @@ body:not(.nic-embed) :is(.kpis,.budget-result-grid){
   gap:11px!important;
 }
 body:not(.nic-embed) .kpis>.kpi-triple{display:contents!important}
-body:not(.nic-embed) .kpis>.kpi.wide{grid-column:auto!important}
+body:not(.nic-embed) .kpis>.kpi.wide:not(.own-budget-transfer){grid-column:auto!important}
+body:not(.nic-embed) .kpis>.kpi.own-budget-transfer{grid-column:1/-1!important}
 body:not(.nic-embed) :is(.kpis,.budget-result-grid)>:is(.kpi,.budget-result-card){min-width:0}
 body:not(.nic-embed) #standardKpis:has(#kpiMarketDiff:not(.mode-hidden)){grid-template-columns:repeat(3,minmax(0,1fr))!important}
 body:not(.nic-embed) .kpis:not(#standardKpis):has(>:nth-child(5):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
 body:not(.nic-embed) .kpis:has(>:nth-child(7):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
 @media(max-width:700px){
   body:not(.nic-embed) :is(.kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
+  body:not(.nic-embed) :is(#rentSection,#result) .kpis{grid-template-columns:minmax(0,1fr)!important}
+  body:not(.nic-embed) :is(#rentSection,#result) .kpis :is(.name,.note,.value){overflow-wrap:anywhere}
 }
