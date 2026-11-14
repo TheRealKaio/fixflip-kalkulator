@@ -60,5 +60,11 @@ Dokumentationsänderung allein ist keine Umsetzung der technischen Absicherung.
    Zu jedem Release Commit, Workflow, Prüfresultat und gegebenenfalls Rücknahme
    nachvollziehbar festhalten.
 
-Vor der nächsten normalen Veröffentlichung müssen der bestehende 404 geklärt
-und ein geprüfter Wiederherstellungsweg vorhanden sein.
+Die Wiederherstellung des 404 erfolgte am 14.11.2026: STRATO benötigt für die
+PHP-Weiterleitung relative Ziele und einen weiteren Verarbeitungsdurchlauf
+(`[L]` statt `[END]`). Vor jedem neuen Release trotzdem live prüfen.
+
+Für Veröffentlichungen ausschließlich `scripts/strato_release_publish.py`
+verwenden und [docs/STRATO-DEPLOYMENT.md](docs/STRATO-DEPLOYMENT.md) beachten.
+Der historische Einzeldatei-Publisher `scripts/strato_publish.py` dient nur noch
+als Kompatibilitätsbibliothek und darf nicht zur Live-Veröffentlichung laufen.

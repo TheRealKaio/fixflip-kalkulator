@@ -22,7 +22,7 @@ def free_port():
         return stream.getsockname()[1]
 
 
-def main(internal_mapping=False, direct=False, version=1):
+def main(internal_mapping=False, direct=False, version=1, atomic=False):
     with tempfile.TemporaryDirectory(prefix='nic-apache-') as directory:
         temp = Path(directory)
         root = temp / 'www'
@@ -48,7 +48,12 @@ def main(internal_mapping=False, direct=False, version=1):
         if retained:
             (root / 'retained-image.png').write_bytes(b'previous public asset')
             (root / 'future.0123456789abcdef.js').write_bytes(b'new immutable asset')
-        (root / '.htaccess').write_bytes(render_rules(manifest, '123-1', direct=direct, version=version, retained=retained))
+        if atomic:
+            from strato_release_publish import release_rules, router_name
+            (root / router_name(release)).write_bytes(b'test release content-gate.php')
+            (root / '.htaccess').write_bytes(release_rules(manifest, '123-1', 'a' * 64))
+        else:
+            (root / '.htaccess').write_bytes(render_rules(manifest, '123-1', direct=direct, version=version, retained=retained))
         (root / 'api').mkdir()
         (root / 'api/index.php').write_text('existing API')
         (root / '.well-known').mkdir()
@@ -120,13 +125,13 @@ TypesConfig /etc/mime.types
                         raise RuntimeError('Apache did not start: '+(temp/'error.log').read_text())
                     time.sleep(.1)
             assert request('/')[2] == (b'test release content-gate.php' if direct else b'test release index.html')
-            for name in REQUIRED:
+            for name in REQUIRED - ({'content-gate.php'} if atomic else set()):
                 path = '/' + name[:-len('index.html')] if name.endswith('/index.html') else '/' + name
                 status, _, body = request(path)
-                expected = ('test release content-gate.php' if direct and name.endswith('.html') else 'test release '+name).encode()
+                expected = ('test release content-gate.php' if atomic or direct and name.endswith('.html') else 'test release '+name).encode()
                 assert status == 200 and body == expected, (path,status,body[:80])
             status, headers, _ = request('/budget?test=1')
-            redirect = 301 if direct and version == 2 else 302
+            redirect = 301 if atomic or direct and version == 2 else 302
             assert status == redirect and urlsplit(headers['Location']).path == '/budget/'
             assert urlsplit(headers['Location']).query == 'test=1'
             status, headers, _ = request('/budget/?test=1', APEX)
@@ -136,20 +141,21 @@ TypesConfig /etc/mime.types
             for path in ['/'+STORE+'/'+release+'/index.html','/%2enic-releases/'+release+'/.ready.json','/.htaccess','/budget/.secret']:
                 assert request(path)[0] == 403, path
             assert request('/no-such-page/')[0] == 404
-            assert request('/sample.js')[2] == b'test release sample.js'
-            # The initial release can be checked on the apex while www remains
-            # on GitHub. Ordinary requests must still canonicalize to www.
-            status, headers, body = request('/', APEX, release)
-            assert status == 200 and body == (b'test release content-gate.php' if direct else b'test release index.html')
-            assert headers.get('Cache-Control') == 'no-store'
-            assert headers.get('X-Robots-Tag') == 'noindex, nofollow'
-            assert 'X-NIC-Origin-Release' in headers.get('Vary','')
-            assert request('/', APEX)[0] == redirect
-            assert request('/', APEX, 'wrong-release')[0] == redirect
-            assert request('/budget/', APEX, release)[2] == (b'test release content-gate.php' if direct else b'test release budget/index.html')
-            assert request('/no-such-page/', APEX, release)[0] == 404
-            assert request('/'+STORE+'/'+release+'/.ready.json', APEX, release)[0] == 403
-            assert request('/api/index.php?r=health', APEX, release)[2] == b'existing API'
+            assert request('/sample.js')[2] == (b'test release content-gate.php' if atomic else b'test release sample.js')
+            if not atomic:
+                # The initial release can be checked on the apex while www remains
+                # on GitHub. Ordinary requests must still canonicalize to www.
+                status, headers, body = request('/', APEX, release)
+                assert status == 200 and body == (b'test release content-gate.php' if direct else b'test release index.html')
+                assert headers.get('Cache-Control') == 'no-store'
+                assert headers.get('X-Robots-Tag') == 'noindex, nofollow'
+                assert 'X-NIC-Origin-Release' in headers.get('Vary','')
+                assert request('/', APEX)[0] == redirect
+                assert request('/', APEX, 'wrong-release')[0] == redirect
+                assert request('/budget/', APEX, release)[2] == (b'test release content-gate.php' if direct else b'test release budget/index.html')
+                assert request('/no-such-page/', APEX, release)[0] == 404
+                assert request('/'+STORE+'/'+release+'/.ready.json', APEX, release)[0] == 403
+                assert request('/api/index.php?r=health', APEX, release)[2] == b'existing API'
             connection = http.client.HTTPConnection('127.0.0.1', http_port, timeout=5)
             connection.request('GET','/budget/?test=1',headers={'Host':WWW})
             response = connection.getresponse()
@@ -177,3 +183,6 @@ if __name__ == '__main__':
     main(internal_mapping=True, direct=True)
     main(direct=True, version=2)
     main(internal_mapping=True, direct=True, version=2)
+
+    main(direct=True, atomic=True)
+    main(internal_mapping=True, direct=True, atomic=True)

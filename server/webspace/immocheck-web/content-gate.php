@@ -24,14 +24,15 @@ try {
         exit;
     }
 
-    $root = realpath(__DIR__);
-    $page = realpath(__DIR__ . DIRECTORY_SEPARATOR . $relative);
+    $root = realpath(defined('NIC_CONTENT_ROOT') ? NIC_CONTENT_ROOT : __DIR__);
+    $page = realpath($root . DIRECTORY_SEPARATOR . $relative);
     if ($root === false || $page === false || !str_starts_with($page, $root . DIRECTORY_SEPARATOR) || !is_file($page)) {
         http_response_code(404);
         exit;
     }
 
-    $configFile = dirname(__DIR__) . '/immocheck-private/config.php';
+    $publicRoot = defined('NIC_PUBLIC_ROOT') ? NIC_PUBLIC_ROOT : __DIR__;
+    $configFile = dirname($publicRoot) . '/immocheck-private/config.php';
     if (!is_file($configFile)) nic_gate_fail();
     $config = require $configFile;
     if (!is_array($config) || !isset($config['db']['host'], $config['db']['name'], $config['db']['user'], $config['db']['password'])) nic_gate_fail();
@@ -76,6 +77,7 @@ try {
         nic_gate_fail();
     }
 
+    header('X-NIC-Filtered: 1');
     echo $html;
 } catch (Throwable $error) {
     error_log('ImmoCheck HTML gate failure: ' . get_class($error));

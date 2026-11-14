@@ -39,11 +39,15 @@ def origin_ips():
     return ips
 
 
-def origin_request(host, ip, path='/', method='HEAD', limit=12_000_000, preview_release=None):
+def origin_request(host, ip, path='/', method='HEAD', limit=12_000_000, preview_release=None, preview_token=None):
     if host not in {APEX, WWW} or not ipaddress.ip_address(ip).is_global or method not in {'GET', 'HEAD'}:
         raise CheckError('Unerwartetes HTTP-Pruefziel.')
     context = ssl.create_default_context()
     preview_header = ''
+    if preview_token is not None:
+        if not re.fullmatch(r'[a-f0-9]{64}', preview_token):
+            raise CheckError('Ungueltiger Vorschau-Schluessel.')
+        preview_header = 'X-NIC-Preview-Token: ' + preview_token + '\r\n'
     if preview_release is not None:
         validate_release(preview_release)
         if host != APEX:
