@@ -37,7 +37,8 @@ window.addEventListener('nic-reference-interest',event=>applyReferenceRate(event
 applyReferenceRate(window.NICReferenceInterest?.rate??4.0);
 """
 shared_layout=(site/'calculator-layout.css').read_text(encoding='utf-8')
-factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+shared_layout+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
+finance_result_grid_css=".grid:has(> .kpi),.refinance-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,max(190px,calc(25% - 9px))),1fr))!important;gap:11px!important}.grid:has(> .kpi)>.kpi,.refinance-grid>.kpi{min-width:0}.refinance-grid:has(>:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}@media(max-width:700px){.grid:has(> .kpi),.refinance-grid{grid-template-columns:minmax(0,1fr)!important}}"
+factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+shared_layout+finance_result_grid_css+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
 calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
