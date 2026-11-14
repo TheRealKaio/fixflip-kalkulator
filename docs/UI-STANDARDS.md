@@ -119,6 +119,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Schriftfamilie und Größen für Fließtext, H1–H4, Untertexte und Hinweise kommen
   aus Admin → Layout und den gemeinsamen CSS-Variablen. Keine unabhängigen
   Schriftwerte nur für eine Informationsroute einführen.
+- Die fixierte Rechner-Buttonleiste bleibt mit 5 px Abstand zum unteren Viewport-Rand.
 - Farben, Button-Hintergrund, Button-Textfarbe und Button-Radius werden aus
   den zentralen Admin-Einstellungen übernommen, auch in Nutzer-/Profilansichten.
   Keine neuen fest kodierten dunklen Standardbuttons als Ersatz.
