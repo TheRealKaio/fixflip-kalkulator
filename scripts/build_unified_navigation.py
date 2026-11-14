@@ -17,7 +17,7 @@ style=re.search(r'<style>(.*?)</style>',source,re.S)[1]
 style=style.replace(':root',':host')
 # Body-level spacing and background belong to the shared application frame, not the shadow host.
 style=re.sub(r'\bbody\s*\{[^{}]*\}', '', style)
-style+=':host{display:block;width:100%;max-width:none;margin:0;padding:0;background:transparent;box-sizing:border-box;font:inherit;color:inherit}.bottom{display:none}.card h2{font-size:var(--nic-h2-font-size,20px)!important}.finance-h2-equivalent{font-size:var(--nic-h2-font-size,20px)!important}'
+style+=':host{display:block;width:100%;max-width:none;margin:0;padding:0;background:transparent;box-sizing:border-box;font:inherit;color:inherit}.bottom{display:none}.card{margin:0 0 14px!important}.card h2{font-size:var(--nic-h2-font-size,20px)!important}.finance-h2-equivalent{font-size:var(--nic-h2-font-size,20px)!important}'
 actions=re.search(r'<div class="bottom">(.*?)</footer>',source,re.S)[0].split('<footer')[0]
 script=re.search(r'<script>\s*\(function\(\)\{\'use strict\';(.*?)window.addEventListener\(\'DOMContentLoaded\'',source,re.S)[1]
 script=script[:script.rfind('})();')]
