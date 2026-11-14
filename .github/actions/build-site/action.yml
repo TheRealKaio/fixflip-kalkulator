@@ -526,7 +526,12 @@ runs:
         import re
         html = Path("_site/index.html").read_text(encoding="utf-8")
         scripts = re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', html, flags=re.I | re.S)
-        Path("…74 tokens truncated…ex.html
+        Path("/tmp/fixflip-inline.js").write_text("\n;\n".join(scripts), encoding="utf-8")
+        PY
+        node --check /tmp/fixflip-inline.js
+
+        # Product acceptance: test the generated site against the actual slider requirement.
+        python scripts/verify_budget_slider.py _site/index.html
         python scripts/verify_rental_calculator.py _site/index.html
         node scripts/verify_rental_interpretation.js _site/index.html
 
