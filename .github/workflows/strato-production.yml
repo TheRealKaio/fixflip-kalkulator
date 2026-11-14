@@ -80,10 +80,33 @@ jobs:
           import os
           from strato_publish import connection
           from strato_stage import read_regular
+          from strato_activate import atomic_replace, origin_ips, origin_request, WWW
           root = os.environ['STRATO_SFTP_ROOT']
           with connection() as sftp:
-              print('PUBLIC FILES', [(x.filename, x.st_size) for x in sftp.listdir_attr(root) if not x.filename.startswith('.')])
-              print('MANAGED RULES', read_regular(sftp, root + '/.htaccess', 200000).decode())
+              path = root + '/.htaccess'
+              original = read_regular(sftp, path, 200000)
+              fixed = original.replace(b' /content-gate.php?path=', b' content-gate.php?path=')
+              if fixed == original:
+                  raise RuntimeError('Expected historical gate rules missing')
+              ips = origin_ips()
+              for ip in ips:
+                  status, _, body, _ = origin_request(WWW, ip, '/content-gate.php?path=index.html', 'GET')
+                  if status != 200 or b'data-calculator=' not in body:
+                      raise RuntimeError('Gate recovery precheck failed')
+              token = os.environ['STRATO_OPERATION_ID']
+              atomic_replace(sftp, root + '/.htaccess.recovery-backup-' + token, original, token)
+              atomic_replace(sftp, path, fixed, token)
+              try:
+                  for ip in ips:
+                      for route in ['/', '/budget/', '/finanzierungsrechner/', '/eigennutzung/', '/fix-flip/', '/vermietung/']:
+                          status, _, body, _ = origin_request(WWW, ip, route, 'GET')
+                          print('RECOVERY', route, status, flush=True)
+                          if status != 200 or b'data-calculator=' not in body:
+                              raise RuntimeError('Public recovery verification failed')
+              except Exception:
+                  atomic_replace(sftp, path, original, token + '0')
+                  raise
+              print('Public frontend recovery verified; only relative gate substitutions changed.', flush=True)
           PY
       - name: Publish tested build and verify www
         if: steps.revision.outputs.deploy == 'true' && !startsWith(github.event.head_commit.message, 'Restore previous STRATO release') && !startsWith(github.event.head_commit.message, 'Check STRATO after rollback')
