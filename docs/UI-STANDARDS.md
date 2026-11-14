@@ -139,6 +139,18 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.
 
+## Ergebnisboxen der Rechner
+
+- Ergebnis-Kacheln aller Rechner ordnen sich auf Desktop responsiv in zwei bis
+  höchstens vier Spalten an. Bei den bestehenden Ergebnisvarianten wird eine
+  einzelne Kachel in einer eigenen letzten Zeile vermieden.
+- Auf Mobilgeräten steht grundsätzlich eine Kachel pro Zeile. Eine zweite
+  Spalte ist nur vorgesehen, wenn der Platz für den Inhalt ausreicht.
+- Schieberegler behalten ihre eigene Zeile und werden von den Ergebnisraster-
+  Regeln nicht verändert.
+- Die Finanzierungs- und Restschuld-Ergebnisse verwenden dieselbe Regel auch
+  innerhalb des Shadow-Roots. Eingabegruppen und Regler bleiben unberührt.
+
 ## Erklärboxen der sechs Werkzeuge
 
 - Budget, Eigenheim, Vermietung, Fix & Flip, Finanzierung und Mieterabrechnung

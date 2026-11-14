@@ -52,9 +52,9 @@ function select(key,push=false){
   return;
  }
  if(!calculators.some(item=>item.id===key))throw new Error('Unknown calculator: '+key);
+ if(active===key)return;
  document.body.classList.remove('nic-home-active','nic-content-active','nic-standard-header-page');
  document.documentElement.dataset.nicPage=key;
- if(active===key)return;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
  if(key==='finance'&&!financeRoot){
