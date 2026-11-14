@@ -243,11 +243,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
       const response=await fetch(new URL('site-settings.json',ROOT),{cache:'no-store'});
       if(!response.ok)throw new Error('Veröffentlichte Einstellungen konnten nicht geladen werden.');
       const bundled=normalize(await response.json());
-      let cloud=null;
-      if(window.NICAccess){
-        try{cloud=await window.NICAccess.loadSettings();}
-        catch(error){console.warn('Cloud-Einstellungen nicht erreichbar; gebündelte Einstellungen werden verwendet.',error);}
-      }
+      const cloud=window.NICAccess?await window.NICAccess.loadSettings():null;
       if(epoch!==settingsEpoch)return current;
       published=cloud?normalize(cloud):bundled;
       current=cloud?published:(readLocal()||published);
@@ -256,13 +252,20 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
     })().finally(()=>{initPending=null;});
     return initPending;
   }
+  function useFallback(settings){
+    settingsEpoch++;
+    published=normalize(settings);
+    current=readLocal()||published;
+    settingsReady=true;
+    return current;
+  }
   function save(s){const safe=normalize(s);localStorage.setItem(KEY,JSON.stringify(safe));settingsEpoch++;settingsReady=true;current=safe;return safe;}
   async function saveGlobal(s){const safe=normalize(s);if(!window.NICAccess?.enabled)return save(safe);const result=normalize(await window.NICAccess.saveSettings(safe));localStorage.removeItem(KEY);settingsEpoch++;settingsReady=true;published=current=result;return result;}
   function discard(){localStorage.removeItem(KEY);settingsEpoch++;current=published;return published;}
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,homeFields,contentPageDefaults,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,homeFields,contentPageDefaults,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,useFallback,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
