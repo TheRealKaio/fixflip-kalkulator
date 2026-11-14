@@ -31,7 +31,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     await page.evaluate(k=>window.NICCalculatorNavigation.select(k),key);
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     if(key==='finance'){
-     const tracks=await page.evaluate(()=>{const count=selector=>{const value=getComputedStyle(document.querySelector(selector)).gridTemplateColumns;return value.match(/\\d+(?:\\.\\d+)?px/g)?.length||0};return {results:count('#nicFinanceModule .finance-result-grid'),scenarios:count('#nicFinanceModule .refinance-grid')}});
+     const tracks=await page.evaluate(()=>{const count=selector=>{const value=getComputedStyle(document.querySelector(selector)).gridTemplateColumns;return value.match(/\d+(?:\.\d+)?px/g)?.length||0};return {results:count('#nicFinanceModule .finance-result-grid'),scenarios:count('#nicFinanceModule .refinance-grid')}});
      assert.equal(tracks.results,width<=700?1:2,'Financing result tiles must stack on mobile at '+width+'px: '+JSON.stringify(tracks));
      assert.equal(tracks.scenarios,width<=700?1:3,'Refinancing scenarios must stack on mobile at '+width+'px: '+JSON.stringify(tracks));
     }
