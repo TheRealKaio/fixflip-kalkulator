@@ -74,7 +74,17 @@ jobs:
           STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
           STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
           STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
-        run: python scripts/strato_activate.py
+        run: |
+          python scripts/strato_activate.py
+          PYTHONPATH=scripts python - <<'PY'
+          import os
+          from strato_publish import connection
+          from strato_stage import read_regular
+          root = os.environ['STRATO_SFTP_ROOT']
+          with connection() as sftp:
+              print('PUBLIC FILES', [(x.filename, x.st_size) for x in sftp.listdir_attr(root) if not x.filename.startswith('.')])
+              print('MANAGED RULES', read_regular(sftp, root + '/.htaccess', 200000).decode())
+          PY
       - name: Publish tested build and verify www
         if: steps.revision.outputs.deploy == 'true' && !startsWith(github.event.head_commit.message, 'Restore previous STRATO release') && !startsWith(github.event.head_commit.message, 'Check STRATO after rollback')
         env:
