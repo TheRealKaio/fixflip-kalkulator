@@ -35,5 +35,10 @@ function setup(){
   const explicit=S.normalize({...config,contentSections:{[oldKey]:{visible:true,guestAllowed:true},[newKey]:{visible:false,guestAllowed:false}}});
   assert.equal(explicit.contentSections[oldKey].visible,true,'an explicit canonical admin edit wins');
  }
+ const saved=S.normalize({...config,content:{...config.content,budget:{...config.content.budget,title:'Eigenes Budget',description:'<p>Meine Einleitung</p><h3>Mehr</h3><p>Mein Text</p>'}}});
+ const legacyWire=JSON.parse(JSON.stringify(saved));delete legacyWire.content;
+ assert.equal(S.normalize(legacyWire).content.budget.title,'Eigenes Budget','Older API transports content through meta');
+ assert.equal(S.normalize(legacyWire).content.budget.description,saved.content.budget.description);
+ assert.equal(S.normalize(saved).content.settlement.boxTitle,config.content.settlement.boxTitle);
  console.log('Settings startup passed: shared requests, delayed rules, failed-load gate, retry, stale-refresh protection and heading aliases.');
 })().catch(error=>{console.error(error);process.exit(1);});

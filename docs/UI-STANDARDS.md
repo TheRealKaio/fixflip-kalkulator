@@ -95,9 +95,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 - Mieterabrechnung, Preise und Warum ImmoCheck? zeigen ihre H1 im Bildheader;
   die weiße Inhaltskarte wiederholt keine zweite H1.
-- Weiße Inhaltskarte: zentriert, volle verfügbare Breite bis maximal 980 px,
-  `border-box`, Rahmen 1 px `#e2e9e5`, Radius 16 px.
-- Karten-Innenabstand: Desktop 32 px; bis 760 px Breite 24 px vertikal und 18 px horizontal.
+- Weiße Inhaltskarte: zentriert, volle verfügbare Breite ohne zusätzliche schmale Textspalte,
+  `border-box`, Rahmen 1 px `#e2e9e5`, Radius aus `--nic-brand-radius`.
+- Karten-Innenabstand: 18 px auf Desktop und Mobil. Die gemeinsame Erklärbox ist der Standard für neue Contentkarten.
 - Zwischen Unterkante der weißen Textkarte und Oberkante des Footers liegen
   **16 px**, wie auf den anderen Inhaltsseiten. Gemeinsamer Token:
   `--nic-content-footer-gap: 16px`. Bei den integrierten Informationsseiten setzt
@@ -145,28 +145,39 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
   ausbalanciert und bleiben bei höchstens vier Boxen pro Desktop-Zeile: Fix & Flip
   zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
-  Eigenheim zeigt acht Kauf- und Monatskosten-KPIs als 4 + 4. Die zwei
+  Eigenheim zeigt nur seine acht Kauf- und Monatskosten-KPIs als 4 + 4; die
   projektbezogenen KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
-  sind in Eigenheim ausgeblendet. Im Fix-&-Flip-Modus werden die Eigenheim-KPI-Gruppe
-  und der Haushaltsbudget-Übertragungsbereich ausgeblendet. Sechs Budget-Kacheln
-  stehen als 3 + 3; sieben Vermietungsergebnisse als 4 + 3.
+  bleiben dort ausgeblendet. Der Eigenheim-Budgetübertragungsbereich erscheint
+  nicht im Fix-&-Flip-Modus. Sechs Budget-Kacheln stehen als 3 + 3;
+  sieben Vermietungsergebnisse als 4 + 3. Bei neun Boxen gilt 3 + 3 + 3.
+  Einzelne Restboxen werden vermieden, wenn eine gleichmäßigere Spaltenzahl passt.
 - Mobilgeräte zeigen eine Kachel pro Zeile. Lange Inhalte bleiben innerhalb
   ihrer Kachel lesbar.
+- Werte und direkt anschließende Texte oder Einheiten behalten sichtbar einen
+  Abstand, auch wenn sie in einer Zeile umbrechen. Inline-Elemente dürfen in
+  Rechnerkacheln nicht ohne Abstand aneinandergrenzen.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
   werden nicht in Ergebnisraster einsortiert.
-- Finanzierung und Restschuld verwenden dieselbe rechnerbezogene Verteilung
-  innerhalb des Shadow-Roots. Andere Eingabegruppen bleiben unberührt.
+- Im Zinsszenario der Anschlussfinanzierung stehen die Markierungen „0 %“, der aktuelle Sollzins und „10 %“ linksbündig in einer Zeile beziehungsweise bei schmalem Platz linksbündig umbrochen.
+- Das Zinsdiagramm trägt die Überschrift „Hypothekenzinsen – 10 Jahre“; die historische Datenreihe bleibt vollständig erhalten.
+- Im Eingabebereich zur Immobilie lautet die Feldbezeichnung „Grundstück“.
+- Finanzierung und Restschuld stehen als normaler DOM-Abschnitt im gemeinsamen
+  `main.section`-Rahmen. Das Ergebnisraster verwendet dieselben Layoutregeln wie
+  die anderen Rechner; Finanzierungselemente erhalten eindeutige IDs und lokal
+  begrenzte Sonderregeln, damit keine Eingabefelder oder Styles anderer Rechner
+  überschrieben werden.
 
 ## Erklärboxen der sechs Werkzeuge
 
 - Budget, Eigenheim, Vermietung, Fix & Flip, Finanzierung und Mieterabrechnung
   erhalten genau eine gemeinsame Erklärbox direkt unter dem Grafikheader.
-  Andere Ansichten erhalten keine fremden Erklärtexte. Bestehende Inhalte und
-  Rechnerfunktionen bleiben daneben erhalten.
-- Quelle: `assets/calculator-explanations.json`; je Box etwa 1.000 Zeichen mit
+  Andere Ansichten erhalten keine fremden Erklärtexte. Auf der Mieterabrechnung werden Produkt-Einleitung und Erklärung in genau einer Box zusammengeführt; keine zusätzliche untere Textbox. Rechnerfunktionen bleiben erhalten.
+- Quelle: `assets/site-settings.json` → `content` und Admin → Content; je Box etwa 1.000 Zeichen mit
   H2, einleitendem Absatz und zwei ergänzenden H3-/Textabschnitten. Keine Kopie
   der Überschrift oder Beschreibung aus dem Grafikheader. Deutschlandbezug und
   passende interne Links verwenden, keine unbelegten Leistungsversprechen.
+- Alle sechs Boxen sind unter Admin → Content bearbeitbar. `description` enthält den vollständigen Text als HTML; der erste Absatz bildet die mobile Einleitung. Bei Mieterabrechnung bleibt der Bildheader-Titel getrennt von `boxTitle`. Neue/angepasste Inhalte ersetzen die Anzeige und werden bei der Höhenmessung berücksichtigt.
+- Die bestehende Server-Schnittstelle speichert die normalisierten Contentdaten kompatibel unter `meta.content`; `content` und `meta.content` referenzieren im Frontend dieselben Daten. Beim Laden werden beide Formate unterstützt. Keine zweite redaktionelle Quelle und keine Änderung an Datenbank, Zugangsdaten oder Serverinstallation.
 - Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
   Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
 - Bei gleicher Fensterbreite und Typografie haben alle Boxen dieselbe minimale
@@ -213,7 +224,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 | Bereich | Gepflegte Quellen / Build-Schritte |
 | --- | --- |
 | Gemeinsame Routen und aktive Ansicht | `assets/unified-calculator-navigation.js`, `scripts/build_unified_navigation.py` |
-| Erklärboxen / mobiles Weiterlesen | `assets/calculator-explanations.json`, `.js`, `.css`, `scripts/build_calculator_explanations.py` |
+| Erklärboxen / mobiles Weiterlesen | `assets/site-settings.json`, `assets/calculator-explanations.js`, `.css`, `scripts/build_calculator_explanations.py` |
 | Gemeinsame Desktop-Skalierung | `assets/desktop-density.css`, Einbindung über `scripts/build_unified_navigation.py` |
 | Erste stabile Darstellung | `assets/initial-layout.js`, Einbindung über `scripts/build_unified_navigation.py` |
 | Bildheader und Höhenreservierung | `assets/stable-header.js`, `assets/stable-header.css` |
@@ -260,5 +271,21 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 - Keine grauen Platzhalter in Rechnereingaben; Ausnahme ist die Karte
   „Budget übernehmen“ (`#ownBudgetTransferCard`). Einheiten bleiben erhalten.
-- Die Bereinigung gilt auch bei Einstieg über die Startseite/Inhaltsseiten,
-  internen Rechnerwechseln und im Shadow DOM des Finanzierungsrechners.
+- Die Bereinigung gilt auch bei Einstieg über die Startseite/Inhaltsseiten und
+  internen Rechnerwechseln. Finanzierung verwendet dieselbe Dokument-Typografie
+  und keine separate Shadow-DOM-Ansicht.
+
+
+## Nutzerdaten sichern und importieren
+
+- Die Admin-Funktion „Nutzerdaten sichern“ exportiert Nutzerkonten als CSV mit den Spalten Vorname, Nachname und E-Mail. Der Import-Button steht rechts daneben in derselben Zeile.
+- Der Import akzeptiert die unveränderte Sicherungsdatei, bis zu 2.000 Konten und 2 MB Dateigröße. Doppelte oder ungültige E-Mail-Adressen und fehlerhafte Zeilen werden vor dem Senden abgewiesen.
+- Vorhandene Konten werden anhand der E-Mail-Adresse zugeordnet; nur Vor- und Nachname werden aktualisiert. Rollen, Sperrstatus und E-Mail-Bestätigung bleiben unverändert. Fehlende Konten werden als aktive, noch nicht bestätigte Benutzer angelegt.
+- Die Verarbeitung ist auf Administratoren beschränkt, erfolgt transaktional und wird protokolliert. Die Serverroute lautet `users-import`; ihre API-Änderung wird erst mit dem separaten STRATO-Backend-Update wirksam.
+
+
+## Admin: Inhaltszugang
+
+- Die Tabelle zur H2-Inhaltssteuerung verwendet die Spalten „Inhalte“, „Anzeigen“ und „Nur Nutzer“. Ein aktiviertes Feld „Nur Nutzer“ beschränkt den Inhalt auf angemeldete Nutzer.
+- Die drei Spalten bleiben auch auf schmalen Mobilansichten nebeneinander. Checkboxen sind kompakt, kontrastreich und ohne browserabhängige blaue Großflächen.
+- Wenn „Anzeigen“ deaktiviert ist, entfernt der STRATO-PHP-Auslieferungsfilter das markierte HTML vor der Übertragung. Bei fehlender Konfiguration oder Datenbankverbindung liefert der Filter keine ungeprüfte Seite aus.

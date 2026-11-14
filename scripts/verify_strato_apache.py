@@ -119,11 +119,12 @@ TypesConfig /etc/mime.types
                     if process.poll() is not None or time.monotonic() > deadline:
                         raise RuntimeError('Apache did not start: '+(temp/'error.log').read_text())
                     time.sleep(.1)
-            assert request('/')[2] == b'test release index.html'
+            assert request('/')[2] == (b'test release content-gate.php' if direct else b'test release index.html')
             for name in REQUIRED:
                 path = '/' + name[:-len('index.html')] if name.endswith('/index.html') else '/' + name
                 status, _, body = request(path)
-                assert status == 200 and body == ('test release '+name).encode(), (path,status)
+                expected = ('test release content-gate.php' if direct and name.endswith('.html') else 'test release '+name).encode()
+                assert status == 200 and body == expected, (path,status,body[:80])
             status, headers, _ = request('/budget?test=1')
             redirect = 301 if direct and version == 2 else 302
             assert status == redirect and urlsplit(headers['Location']).path == '/budget/'

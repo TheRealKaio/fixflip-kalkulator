@@ -372,6 +372,31 @@ function nic_run(): void {
         $users=nic_query($db,'SELECT id,email,first_name,last_name,role,status,verified_at,created_at FROM nic_users ORDER BY created_at,id LIMIT 51 OFFSET '.$offset)->fetchAll(PDO::FETCH_ASSOC);
         $more=count($users)>50;nic_reply(['users'=>array_slice($users,0,50),'more'=>$more]);
     }
+    if ($route==='users-import' && $method==='POST') {
+        $rows=$input['users']??null;
+        if(!is_array($rows)||count($rows)<1||count($rows)>2000)nic_fail('Der Import muss 1 bis 2.000 Nutzerkonten enthalten.');
+        $users=[];$emails=[];
+        foreach($rows as $row){
+            if(!is_array($row))nic_fail('Ungültiger Datensatz in der Importdatei.');
+            $email=nic_email($row['email']??null);$first=nic_name($row['first_name']??null);$last=nic_name($row['last_name']??null);
+            if(isset($emails[$email]))nic_fail('Eine E-Mail-Adresse ist in der Importdatei mehrfach vorhanden.');
+            $emails[$email]=true;$users[]=['email'=>$email,'first_name'=>$first,'last_name'=>$last];
+        }
+        $db->beginTransaction();
+        try{
+            nic_query($db,'SELECT id FROM nic_settings WHERE id=1 FOR UPDATE');
+            $created=0;$updated=0;
+            foreach($users as $row){
+                $id=nic_query($db,'SELECT id FROM nic_users WHERE email=? FOR UPDATE',[$row['email']])->fetchColumn();
+                if($id!==false){
+                    nic_query($db,'UPDATE nic_users SET first_name=?,last_name=? WHERE id=?',[$row['first_name'],$row['last_name'],$id]);$updated++;continue;
+                }
+                nic_query($db,'INSERT INTO nic_users(id,email,first_name,last_name,role,status,verified_at,created_at) VALUES (?,?,?,?,?,?,NULL,?)',[bin2hex(random_bytes(16)),$row['email'],$row['first_name'],$row['last_name'],'user','active',nic_now()]);$created++;
+            }
+            nic_audit($db,$admin['id'],'users-import');$db->commit();
+        }catch(Throwable $error){if($db->inTransaction())$db->rollBack();throw $error;}
+        nic_reply(['ok'=>true,'created'=>$created,'updated'=>$updated]);
+    }
     if ($route==='user-action' && $method==='POST') {
         $target=$input['id']??'';$action=$input['action']??'';
         if(!is_string($target)||!preg_match('/^[a-f0-9]{32}$/D',$target)||!in_array($action,['block','unblock','delete'],true))nic_fail('Ungültige Benutzeraktion.');

@@ -645,8 +645,8 @@ for page in site.rglob('*.html'):
   'html[data-nic-page="'+key+'"] body .app{min-height:100vh!important;display:flex!important;flex-direction:column!important}'
   'html[data-nic-page="'+key+'"] body .app .hero{display:'+('block' if key in {'settlement','prices','why'} else 'none')+'!important}'
   'html[data-nic-page="'+key+'"] body .app main.nic-content-main{display:flex!important;flex-direction:column!important;flex:1 0 auto!important;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}'
-  'html[data-nic-page="'+key+'"] body .app .nic-content-card{flex:1 0 auto!important;width:100%;max-width:980px;box-sizing:border-box;margin:0 auto;padding:32px;border:1px solid #e2e9e5;border-radius:16px;background:#fff}'
-  '@media(max-width:760px){html[data-nic-page="'+key+'"] body .app main.nic-content-main{padding:24px 16px 16px}html[data-nic-page="'+key+'"] body .app .nic-content-card{padding:24px 18px}}'
+  'html[data-nic-page="'+key+'"] body .app .nic-content-card{flex:1 0 auto!important;width:100%;max-width:none;box-sizing:border-box;margin:0 auto;padding:18px;border:1px solid #e2e9e5;border-radius:var(--nic-brand-radius,22px);background:#fff}'
+  '@media(max-width:760px){html[data-nic-page="'+key+'"] body .app main.nic-content-main{padding:24px 16px 16px}html[data-nic-page="'+key+'"] body .app .nic-content-card{padding:18px}}'
   '</style>'
  )
  if 'id="nic-content-page-layout"' not in source:

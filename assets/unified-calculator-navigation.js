@@ -1,4 +1,4 @@
-/* One controller for all five calculator tiles. Financing remains an isolated module. */
+/* One controller and shared document layout for all five calculator tiles. */
 (()=>{
 'use strict';
 /* FINANCE_MODULE */
@@ -17,6 +17,7 @@ function showContent(key,refresh=false){
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
  let panel=document.getElementById('nicContentView');
+ if(key==='settlement'){panel?.remove();active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);window.NICHeader?.refresh();return;}
  if(!panel){
   panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
   const explanation=main.querySelector(':scope > .nic-explanation-card');
@@ -40,7 +41,7 @@ window.NICCalculators=Object.freeze({
  get active(){return active;},
  get(id){return calculators.find(item=>item.id===id)||null;}
 });
-let active=null,financeRoot=null,bypass=false;
+let active=null,financeHost=null,bypass=false;
 function select(key,push=false){
  window.NICExplanations.show(key);
 
@@ -57,17 +58,17 @@ function select(key,push=false){
  document.documentElement.dataset.nicPage=key;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
- if(key==='finance'&&!financeRoot){
+ if(key==='finance'&&!financeHost){
   const host=document.createElement('div');host.id='nicFinanceModule';host.hidden=true;menu.after(host);
-  financeRoot=createFinance(host);
+  financeHost=createFinance(host);
  }
  document.body.classList.toggle('nic-finance-active',key==='finance');
  const host=document.getElementById('nicFinanceModule');if(host)host.hidden=key!=='finance';
  bypass=true;
  try{
   // The legacy handler recognizes only budget, own, rent and flip.
-  // Financing has its own Shadow DOM module; forwarding 'finance' to the
-  // legacy four-calculator handler leaves its DOM and calculations undefined.
+  // Financing uses its own controls in the shared document; forwarding 'finance' to the
+  // legacy four-calculator handler leaves its calculation state undefined.
   if(key!=='finance')window.dispatchEvent(new CustomEvent('nic-select-calculator',{detail:key}));
  }finally{bypass=false;}
  if(key==='finance'){
@@ -101,9 +102,9 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();select(key,true);return;
  }
  if(active==='finance'){
-  const button=event.target.closest('.bottom button');if(!button)return;
+  const button=event.target.closest('.bottom button');if(!button||button.closest('#nicFinanceModule'))return;
   const id=button.classList.contains('bottom-primary')?'newCalc':button.classList.contains('bottom-save')?'download':'share';
-  event.preventDefault();event.stopImmediatePropagation();financeRoot.getElementById(id).click();
+  event.preventDefault();event.stopImmediatePropagation();financeHost.querySelector('[data-finance-id="'+id+'"]').click();
  }
 },true);
 window.addEventListener('popstate',()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);});
@@ -180,7 +181,16 @@ window.addEventListener('nic-settings-updated',()=>{if(document.body.classList.c
 window.addEventListener('DOMContentLoaded',()=>{
  const css=document.createElement('style');css.textContent='.nic-finance-active main.section > :not(.deal-type-card):not(#nicFinanceModule):not(#nic-home-intro):not(.nic-explanation-card){display:none!important}#nicFinanceModule[hidden]{display:none!important}.deal-type-card[hidden]{display:none!important}.nic-home-intro{margin:20px 0 24px;padding:26px 30px;border:1px solid #e2e9e5;border-radius:12px;background:#f6f1e9;color:#263b3a}.nic-home-intro h2{margin:0;color:#075c55;font-size:26px}.nic-home-description{margin-top:10px;max-width:780px;line-height:1.55}.nic-home-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.nic-home-actions a,.nic-home-actions button{display:inline-flex;min-height:44px;align-items:center;padding:10px 18px;border:1px solid #075c55;border-radius:12px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}.nic-home-actions a{background:#fff;color:#075c55}[data-nic-site-nav]{display:flex;align-items:center;justify-content:flex-end;gap:clamp(10px,1.4vw,20px);margin-left:auto}[data-nic-site-nav] a{color:#263b3a;font-size:14px;text-decoration:none;white-space:nowrap}.nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:170px minmax(0,1fr) auto}.nic-brand-bar [data-nic-site-nav]{grid-column:1/-1;grid-row:2;padding-top:9px;border-top:1px solid #e9e1d6}.nic-menu-toggle{display:none;border:1px solid #dce6e1;border-radius:10px;background:#fff;color:#075c55;font-size:22px;padding:5px 10px}@media(max-width:700px),(max-width:1024px) and (max-height:600px) and (orientation:landscape){.nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:minmax(0,1fr) auto auto!important;position:relative}.nic-brand-bar a.nic-login-button{grid-column:2!important;grid-row:1!important}.nic-brand-bar .nic-brand-description{display:none!important}.nic-brand-bar [data-nic-site-nav]{display:none;position:absolute;z-index:100;top:100%;left:0;right:0;grid-column:auto;grid-row:auto;margin:0;padding:16px;background:#fff;border-top:1px solid #e2e9e5;box-shadow:0 10px 20px #263b3a18;flex-direction:column;align-items:flex-start}.nic-brand-bar [data-nic-site-nav].is-open{display:flex}.nic-brand-bar .nic-menu-toggle{display:inline-flex!important;grid-column:3!important;grid-row:1!important;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;min-width:44px;padding:9px;margin:0;flex:none;cursor:pointer}.nic-brand-bar .nic-menu-toggle:focus-visible{outline:3px solid #b37b00;outline-offset:3px}.nic-home-intro{padding:22px 18px}.nic-home-actions{flex-direction:column}.nic-home-actions>*{justify-content:center}}';css.textContent+='@media(max-width:700px) and (orientation:portrait){.nic-brand-bar a.nic-login-button{box-sizing:border-box!important;width:44px!important;height:44px!important;padding:9px!important;gap:0!important}.nic-brand-bar a.nic-login-button>span{display:none!important}}';document.head.append(css);
  createSiteNavigation();
- window.NICSettings.init().then(()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);}).catch(console.error);
+ function startDirectRoute(){const key=routes[location.pathname.toLowerCase()];if(key)select(key);}
+ window.NICSettings.init().then(startDirectRoute).catch(async error=>{
+  console.error(error);
+  try{
+   const response=await fetch(new URL('site-settings.json',window.NICSettings.ROOT),{cache:'no-store'});
+   if(!response.ok)throw new Error('Gebündelte Einstellungen konnten nicht geladen werden.');
+   window.NICSettings.useFallback(await response.json());
+  }catch(fallbackError){console.error(fallbackError);}
+  startDirectRoute();
+ });
 });
 window.NICContent={refresh(){if(document.body.classList.contains('nic-content-active')&&contentRoutes[active])showContent(active,true);}};
 window.NICHome={refresh(){if(document.body.classList.contains('nic-home-active'))initWelcome();}};

@@ -100,21 +100,54 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   for(const key of ['finance','own','rent','flip','budget','finance']){
    await page.locator(`.deal-type-option[data-calculator="${key}"]`).click();
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
+   const stickyGap=await page.locator('.nic-actions-above-footer').evaluate(el=>({position:getComputedStyle(el).position,bottom:getComputedStyle(el).bottom}));
+   assert.equal(stickyGap.position,'sticky','Calculator action row remains sticky');
+   assert.equal(stickyGap.bottom,'5px','Sticky calculator action row stays five pixels above the viewport edge');
    assert.equal(await page.evaluate(()=>performance.timeOrigin),origin,'calculator changes must keep same document');
    assert.equal(await page.locator('.nic-tile-active').count(),1);
    await page.waitForFunction(()=>[...document.querySelectorAll('.app>main input[placeholder],.app>main textarea[placeholder]')].every(field=>field.closest('#ownBudgetTransferCard')));
-   if(key==='finance')await page.waitForFunction(()=>!document.getElementById('nicFinanceModule').shadowRoot.querySelector('input[placeholder],textarea[placeholder]'));
+   if(key==='finance')await page.waitForFunction(()=>{const host=document.getElementById('nicFinanceModule');return !host.shadowRoot&&!host.querySelector('input[placeholder],textarea[placeholder]')});
 
    if(key==='own'){
     assert.equal(await page.locator('#heroTitle').innerText(),'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');
     assert((await page.locator('#nicOwnIntro').textContent()).includes('Hausgeld'),'House and apartment running costs explained');
+    assert.equal(await page.locator('#result #kpiEquity').isVisible(),false,'Project-specific KPI is hidden in Eigenheim');
+    assert.equal(await page.locator('#result #kpiMaxBuy').isVisible(),false,'Project purchase-price KPI is hidden in Eigenheim');
    }else assert.equal(await page.locator('#nicOwnIntro').count(),0,'Eigenheim explanation must leave other routes clean');
+   if(key==='flip'){
+    assert.equal(await page.locator('#ownUseKpis').isVisible(),false,'Eigenheim-only result KPIs are hidden in Fix & Flip');
+    assert.equal(await page.locator('#ownBudgetTransferCard').isVisible(),false,'Household budget transfer is hidden in Fix & Flip');
+   }
+   if(width>700){
+    const grids=await page.evaluate(()=>[...document.querySelectorAll('.app>main .kpis,.app>main .budget-result-grid,#nicFinanceModule .grid:has(> .kpi)')].filter(grid=>{const r=grid.getBoundingClientRect();return r.width>0&&r.height>0}).map(grid=>{
+     const cells=[...grid.children].flatMap(child=>child.classList.contains('kpi-triple')?[...child.children]:[child]).filter(cell=>!cell.classList.contains('own-budget-transfer')&&!cell.matches('#ownBudgetTransferCard')).filter(cell=>{const r=cell.getBoundingClientRect();return r.width>0&&r.height>0});
+     const rows=new Map();for(const cell of cells){const top=Math.round(cell.getBoundingClientRect().top);rows.set(top,(rows.get(top)||0)+1);}
+     return {id:grid.id,className:grid.className,width:grid.getBoundingClientRect().width,columns:getComputedStyle(grid).gridTemplateColumns,cells:cells.map(cell=>({text:cell.innerText.trim().slice(0,55),column:getComputedStyle(cell).gridColumn,row:getComputedStyle(cell).gridRow,style:cell.getAttribute('style')})),rows:[...rows.values()]};
+    }));
+    for(const grid of grids){assert(grid.rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,grid}));if(grid.rows.length>1)assert(grid.rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,grid}));}
+   }
 
-   if(key==='finance'){assert(await page.locator('#nicFinanceModule #loan').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
+   if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
+   if(key==='rent'){
+    const spacing=await page.evaluate(()=>['rentCashflowKpi','rentFactorKpi'].map(id=>{const card=document.getElementById(id);const info=card?.querySelector('.rent-kpi-info'),badge=card?.querySelector('.rent-kpi-rating');return {infoBottom:info?.getBoundingClientRect().bottom,badgeTop:badge?.getBoundingClientRect().top};}));
+    for(const pair of spacing)if(pair.badgeTop!=null)assert(pair.infoBottom!=null&&pair.badgeTop>=pair.infoBottom+4,'Traffic badge has visible spacing below its info icon');
+   }
+   if(key==='finance'){
+    const geometry=await page.locator('#nicFinanceModule').evaluate(host=>{
+     const cards=[...host.querySelectorAll(':scope > .card')].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};});
+     const menu=document.querySelector('.deal-type-card').getBoundingClientRect();
+     const grids=[...host.querySelectorAll('.grid:has(> .kpi)')].map(grid=>[...grid.children].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};}));
+     return {inMain:host.parentElement.matches('.app>main.section'),menu:{left:menu.left,right:menu.right},cards,grids,hasShadow:!!host.shadowRoot};
+    });
+    assert(geometry.inMain&&!geometry.hasShadow,'Finance must use the shared main DOM and frame');
+    assert(geometry.cards.length>=2&&geometry.cards.every(card=>Math.abs(card.left-geometry.menu.left)<2&&Math.abs(card.right-geometry.menu.right)<2),'Finance cards must align with the shared calculator frame');
+    for(let i=1;i<geometry.cards.length;i++)assert(geometry.cards[i].top>=geometry.cards[i-1].bottom-1,'Finance content cards must not overlap');
+    for(const grid of geometry.grids){for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++){const a=grid[i],b=grid[j];const overlap=a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;assert(!overlap,'Finance result boxes must not overlap');}}
+   }
   }
   await page.evaluate(async()=>{
-   const root=document.getElementById('nicFinanceModule').shadowRoot,input=root.getElementById('interest');
+   const root=document.getElementById('nicFinanceModule'),input=root.querySelector('[data-finance-id="interest"]');if(root.shadowRoot)throw Error('Finance must use the shared document DOM');
    for(const id of ['interest','budgetInterest','rentInterest'])if(Number(document.getElementById(id).value)!==4.09)throw Error('Shared reference missing: '+id);
    if(Number(input.value)!==4.09)throw Error('Finance must share the reference rate');
    input.value='5.25';input.dispatchEvent(new Event('input',{bubbles:true}));
@@ -123,11 +156,12 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   });
   await page.goBack();await page.waitForFunction(()=>!document.body.classList.contains('nic-finance-active'));
   await page.goForward();await page.waitForFunction(()=>document.body.classList.contains('nic-finance-active'));
-  await page.reload();await page.waitForSelector('#nicFinanceModule #loan');
+  await page.reload();await page.waitForSelector('#nicFinanceModule [data-finance-id="loan"]');
   assert.equal(await page.locator('.nic-tile-active').getAttribute('data-calculator'),'finance');
-  await page.evaluate(()=>{const root=document.getElementById('nicFinanceModule').shadowRoot;root.getElementById('newCalc').click();if(Number(root.getElementById('interest').value)!==4.09)throw Error('Finance reset must use shared reference');});
+  await page.evaluate(()=>{const root=document.getElementById('nicFinanceModule');root.querySelector('[data-finance-id="newCalc"]').click();if(Number(root.querySelector('[data-finance-id="interest"]').value)!==4.09)throw Error('Finance reset must use shared reference');});
   await page.evaluate(()=>{
-   const root=document.getElementById('nicFinanceModule').shadowRoot;
+   const root=document.getElementById('nicFinanceModule');
+   if(root.shadowRoot)throw Error('Finance must not create a shadow root');
    const box=root.querySelector('[data-nic-content-key]');
    if(!box)throw Error('Finance access rules missing');
    const settings=NICSettings.current;
@@ -181,10 +215,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(await menu.isVisible())await menu.click();
    await page.locator('[data-nic-site-nav] a[href="/'+slug+'/"]').click();
    await page.waitForURL('http://localhost/'+slug+'/');
-   await page.locator('#nicContentView').waitFor({state:'visible'});
+   await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').waitFor({state:'visible'});
    assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Information menu must retain the document');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
-   assert(await page.locator('#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
+   assert(await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
    assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes header height');
   }
@@ -196,7 +230,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Browser history returns home within the shared application');
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
    await page.goto('http://localhost/'+routeName+'/');
-   await page.locator('.nic-content-card').waitFor({state:'visible'});
+   await page.locator(routeName==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'.nic-content-card').waitFor({state:'visible'});
    if(['preise','warum-immocheck','nebenkostenabrechnung'].includes(routeName)){
     const key=({'preise':'prices','warum-immocheck':'why','nebenkostenabrechnung':'settlement'})[routeName];
     await page.waitForFunction(k=>window.NICCalculators?.active===k,key);
@@ -233,7 +267,12 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/finanzierungsrechner/');
   await page.locator('.app').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='fallback');
-  assert(await page.locator('#nicFinanceModule #loan').isVisible(),'Direct finance must remain usable when published settings are unavailable');
+  await page.waitForFunction(()=>window.NICCalculators?.active==='finance');
+  const financeModule=page.locator('#nicFinanceModule');
+  await financeModule.waitFor({state:'visible'});
+  assert.equal(await page.locator('body').getAttribute('data-calculator'),'finance','Direct finance route must be selected when published settings are unavailable');
+  assert(await financeModule.locator('h2').count()>0,'Direct finance module content must be present when published settings are unavailable');
+  assert.equal(await financeModule.locator('[data-finance-id="loan"]').inputValue(),'300000','Direct finance keeps the default loan input when published settings are unavailable');
   assert.deepEqual(errors,[]);
   console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
   await page.close();

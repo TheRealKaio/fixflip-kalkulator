@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,re,sys,html
 from build_calculator_explanations import templates, ROUTES
-explanation_templates=templates()
+explanation_templates=templates(json.loads((Path(sys.argv[1] if len(sys.argv)>1 else '_site')/'site-settings.json').read_text()))
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 finance=(site/'finanzierungsrechner/index.html').read_text()
 source=Path('assets/financing.html').read_text()
@@ -11,16 +11,23 @@ finance_header=[re.search(r'<h1\b[^>]*>(.*?)</h1>',finance,re.S)[1], html.unesca
 body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main>',finance,re.S)
 if not body:raise SystemExit('Finance content missing')
 markup=body[1]
-style=re.search(r'<style>(.*?)</style>',source,re.S)[1]
-style=style.replace(':root',':host')
-# Body-level spacing and background belong to the shared application frame, not the shadow host.
-style=re.sub(r'\bbody\s*\{[^{}]*\}', '', style)
-style+=':host{display:block;width:100%;max-width:none;margin:0;padding:0;background:transparent;box-sizing:border-box;font:inherit;color:inherit}.card{margin:17px 0}.bottom{display:none}'
+markup=markup.replace('<div class="grid">','<div class="grid finance-result-grid">',1)
+markup=markup.replace('<h3>Anschlussfinanzierung</h3>','<h3 class="finance-h2-equivalent">Anschlussfinanzierung</h3>')
+markup=markup.replace('<h3>Hypothekenzinsen – 10 Jahre</h3>','<h3 class="finance-h2-equivalent">Hypothekenzinsen – 10 Jahre</h3>')
+def namespace_finance_ids(source):
+ ids=re.findall(r'\bid="([^"]+)"',source)
+ if len(ids)!=len(set(ids)):raise SystemExit('Duplicate finance IDs before namespacing')
+ mapping={value:'nicFinance-'+value for value in ids}
+ for old,new in mapping.items():
+  source=re.sub(r'\bid="'+re.escape(old)+r'"', 'id="'+new+'" data-finance-id="'+old+'"', source)
+ for attr in ('for','aria-describedby','aria-labelledby','aria-controls','aria-owns'):
+  source=re.sub(r'\b'+attr+r'="([^"]+)"',lambda m:attr+'="'+ ' '.join(mapping.get(token,token) for token in m[1].split())+'"',source)
+ return source
 actions=re.search(r'<div class="bottom">(.*?)</footer>',source,re.S)[0].split('<footer')[0]
 script=re.search(r'<script>\s*\(function\(\)\{\'use strict\';(.*?)window.addEventListener\(\'DOMContentLoaded\'',source,re.S)[1]
 script=script[:script.rfind('})();')]
 script=re.sub(r"document.querySelectorAll\('\.menu.*?\n",'',script,count=1)
-script=script.replace('document.getElementById(id)','root.getElementById(id)')
+script=script.replace('document.getElementById(id)', "root.querySelector('[data-finance-id=\"'+id+'\"]')")
 # Financing consumes the existing shared reference, not its historical chart series.
 script=script.replace('interest:4.01','interest:(window.NICReferenceInterest?.rate??4.0)')
 script=script.replace('let currentRate=4.01','let currentRate=window.NICReferenceInterest?.rate??4.0')
@@ -36,9 +43,18 @@ function applyReferenceRate(rate){
 window.addEventListener('nic-reference-interest',event=>applyReferenceRate(event.detail.rate));
 applyReferenceRate(window.NICReferenceInterest?.rate??4.0);
 """
-shared_layout=(site/'calculator-layout.css').read_text(encoding='utf-8')
-finance_result_grid_css=".grid:has(> .kpi),.refinance-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,max(190px,calc(25% - 9px))),1fr))!important;gap:11px!important}.grid:has(> .kpi)>.kpi,.refinance-grid>.kpi{min-width:0}@media(min-width:701px){.refinance-grid:has(>:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}.grid:has(> .kpi):has(>:nth-child(5):last-child),.grid:has(> .kpi):has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}.grid:has(> .kpi):has(>:nth-child(8):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}}@media(max-width:700px){.grid:has(> .kpi),.refinance-grid{grid-template-columns:minmax(0,1fr)!important}}"
-factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+shared_layout+finance_result_grid_css+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
+finance_component_css='#nicFinanceModule{min-width:0}#nicFinanceModule .bottom{display:none!important}#nicFinanceModule .chart{width:100%;height:auto;display:block}#nicFinanceModule .legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0;color:var(--muted,#64748b)}#nicFinanceModule .swatch{display:inline-block;width:16px;height:3px;vertical-align:middle;margin-right:4px;background:#0d9488}#nicFinanceModule .swatch.ten{background:#6366f1}#nicFinanceModule .swatch.yours{background:#ea580c;height:4px}#nicFinanceModule .refinance-grid{margin:12px 0}#nicFinanceModule .refinance-grid .kpi{display:flex;flex-wrap:wrap;align-content:flex-start;column-gap:.3em;row-gap:.18em}#nicFinanceModule .refinance-grid .kpi:nth-child(2){background:#fef3c7;border-color:#f59e0b}#nicFinanceModule .refinance-grid .kpi:nth-child(2) strong,#nicFinanceModule .refinance-grid .kpi:nth-child(2) span{color:#78350f}#nicFinanceModule .refinance-grid .kpi:nth-child(3){background:#fee2e2;border-color:#f87171}#nicFinanceModule .refinance-grid .kpi:nth-child(3) strong,#nicFinanceModule .refinance-grid .kpi:nth-child(3) span{color:#7f1d1d}#nicFinanceModule .mini.refinance-note{color:#94a3b8;font-weight:400}#nicFinanceModule .refinance-slider .rangehead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}#nicFinanceModule .refinance-slider output{color:#2463e6}#nicFinanceModule .refinance-slider input{accent-color:#2463e6}#nicFinanceModule .rate-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#nicFinanceModule .rate-actions button{display:block;width:100%;height:auto;min-height:50px;padding:10px 12px;font-weight:650;line-height:1.35;color:var(--ink,#172033);background:#fff;white-space:normal;overflow-wrap:break-word;text-align:center;opacity:1}#nicFinanceModule .rate-actions button:disabled{opacity:.55}#nicFinanceModule .rate-actions button:not(:disabled){cursor:pointer}@media(max-width:420px){#nicFinanceModule .rate-actions{grid-template-columns:1fr}}';
+finance_result_grid_css=".grid:has(> .kpi),.refinance-grid{display:grid!important;grid-auto-flow:row!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,max(190px,calc(25% - 9px))),1fr))!important;gap:11px!important}.grid:has(> .kpi)>.kpi,.refinance-grid>.kpi{min-width:0}@media(min-width:701px){.refinance-grid:has(>:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}.grid:has(> .kpi):has(>:nth-child(5):last-child),.grid:has(> .kpi):has(>:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}.grid:has(> .kpi):has(>:nth-child(8):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}}@media(max-width:1000px),(hover:none){.grid:has(> .kpi),.refinance-grid{grid-template-columns:minmax(0,1fr)!important}}";
+finance_result_grid_css += '#nicFinanceModule .card>h2,#nicFinanceModule .card .finance-h2-equivalent{font-size:var(--nic-h2-font-size,20px)!important;font-weight:700!important;color:var(--ink,#172033)!important;line-height:1.2!important}#nicFinanceModule .card>h3{font-size:var(--nic-body-font-size,16px)!important;font-weight:700!important;color:var(--ink,#172033)!important;line-height:1.35!important}#nicFinanceModule .field label,#nicFinanceModule .rangehead,#nicFinanceModule .rangehead label,#nicFinanceModule .rangehead output,#nicFinanceModule .slots{font-size:var(--nic-body-font-size,16px)!important;color:var(--ink,#172033)!important}#nicFinanceModule .field label,#nicFinanceModule .rangehead,#nicFinanceModule .rangehead label,#nicFinanceModule .rangehead output{font-weight:700!important}#nicFinanceModule .field input:not([type=range]),#nicFinanceModule .field select,#nicFinanceModule .field textarea,#nicFinanceModule .buttons button{font-size:var(--nic-body-font-size,16px)!important}#nicFinanceModule .kpi>span:first-child{font-size:var(--nic-subtext-font-size,14px)!important;line-height:1.5!important}#nicFinanceModule .kpi>span:not(:first-child){font-size:var(--nic-hint-font-size,12px)!important;line-height:1.5!important}#nicFinanceModule .kpi>strong{font-size:var(--nic-body-font-size,16px)!important;font-weight:700!important}#nicFinanceModule .mini,#nicFinanceModule .status,#nicFinanceModule .legend,#nicFinanceModule .source{font-size:var(--nic-hint-font-size,12px)!important;line-height:1.5!important}#nicFinanceModule .chart text{font-size:var(--nic-subtext-font-size,14px)!important;font-family:var(--nic-body-font-family,system-ui,sans-serif)!important}';
+
+finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(7):last-child),#nicFinanceModule .refinance-grid:has(>:nth-child(7):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(9):last-child),#nicFinanceModule .refinance-grid:has(>:nth-child(9):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}}';
+finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))!important}}';
+finance_result_grid_css += '#nicFinanceModule .grid.finance-result-grid:has(> .kpi){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important}#nicFinanceModule .grid.finance-result-grid>.kpi{grid-column:auto!important}'
+finance_result_grid_css += '@media(max-width:700px),(hover:none){#nicFinanceModule .grid.finance-result-grid:has(> .kpi){grid-template-columns:minmax(0,1fr)!important}}';
+finance_result_grid_css += '#nicFinanceModule .refinance-slider .rangehead{justify-content:flex-start!important;text-align:left!important;gap:.5em!important}#nicFinanceModule .refinance-slider .rangehead>*{flex:0 0 auto}';
+finance_result_grid_css += '#nicFinanceModule .finance-result-grid>.kpi{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:.35em!important}#nicFinanceModule .finance-result-grid>.kpi>span,#nicFinanceModule .finance-result-grid>.kpi>strong{display:block!important;width:100%;margin:0!important}';
+financeMarkup=namespace_finance_ids(markup+actions);
+factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
 calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
@@ -168,6 +184,7 @@ for page in site.rglob('*.html'):
  for explanation_key,slug in ROUTES.items():
   if page==site/slug/'index.html':
    s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+explanation_templates[explanation_key],s,count=1)
+ if page.parent.name=='nebenkostenabrechnung':s=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>','',s,flags=re.S)
  if 'calculator-explanations.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/calculator-explanations.css"></head>',1)
  if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
  page.write_text(s)

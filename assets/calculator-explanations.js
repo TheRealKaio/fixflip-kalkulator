@@ -4,6 +4,22 @@ window.NICExplanations=(()=>{
  const mobile=matchMedia('(max-width:760px),(max-width:1024px) and (max-height:600px) and (orientation:landscape)');
  const bound=new WeakSet(),observed=new WeakSet();
  let active=null,queued=false,lastSignature='';
+ function markup(key){
+  const settings=window.NICSettings?.current,content=settings?.content?.[key];
+  if(!content)return explanationTemplates[key];
+  const holder=document.createElement('template');holder.innerHTML=explanationTemplates[key];
+  const card=holder.content.firstElementChild;
+  card.querySelector('h2').textContent=content.boxTitle||content.title;
+  const body=window.NICSettings.legalFragment(content.description,settings);
+  let intro=body.querySelector('p');
+  if(intro)intro.remove();else{intro=document.createElement('p');intro.textContent=body.textContent;body.replaceChildren();}
+  intro.classList.add('nic-explanation-intro');
+  card.querySelector('.nic-explanation-intro').replaceWith(intro);
+  card.querySelector('details').hidden=!body.textContent.trim();
+  card.querySelector('.nic-explanation-rest').replaceChildren(body);
+  return card.outerHTML;
+ }
+
  function bind(card){
   const details=card.querySelector('details'),summary=details.querySelector('summary');
   if(!bound.has(details)){
@@ -21,13 +37,14 @@ window.NICExplanations=(()=>{
   if(!card||!main)return;
   const rect=card.getBoundingClientRect(),style=getComputedStyle(card),width=parseFloat(style.width);
   if(!width||!rect.width)return;
-  const signature=[width,mobile.matches,style.font, getComputedStyle(card.querySelector('h2')).font,getComputedStyle(card.querySelector('h3')).font].join('|');
+  const signature=[width,mobile.matches,style.font, getComputedStyle(card.querySelector('h2')).font,getComputedStyle(card.querySelector('h3')||card.querySelector('h2')).font].join('|');
   if(signature===lastSignature)return;
   lastSignature=signature;
   const scale=rect.width/width;
   let maximum=0;
-  for(const markup of Object.values(explanationTemplates)){
-   const holder=document.createElement('template');holder.innerHTML=markup;
+  for(const key of Object.keys(explanationTemplates)){
+   const html=markup(key);
+   const holder=document.createElement('template');holder.innerHTML=html;
    const probe=holder.content.firstElementChild;
    probe.removeAttribute('id');probe.removeAttribute('data-nic-explanation');probe.removeAttribute('aria-labelledby');
    probe.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
@@ -49,8 +66,13 @@ window.NICExplanations=(()=>{
   if(!explanationTemplates[key]){active=null;return;}
   let card=main.querySelector('[data-nic-explanation="'+key+'"]');
   if(!card){main.insertAdjacentHTML('afterbegin',explanationTemplates[key]);card=main.firstElementChild;}
+  const html=markup(key),wasOpen=card.querySelector('details').open;
+  if(card.dataset.contentSignature!==html){
+   const holder=document.createElement('template');holder.innerHTML=html;
+   card.replaceChildren(...holder.content.firstElementChild.childNodes);card.dataset.contentSignature=html;lastSignature='';
+  }
   const details=bind(card);
-  if(active!==key)details.open=!mobile.matches;
+  details.open=active!==key?!mobile.matches:wasOpen;
   card.querySelector('summary').textContent=details.open?'weniger anzeigen':'weiterlesen';
   active=key;
   if(!observed.has(main)){observer.observe(main);observed.add(main);}
@@ -62,5 +84,5 @@ window.NICExplanations=(()=>{
  window.addEventListener('nic-settings-updated',()=>{lastSignature='';schedule();});
  window.addEventListener('nic-auth-changed',()=>{lastSignature='';schedule();});
  document.fonts?.ready.then(()=>{lastSignature='';schedule();});
- return {show,refresh(){lastSignature='';schedule();}};
+ return {show,refresh(){lastSignature='';if(active)show(active);else schedule();}};
 })();
