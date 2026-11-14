@@ -270,7 +270,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Eigenheim und Eigennutzung
 
 - Die Route `/eigennutzung/` heißt in den Rechnerbuttons „Eigenheim & Eigennutzung“,
-  mit Untertext „Haus oder Wohnung kaufen und selbst nutzen“.
+  mit Untertext „Immobilie kaufen und selbst nutzen“.
 - Die H1 lautet „Kannst Du Dir Dein Eigenheim leisten?“. Die Seite erläutert
   Hauskauf und Eigentumswohnung sowie die manuelle Erfassung laufender Kosten.
 - Der Budgetrechner prüft den allgemeinen Spielraum, der Eigenheim-Rechner eine
