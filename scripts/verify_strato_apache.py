@@ -140,7 +140,7 @@ TypesConfig /etc/mime.types
             # The initial release can be checked on the apex while www remains
             # on GitHub. Ordinary requests must still canonicalize to www.
             status, headers, body = request('/', APEX, release)
-            assert status == 200 and body == b'test release index.html'
+            assert status == 200 and body == (b'test release content-gate.php' if direct else b'test release index.html')
             assert headers.get('Cache-Control') == 'no-store'
             assert headers.get('X-Robots-Tag') == 'noindex, nofollow'
             assert 'X-NIC-Origin-Release' in headers.get('Vary','')
