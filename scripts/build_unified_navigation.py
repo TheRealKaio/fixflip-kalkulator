@@ -12,8 +12,10 @@ body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main
 if not body:raise SystemExit('Finance content missing')
 markup=body[1]
 style=re.search(r'<style>(.*?)</style>',source,re.S)[1]
-style=style.replace(':root',':host').replace('body',':host')
-style+=':host{display:block;font:inherit;color:inherit}.card{margin:17px 0}.bottom{display:none}'
+style=style.replace(':root',':host')
+# Body-level spacing and background belong to the shared application frame, not the shadow host.
+style=re.sub(r'\\bbody\\s*\\{[^{}]*\\}', '', style)
+style+=':host{display:block;width:100%;max-width:none;margin:0;padding:0;background:transparent;box-sizing:border-box;font:inherit;color:inherit}.card{margin:17px 0}.bottom{display:none}'
 actions=re.search(r'<div class="bottom">(.*?)</footer>',source,re.S)[0].split('<footer')[0]
 script=re.search(r'<script>\s*\(function\(\)\{\'use strict\';(.*?)window.addEventListener\(\'DOMContentLoaded\'',source,re.S)[1]
 script=script[:script.rfind('})();')]
