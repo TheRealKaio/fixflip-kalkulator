@@ -36,7 +36,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(before.scale,scale,'Desktop-only scale at '+width);
    assert(Math.abs(before.logo-(width>=1024?250:width<=700?176:250)*scale)<1,'Logo scales once at '+width+': '+JSON.stringify(before));
    if(width>=1024)assert(before.app<=916,'Compact desktop container');
-   assert(Math.abs(before.button-44*scale)<1,'Controls scale once at '+width);
+   assert(Math.abs(before.button-44*scale)<1,'Controls scale once at '+width+': '+JSON.stringify(before));
    assert(!before.overflow,'No horizontal overflow at '+width);
    assert(before.contentBottom<=before.bottom+1,'Header contains its text at '+width);
    for(const key of ['rent','finance','why','home']){
