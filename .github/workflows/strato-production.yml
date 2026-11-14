@@ -75,7 +75,6 @@ jobs:
           STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
           STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
         run: |
-          python scripts/strato_activate.py
           PYTHONPATH=scripts python - <<'PY'
           import os
           from strato_publish import connection
@@ -85,7 +84,7 @@ jobs:
           with connection() as sftp:
               path = root + '/.htaccess'
               original = read_regular(sftp, path, 200000)
-              fixed = original.replace(b' /content-gate.php?path=', b' content-gate.php?path=')
+              fixed = original.replace(b' /content-gate.php?path=', b' content-gate.php?path=').replace(b'[END,QSA]', b'[L,QSA]')
               if fixed == original:
                   raise RuntimeError('Expected historical gate rules missing')
               ips = origin_ips()
