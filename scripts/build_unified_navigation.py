@@ -12,8 +12,10 @@ body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main
 if not body:raise SystemExit('Finance content missing')
 markup=body[1]
 style=re.search(r'<style>(.*?)</style>',source,re.S)[1]
-style=style.replace(':root',':host').replace('body',':host')
-style+=':host{display:block;font:inherit;color:inherit}.card{margin:17px 0}.bottom{display:none}'
+style=style.replace(':root',':host')
+# Body-level spacing and background belong to the shared application frame, not the shadow host.
+style=re.sub(r'\bbody\s*\{[^{}]*\}', '', style)
+style+=':host{display:block;width:100%;max-width:none;margin:0;padding:0;background:transparent;box-sizing:border-box;font:inherit;color:inherit}.card{margin:17px 0}.bottom{display:none}'
 actions=re.search(r'<div class="bottom">(.*?)</footer>',source,re.S)[0].split('<footer')[0]
 script=re.search(r'<script>\s*\(function\(\)\{\'use strict\';(.*?)window.addEventListener\(\'DOMContentLoaded\'',source,re.S)[1]
 script=script[:script.rfind('})();')]
@@ -34,7 +36,9 @@ function applyReferenceRate(rate){
 window.addEventListener('nic-reference-interest',event=>applyReferenceRate(event.detail.rate));
 applyReferenceRate(window.NICReferenceInterest?.rate??4.0);
 """
-factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
+shared_layout=(site/'calculator-layout.css').read_text(encoding='utf-8')
+finance_result_grid_css=".grid:has(> .kpi),.refinance-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,max(190px,calc(25% - 9px))),1fr))!important;gap:11px!important}.grid:has(> .kpi)>.kpi,.refinance-grid>.kpi{min-width:0}.refinance-grid:has(>:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}@media(max-width:700px){.grid:has(> .kpi),.refinance-grid{grid-template-columns:minmax(0,1fr)!important}}"
+factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host.attachShadow({mode:"open"});root.innerHTML='+json.dumps('<style>'+style+shared_layout+finance_result_grid_css+'</style>'+markup+actions)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
 calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:

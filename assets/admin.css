@@ -65,3 +65,8 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
   white-space:normal;overflow-wrap:break-word;hyphens:auto;font-size:var(--nic-body-font-size,16px);line-height:1.4;
  }
  body.nic-admin .admin-tabs button[aria-selected=true]{background:var(--nic-green-bg,#075c55);color:var(--nic-green-text,#fff);border:0}
+
+/* Keep access-setting checkboxes and their labels grouped at the left. */
+#panel-users .user-access-choice{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:12px!important;width:100%;text-align:left!important}
+#panel-users .user-access-choice>input[type=checkbox]{flex:0 0 20px!important;width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;margin:2px 0!important;padding:0!important}
+#panel-users .user-access-choice>span{display:block!important;flex:1 1 auto!important;min-width:0;margin:0!important;text-align:left!important}
