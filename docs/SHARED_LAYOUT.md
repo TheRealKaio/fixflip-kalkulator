@@ -15,7 +15,7 @@ bestehende Originalvergleich im Build erzwingt dies weiterhin.
 vor dem Asset-Fingerprinting. Es übernimmt die tatsächliche CSS-Reihenfolge
 der Hauptseite in `calculator-shell.css` und entfernt die entsprechenden
 Selektoren aus den anderen generierten Stylesheets und Inline-Blöcken.
-Alle fünf Rechnerrouten laden dieselbe Datei. Auch die fünfteilige Navigation wird aus einer einzigen Hauptseitenvorlage erzeugt; die separate Laufzeit-Erzeugung der fünften Kachel ist entfernt. Der Footer steht überall im
+Alle fünf Rechnerrouten laden dieselbe Datei. Auch die fünfteilige Navigation wird aus einer einzigen Hauptseitenvorlage erzeugt; die separate Laufzeit-Erzeugung der fünften Kachel ist entfernt. Das isolierte Finanzierungsmodul lässt den Shadow-Host transparent und ohne eigene Außenabstände; der gemeinsame `main.section`-Rahmen und die Aktionsleiste bestimmen seine Position. Der Footer steht überall im
 selben App-Container. Seine Breite benötigt keine JavaScript-Messung mehr. `calculator-shell.js` übernimmt Social-Media-Links und die Versions-/Cookie-Gruppierung für alle Rechner. Auch die Finanzierungsseite lädt die gemeinsame Rechtsansicht und verwendet denselben vollständigen Standard-Haftungsausschluss.
 
 Alle fünf Navigationskacheln verwenden dieselbe Raster-, Größen- und
