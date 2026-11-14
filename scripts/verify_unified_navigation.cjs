@@ -267,6 +267,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/finanzierungsrechner/');
   await page.locator('.app').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='fallback');
+  await page.locator('#nicFinanceModule [data-finance-id="loan"]').waitFor({state:'visible'});
   assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible(),'Direct finance must remain usable when published settings are unavailable');
   assert.deepEqual(errors,[]);
   console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
