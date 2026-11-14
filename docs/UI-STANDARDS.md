@@ -141,15 +141,19 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## Ergebnisboxen der Rechner
 
-- Ergebnis-Kacheln aller Rechner ordnen sich auf Desktop responsiv in zwei bis
-  höchstens vier Spalten an. Bei den bestehenden Ergebnisvarianten wird eine
-  einzelne Kachel in einer eigenen letzten Zeile vermieden.
-- Auf Mobilgeräten steht grundsätzlich eine Kachel pro Zeile. Eine zweite
-  Spalte ist nur vorgesehen, wenn der Platz für den Inhalt ausreicht.
-- Schieberegler behalten ihre eigene Zeile und werden von den Ergebnisraster-
-  Regeln nicht verändert.
-- Die Finanzierungs- und Restschuld-Ergebnisse verwenden dieselbe Regel auch
-  innerhalb des Shadow-Roots. Eingabegruppen und Regler bleiben unberührt.
+- Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
+  ausbalanciert und bleiben bei höchstens vier Boxen pro Zeile: Fix & Flip
+  zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
+  Die acht Eigenheim-Kosten-KPIs stehen als 4 + 4. Die zwei projektbezogenen
+  Fix-&-Flip-KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
+  werden im Eigenheim ausgeblendet. Sechs Budget-Kacheln stehen als 3 + 3;
+  sieben Vermietungsergebnisse als 4 + 3.
+- Mobilgeräte zeigen eine Kachel pro Zeile. Lange Inhalte bleiben innerhalb
+  ihrer Kachel lesbar.
+- Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
+  werden nicht in Ergebnisraster einsortiert.
+- Finanzierung und Restschuld verwenden dieselbe rechnerbezogene Verteilung
+  innerhalb des Shadow-Roots. Andere Eingabegruppen bleiben unberührt.
 
 ## Erklärboxen der sechs Werkzeuge
 
