@@ -11,6 +11,7 @@ finance_header=[re.search(r'<h1\b[^>]*>(.*?)</h1>',finance,re.S)[1], html.unesca
 body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main>',finance,re.S)
 if not body:raise SystemExit('Finance content missing')
 markup=body[1]
+markup=markup.replace('<div class="grid">','<div class="grid finance-result-grid">',1)
 markup=markup.replace('<h3>Anschlussfinanzierung</h3>','<h3 class="finance-h2-equivalent">Anschlussfinanzierung</h3>')
 markup=markup.replace('<h3>Hypothekenzinsen – rollierende 10 Jahre</h3>','<h3 class="finance-h2-equivalent">Hypothekenzinsen – rollierende 10 Jahre</h3>')
 def namespace_finance_ids(source):
@@ -48,6 +49,7 @@ finance_result_grid_css += '#nicFinanceModule .card>h2,#nicFinanceModule .card .
 
 finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(7):last-child),#nicFinanceModule .refinance-grid:has(>:nth-child(7):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(9):last-child),#nicFinanceModule .refinance-grid:has(>:nth-child(9):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}}';
 finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))!important}}';
+finance_result_grid_css += '#nicFinanceModule .finance-result-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}';
 financeMarkup=namespace_finance_ids(markup+actions);
 factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
