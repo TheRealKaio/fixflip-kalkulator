@@ -146,7 +146,7 @@ TypesConfig /etc/mime.types
             assert 'X-NIC-Origin-Release' in headers.get('Vary','')
             assert request('/', APEX)[0] == redirect
             assert request('/', APEX, 'wrong-release')[0] == redirect
-            assert request('/budget/', APEX, release)[2] == b'test release budget/index.html'
+            assert request('/budget/', APEX, release)[2] == (b'test release content-gate.php' if direct else b'test release budget/index.html')
             assert request('/no-such-page/', APEX, release)[0] == 404
             assert request('/'+STORE+'/'+release+'/.ready.json', APEX, release)[0] == 403
             assert request('/api/index.php?r=health', APEX, release)[2] == b'existing API'
