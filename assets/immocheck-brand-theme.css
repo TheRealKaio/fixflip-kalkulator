@@ -758,4 +758,6 @@ body:not(.nic-embed) .kpis:not(#standardKpis):has(>:nth-child(5):last-child){gri
 body:not(.nic-embed) .kpis:has(>:nth-child(7):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}
 @media(max-width:700px){
   body:not(.nic-embed) :is(.kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
+  body:not(.nic-embed) :is(#rentSection,#result) .kpis{grid-template-columns:minmax(0,1fr)!important}
+  body:not(.nic-embed) :is(#rentSection,#result) .kpis :is(.name,.note,.value){overflow-wrap:anywhere}
 }
