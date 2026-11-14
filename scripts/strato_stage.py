@@ -24,10 +24,10 @@ Options -Indexes
 REQUIRED = {'index.html', 'service-worker.js', 'backend-config.json',
             'budget/index.html', 'finanzierungsrechner/index.html',
             'eigennutzung/index.html', 'vermietung/index.html', 'fix-flip/index.html',
-            'nebenkostenabrechnung/index.html', 'preise/index.html', 'warum-immocheck/index.html'}
+            'nebenkostenabrechnung/index.html', 'preise/index.html', 'warum-immocheck/index.html', 'content-gate.php'}
 EXTENSIONS = {'.html', '.js', '.css', '.json', '.svg', '.png', '.jpg', '.jpeg',
               '.webp', '.gif', '.avif', '.ico', '.woff', '.woff2', '.ttf', '.txt',
-              '.xml', '.webmanifest', '.pdf', '.map'}
+              '.xml', '.webmanifest', '.pdf', '.map', '.php'}
 SKIP_FILES = {'CNAME', '.nojekyll', '.release-version', '.asset-manifest.json',
               '.calculator-css-baseline.json'}
 
@@ -37,7 +37,8 @@ def validate_file(relative):
             or any(not re.fullmatch(r'[A-Za-z0-9_-][A-Za-z0-9_.-]*', part)
                    or part.lower() in {'api', 'immocheck-private'}
                    for part in relative.split('/'))
-            or Path(relative).name.lower() in {'config.json', 'config.php', 'install.php'}):
+            or Path(relative).name.lower() in {'config.json', 'config.php', 'install.php'}
+            or (Path(relative).suffix.lower() == '.php' and Path(relative).name != 'content-gate.php')):
         raise CheckError('Build enthaelt unerlaubte Dateien; nur statisches Frontend wird hochgeladen.')
 
 
