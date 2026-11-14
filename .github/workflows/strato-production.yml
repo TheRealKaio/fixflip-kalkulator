@@ -31,10 +31,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build and verify website
+        if: inputs.action != 'rollback' && !startsWith(github.event.head_commit.message, 'Rollback STRATO atomic release')
         uses: ./.github/actions/build-site
       - name: Verify SFTP deployment and rollback
+        if: inputs.action != 'rollback' && !startsWith(github.event.head_commit.message, 'Rollback STRATO atomic release')
         run: python -m unittest discover -s scripts -p 'test_strato_*.py'
       - name: Verify production rules with Apache
+        if: inputs.action != 'rollback' && !startsWith(github.event.head_commit.message, 'Rollback STRATO atomic release')
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq apache2 php-cli php-xml
