@@ -63,8 +63,20 @@ jobs:
           STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
           STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
         run: python scripts/strato_activate.py
+      - name: Check restored STRATO release after rollback
+        if: steps.revision.outputs.deploy == 'true' && startsWith(github.event.head_commit.message, 'Check STRATO after rollback')
+        env:
+          STRATO_MODE: check
+          STRATO_RELEASE_ID: current
+          STRATO_OPERATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
+          STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
+        run: python scripts/strato_activate.py
       - name: Publish tested build and verify www
-        if: steps.revision.outputs.deploy == 'true' && !startsWith(github.event.head_commit.message, 'Restore previous STRATO release')
+        if: steps.revision.outputs.deploy == 'true' && !startsWith(github.event.head_commit.message, 'Restore previous STRATO release') && !startsWith(github.event.head_commit.message, 'Check STRATO after rollback')
         env:
           STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
           STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
