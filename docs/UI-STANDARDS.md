@@ -278,3 +278,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Der Import akzeptiert die unveränderte Sicherungsdatei, bis zu 2.000 Konten und 2 MB Dateigröße. Doppelte oder ungültige E-Mail-Adressen und fehlerhafte Zeilen werden vor dem Senden abgewiesen.
 - Vorhandene Konten werden anhand der E-Mail-Adresse zugeordnet; nur Vor- und Nachname werden aktualisiert. Rollen, Sperrstatus und E-Mail-Bestätigung bleiben unverändert. Fehlende Konten werden als aktive, noch nicht bestätigte Benutzer angelegt.
 - Die Verarbeitung ist auf Administratoren beschränkt, erfolgt transaktional und wird protokolliert. Die Serverroute lautet `users-import`; ihre API-Änderung wird erst mit dem separaten STRATO-Backend-Update wirksam.
+
+
+## Admin: Inhaltszugang
+
+- Die Tabelle zur H2-Inhaltssteuerung verwendet die Spalten „Inhalte“, „Anzeigen“ und „Nur Nutzer“. Ein aktiviertes Feld „Nur Nutzer“ beschränkt den Inhalt auf angemeldete Nutzer.
+- Die drei Spalten bleiben auch auf schmalen Mobilansichten nebeneinander. Checkboxen sind kompakt, kontrastreich und ohne browserabhängige blaue Großflächen.
+- Wenn „Anzeigen“ deaktiviert ist, entfernt der STRATO-PHP-Auslieferungsfilter das markierte HTML vor der Übertragung. Bei fehlender Konfiguration oder Datenbankverbindung liefert der Filter keine ungeprüfte Seite aus.
