@@ -261,3 +261,11 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
   „Budget übernehmen“ (`#ownBudgetTransferCard`). Einheiten bleiben erhalten.
 - Die Bereinigung gilt auch bei Einstieg über die Startseite/Inhaltsseiten,
   internen Rechnerwechseln und im Shadow DOM des Finanzierungsrechners.
+
+
+## Nutzerdaten sichern und importieren
+
+- Die Admin-Funktion „Nutzerdaten sichern“ exportiert Nutzerkonten als CSV mit den Spalten Vorname, Nachname und E-Mail. Der Import-Button steht rechts daneben in derselben Zeile.
+- Der Import akzeptiert die unveränderte Sicherungsdatei, bis zu 2.000 Konten und 2 MB Dateigröße. Doppelte oder ungültige E-Mail-Adressen und fehlerhafte Zeilen werden vor dem Senden abgewiesen.
+- Vorhandene Konten werden anhand der E-Mail-Adresse zugeordnet; nur Vor- und Nachname werden aktualisiert. Rollen, Sperrstatus und E-Mail-Bestätigung bleiben unverändert. Fehlende Konten werden als aktive, noch nicht bestätigte Benutzer angelegt.
+- Die Verarbeitung ist auf Administratoren beschränkt, erfolgt transaktional und wird protokolliert. Die Serverroute lautet `users-import`; ihre API-Änderung wird erst mit dem separaten STRATO-Backend-Update wirksam.
