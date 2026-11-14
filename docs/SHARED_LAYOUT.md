@@ -15,10 +15,10 @@ bestehende Originalvergleich im Build erzwingt dies weiterhin.
 vor dem Asset-Fingerprinting. Es übernimmt die tatsächliche CSS-Reihenfolge
 der Hauptseite in `calculator-shell.css` und entfernt die entsprechenden
 Selektoren aus den anderen generierten Stylesheets und Inline-Blöcken.
-Alle fünf Rechnerrouten laden dieselbe Datei. Auch die fünfteilige Navigation wird aus einer einzigen Hauptseitenvorlage erzeugt; die separate Laufzeit-Erzeugung der fünften Kachel ist entfernt. Das isolierte Finanzierungsmodul lässt den Shadow-Host transparent und ohne eigene Außenabstände; der gemeinsame `main.section`-Rahmen und die Aktionsleiste bestimmen seine Position. Der Footer steht überall im
+Alle fünf Rechnerrouten laden dieselbe Datei. Auch die fünfteilige Navigation wird aus einer einzigen Hauptseitenvorlage erzeugt; die separate Laufzeit-Erzeugung der fünften Kachel ist entfernt. Der Finanzierungsrechner wird als normaler Abschnitt in denselben `main.section`-Rahmen eingefügt. Er verwendet denselben Kartenrahmen, dieselben Abstände und die gemeinsame Aktionsleiste. Finance-spezifische Stile sind auf `#nicFinanceModule` beschränkt; interne IDs sind eindeutig benannt, damit sie keine Eingabefelder anderer Rechner überlagern. Der Footer steht überall im
 selben App-Container. Seine Breite benötigt keine JavaScript-Messung mehr. `calculator-shell.js` übernimmt Social-Media-Links und die Versions-/Cookie-Gruppierung für alle Rechner. Auch die Finanzierungsseite lädt die gemeinsame Rechtsansicht und verwendet denselben vollständigen Standard-Haftungsausschluss.
 
-Das Finanzierungsmodul übernimmt zusätzlich die generierte gemeinsame Layout-CSS in seinen Shadow-Root. Damit gelten für seine weißen Karten dieselben `calculator-layout.css`-Regeln wie für die übrigen Rechner. Der Shadow-Host bleibt transparent und ohne eigene Außenabstände.
+Die Karten des Finanzierungsrechners erhalten `calculator-layout.css` direkt im gemeinsamen Dokument. Es gibt keinen separaten Shadow-Root und keine zweite Layout-Kaskade.
 
 Alle fünf Navigationskacheln verwenden dieselbe Raster-, Größen- und
 Zustandsdarstellung: fünf gleich breite Spalten auf Desktop/Tablet und eine
