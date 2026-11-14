@@ -49,7 +49,7 @@ finance_result_grid_css += '#nicFinanceModule .card>h2,#nicFinanceModule .card .
 
 finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(7):last-child),#nicFinanceModule .refinance-grid:has(>:nth-child(7):last-child){grid-template-columns:repeat(4,minmax(0,1fr))!important}#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(9):last-child),#nicFinanceModule .refinance-grid:has(>:nth-child(9):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}}';
 finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))!important}}';
-finance_result_grid_css += '#nicFinanceModule .grid.finance-result-grid:has(> .kpi){grid-template-columns:repeat(2,minmax(0,1fr))!important}';
+finance_result_grid_css += '#nicFinanceModule .grid.finance-result-grid:has(> .kpi){grid-template-columns:repeat(2,minmax(0,1fr))!important}#nicFinanceModule .grid.finance-result-grid>.kpi{grid-column:auto!important}';
 financeMarkup=namespace_finance_ids(markup+actions);
 factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
