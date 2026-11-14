@@ -112,6 +112,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## 4. Texte, Typografie und Buttons
 
+- Die serverseitige HTML-Filterung muss eingebettetes JavaScript und CSS
+  unverändert erhalten. Umlaute, Trennstriche, Mittelpunkte und Symbole dürfen
+  in dynamischen Rechnertexten nicht als HTML-Zeichencodes erscheinen. Ganze
+  deaktivierte Blöcke einschließlich ihrer Skripte werden weiterhin entfernt.
+
 - Markenleiste, Bildheader und Hauptinhalt verwenden `text-size-adjust: 100%`
   (einschließlich `-webkit-`), damit mobile Browser Texte beim Drehen nicht
   eigenständig vergrößern. Admin-Schriftgrößen und Browserzoom bleiben erhalten.

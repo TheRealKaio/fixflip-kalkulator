@@ -51,9 +51,27 @@ try {
     $html = file_get_contents($page);
     if (!is_string($html)) nic_gate_fail();
     if (class_exists(DOMDocument::class)) {
+        // libxml's HTML serializer can turn Unicode in raw-text elements into
+        // HTML entities. Browsers do not decode those in JavaScript or CSS.
+        // Mask only their bodies, preserving their attributes and ancestry so
+        // disabled script/style elements are still removed by the same filter.
+        $rawBodies = [];
+        do {
+            $rawPrefix = 'NIC_RAW_' . bin2hex(random_bytes(16)) . '_';
+        } while (str_contains($html, $rawPrefix));
+        $rawPattern = <<<'NIC_RAW_PATTERN'
+~<!--.*?-->|(<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>)(.*?)(</\2\s*>)~is
+NIC_RAW_PATTERN;
+        $masked = preg_replace_callback($rawPattern, static function (array $match) use (&$rawBodies, $rawPrefix): string {
+            if (!isset($match[1]) || $match[1] === '') return $match[0];
+            $placeholder = $rawPrefix . count($rawBodies);
+            $rawBodies[$placeholder] = $match[3];
+            return $match[1] . $placeholder . $match[4];
+        }, $html);
+        if (!is_string($masked)) nic_gate_fail();
         $dom = new DOMDocument('1.0', 'UTF-8');
         $previous = libxml_use_internal_errors(true);
-        $loaded = $dom->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_NONET | LIBXML_COMPACT);
+        $loaded = $dom->loadHTML('<?xml encoding="UTF-8">' . $masked, LIBXML_NONET | LIBXML_COMPACT);
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
         if (!$loaded) nic_gate_fail();
@@ -71,7 +89,9 @@ try {
         }
         $output = $dom->saveHTML();
         if (!is_string($output)) nic_gate_fail();
-        $html = preg_replace('/^<\?xml encoding="UTF-8">/', '', $output) ?? $output;
+        // Restore only placeholders that survived removal of disabled nodes.
+        $html = strtr($output, $rawBodies);
+        $html = preg_replace('/<\?xml encoding="UTF-8">/', '', $html, 1) ?? $html;
     } else {
         // Fail closed: without an HTML parser we cannot reliably remove nested content.
         nic_gate_fail();

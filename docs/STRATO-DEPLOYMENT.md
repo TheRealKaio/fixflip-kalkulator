@@ -26,6 +26,10 @@ bytegenau mit dem ungefilterten HTML verglichen: `X-NIC-Release` und
 `X-NIC-Source-SHA256` bestätigen die tatsächlich ausgewählte und serverseitig
 geprüfte Quelldatei; `X-NIC-Filtered: 1` bestätigt die erfolgreiche Filterung.
 Statische Dateien werden zusätzlich anhand der ausgelieferten Bytes geprüft.
+Überlebende Inline-JavaScript- und CSS-Blöcke werden in Vorschau und Live-Antwort
+exakt mit dem getesteten Build verglichen. Der HTML-Serializer darf darin weder
+Unicode in HTML-Zeichencodes umwandeln noch absichtlich geschriebene Zeichencodes
+dekodieren. Deaktivierte Blöcke dürfen vollständig entfallen.
 Deaktivierte Inhalte dürfen dabei nicht als ungeschütztes Quell-HTML abrufbar sein.
 
 ## Rücknahme

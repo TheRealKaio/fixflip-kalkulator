@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import re
 import secrets
+from collections import Counter
+from html.parser import HTMLParser
 from urllib.parse import quote
 
 from strato_activate import (APEX, WWW, atomic_replace, fingerprinted, load_release,
@@ -129,7 +131,34 @@ def check_source(headers, body, manifest, name):
         raise CheckError('Ausgeliefertes Asset stimmt nicht mit dem Release ueberein.')
 
 
-def verify_release(ips, manifest, preview_token=None, request=origin_request):
+def raw_text_blocks(html):
+    class RawParser(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=False)
+            self.blocks, self.tag, self.parts = [], None, []
+        def handle_starttag(self, tag, attrs):
+            if tag in {'script', 'style'}:
+                self.tag, self.parts = tag, []
+        def handle_data(self, data):
+            if self.tag is not None:
+                self.parts.append(data)
+        def handle_endtag(self, tag):
+            if tag == self.tag:
+                self.blocks.append((tag, ''.join(self.parts)))
+                self.tag, self.parts = None, []
+    parser = RawParser()
+    parser.feed(html)
+    return Counter(parser.blocks)
+
+
+def check_raw_text(source, output):
+    # Disabled sections may remove complete blocks, but no surviving script or
+    # style may be rewritten, decoded or HTML-entity-encoded by the server.
+    if not raw_text_blocks(output) <= raw_text_blocks(source):
+        raise CheckError('Server hat JavaScript- oder CSS-Inhalt bei der HTML-Filterung veraendert.')
+
+
+def verify_release(ips, manifest, preview_token=None, request=origin_request, source_files=None):
     names = [name for name in manifest['files'] if name.endswith('.html')]
     names += [name for name in manifest['files'] if name.endswith(('.js', '.css', '.json'))]
     for ip in ips:
@@ -144,6 +173,8 @@ def verify_release(ips, manifest, preview_token=None, request=origin_request):
             if status != 200:
                 raise CheckError('Release-Pruefung fehlgeschlagen: ' + name + ' HTTP ' + str(status))
             check_source(headers, body, manifest, name)
+            if source_files is not None and name.endswith('.html'):
+                check_raw_text(source_files[name].read_text(encoding='utf-8'), body.decode('utf-8'))
         for path, expected in [('/nic-unknown-page-test/', 404), ('/.nic-releases/' + manifest['release'] + '/.ready.json', 403)]:
             if request(WWW, ip, path)[0] != expected:
                 raise CheckError('Unbekannte Pfade oder Release-Speicher nicht geschuetzt.')
@@ -193,13 +224,13 @@ def publish(sftp, root, files, release, token, ips, request=origin_request, stag
         for ip in ips:
             if request(WWW, ip, '/' + router + '?path=index.html', 'GET')[0] != 404:
                 raise CheckError('Vorschau ist ohne Schluessel erreichbar.')
-        verify_release(ips, manifest, secret, request)
+        verify_release(ips, manifest, secret, request, source_files=files)
         check_live(ips, request=request)  # Adding preview access must leave old public pages working.
         if read_regular(sftp, live, 200000) != preview:
             raise CheckError('Root-Regeln waehrend Vorschau extern geaendert.')
         atomic_replace(sftp, live, final, token + '1')
         check_live(ips, manifest, request)
-        verify_release(ips, manifest, request=request)
+        verify_release(ips, manifest, request=request, source_files=files)
     except Exception as failure:
         active = read_regular(sftp, live, 200000)
         if active not in {original, preview, final}:

@@ -35,7 +35,15 @@ class NICFixturePDO {
 }
 '''
         gate = gate.replace("ini_set('display_errors', '0');", provider + "\nini_set('display_errors', '0');")
-        html = b'<!doctype html><html><head><meta charset="utf-8"></head><body><section data-nic-content-key="fixture.disabled">SECRET_DISABLED</section><p>Visible content</p></body></html>'
+        script = "window.nicFixture={dash:'–',state:'Hamburg · 5,5 %',status:'🟡 Noch verhandeln oder prüfen',literal:'&uuml;',comparison:'a < b && c > d'};"
+        style = '.fixture::after { content: "ü · – 🟡"; }'
+        html = ('<!doctype html><html><head><meta charset="utf-8">'
+                '<style data-note=">">' + style + '</style>'
+                '<script data-note=">">' + script + '</script></head><body>'
+                '<section data-nic-content-key="fixture.disabled">SECRET_DISABLED'
+                '<script>window.removed="SECRET_DISABLED_SCRIPT";</script></section>'
+                '<script data-nic-content-key="fixture.disabled">window.removed="SECRET_DISABLED_DIRECT";</script>'
+                '<p>Visible content: prüfen · 5,5 %</p></body></html>').encode()
         files = {'index.html': html, 'sample.js': b'window.fixture = true;', 'content-gate.php': gate.encode()}
         manifest = {'release': release, 'files': {name: {'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)} for name, data in files.items()}}
         for name, data in files.items():
@@ -70,6 +78,9 @@ class NICFixturePDO {
             status, headers, body = request('index.html', secret)
             assert status == 200, (status, body)
             assert b'SECRET_DISABLED' not in body and b'Visible content' in body
+            assert script.encode() in body, 'JavaScript raw text was changed by HTML serialization'
+            assert style.encode() in body, 'CSS raw text was changed by HTML serialization'
+            assert b'NIC_RAW_' not in body, 'Unrestored raw-text placeholder'
             assert headers['x-nic-source-sha256'] == hashlib.sha256(html).hexdigest()
             assert headers['x-nic-filtered'] == '1'
             assert body != html  # Filtering must not fail the source verification.
@@ -83,7 +94,7 @@ class NICFixturePDO {
             assert headers['content-type'].startswith('text/javascript')
             (stored / 'sample.js').write_text('tampered')
             assert request('sample.js')[0] == 503
-            print('PHP release router passed: protected preview, correct roots, disabled content absent, source identity, asset MIME, traversal/source blocking and tamper rejection.')
+            print('PHP release router passed: protected preview, disabled content/scripts absent, Unicode and intentional entities preserved in JS/CSS, source identity, asset MIME, traversal/source blocking and tamper rejection.')
         finally:
             process.terminate()
             process.wait(timeout=5)
