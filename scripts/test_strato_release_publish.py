@@ -11,7 +11,7 @@ from test_strato_publish import NEW
 from test_strato_stage import ROOT, RELEASE, STORE
 from strato_stage import collect_files
 from strato_activate import managed_header
-from strato_release_publish import publish, check_source, known_release, release_rules
+from strato_release_publish import publish, check_source, known_release, release_rules, release_assets
 from strato_sftp_check import CheckError
 
 
@@ -79,6 +79,15 @@ class AtomicTests(unittest.TestCase):
             invalid = dict(headers, **{key: 'wrong'})
             with self.subTest(key=key), self.assertRaises(CheckError):
                 check_source(invalid, b'<html>filtered</html>', manifest, 'index.html')
+
+    def test_future_release_recognizes_retained_fingerprinted_assets(self):
+        manifest = {'release': NEW, 'files': {}}
+        name = 'app.0123456789abcdef.js'
+        rules = release_rules(manifest, '456-1', 'a' * 64, [name])
+        self.assertEqual(release_assets(rules), [name])
+        for invalid in ['index.html', 'api/index.php', 'app.js']:
+            with self.subTest(name=invalid), self.assertRaises(CheckError):
+                release_assets(('# NIC-RETAIN-ASSET: ' + invalid + '\n').encode())
 
 
 if __name__ == '__main__':

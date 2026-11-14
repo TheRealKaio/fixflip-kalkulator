@@ -71,7 +71,16 @@ def release_rules(manifest, token, router_hash, retained=(), previous_assets=Non
 
 def old_asset_routes(rules):
     return {name.decode(): router.decode() for name, router in
-            re.findall(rb'^# NIC-OLD-ASSET: ([^ ]+) ([^ ]+)$', rules, re.M)}
+            re.findall(rb'^# NIC-OLD-ASSET: ([^ \r\n]+) ([^ \r\n]+)$', rules, re.M)}
+
+
+def release_assets(rules):
+    # V3 retains only immutable old assets. The V2 helper deliberately excludes
+    # these because its old marker described the opposite set of files.
+    names = [name.decode() for name in re.findall(rb'^# NIC-RETAIN-ASSET: (.+)$', rules, re.M)]
+    if names != sorted(set(names)) or any(not fingerprinted(name) for name in names):
+        raise CheckError('Ungueltige versionierte Alt-Assets.')
+    return names
 
 
 def known_release(sftp, root, rules):
@@ -91,7 +100,7 @@ def known_release(sftp, root, rules):
     digest = match[1].decode()
     if hashlib.sha256(read_regular(sftp, root + '/' + router_name(header[0]), 20000)).hexdigest() != digest:
         raise CheckError('Aktiver Router wurde veraendert.')
-    if rules != release_rules(manifest, header[1], digest, stored_assets(rules), old_asset_routes(rules)):
+    if rules != release_rules(manifest, header[1], digest, release_assets(rules), old_asset_routes(rules)):
         raise CheckError('Aktive Regeln wurden extern geaendert.')
     return manifest
 
@@ -168,9 +177,10 @@ def publish(sftp, root, files, release, token, ips, request=origin_request, stag
     preview = original.replace(b'RewriteRule ^ - [R=404,END]\n', allow + b'RewriteRule ^ - [R=404,END]\n')
     if preview == original:
         raise CheckError('Verwaltete Vorschau-Regel kann nicht sicher eingefuegt werden.')
-    retained = [name for name in stored_assets(original) if fingerprinted(name)]
+    atomic_previous = b'# NIC-ATOMIC-RELEASE: v3\n' in original
+    retained = release_assets(original) if atomic_previous else [name for name in stored_assets(original) if fingerprinted(name)]
     previous_assets = old_asset_routes(original)
-    if b'# NIC-ATOMIC-RELEASE: v3\n' in original:
+    if atomic_previous:
         previous_assets.update({name: router_name(current['release']) for name in current['files'] if fingerprinted(name)})
     else:
         retained += [name for name in current['files'] if fingerprinted(name)]
