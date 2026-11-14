@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'Backend only:')
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     environment:

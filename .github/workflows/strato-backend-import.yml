@@ -1,0 +1,49 @@
+name: STRATO Nutzerimport gezielt aktualisieren
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/strato-backend-import.yml'
+      - 'scripts/strato_backend_import.py'
+      - 'server/webspace/immocheck-private/app.php'
+      - 'server/tests/**'
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        description: Nur pruefen oder getestete Import-Route aktivieren
+        options: [inspect, apply]
+        default: inspect
+
+permissions:
+  contents: read
+
+concurrency:
+  group: strato-production-v2
+  cancel-in-progress: false
+
+jobs:
+  backend:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: strato-production
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify API and targeted updater
+        run: |
+          node server/tests/run.cjs
+          python -m unittest discover -s scripts -p 'test_strato_backend_import.py'
+      - name: Install pinned SFTP client
+        run: python -m pip install --disable-pip-version-check paramiko==5.1.0
+      - name: Inspect or atomically activate admin import route
+        env:
+          STRATO_BACKEND_IMPORT_MODE: ${{ inputs.mode || (contains(github.event.head_commit.message, 'activate user-import route') && 'apply' || 'inspect') }}
+          STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
+          STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
+          STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}
+          STRATO_SFTP_FINGERPRINT: ${{ secrets.STRATO_SFTP_FINGERPRINT }}
+          STRATO_SFTP_ROOT: ${{ vars.STRATO_SFTP_ROOT || '/immocheck-web' }}
+          STRATO_OPERATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: python scripts/strato_backend_import.py
