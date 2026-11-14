@@ -13,7 +13,7 @@ if not body:raise SystemExit('Finance content missing')
 markup=body[1]
 markup=markup.replace('<div class="grid">','<div class="grid finance-result-grid">',1)
 markup=markup.replace('<h3>Anschlussfinanzierung</h3>','<h3 class="finance-h2-equivalent">Anschlussfinanzierung</h3>')
-markup=markup.replace('<h3>Hypothekenzinsen – rollierende 10 Jahre</h3>','<h3 class="finance-h2-equivalent">Hypothekenzinsen – rollierende 10 Jahre</h3>')
+markup=markup.replace('<h3>Hypothekenzinsen – 10 Jahre</h3>','<h3 class="finance-h2-equivalent">Hypothekenzinsen – 10 Jahre</h3>')
 def namespace_finance_ids(source):
  ids=re.findall(r'\bid="([^"]+)"',source)
  if len(ids)!=len(set(ids)):raise SystemExit('Duplicate finance IDs before namespacing')
@@ -51,6 +51,7 @@ finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(
 finance_result_grid_css += '@media(min-width:701px){#nicFinanceModule .grid:has(> .kpi):has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))!important}}';
 finance_result_grid_css += '#nicFinanceModule .grid.finance-result-grid:has(> .kpi){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important}#nicFinanceModule .grid.finance-result-grid>.kpi{grid-column:auto!important}'
 finance_result_grid_css += '@media(max-width:700px),(hover:none){#nicFinanceModule .grid.finance-result-grid:has(> .kpi){grid-template-columns:minmax(0,1fr)!important}}';
+finance_result_grid_css += '#nicFinanceModule .refinance-slider .rangehead{justify-content:flex-start!important;text-align:left!important;gap:.5em!important}#nicFinanceModule .refinance-slider .rangehead>*{flex:0 0 auto}';
 finance_result_grid_css += '#nicFinanceModule .finance-result-grid>.kpi{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:.35em!important}#nicFinanceModule .finance-result-grid>.kpi>span,#nicFinanceModule .finance-result-grid>.kpi>strong{display:block!important;width:100%;margin:0!important}';
 financeMarkup=namespace_finance_ids(markup+actions);
 factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'

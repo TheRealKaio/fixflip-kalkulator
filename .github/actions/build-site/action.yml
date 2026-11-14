@@ -22,6 +22,11 @@ runs:
         p = Path("_site/index.html")
         s = p.read_text(encoding="utf-8")
 
+        plot_label = '<label>Grundstücksgröße</label>'
+        if s.count(plot_label) != 1:
+            raise SystemExit(f"Expected one Grundstücksgröße label, found {s.count(plot_label)}")
+        s = s.replace(plot_label, '<label>Grundstück</label>', 1)
+
         s = s.replace('<meta name="apple-mobile-web-app-title" content="Fix&Flip">','<meta name="apple-mobile-web-app-title" content="Neustart ImmoCheck">')
         s = s.replace('<meta name="apple-mobile-web-app-title" content="Fix & Flip">','<meta name="apple-mobile-web-app-title" content="Neustart ImmoCheck">')
         s = s.replace('<title>Fix & Flip Deal Check</title>','<title>Neustart ImmoCheck</title>')

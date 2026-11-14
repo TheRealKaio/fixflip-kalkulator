@@ -157,6 +157,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Rechnerkacheln nicht ohne Abstand aneinandergrenzen.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
   werden nicht in Ergebnisraster einsortiert.
+- Im Zinsszenario der Anschlussfinanzierung stehen die Markierungen „0 %“, der aktuelle Sollzins und „10 %“ linksbündig in einer Zeile beziehungsweise bei schmalem Platz linksbündig umbrochen.
+- Das Zinsdiagramm trägt die Überschrift „Hypothekenzinsen – 10 Jahre“; die historische Datenreihe bleibt vollständig erhalten.
+- Im Eingabebereich zur Immobilie lautet die Feldbezeichnung „Grundstück“.
 - Finanzierung und Restschuld stehen als normaler DOM-Abschnitt im gemeinsamen
   `main.section`-Rahmen. Das Ergebnisraster verwendet dieselben Layoutregeln wie
   die anderen Rechner; Finanzierungselemente erhalten eindeutige IDs und lokal
