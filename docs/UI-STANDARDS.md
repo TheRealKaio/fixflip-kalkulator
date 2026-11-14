@@ -142,12 +142,14 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 ## Ergebnisboxen der Rechner
 
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
-  ausbalanciert und bleiben bei höchstens vier Boxen pro Zeile: Fix & Flip
+  ausbalanciert und bleiben bei höchstens vier Boxen pro Desktop-Zeile: Fix & Flip
   zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
-  Die acht Eigenheim-Kosten-KPIs stehen als 4 + 4. Die zwei projektbezogenen
-  Fix-&-Flip-KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
-  werden im Eigenheim ausgeblendet. Sechs Budget-Kacheln stehen als 3 + 3;
-  sieben Vermietungsergebnisse als 4 + 3.
+  Eigenheim zeigt nur seine acht Kauf- und Monatskosten-KPIs als 4 + 4; die
+  projektbezogenen KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
+  bleiben dort ausgeblendet. Der Eigenheim-Budgetübertragungsbereich erscheint
+  nicht im Fix-&-Flip-Modus. Sechs Budget-Kacheln stehen als 3 + 3;
+  sieben Vermietungsergebnisse als 4 + 3. Bei neun Boxen gilt 3 + 3 + 3.
+  Einzelne Restboxen werden vermieden, wenn eine gleichmäßigere Spaltenzahl passt.
 - Mobilgeräte zeigen eine Kachel pro Zeile. Lange Inhalte bleiben innerhalb
   ihrer Kachel lesbar.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
