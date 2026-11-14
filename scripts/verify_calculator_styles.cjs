@@ -32,7 +32,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     snapshots.push(await page.evaluate(()=>{
      const props=['display','width','height','fontSize','fontFamily','fontWeight','lineHeight','color','backgroundColor','padding','margin','borderWidth','borderRadius','gridTemplateColumns','gap'];
-     const nodes=[...document.body.querySelectorAll('*')];const shadow=document.getElementById('nicFinanceModule')?.shadowRoot;if(shadow)nodes.push(...shadow.querySelectorAll('*'));
+     const nodes=[...document.body.querySelectorAll('*')];if(document.getElementById('nicFinanceModule')?.shadowRoot)throw Error('Finance must stay in the shared DOM');
      return nodes.filter(el=>!['STYLE','LINK','SCRIPT'].includes(el.tagName)&&el.getClientRects().length).map(el=>[el.tagName,el.id,...props.map(p=>getComputedStyle(el)[p])]);
     }));
    }

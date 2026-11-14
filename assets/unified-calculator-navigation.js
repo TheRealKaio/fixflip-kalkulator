@@ -1,4 +1,4 @@
-/* One controller for all five calculator tiles. Financing remains an isolated module. */
+/* One controller and shared document layout for all five calculator tiles. */
 (()=>{
 'use strict';
 /* FINANCE_MODULE */
@@ -41,7 +41,7 @@ window.NICCalculators=Object.freeze({
  get active(){return active;},
  get(id){return calculators.find(item=>item.id===id)||null;}
 });
-let active=null,financeRoot=null,bypass=false;
+let active=null,financeHost=null,bypass=false;
 function select(key,push=false){
  window.NICExplanations.show(key);
 
@@ -58,17 +58,17 @@ function select(key,push=false){
  document.documentElement.dataset.nicPage=key;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
- if(key==='finance'&&!financeRoot){
+ if(key==='finance'&&!financeHost){
   const host=document.createElement('div');host.id='nicFinanceModule';host.hidden=true;menu.after(host);
-  financeRoot=createFinance(host);
+  financeHost=createFinance(host);
  }
  document.body.classList.toggle('nic-finance-active',key==='finance');
  const host=document.getElementById('nicFinanceModule');if(host)host.hidden=key!=='finance';
  bypass=true;
  try{
   // The legacy handler recognizes only budget, own, rent and flip.
-  // Financing has its own Shadow DOM module; forwarding 'finance' to the
-  // legacy four-calculator handler leaves its DOM and calculations undefined.
+  // Financing uses its own controls in the shared document; forwarding 'finance' to the
+  // legacy four-calculator handler leaves its calculation state undefined.
   if(key!=='finance')window.dispatchEvent(new CustomEvent('nic-select-calculator',{detail:key}));
  }finally{bypass=false;}
  if(key==='finance'){
@@ -104,7 +104,7 @@ document.addEventListener('click',event=>{
  if(active==='finance'){
   const button=event.target.closest('.bottom button');if(!button)return;
   const id=button.classList.contains('bottom-primary')?'newCalc':button.classList.contains('bottom-save')?'download':'share';
-  event.preventDefault();event.stopImmediatePropagation();financeRoot.getElementById(id).click();
+  event.preventDefault();event.stopImmediatePropagation();financeHost.querySelector('[data-finance-id="'+id+'"]').click();
  }
 },true);
 window.addEventListener('popstate',()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);});
