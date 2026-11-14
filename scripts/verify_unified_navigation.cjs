@@ -122,7 +122,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
      const rows=new Map();for(const cell of cells){const top=Math.round(cell.getBoundingClientRect().top);rows.set(top,(rows.get(top)||0)+1);}
      return [...rows.values()];
     }));
-    for(const rows of grids){assert(rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards');if(rows.length>1)assert(rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card');}
+    for(const rows of grids){assert(rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,rows}));if(rows.length>1)assert(rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,rows}));}
    }
 
    if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
