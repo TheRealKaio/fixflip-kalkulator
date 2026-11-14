@@ -119,6 +119,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Schriftfamilie und Größen für Fließtext, H1–H4, Untertexte und Hinweise kommen
   aus Admin → Layout und den gemeinsamen CSS-Variablen. Keine unabhängigen
   Schriftwerte nur für eine Informationsroute einführen.
+- Die fixierte Rechner-Buttonleiste bleibt mit 5 px Abstand zum unteren Viewport-Rand.
 - Farben, Button-Hintergrund, Button-Textfarbe und Button-Radius werden aus
   den zentralen Admin-Einstellungen übernommen, auch in Nutzer-/Profilansichten.
   Keine neuen fest kodierten dunklen Standardbuttons als Ersatz.
@@ -142,12 +143,13 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 ## Ergebnisboxen der Rechner
 
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
-  ausbalanciert und bleiben bei höchstens vier Boxen pro Zeile: Fix & Flip
+  ausbalanciert und bleiben bei höchstens vier Boxen pro Desktop-Zeile: Fix & Flip
   zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
-  Die acht Eigenheim-Kosten-KPIs stehen als 4 + 4. Die zwei projektbezogenen
-  Fix-&-Flip-KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
-  werden im Eigenheim ausgeblendet. Sechs Budget-Kacheln stehen als 3 + 3;
-  sieben Vermietungsergebnisse als 4 + 3.
+  Eigenheim zeigt acht Kauf- und Monatskosten-KPIs als 4 + 4. Die zwei
+  projektbezogenen KPIs „Dein Geld im Projekt“ und „Maximal vertretbarer Kaufpreis“
+  sind in Eigenheim ausgeblendet. Im Fix-&-Flip-Modus werden die Eigenheim-KPI-Gruppe
+  und der Haushaltsbudget-Übertragungsbereich ausgeblendet. Sechs Budget-Kacheln
+  stehen als 3 + 3; sieben Vermietungsergebnisse als 4 + 3.
 - Mobilgeräte zeigen eine Kachel pro Zeile. Lange Inhalte bleiben innerhalb
   ihrer Kachel lesbar.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
