@@ -152,6 +152,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Einzelne Restboxen werden vermieden, wenn eine gleichmäßigere Spaltenzahl passt.
 - Mobilgeräte zeigen eine Kachel pro Zeile. Lange Inhalte bleiben innerhalb
   ihrer Kachel lesbar.
+- Werte und direkt anschließende Texte oder Einheiten behalten sichtbar einen
+  Abstand, auch wenn sie in einer Zeile umbrechen. Inline-Elemente dürfen in
+  Rechnerkacheln nicht ohne Abstand aneinandergrenzen.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
   werden nicht in Ergebnisraster einsortiert.
 - Finanzierung und Restschuld stehen als normaler DOM-Abschnitt im gemeinsamen
