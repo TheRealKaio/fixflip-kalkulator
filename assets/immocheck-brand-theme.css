@@ -863,7 +863,7 @@ html body:not(.nic-embed) .nic-footer-legal>summary:focus-visible{outline:2px so
 }
 @media screen and (min-width:701px), screen and (orientation:landscape){
  html body:not(.nic-embed) .nic-footer-layout{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr) minmax(0,1fr)!important}
- html body:not(.nic-embed) .nic-footer-layout:has(.nic-footer-section[hidden]){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body:not(.nic-embed) .nic-footer-layout:has(.nic-footer-section[hidden]){grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important}
  html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]):has(#nicFooterAboutSection[hidden]),
  html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]):has(#nicFooterContactSection[hidden]),
  html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterAboutSection[hidden]):has(#nicFooterContactSection[hidden]){grid-template-columns:minmax(0,1fr)!important}
