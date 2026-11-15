@@ -846,7 +846,7 @@ body[data-calculator="own"] #result :is(#kpiEquity,#kpiMaxBuy){display:none!impo
 /* Shared footer variants: phone portrait keeps its existing accordion spacing. */
 html body:not(.nic-embed) .nic-footer-heading-icon{display:none!important}
 html body:not(.nic-embed) .nic-footer-legal{grid-column:1/-1!important;grid-row:auto!important;min-width:0;max-width:100%;margin:0}
-html body:not(.nic-embed) .nic-footer-legal>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,currentColor 14%,transparent);color:inherit}
+html body:not(.nic-embed) .nic-footer-legal>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;padding:10px 14px;border-radius:var(--nic-control-radius,10px);background:color-mix(in srgb,currentColor 14%,transparent);color:inherit}
 html body:not(.nic-embed) .nic-footer-legal>summary::-webkit-details-marker{display:none}
 html body:not(.nic-embed) .nic-footer-legal>summary::marker{content:""}
 html body:not(.nic-embed) .nic-footer-legal>summary h2{display:flex;align-items:center;gap:.7em;margin:0;min-width:0;color:inherit;line-height:1.3}
