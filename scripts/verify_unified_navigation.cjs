@@ -224,7 +224,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   // Menu/content links use the same loaded application as calculator tiles.
   const sharedOrigin=await page.evaluate(()=>performance.timeOrigin);
   const headerNode=await page.locator('.app>.hero').elementHandle();
-  for(const slug of ['nebenkostenabrechnung','preise','warum-immocheck']){
+  for(const slug of ['immobilien-abc','preise','warum-immocheck']){
    const menu=page.locator('.nic-brand-bar .nic-menu-toggle');
    if(await menu.isVisible())await menu.click();
    await page.locator('[data-nic-site-nav] a[href="/'+slug+'/"]').click();
