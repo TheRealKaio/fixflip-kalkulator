@@ -88,8 +88,14 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   aktuelle Breite und Typografie reserviert. Beim internen Wechsel bleibt sie stabil.
   Keine zweite Rücksetzlogik, die erst einen falschen Titel sichtbar schreibt.
 - Kein seitenspezifisches Nachbauen von Logo, Grafik, Schriftgrößen oder Abständen.
-- Bestehende Sonderansichten (z. B. Über uns/Kontakt ohne Bildheader sowie die
-  gemeinsamen Rechtsansichten) nicht unbeabsichtigt durch eine neue Variante ersetzen.
+- Startseite, alle fünf Kalkulatoren und alle Contentseiten (einschließlich Über uns,
+  Kontakt und Anmeldung) verwenden denselben Bildheader und denselben Footer.
+  Nur die aktiven Content-Felder `headerTitle` (max. 70 Zeichen) und
+  `headerDescription` (max. 90 Zeichen) variieren je Seite. Leere Felder
+  bleiben ohne Ersatztext und ohne Leerraum. Schriftgrößen, Logo, Layout,
+  Header-Höhenmessung und Footer werden nicht je Route dupliziert.
+- Admin- und Nutzeransichten sowie Rechtsansichten behalten ihre bestehenden
+  Zugangs- und Inhaltslogiken; kein zusätzlicher Header oder Footer wird erzeugt.
 
 ## 3. Inhaltsseiten und Abstände
 
