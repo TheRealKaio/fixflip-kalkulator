@@ -34,9 +34,9 @@ assert.equal(S.portals.length,10);assert.equal(S.pages.length,7);assert.equal(S.
  assert.equal(s.layout.subtextSize,14);assert.equal(s.layout.hintSize,12);
  assert.equal(s.layout.expandGlyphSize,19.2);assert.equal(s.layout.expandPadding,0);
  assert.equal(s.layout.footerExpandBackground,'#EDF3FF');assert.equal(s.layout.footerExpandBorder,'#C7D8FF');
- assert.equal(s.layout.footerExpandInk,'#2563EB');assert.equal(s.layout.footerExpandGlyphSize,13);assert.equal(s.layout.footerExpandPadding,0);
- const boundedFooter=S.normalize({...s,layout:{...s.layout,footerExpandGlyphSize:17,footerExpandPadding:4}});
- assert.equal(boundedFooter.layout.footerExpandGlyphSize,13);assert.equal(boundedFooter.layout.footerExpandPadding,0);
+ assert.equal(s.layout.footerExpandInk,'#2563EB');assert.equal(s.layout.footerExpandGlyphSize,16);assert.equal(s.layout.footerExpandPadding,0);
+ const boundedFooter=S.normalize({...s,layout:{...s.layout,footerExpandGlyphSize:33,footerExpandPadding:4}});
+ assert.equal(boundedFooter.layout.footerExpandGlyphSize,16);assert.equal(boundedFooter.layout.footerExpandPadding,0);
  const secondary=S.normalize({...s,layout:{...s.layout,subtextSize:17,hintSize:11}});S.save(secondary);assert.equal((await S.init()).layout.subtextSize,17);assert.equal((await S.init()).layout.hintSize,11);S.discard();
  const accessKeys=['calculators','pdfDownload','pdfShare'];
  for(const key of accessKeys){
