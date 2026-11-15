@@ -36,7 +36,7 @@ async function initialize(){
  }catch(error){
   fallback=true;applyCurrent();
   const key=root.dataset.nicPage||'website';
-  if(['website','budget','own','rent','flip','finance','settlement','prices','why'].includes(key))window.NICCalculatorNavigation?.select(key==='website'?'home':key);
+  if(['website','budget','own','rent','flip','finance','settlement','prices','why','immobilien-abc'].includes(key))window.NICCalculatorNavigation?.select(key==='website'?'home':key);
  }
  // Let the existing route callbacks and scheduled header measurement finish.
  window.NICHeader?.refresh();
