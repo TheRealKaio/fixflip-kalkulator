@@ -418,16 +418,16 @@ const assert=require('node:assert/strict');
    if(slug==='finanzierungsrechner'){
     const typography=await page.evaluate(()=>{
      const size=el=>getComputedStyle(el).fontSize;
-     const repay=[...document.querySelectorAll('#nicFinanceModule #nicFinance-repayChart text')];
-     const rates=[...document.querySelectorAll('#nicFinanceModule #nicFinance-rateChart text')];
-     const scenario=[...document.querySelectorAll('#nicFinanceModule .refinance-slider .rangehead *')];
+     const repay=[...document.querySelectorAll('#nicFinanceModule [data-finance-id="repayChart"] text, #repayChart text')];
+     const rates=[...document.querySelectorAll('#nicFinanceModule [data-finance-id="rateChart"] text, #rateChart text')];
+     const scenario=[...document.querySelectorAll('#nicFinanceModule .refinance-slider .rangehead *, .refinance-slider .rangehead *')];
      return {repay:repay.map(size),rates:rates.map(size),scenario:scenario.map(size),repayText:repay.map(el=>el.textContent.trim()),rateText:rates.map(el=>el.textContent.trim())};
     });
     assert(typography.repay.length>=2&&typography.repay.every(font=>font==='17px'),'Start/Jahr 10 follow Untertexte (px): '+JSON.stringify(typography));
     assert(typography.rates.length>=5&&typography.rates.every(font=>font==='17px'),'Rate chart percentages and year labels follow Untertexte (px): '+JSON.stringify(typography));
     assert(typography.scenario.length>=3&&typography.scenario.every(font=>font==='17px'),'Scenario slider percentages follow Untertexte (px): '+JSON.stringify(typography));
     assert.deepEqual(typography.repayText,['Start','Jahr 10'],'Repayment chart endpoint labels are present');
-    assert.equal(await page.locator('#nicFinanceModule .bottom-primary').textContent(),'Neu berechnen');
+    assert.equal(await page.locator('.bottom-primary').first().textContent(),'Neu berechnen');
    }
    // Cost chart labels, amounts and totals must follow the admin 'Untertexte (px)' size.
    if(['eigennutzung','fix-flip'].includes(slug)){
