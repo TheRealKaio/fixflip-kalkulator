@@ -22,7 +22,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      const s=JSON.parse(JSON.stringify(NICSettings.current));
      s.social=Object.fromEntries(Object.keys(s.social).map(key=>[key,'']));if(social)s.social.instagram='https://example.test/instagram';
      s.content.about.metaDescription=about?'Informationen über ImmoCheck und unsere Werkzeuge.':'';
-     s.meta.about.description='';s.meta.website.description='';s.company.email=contact?'test@example.test':'';
+     s.meta.about={...(s.meta.about||{}),description:''};s.meta.website.description='';s.company.email=contact?'test@example.test':'';
      NICSettings.apply(s);NICShell.refresh(s);
     },{social,about,contact});
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
