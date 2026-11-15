@@ -53,11 +53,11 @@ if not source.exists():raise SystemExit('Unified prices route is missing')
 page=source.read_text(encoding='utf-8')
 static_terms=''.join(
     '<details class="nic-abc-entry" id="begriff-'+html.escape(entry['id'])+'">'
-    '<summary class="nic-abc-summary"><strong>'+html.escape(entry['term'])+'</strong><small class="nic-abc-subtext">'+html.escape(entry['category'])+'</small></summary>'
+    '<summary class="nic-abc-summary"><span class="nic-abc-title-stack"><strong>'+html.escape(entry['term'])+'</strong><small class="nic-abc-subtext">'+html.escape(entry['category'])+'</small></span></summary>'
     '<div class="nic-abc-detail"><p>'+html.escape(entry['explanation'])+'</p>'
     '<div class="nic-abc-example"><strong>Beispiel</strong><p>'+html.escape(entry['example'])+'</p></div></div></details>'
     for entry in sorted(items,key=lambda e:e['term'].casefold()))
-static_content='<section class="nic-abc"><p class="nic-abc-lead">120 Immobilienbegriffe rund um Kauf, Finanzierung, Notar und Vermietung – einfach erklärt mit Beispielen.</p><div class="nic-abc-list">'+static_terms+'</div></section>'
+static_content='<section class="nic-abc"><p class="nic-abc-lead">120 Immobilienbegriffe rund um Kauf, Finanzierung, Notar und Vermietung – einfach erklärt mit Beispielen.</p><div class="nic-abc-toolbar"><label class="nic-abc-search-label">Begriff suchen<input class="nic-abc-search" type="search" placeholder="Begriff suchen, z. B. Grundschuld …" aria-label="Immobilienbegriff suchen"></label></div><div class="nic-abc-heading-row"><h2 class="nic-abc-heading">Begriffe von A bis Z</h2><p class="nic-abc-count">120 Begriffe von 120 Begriffen</p></div><div class="nic-abc-list">'+static_terms+'</div></section>'
 page=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>',
     lambda _: '<article id="nicContentView" class="nic-content-card">'+static_content+'</article>',
     page,count=1,flags=re.S)
