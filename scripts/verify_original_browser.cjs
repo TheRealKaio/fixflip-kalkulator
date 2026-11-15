@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 (async()=>{
- const browser=await chromium.launch({headless:true,...(process.env.NIC_CHROMIUM_BIN?{executablePath:process.env.NIC_CHROMIUM_BIN,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--no-zygote','--single-process']}: {})});
+ const browser=await chromium.launch({headless:true,...(process.env.NIC_CHROMIUM_BIN?{executablePath:process.env.NIC_CHROMIUM_BIN,args:['--no-sandbox','--disable-dev-shm-usage']}: {})});
  try {
  const page=await browser.newPage({viewport:{width:1440,height:900},serviceWorkers:"block"});
  await page.route('http://127.0.0.1:8766/**',async route=>{
@@ -415,6 +415,20 @@ const assert=require('node:assert/strict');
    await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));s.layout.font='georgia';s.layout.bodySize=20;s.layout.h2=24;s.layout.subtextSize=17;NICSettings.save(s);NICSettings.apply(s);});
    assert(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).fontSize===NICSettings.current.layout.subtextSize+'px'&&getComputedStyle(el).fontFamily.includes('Georgia')));
    assert(await page.locator('.deal-type-title').evaluate(el=>getComputedStyle(el).fontSize==='24px'));
+   if(slug==='finanzierungsrechner'){
+    const typography=await page.evaluate(()=>{
+     const size=el=>getComputedStyle(el).fontSize;
+     const repay=[...document.querySelectorAll('#nicFinanceModule #nicFinance-repayChart text')];
+     const rates=[...document.querySelectorAll('#nicFinanceModule #nicFinance-rateChart text')];
+     const scenario=[...document.querySelectorAll('#nicFinanceModule .refinance-slider .rangehead *')];
+     return {repay:repay.map(size),rates:rates.map(size),scenario:scenario.map(size),repayText:repay.map(el=>el.textContent.trim()),rateText:rates.map(el=>el.textContent.trim())};
+    });
+    assert(typography.repay.length>=2&&typography.repay.every(font=>font==='17px'),'Start/Jahr 10 follow Untertexte (px): '+JSON.stringify(typography));
+    assert(typography.rates.length>=5&&typography.rates.every(font=>font==='17px'),'Rate chart percentages and year labels follow Untertexte (px): '+JSON.stringify(typography));
+    assert(typography.scenario.length>=3&&typography.scenario.every(font=>font==='17px'),'Scenario slider percentages follow Untertexte (px): '+JSON.stringify(typography));
+    assert.deepEqual(typography.repayText,['Start','Jahr 10'],'Repayment chart endpoint labels are present');
+    assert.equal(await page.locator('#nicFinanceModule .bottom-primary').textContent(),'Neu berechnen');
+   }
    // Cost chart labels, amounts and totals must follow the admin 'Untertexte (px)' size.
    if(['eigennutzung','fix-flip'].includes(slug)){
     const costTypography=await page.evaluate(()=>{
@@ -592,7 +606,7 @@ const assert=require('node:assert/strict');
  assert.equal(await admin.locator('#layout-subtextSize').inputValue(),'14');
  assert.equal(await admin.locator('#layout-hintSize').inputValue(),'12');
  await admin.locator('#layout-subtextSize').fill('17');await admin.locator('#layout-hintSize').fill('11');
- await admin.locator('#saveSettings').click();
+  await admin.locator('#saveSettings').click();
  assert.equal(await page.evaluate(()=>NICSettings.current.layout.subtextSize),17);
  assert.equal(await page.evaluate(()=>NICSettings.current.layout.hintSize),11);
  await page.reload({waitUntil:'domcontentloaded'});
@@ -628,6 +642,19 @@ const assert=require('node:assert/strict');
  assert.equal(savedFooterExpand.footerExpandBorder,'#FDE68A');
  assert.equal(savedFooterExpand.footerExpandInk,'#FFFFFF');
  assert.equal(savedFooterExpand.footerExpandGlyphSize,16);assert.equal(savedFooterExpand.footerExpandPadding,3);
+ await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));s.access.budgetInsightsLoginRequired=true;s.contentSections['legacy.export-check']={visible:false,guestAllowed:false};NICSettings.save(s);NICSettings.apply(s);});
+ const exportDownloadPromise=page.waitForEvent('download');await admin.locator('#exportSettings').click();const exportDownload=await exportDownloadPromise;
+ const exportPath=await exportDownload.path();const archived=JSON.parse(require('fs').readFileSync(exportPath,'utf8'));
+ assert.equal(exportDownload.suggestedFilename(),'site-settings.json');
+ assert.equal(archived.layout.subtextSize,17,'Export includes layout controls');
+ assert.equal(archived.contentSections['legacy.export-check'].guestAllowed,false,'Export preserves saved rules not currently in the admin catalog');
+ assert.equal(archived.access.budgetInsightsLoginRequired,true,'Export preserves access flags without a visible checkbox');
+ assert(!Object.keys(archived).some(key=>/user|account/i.test(key)),'Configuration export excludes user accounts');
+ await page.evaluate(()=>{const s=JSON.parse(JSON.stringify(NICSettings.current));delete s.contentSections['legacy.export-check'];s.access.budgetInsightsLoginRequired=false;NICSettings.save(s);});
+ await admin.locator('#importSettings').setInputFiles(exportPath);
+ await page.waitForFunction(()=>document.getElementById('saveState')?.textContent==='Ungespeicherte Änderungen');
+ await admin.locator('#saveSettings').click();
+ await page.waitForFunction(()=>NICSettings.current.access.budgetInsightsLoginRequired===true&&NICSettings.current.contentSections['legacy.export-check']?.guestAllowed===false);
  await page.reload({waitUntil:'domcontentloaded'});
  await admin.locator('#layout-footerExpandBackground').waitFor({state:'visible'});
  assert.equal(await admin.locator('#layout-footerExpandBackground').inputValue(),'#111827');
@@ -649,6 +676,10 @@ const assert=require('node:assert/strict');
   if(viewport.width<=700||viewport.height<=600){
    const widths=await admin.locator('.configuration-tools .tool-row').evaluate(row=>({row:row.getBoundingClientRect().width,items:[...row.children].filter(el=>el.matches('button,.import-label')).map(el=>el.getBoundingClientRect().width)}));
    assert(widths.items.every(width=>Math.abs(width-widths.row)<2),'Mobile configuration actions use the full row width');
+  }
+  if(viewport.width>1024&&viewport.height>600){
+   const actionAlignment=await admin.locator('.configuration-tools .tool-row').evaluate(row=>[...row.children].filter(el=>el.matches('button,.import-label')).map(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height};}));
+   assert(actionAlignment.length===3&&actionAlignment.every(item=>Math.abs(item.top-actionAlignment[0].top)<1&&Math.abs(item.bottom-actionAlignment[0].bottom)<1),'Configuration actions share one aligned row: '+JSON.stringify(actionAlignment));
   }
   await page.evaluate(()=>window.scrollTo(0,0));
   const nativeGesture=await admin.evaluate(root=>{

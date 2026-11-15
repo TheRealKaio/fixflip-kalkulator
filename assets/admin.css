@@ -81,3 +81,8 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
 .content-section-header>strong:first-child{text-align:left}
 .content-section-row>span{min-width:0;font-size:var(--nic-body-font-size,16px);line-height:1.45;word-break:normal;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 @media(max-width:520px){.content-section-header,.content-section-row{column-gap:4px;padding:10px 4px;font-size:var(--nic-hint-font-size,12px)}}
+
+/* Keep the configuration actions centered on one shared vertical axis. */
+body.nic-admin .configuration-tools .tool-row{align-items:center!important;gap:12px}
+body.nic-admin .configuration-tools .tool-row>button,body.nic-admin .configuration-tools .tool-row>.import-label{box-sizing:border-box;min-height:50px;display:inline-flex;align-items:center;justify-content:center;line-height:1.25;vertical-align:middle}
+body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;min-height:50px;line-height:1.25}
