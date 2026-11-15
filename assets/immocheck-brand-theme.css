@@ -891,3 +891,20 @@ html[data-nic-page="login"] body.nic-content-page .app > header.hero {
  display:block!important;
  visibility:visible!important;
 }
+
+/* Legal footer navigation: center the actual link row, not only its wrapper. */
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) #nicFooterLegal .footer-meta{
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;max-width:none!important;margin-inline:auto!important;text-align:center!important;
+}
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) #nicFooterLegal .footer-legal-links{
+ display:flex!important;flex-flow:row wrap!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;max-width:none!important;margin:0 auto!important;text-align:center!important;
+ gap:.35em .5em!important;
+}
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) #nicFooterLegal .footer-legal-links :is(a,span,button){text-align:center!important}
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) #nicFooterLegal>summary{scroll-margin-top:clamp(16px,8vh,72px)}
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) #nicFooterLegal>summary::after{
+ font-size:max(var(--nic-footer-expand-glyph-size,16px),var(--nic-body-font-size,16px))!important;
+ width:max(28px,1.8em);height:max(28px,1.8em);flex:0 0 max(28px,1.8em);
+}
