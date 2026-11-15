@@ -52,6 +52,8 @@ function setupCalculatorActions(){
   const bar=actions.closest('.bottom');
   const buttons=Array.from(actions.querySelectorAll('button'));
   if(!bar||!footer||buttons.length<3||actions.dataset.nicActionConfigured==='1')return;
+  const financeModule=bar.closest('#nicFinanceModule');
+  if(financeModule?.hidden)return;
   actions.dataset.nicActionConfigured='1';
   const [reset,share,download]=buttons;
   reset.classList.add('bottom-primary','nic-action-0');
@@ -98,7 +100,7 @@ function setupCalculatorActions(){
 setupCalculatorActions();
 // Calculator views are mounted after the shared page scripts run; configure
 // their action bars as soon as the view is inserted into the shared document.
-new MutationObserver(setupCalculatorActions).observe(document.body,{childList:true,subtree:true});
+new MutationObserver(setupCalculatorActions).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
 // Existing authentication capture handler keeps logged-in account behavior.
 // Wait for initialization on a very early click instead of opening administration.
 document.querySelector('.nic-login-button')?.addEventListener('click',async e=>{
