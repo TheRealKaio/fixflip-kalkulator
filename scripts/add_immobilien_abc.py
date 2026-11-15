@@ -5,6 +5,7 @@ All edits target the generated site; maintained sources remain under assets/.
 """
 from pathlib import Path
 import json
+import html
 import re
 import shutil
 import sys
@@ -50,8 +51,15 @@ navigation.write_text(nav,encoding='utf-8')
 source=site/'preise'/'index.html'
 if not source.exists():raise SystemExit('Unified prices route is missing')
 page=source.read_text(encoding='utf-8')
+static_terms=''.join(
+    '<details class="nic-abc-entry" id="begriff-'+html.escape(entry['id'])+'">'
+    '<summary class="nic-abc-summary"><strong>'+html.escape(entry['term'])+'</strong><small class="nic-abc-subtext">'+html.escape(entry['category'])+'</small></summary>'
+    '<div class="nic-abc-detail"><p>'+html.escape(entry['explanation'])+'</p>'
+    '<div class="nic-abc-example"><strong>Beispiel</strong><p>'+html.escape(entry['example'])+'</p></div></div></details>'
+    for entry in sorted(items,key=lambda e:e['term'].casefold()))
+static_content='<section class="nic-abc"><p class="nic-abc-lead">120 Immobilienbegriffe rund um Kauf, Finanzierung, Notar und Vermietung – einfach erklärt mit Beispielen.</p><div class="nic-abc-list">'+static_terms+'</div></section>'
 page=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>',
-    '<article id="nicContentView" class="nic-content-card"><p>Immobilienwissen von A bis Z: Suche nach Fachbegriffen und öffne verständliche Erklärungen mit Beispielen.</p></article>',
+    lambda _: '<article id="nicContentView" class="nic-content-card">'+static_content+'</article>',
     page,count=1,flags=re.S)
 page=page.replace('data-nic-page="prices"','data-nic-page="immobilien-abc"')
 page=page.replace('data-calculator="prices"','data-calculator="immobilien-abc"')
