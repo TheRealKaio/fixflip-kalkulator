@@ -128,6 +128,8 @@ content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
 /* All informational pages retain the same shared image header and typography. */
+/* The old page-specific CSS can still hide informational heroes. Explicitly enable the shared hero. */
+html[data-nic-page] body.nic-content-page>.app>.hero{display:block!important;visibility:visible!important}
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
 body.nic-content-page>.app>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>.app>.bottom{display:none!important}
