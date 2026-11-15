@@ -841,3 +841,44 @@ body[data-calculator="own"] #result :is(#kpiEquity,#kpiMaxBuy){display:none!impo
 @media(max-width:700px){
  body:not(.nic-embed) :is(.kpis,.budget-result-grid){grid-template-columns:minmax(0,1fr)!important}
 }
+
+
+/* Shared footer variants: phone portrait keeps its existing accordion spacing. */
+html body:not(.nic-embed) .nic-footer-heading-icon{display:none!important}
+html body:not(.nic-embed) .nic-footer-legal{grid-column:1/-1!important;grid-row:auto!important;min-width:0;max-width:100%;margin:0}
+html body:not(.nic-embed) .nic-footer-legal>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,currentColor 14%,transparent);color:inherit}
+html body:not(.nic-embed) .nic-footer-legal>summary::-webkit-details-marker{display:none}
+html body:not(.nic-embed) .nic-footer-legal>summary::marker{content:""}
+html body:not(.nic-embed) .nic-footer-legal>summary h2{display:flex;align-items:center;gap:.7em;margin:0;min-width:0;color:inherit;line-height:1.3}
+html body:not(.nic-embed) .nic-footer-legal-icon{display:block;width:1.5em;height:1.5em;flex:0 0 1.5em}
+html body:not(.nic-embed) .nic-footer-legal>summary::after{content:"+";display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;flex:0 0 24px;font-size:var(--nic-footer-expand-glyph-size,13px)!important;line-height:1!important;border:1px solid var(--nic-footer-expand-border,#c7d8ff);border-radius:8px;background:var(--nic-footer-expand-bg,#edf3ff);color:var(--nic-footer-expand-ink,#2563eb);padding:var(--nic-footer-expand-padding,0px)}
+html body:not(.nic-embed) .nic-footer-legal[open]>summary::after{content:"−"}
+html body:not(.nic-embed) .nic-footer-legal>summary:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@media screen and (max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .nic-footer-layout .nic-footer-section>summary h2{display:flex;align-items:center;gap:.6em}
+ html body:not(.nic-embed) .nic-footer-heading-icon{display:block!important;width:1em;height:1em;flex:0 0 1em}
+ html body:not(.nic-embed) .nic-footer-legal>summary{display:none!important}
+ html body:not(.nic-embed) .nic-footer-legal .footer-meta{justify-content:center!important;text-align:center!important}
+ html body:not(.nic-embed) .nic-footer-legal .footer-legal-links{justify-content:center!important;text-align:center!important;margin-left:auto!important;margin-right:auto!important}
+}
+@media screen and (min-width:701px), screen and (orientation:landscape){
+ html body:not(.nic-embed) .nic-footer-layout{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr) minmax(0,1fr)!important}
+ html body:not(.nic-embed) .nic-footer-layout:has(.nic-footer-section[hidden]){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]):has(#nicFooterAboutSection[hidden]),
+ html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]):has(#nicFooterContactSection[hidden]),
+ html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterAboutSection[hidden]):has(#nicFooterContactSection[hidden]){grid-template-columns:minmax(0,1fr)!important}
+ html body:not(.nic-embed) .nic-footer-layout>.nic-footer-left,
+ html body:not(.nic-embed) .nic-footer-layout>.nic-footer-right{display:contents!important}
+ html body:not(.nic-embed) .nic-footer-layout .nic-footer-section{grid-column:auto!important;grid-row:auto!important;align-self:stretch;min-width:0;width:100%;max-width:none!important;box-sizing:border-box}
+ html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]) :is(#nicFooterAboutSection,#nicFooterContactSection){grid-column:auto!important;grid-row:auto!important}
+ html body:not(.nic-embed) .nic-footer-layout .nic-footer-section>summary{display:block!important;padding:0!important;background:transparent!important;border:0!important}
+ html body:not(.nic-embed) .nic-footer-layout .nic-footer-section>summary::after{display:none!important}
+ html body:not(.nic-embed) .nic-footer-layout .nic-footer-section>summary h2{margin:0 0 8px!important}
+ html body:not(.nic-embed) .nic-footer-layout #nicFooterAboutSection,
+ html body:not(.nic-embed) .nic-footer-layout #nicFooterContactSection{border-inline-start:1px solid color-mix(in srgb,currentColor 28%,transparent);padding-inline-start:var(--nic-footer-column-inset,18px)}
+ html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]) #nicFooterAboutSection,
+ html body:not(.nic-embed) .nic-footer-layout:has(#nicFooterSocial[hidden]):has(#nicFooterAboutSection[hidden]) #nicFooterContactSection{border-inline-start:0;padding-inline-start:0}
+ html body:not(.nic-embed) .nic-footer-legal{border-top:1px solid color-mix(in srgb,currentColor 28%,transparent);padding-top:12px}
+ html body:not(.nic-embed) .nic-footer-legal .footer-meta{margin:0!important;padding:12px 0 0!important;border:0!important;text-align:left!important;justify-content:flex-start!important}
+ html body:not(.nic-embed) .nic-footer-legal .footer-legal-links{justify-content:flex-start!important;text-align:left!important;margin-left:0!important;margin-right:0!important;white-space:normal!important;flex-wrap:wrap!important}
+}

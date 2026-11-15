@@ -398,6 +398,7 @@ const assert=require('node:assert/strict');
    await page.locator('#nicLoginTitle').waitFor({state:'visible'});
    await page.getByRole('button',{name:'Abbrechen',exact:true}).click();
    for(const legal of ['impressum','agbs','datenschutz','haftungsausschluss']){
+    const footerLegal=page.locator('#nicFooterLegal');if(await footerLegal.count()&&!await footerLegal.evaluate(el=>el.open))await footerLegal.locator('summary').click();
     await page.locator(`[data-legal-placeholder="${legal}"]`).click();
     await page.locator('#nicLegalPanel').waitFor({state:'visible'});
     assert((await page.locator('.nic-legal-card').innerText()).trim().length>0,'Legal content must exist on every route');

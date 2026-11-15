@@ -4,7 +4,30 @@
 const S=window.NICSettings;
 const footer=document.querySelector('.app>.footer-note')||document.querySelector('.app>.nic-shared-footer')||document.querySelector('.nic-shared-footer')||document.querySelector('.footer-note');
 if(!S||!footer)return;
-const mobileQuery=window.matchMedia?.('(max-width:700px), (max-width:1024px) and (orientation:portrait), (max-width:1024px) and (max-height:600px) and (orientation:landscape)')||null;
+const mobileQuery=window.matchMedia?.('(max-width:700px) and (orientation:portrait)')||null;
+// Decorate the existing sections and move the original legal nodes into one disclosure.
+// Links, cookie controls, settings and their existing event handlers are retained.
+const sectionIcons={
+ nicFooterSocial:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v2"/>',
+ nicFooterAboutSection:'<path d="M20 3C9 2 3 7 4 14c1 7 10 8 14 1 2-4 2-8 2-12ZM3 22 16 9"/>',
+ nicFooterContactSection:'<rect x="2" y="4" width="20" height="16" rx="1"/><path d="m2 5 10 8L22 5"/>'
+};
+function headingIcon(path,className){
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('class',className);svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.7');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.innerHTML=path;return svg;
+}
+for(const [id,path]of Object.entries(sectionIcons)){
+ const title=footer.querySelector('#'+id+' summary h2');
+ if(title&&!title.querySelector('.nic-footer-heading-icon'))title.prepend(headingIcon(path,'nic-footer-heading-icon'));
+}
+let legal=footer.querySelector('#nicFooterLegal');
+const legalMeta=footer.querySelector('.footer-meta');
+if(!legal&&legalMeta){
+ legal=document.createElement('details');legal.id='nicFooterLegal';legal.className='nic-footer-legal';
+ const summary=document.createElement('summary'),title=document.createElement('h2');title.textContent='Rechtliches';
+ title.prepend(headingIcon('<path d="m12 2 9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6Z"/><path d="m8 12 3 3 5-6"/>','nic-footer-legal-icon'));
+ summary.append(title);legalMeta.before(legal);legal.append(summary,legalMeta);
+}
 const socialIconPaths={
  instagram:'<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2"/>',
  facebook:'<path d="M13.6 21v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5H17V3.6c-.7-.1-1.5-.2-2.5-.2-2.5 0-4.2 1.5-4.2 4.3v2.2H7.5V13h2.8v8z"/>',
@@ -22,6 +45,7 @@ const socialIconViewBoxes={instagram:'2 2 20 20',facebook:'3.45 3.4 17.6 17.6',y
 function syncDisclosureState(){
  const mobile=!!mobileQuery?.matches;
  footer.querySelectorAll('.nic-footer-section').forEach(section=>{if(!section.hidden)section.open=!mobile;});
+ if(legal){const mode=mobile?'portrait':'columns';if(legal.dataset.nicFooterMode!==mode){legal.open=mobile;legal.dataset.nicFooterMode=mode;}}
 }
 if(mobileQuery?.addEventListener)mobileQuery.addEventListener('change',syncDisclosureState);
 else if(mobileQuery?.addListener)mobileQuery.addListener(syncDisclosureState);

@@ -235,8 +235,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   über beide Spalten. Die vorhandene Social-Sichtbarkeit steuert dies per CSS;
   keine zusätzlichen Serverabfragen oder nachträgliches Verschieben von DOM-Knoten.
   Mit Social-Einträgen gilt das bisherige Raster.
-- Desktop nutzt das gemeinsame Raster; mobil stehen die Bereiche untereinander
-  und verwenden die bestehenden aufklappbaren Abschnitte.
+- Mobil im Hochformat bis 700 px behalten die drei Bereiche ihre vorhandenen Aufklappfunktionen und Abstände. Vor den Überschriften stehen die Symbole Nutzergruppe, Blatt und Brief; die rechtlichen Links bleiben direkt sichtbar und zentriert.
+- Alle anderen Ansichten verwenden nebeneinanderliegende sichtbare Bereiche mit senkrechten Trennlinien. Ohne Social-Einträge stehen „Über uns“ links und „Kontakt“ rechts. Darunter steht ein eigener, zunächst geschlossener Bereich „Rechtliches“ mit Schildsymbol; er enthält dieselben rechtlichen Links und den vorhandenen Cookie-Hinweis. Beim Wechsel zurück zum mobilen Hochformat sind diese Links direkt sichtbar.
+- Sichtbarkeitsregeln, zentrale Farben/Schrift-/Plus-Einstellungen, der äußere Footer-Abstand und alle Linkziele bleiben erhalten.
 - Farben und Typografie kommen aus den gemeinsamen Einstellungen. Deutsche
   Silbentrennung und normale Umbrüche auch im Footer erhalten.
 - Der gemeinsame Abstand zum Inhalt bleibt 16 px; keine lokale Nullsetzung.
