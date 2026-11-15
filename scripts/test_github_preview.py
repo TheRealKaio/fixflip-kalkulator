@@ -19,7 +19,7 @@ class PreviewTests(unittest.TestCase):
             hashed='app.'+hashlib.sha256(js.encode()).hexdigest()[:16]+'.js'
             (source/hashed).write_text(js)
             (source/'.asset-manifest.json').write_text(json.dumps({'app.js':hashed}))
-            (source/'admin.html').write_text('<head></head><script>if(window.self===window.top){const section=location.hash.slice(1);location.replace(\'./#admin\'+([\'company\',\'content\',\'layout\',\'social\',\'meta\',\'legal\',\'users\',\'stats\'].includes(section)?\'-\'+section:\'\'));}else{document.documentElement.classList.add(\'nic-admin-embedded\');}</script>')
+            (source/'admin.html').write_text('<head></head><script>if(window.self===window.top){const section=location.hash.slice(1);location.replace(\'./#admin\'+([\'company\',\'content\',\'immobilien-abc\',\'layout\',\'social\',\'meta\',\'legal\',\'users\',\'stats\'].includes(section)?\'-\'+section:\'\'));}else{document.documentElement.classList.add(\'nic-admin-embedded\');}</script>')
             (source/'index.html').write_text('<head><base href="/"><script id="nic-published-settings">{"layout":{"bodySize":16,"h1":45},"content":"draft"}</script><script src="/'+hashed+'"></script></head><a href="/budget/">Budget</a>')
             (source/'CNAME').write_text('www.neustart-immocheck.de')
             (source/'backend-config.json').write_text('{"enabled":true,"apiUrl":"live"}')
