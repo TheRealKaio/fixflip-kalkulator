@@ -220,6 +220,7 @@ print('Settings metadata pages built: website, company, four calculators and six
 
 for name in ('admin.css','admin-immobilien-abc.js','admin.js','legal-drafts.js'):
     shutil.copyfile(Path('assets')/name,site/name)
+shutil.copyfile('assets/immobilien-abc.json',site/'immobilien-abc.json')
 docs_dir=site/'docs'
 docs_dir.mkdir(exist_ok=True)
 shutil.copyfile('docs/README-Projektdokumentation.pdf',docs_dir/'README-Projektdokumentation.pdf')
