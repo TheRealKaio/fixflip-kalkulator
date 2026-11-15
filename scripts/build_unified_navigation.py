@@ -163,7 +163,7 @@ for page in site.rglob('*.html'):
  header_config=json.loads((site/'site-settings.json').read_text()).get('content',{}).get(header_key,{})
  if header_config and 'id="heroTitle"' in s:
   for tag,identifier,name in [('h1','heroTitle','headerTitle'),('p','heroText','headerDescription')]:
-   pattern=r'(<'+tag+r'\\b[^>]*id="'+identifier+r'"[^>]*>).*?(</'+tag+'>)'
+   pattern=r'(<'+tag+r'\b[^>]*id="'+identifier+r'"[^>]*>).*?(</'+tag+'>)'
    s=re.sub(pattern,lambda m:m[1]+html.escape(header_config.get(name,''))+m[2],s,count=1,flags=re.S)
  s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)
