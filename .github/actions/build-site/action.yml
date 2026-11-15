@@ -808,6 +808,7 @@ runs:
         python scripts/modularize_calculator_styles.py _site
         python scripts/fingerprint_assets.py _site
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
+        NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_chart_typography.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_calculator_styles.cjs
 
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_desktop_density.cjs

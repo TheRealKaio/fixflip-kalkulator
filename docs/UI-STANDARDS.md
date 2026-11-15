@@ -310,3 +310,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Die Tabelle zur H2-Inhaltssteuerung verwendet die Spalten „Inhalte“, „Anzeigen“ und „Nur Nutzer“. Ein aktiviertes Feld „Nur Nutzer“ beschränkt den Inhalt auf angemeldete Nutzer.
 - Die drei Spalten bleiben auch auf schmalen Mobilansichten nebeneinander. Checkboxen sind kompakt, kontrastreich und ohne browserabhängige blaue Großflächen.
 - Wenn „Anzeigen“ deaktiviert ist, entfernt der STRATO-PHP-Auslieferungsfilter das markierte HTML vor der Übertragung. Bei fehlender Konfiguration oder Datenbankverbindung liefert der Filter keine ungeprüfte Seite aus.
+
+## Diagrammbeschriftungen
+
+- SVG-Beschriftungen in Tilgungs- und Zinsdiagramm entsprechen sichtbar der Admin-Einstellung „Untertexte (px)“. Die Skalierung der SVG-viewBox wird ausgeglichen; die gemeinsame Desktop-Dichte von 75 % gilt wie für HTML-Untertexte.
+- Bei Größenänderungen, Drehen des Geräts, Schriftwechsel und internem Rechnerwechsel neu messen. Jahresbeschriftungen auf schmalen Ansichten ausdünnen, ohne die Datenreihe zu kürzen; erstes und letztes Jahr erhalten.
+- Nicht nur computed font-size prüfen: die tatsächlich gerenderte Schrift mit gleich eingestelltem HTML-Text vergleichen, einschließlich Mobil, Querformat, Tablet und breiten Desktopansichten.
