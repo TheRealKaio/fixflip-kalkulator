@@ -39,7 +39,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert(await card.evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first: '+key);
     if(key==='settlement')assert.deepEqual(await card.evaluate(e=>({margin:getComputedStyle(e).marginBottom,gap:getComputedStyle(e.parentElement).paddingBottom})),{margin:'0px',gap:'16px'},'One shared footer gap');
     const geometry=await card.evaluate(e=>({height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontFamily,body:getComputedStyle(e.querySelector('p')).fontSize,h2:getComputedStyle(e.querySelector('h2')).fontSize,h3:getComputedStyle(e.querySelector('h3')).fontSize}));
-    heights.push(geometry.height);
+    if(key!=='settlement')heights.push(geometry.height);
     assert(/verdana/i.test(geometry.font));assert.equal(geometry.body,'20px');assert.equal(geometry.h2,'24px');assert.equal(geometry.h3,'22px');
     const title=await card.locator('h2').innerText(),intro=await card.locator('.nic-explanation-intro').innerText();
     assert.notEqual(title,await page.locator('#heroTitle').innerText(),'No duplicated hero title');
@@ -68,6 +68,24 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
      if(width===390)assert.equal(await page.locator('[data-nic-explanation] details').evaluate(e=>e.open),false,'New mobile route starts collapsed');
     }
    }
+   // The merged product card fills free viewport space, just like other content cards.
+   for(const viewport of [{width:320,height:900},{width:390,height:1200},{width:768,height:1400},{width:844,height:900},{width:1440,height:1600},{width:1920,height:1800}]){
+    await page.setViewportSize(viewport);
+    await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
+    for(const entry of ['direct','navigation']){
+     if(entry==='navigation')await page.evaluate(()=>{NICCalculatorNavigation.select('home');NICCalculatorNavigation.select('settlement');});
+     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+     const layout=await page.evaluate(()=>{
+      const card=document.querySelector('[data-nic-explanation="settlement"]'),footer=document.querySelector('.app>.footer-note,.app>.nic-shared-footer');
+      const scale=card.getBoundingClientRect().width/Number.parseFloat(getComputedStyle(card).width);
+      return {gap:footer.getBoundingClientRect().top-card.getBoundingClientRect().bottom,expected:16*scale,count:document.querySelectorAll('[data-nic-explanation="settlement"]').length,overflow:document.documentElement.scrollWidth>innerWidth+1};
+     });
+     assert.equal(layout.count,1);
+     assert(Math.abs(layout.gap-layout.expected)<1,'Settlement white card fills to footer: '+JSON.stringify({viewport,entry,layout}));
+     assert(!layout.overflow,'Settlement has no horizontal overflow');
+    }
+   }
+   await page.setViewportSize({width,height:900});
    admin=true;
    await page.goto('http://localhost/#admin-content',{waitUntil:'networkidle'});
    await page.locator('#settingsForm').waitFor({state:'visible'});

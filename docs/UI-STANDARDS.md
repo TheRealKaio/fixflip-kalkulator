@@ -102,6 +102,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   **16 px**, wie auf den anderen Inhaltsseiten. Gemeinsamer Token:
   `--nic-content-footer-gap: 16px`. Bei den integrierten Informationsseiten setzt
   `main.section` diesen Abstand als unteren Innenabstand.
+- Die zusammengeführte Mieterabrechnungsbox wächst bei kurzen Inhalten im verfügbaren Hauptbereich bis zum normalen Footer-Abstand mit. Sie übernimmt die Höhenregel der bisherigen Inhaltskarte; die gemeinsame Mindesthöhe der Rechner-Erklärboxen begrenzt sie nicht.
 - Karte und Footer dürfen sich weder berühren noch überlagern. Den Abstand
   auch bei kurzen, langen und mobil umgebrochenen Inhalten erhalten.
 - Keine leeren Buttons oder Platzhalter verwenden, um Desktop-Lücken zu kaschieren.
