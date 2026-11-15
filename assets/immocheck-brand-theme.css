@@ -882,3 +882,9 @@ html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal
  html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal .footer-meta{margin:0!important;padding:12px 0 0!important;border:0!important;text-align:left!important;justify-content:flex-start!important}
  html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal .footer-legal-links{justify-content:flex-start!important;text-align:left!important;margin-left:0!important;margin-right:0!important;white-space:normal!important;flex-wrap:wrap!important}
 }
+
+/* Center the legal navigation within its own full-width box on every viewport. */
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal .footer-meta{width:100%!important;box-sizing:border-box!important;text-align:center!important;justify-content:center!important}
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal .footer-legal-links{display:flex!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;justify-content:center!important;align-items:center!important;text-align:center!important;flex-wrap:wrap!important;column-gap:.45em;row-gap:.35em;margin-inline:auto!important}
+/* The admin-controlled plus/minus size must not appear smaller than footer body text. */
+html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal>summary::after{font-size:max(var(--nic-footer-expand-glyph-size,16px),var(--nic-body-font-size,16px))!important;width:max(28px,1.8em);height:max(28px,1.8em);flex:0 0 max(28px,1.8em)}
