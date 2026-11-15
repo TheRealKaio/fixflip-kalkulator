@@ -192,6 +192,10 @@ body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active{border:2px
 body:not(.nic-embed) .deal-type-row>.deal-type-option.nic-tile-active :is(strong,small){color:var(--nic-green-text,#fff)!important}
 body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
 `;
+    for(const [name,value] of [
+      ['--nic-expand-bg',l.expandBackground],['--nic-expand-border',l.expandBorder],['--nic-expand-glyph-size',`${l.expandGlyphSize}px`],['--nic-expand-padding',`${l.expandPadding}px`],
+      ['--nic-footer-expand-bg',l.footerExpandBackground],['--nic-footer-expand-border',l.footerExpandBorder],['--nic-footer-expand-ink',l.footerExpandInk],['--nic-footer-expand-glyph-size',`${l.footerExpandGlyphSize}px`],['--nic-footer-expand-padding',`${l.footerExpandPadding}px`]
+    ])document.documentElement.style.setProperty(name,value,'important');
     // Preserve semantic red reset buttons and the green/amber/red result indicators.
     {
       for(const rel of ['icon','apple-touch-icon']){
