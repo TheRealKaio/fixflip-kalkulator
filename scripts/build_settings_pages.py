@@ -109,8 +109,8 @@ root=root.replace('</head>',style+'<link rel="stylesheet" href="/homepage.css"><
 root=re.sub(r'<body\b([^>]*)>',lambda m:'<body'+(re.sub(r'class="([^"]*)"',lambda c:'class="'+c[1]+' nic-home-active"',m[1]) if 'class="' in m[1] else m[1]+' class="nic-home-active"')+'>',root,count=1)
 root=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+intro,root,count=1)
 home_meta=config.get('meta',{}).get('website',{})
-home_header_title=home_meta.get('homeTitle') or 'Deine Immobilie. Dein Plan. Dein Überblick.'
-home_header_description=home_meta.get('homeDescription') or 'Plane deinen Immobilienkauf, prüfe deine Finanzierung und bereite deine Mieterabrechnung vor.'
+home_header_title=str(home_content.get('headerTitle',''))
+home_header_description=str(home_content.get('headerDescription',''))
 root=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+html.escape(home_header_title)+m[2],root,count=1,flags=re.S)
 root=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(home_header_description)+m[2],root,count=1,flags=re.S)
 def home_header_variant(match):
@@ -127,7 +127,7 @@ for key in ['budget','own','rent','flip']:
 content_style='''<style>
 html,body{min-height:100%}
 body{min-height:100vh}
-body.nic-content-page:not(.nic-standard-header-page)>.app>.hero,html[data-nic-page="about"] .app>.hero,html[data-nic-page="contact"] .app>.hero,html[data-nic-page="login"] .app>.hero{display:none!important}
+/* All informational pages retain the same shared image header and typography. */
 body.nic-content-page>.app{min-height:100vh;display:flex;flex-direction:column;background:var(--nic-design-warm,#F6F1E9)!important}
 body.nic-content-page>.app>main.nic-content-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:32px 20px 16px}
 body.nic-content-page>.app>.bottom{display:none!important}
@@ -149,7 +149,7 @@ for key,path in content_routes.items():
     content=config.get('content',{}).get(key,{})
     title=html.escape(str(content.get('title') or key))
     body=ContentSanitizer().fragment(content.get('description',''))
-    standard_header=key in {'settlement','prices','why'}
+    standard_header=True
     article='<article class="nic-content-card">'+('' if standard_header else '<h1>'+title+'</h1>')+'<div>'+body+'</div></article>'
     def replace_existing_content_container(match):
         return '<main class="section nic-content-main">'+article+footer_markup+'</main>'
@@ -176,9 +176,10 @@ for key,path in content_routes.items():
     if not removed_scripts[0]:
         raise SystemExit('No calculator bootstrap scripts found on '+key)
     if standard_header:
-        subtitle=str(content.get('metaDescription') or '')
-        page=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+title+m[2],page,count=1,flags=re.S)
-        page=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(subtitle)+m[2],page,count=1,flags=re.S)
+        header_title=html.escape(str(content.get('headerTitle','')))
+        header_description=html.escape(str(content.get('headerDescription','')))
+        page=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+header_title+m[2],page,count=1,flags=re.S)
+        page=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+header_description+m[2],page,count=1,flags=re.S)
     page=page.replace('</head>',content_style+'</head>',1)
     def mark_content_page(match):
         attrs=match.group(1)
