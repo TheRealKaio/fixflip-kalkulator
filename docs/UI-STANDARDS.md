@@ -338,3 +338,13 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Rechner-Infohilfen verlinken auf den zugehörigen Begriff und erhalten den gemeinsamen Routencontroller. Die bisherigen Rechnereingaben werden beim Wechsel nicht zurückgesetzt.
 - Glossareinträge werden separat in `assets/immobilien-abc.json` gepflegt; Skript und Styles liegen unter `assets/`, der Build-Einbau unter `scripts/add_immobilien_abc.py`.
 - Die neue Route wird nach dem vereinheitlichten Rechner-Build und vor der Fingerprint-Erzeugung ergänzt; STRATO-Live wird durch diesen Dev-Schritt nicht aktualisiert.
+
+## Immobilien ABC: redaktionelle Verwaltung (15. November 2026)
+
+- Neuer Admin-Menüpunkt „Immobilien ABC“ unmittelbar nach „Content“, in derselben nativen Admin-Navigation auf Desktop und Mobil.
+- 120 Ausgangsbegriffe aus `assets/immobilien-abc.json` werden erstmals geladen. Jeder Datensatz besitzt Titel, Themengebiet, Erklärung und optionales Praxisbeispiel.
+- Die Liste im Editor und die öffentliche Ausgabe werden alphabetisch nach Titel sortiert; neue Begriffe werden nach dem Bearbeiten einsortiert.
+- „Hinzufügen“ erzeugt einen bearbeitbaren Datensatz; jedes Element hat rechts ein rotes X zum Löschen mit Bestätigungsdialog. Speichern und Zurücksetzen verwenden die bestehenden Admin-Aktionen.
+- Der veröffentlichte Datenstand wird als JSON-Zeichenfolge unter `meta.immobilienABC` in den zentralen Website-Einstellungen gespeichert. Damit bleibt die bestehende Server-Schnittstelle kompatibel (sie akzeptiert die Metadaten ohne neue Tabellen und ohne neue Freigaberoute).
+- Der öffentliche Router zeigt gespeicherte Begriffe statt Ausgangsdatei, wenn solche Einstellungen verfügbar sind; andernfalls dient die Datei als Fallback.
+- Die Suchzeile nutzt unabhängig von vererbten Form-CSS-Regeln die gesamte verfügbare Breite der Inhaltskarte. Platzhalter: „Begriff suchen, z. B. Grundschuld …“.
