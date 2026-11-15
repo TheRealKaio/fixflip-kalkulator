@@ -3,7 +3,16 @@
 'use strict';
 const ROOT=new URL('.',document.currentScript.src);
 let entriesPromise=null;
-const fetchEntries=()=>entriesPromise||(entriesPromise=fetch(new URL('immobilien-abc.json',ROOT)).then(r=>{if(!r.ok)throw Error('Immobilien ABC konnte nicht geladen werden');return r.json();}).then(rows=>rows.sort((a,b)=>a.term.localeCompare(b.term,'de'))).catch(e=>{entriesPromise=null;throw e;}));
+const fetchEntries=()=>{
+ const saved=window.NICSettings?.current?.meta?.immobilienABC;
+ if(saved){
+  try{
+   const items=JSON.parse(saved);
+   if(Array.isArray(items))return Promise.resolve(items.sort((a,b)=>a.term.localeCompare(b.term,'de')));
+  }catch(error){console.warn('Ungültige gespeicherte ABC-Daten:',error);}
+ }
+ return entriesPromise||(entriesPromise=fetch(new URL('immobilien-abc.json',ROOT)).then(r=>{if(!r.ok)throw Error('Immobilien ABC konnte nicht geladen werden');return r.json();}).then(rows=>rows.sort((a,b)=>a.term.localeCompare(b.term,'de'))).catch(e=>{entriesPromise=null;throw e;}));
+};
 const normalize=value=>String(value||'').toLocaleLowerCase('de').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const element=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 function render(panel){
