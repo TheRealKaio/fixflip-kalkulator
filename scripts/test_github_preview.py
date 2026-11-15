@@ -19,6 +19,7 @@ class PreviewTests(unittest.TestCase):
             hashed='app.'+hashlib.sha256(js.encode()).hexdigest()[:16]+'.js'
             (source/hashed).write_text(js)
             (source/'.asset-manifest.json').write_text(json.dumps({'app.js':hashed}))
+            (source/'admin.html').write_text('<head></head><script>if(window.self===window.top){const section=location.hash.slice(1);location.replace(\'./#admin\'+([\'company\',\'content\',\'layout\',\'social\',\'meta\',\'legal\',\'users\',\'stats\'].includes(section)?\'-\'+section:\'\'));}else{document.documentElement.classList.add(\'nic-admin-embedded\');}</script>')
             (source/'index.html').write_text('<head><base href="/"><script id="nic-published-settings">{"layout":{"bodySize":16,"h1":45},"content":"draft"}</script><script src="/'+hashed+'"></script></head><a href="/budget/">Budget</a>')
             (source/'CNAME').write_text('www.neustart-immocheck.de')
             (source/'backend-config.json').write_text('{"enabled":true,"apiUrl":"live"}')
@@ -28,6 +29,10 @@ class PreviewTests(unittest.TestCase):
                 prepare(source,target,live_layout=True)
             self.assertEqual(json.loads((target/'site-settings.json').read_text()),{'layout':{'bodySize':20,'h1':30},'content':{'title':'development draft'}})
             self.assertEqual(before,{p.relative_to(source):p.read_bytes() for p in source.rglob('*') if p.is_file()})
+            admin=(target/'admin.html').read_text()
+            self.assertIn("nic-admin-preview",admin)
+            self.assertNotIn("location.replace('./#admin'",admin)
+            self.assertIn("nic-admin-embedded",admin)
             self.assertFalse((target/'CNAME').exists())
             self.assertIn("const KEY='nic_preview_site_settings_v2'",(target/'site-settings.js').read_text())
             self.assertIn("const KEY='nic_site_settings_v1'",(source/'site-settings.js').read_text())
