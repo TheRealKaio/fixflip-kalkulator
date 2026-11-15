@@ -43,6 +43,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      if(visible.length){const section=page.locator('#'+visible[0].id);await section.locator('summary').click();assert(await section.evaluate(e=>e.open));await section.locator('summary').click();assert(!await section.evaluate(e=>e.open));}
     }else{
      assert(!layout.legal.open&&layout.legal.summary!=='none');assert(!await page.locator('#nicConsentSettings').isVisible(),'Legal links start collapsed outside portrait');
+     if(!social&&about&&contact)assert(Math.abs(visible[0].box.width/visible[1].box.width-2)<.05,'No-social layout retains the existing 2:1 column proportions');
      visible.forEach((s,i)=>{assert(s.open);assert.equal(s.icon,'none');if(i){assert(Math.abs(s.box.top-visible[0].box.top)<1,'Footer columns align');assert(s.box.left>=visible[i-1].box.right,'Footer columns overlap');}});
      const legal=page.locator('#nicFooterLegal');await legal.locator('summary').click();assert(await legal.evaluate(e=>e.open));assert(await page.locator('#nicConsentSettings').isVisible());
      await legal.locator('summary').press('Enter');assert(!await legal.evaluate(e=>e.open));
