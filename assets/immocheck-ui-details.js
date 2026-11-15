@@ -53,7 +53,7 @@ function setupCalculatorActions(){
   const buttons=Array.from(actions.querySelectorAll('button'));
   if(!bar||!footer||buttons.length<3||actions.dataset.nicActionConfigured==='1')return;
   const financeModule=bar.closest('#nicFinanceModule');
-  if(financeModule?.hidden)return;
+  if(financeModule)return;
   actions.dataset.nicActionConfigured='1';
   const [reset,share,download]=buttons;
   reset.classList.add('bottom-primary','nic-action-0');
