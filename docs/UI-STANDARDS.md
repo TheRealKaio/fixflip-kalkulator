@@ -331,6 +331,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Immobilien ABC (15. November 2026)
 
 - Begriffstitel: Grundschrift fett, Erklärung und Beispiel: Grundschrift, Themen- und Statusangaben: Untertext aus den Admin-Layout-Variablen.
+- Suchfeld nimmt die gesamte verfügbare Contentbreite ein, mit Beispiel-Platzhalter „Begriff suchen, z. B. Grundschuld …“; diese Ausnahme betrifft nicht die platzhalterfreien Rechnereingaben.
+- Über der Liste steht links „Begriffe von A bis Z“, rechts die Trefferzahl als „X Begriffe von 120 Begriffen“; die Anzahl reagiert auf Filter und Suche.
+- Unter jedem fett gesetzten Begriffstitel steht die hellgraue Kategorie linksbündig, nicht am rechten Kartenrand.
 - Auf Mobil sind Themenfilter horizontal scrollbar; Texte haben keine feste Höhe und bleiben barrierearm über native Details/Summary aufklappbar.
 - Rechner-Infohilfen verlinken auf den zugehörigen Begriff und erhalten den gemeinsamen Routencontroller. Die bisherigen Rechnereingaben werden beim Wechsel nicht zurückgesetzt.
 - Glossareinträge werden separat in `assets/immobilien-abc.json` gepflegt; Skript und Styles liegen unter `assets/`, der Build-Einbau unter `scripts/add_immobilien_abc.py`.
