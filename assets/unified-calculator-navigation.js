@@ -12,12 +12,26 @@ function setPage(key){
  document.documentElement.dataset.nicPage=key==='home'?'website':key;
  window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
 }
+function applyHeader(key){
+ const name=key==='home'||key==='website'?'welcome':key;
+ const values=window.NICSettings?.current?.content?.[name];
+ if(!values)return;
+ const title=document.getElementById('heroTitle'),description=document.getElementById('heroText');
+ for(const [element,text] of [[title,values.headerTitle],[description,values.headerDescription]]){
+  if(!element)continue;
+  const value=typeof text==='string'?text:'';
+  if(element.textContent!==value)element.textContent=value;
+  element.style.display=value?'':'none';
+ }
+ window.NICHeader?.refresh();
+}
+window.NICHeaderContent={apply:applyHeader};
 function showContent(key,refresh=false){
  const main=document.querySelector('.app>main.section');if(!main)return;
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
  let panel=document.getElementById('nicContentView');
- if(key==='settlement'){panel?.remove();active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);window.NICHeader?.refresh();return;}
+ if(key==='settlement'){panel?.remove();active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();return;}
  if(!panel){
   panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
   const explanation=main.querySelector(':scope > .nic-explanation-card');
@@ -27,7 +41,7 @@ function showContent(key,refresh=false){
  const signature=JSON.stringify([key,c.description,settings.company]);
  if(panel.dataset.signature!==signature){panel.replaceChildren(window.NICSettings.legalFragment(c.description,settings));panel.dataset.signature=signature;}
  active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;
- if(!refresh)setPage(key);window.NICHeader?.refresh();
+ if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();
 }
 function pushRoute(key,previousURL){
  const path=Object.keys(routes).find(p=>routes[p]===key);
@@ -75,6 +89,7 @@ function select(key,push=false){
   document.getElementById('heroTitle').innerHTML=financeHeader[0];
   document.getElementById('heroText').textContent=financeHeader[1];
  }
+ applyHeader(key);
  window.NICHeader?.refresh();
  active=key;
  document.documentElement.dataset.calculator=key;
@@ -132,8 +147,9 @@ function initWelcome(){
  const settings=window.NICSettings.current,home=settings.meta.website;
  if(!/^#(?:admin(?:-|$)|account$|impressum$|agbs$|datenschutz$|haftungsausschluss$|cookie-hinweis$)/.test(location.hash)){
   let changed=false;
-  if(title&&title.textContent!==home.homeTitle){title.textContent=home.homeTitle;changed=true;}
-  if(text&&text.textContent!==home.homeDescription){text.textContent=home.homeDescription;changed=true;}
+  if(title&&title.textContent!==settings.content.welcome.headerTitle){title.textContent=settings.content.welcome.headerTitle;changed=true;}
+  if(text&&text.textContent!==settings.content.welcome.headerDescription){text.textContent=settings.content.welcome.headerDescription;changed=true;}
+  applyHeader('welcome');
   window.NICSettings.applyMeta(settings,'website');if(changed)window.NICHeader?.refresh();
  }
  let intro=document.getElementById('nic-home-intro');

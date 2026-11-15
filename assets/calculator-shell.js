@@ -28,23 +28,18 @@ if(!legal&&legalMeta){
  title.prepend(headingIcon('<path d="m12 2 9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6Z"/><path d="m8 12 3 3 5-6"/>','nic-footer-legal-icon'));
  summary.append(title);legalMeta.before(legal);legal.append(summary,legalMeta);
 }
-// Reveal opened legal content without jumping when closing it.
+// When legal links expand at the bottom of the viewport, bring the heading and content into view.
+// This handles both short and long pages and never scrolls on close.
 if(legal&&!legal.dataset.nicScrollBound){
  legal.dataset.nicScrollBound='true';
  legal.addEventListener('toggle',()=>{
   if(!legal.open||mobileQuery?.matches)return;
-  requestAnimationFrame(()=>{
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
    if(!legal.open)return;
-   const rect=legal.getBoundingClientRect();
-   const topInset=16;
-   const bottomInset=16;
-   // Scroll only the amount needed to reveal the opened panel.
-   const delta=rect.bottom-(window.innerHeight-bottomInset);
-   if(delta>0){
-    const maxUp=Math.max(0,rect.top-topInset);
-    window.scrollBy({top:Math.min(delta,maxUp),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
-   }
-  });
+   const summary=legal.querySelector(':scope > summary');
+   if(!summary)return;
+   summary.scrollIntoView({block:'start',inline:'nearest',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'instant':'smooth'});
+  }));
  });
 }
 const socialIconPaths={

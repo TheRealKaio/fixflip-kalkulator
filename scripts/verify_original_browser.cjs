@@ -670,7 +670,7 @@ const assert=require('node:assert/strict');
  await admin.locator('#layout-footerExpandBackground').fill('#EDF3FF');
  await admin.locator('#layout-footerExpandBorder').fill('#C7D8FF');
  await admin.locator('#layout-footerExpandInk').fill('#2563EB');
- await admin.locator('#layout-footerExpandGlyphSize').fill('13');
+ await admin.locator('#layout-footerExpandGlyphSize').fill('16');
  await admin.locator('#layout-footerExpandPadding').fill('0');
  await admin.locator('#saveSettings').click();
  // Native administration shares the document and browser scroll on every tab.

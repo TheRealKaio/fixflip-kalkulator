@@ -237,9 +237,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes header height');
   }
   await page.goBack();await page.waitForURL('http://localhost/preise/');
-  assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.title);
+  assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.headerTitle);
   await page.goForward();await page.waitForURL('http://localhost/warum-immocheck/');
-  assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.why.title);
+  assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.why.headerTitle);
   await page.goBack();await page.goBack();await page.goBack();await page.waitForURL('http://localhost/');
   assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Browser history returns home within the shared application');
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
@@ -248,8 +248,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(['preise','warum-immocheck','nebenkostenabrechnung'].includes(routeName)){
     const key=({'preise':'prices','warum-immocheck':'why','nebenkostenabrechnung':'settlement'})[routeName];
     await page.waitForFunction(k=>window.NICCalculators?.active===k,key);
-    assert((await page.evaluate(()=>window.homeHeaderWrites)).every(title=>title===require('../assets/site-settings.json').content[key].title),'Legacy initialization must not overwrite the information header');
-    assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content[key].title,'Direct content startup must preserve its heading');
+    assert((await page.evaluate(()=>window.homeHeaderWrites)).every(title=>title===require('../assets/site-settings.json').content[key].headerTitle),'Legacy initialization must not overwrite the information header');
+    assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content[key].headerTitle,'Direct content startup must preserve its heading');
     assert.equal(await page.evaluate(()=>NICCalculators.active),key,'Direct content URL must use the shared controller');
     assert(await page.locator('.deal-type-card').count(),'Direct content route retains calculator controls for shared navigation');
     assert(await page.locator('.app>.hero').isVisible(),'Standard image header missing on '+routeName);
@@ -262,7 +262,13 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     for(const key of ['background','font','size','logo'])assert.equal(header[key],standardHeader[key],'Standard header '+key+' differs on '+routeName);
     assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
 
-   }else assert(await page.locator('.nic-content-card h1').isVisible(),'Content heading missing on '+routeName);
+   }else {
+    const key=({'ueber-uns':'about','kontakt':'contact'})[routeName];
+    const heroDiagnostic=await page.evaluate(()=>{const el=document.querySelector('.app>.hero');if(!el)return {exists:false,body:document.body.className,app:!!document.querySelector('.app')};const css=getComputedStyle(el),rect=el.getBoundingClientRect();return {exists:true,display:css.display,visibility:css.visibility,opacity:css.opacity,width:rect.width,height:rect.height,html:document.documentElement.outerHTML.slice(0,400),body:document.body.className,inline:el.getAttribute('style'),hidden:el.hidden};});
+    assert(await page.locator('.app>.hero').isVisible(),'Shared image header missing on '+routeName+' '+JSON.stringify(heroDiagnostic));
+    assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content[key].headerTitle,'Content header title differs on '+routeName);
+    assert.equal(await page.locator('.nic-content-card h1').count(),0,'Content page must not duplicate header title');
+   }
    assert(await page.locator('.footer-legal-links a').count()>0,'Footer links missing on '+routeName);
    assert.deepEqual(errors,[],'JavaScript errors on /'+routeName+'/');
    const menuToggle=page.locator('.nic-brand-bar .nic-menu-toggle');

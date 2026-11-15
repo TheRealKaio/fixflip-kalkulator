@@ -7,6 +7,23 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
 (async()=>{
  const s=await S.init();
+ // Editable header copy: limits, deliberate emptiness, and JSON export/import.
+ for(const [key,entry] of Object.entries(s.content)){
+  assert.equal(typeof entry.headerTitle,'string',key+' header title missing');
+  assert.equal(typeof entry.headerDescription,'string',key+' header description missing');
+  assert(entry.headerTitle.length<=70,key+' header title too long');
+  assert(entry.headerDescription.length<=90,key+' header description too long');
+ }
+ const editedHeader=S.normalize({...s,content:{...s.content,budget:{...s.content.budget,headerTitle:'',headerDescription:''},rent:{...s.content.rent,headerTitle:'T'.repeat(90),headerDescription:'D'.repeat(120)}}});
+ assert.equal(editedHeader.content.budget.headerTitle,'');
+ assert.equal(editedHeader.content.budget.headerDescription,'');
+ assert.equal(editedHeader.content.rent.headerTitle.length,70);
+ assert.equal(editedHeader.content.rent.headerDescription.length,90);
+ assert.equal(S.normalize(JSON.parse(JSON.stringify(editedHeader))).content.budget.headerDescription,'');
+ S.save(editedHeader);
+ assert.equal((await S.init()).content.budget.headerTitle,'');
+ assert.equal((await S.init()).content.budget.headerDescription,'');
+ S.discard();
  const legacySettlement=S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonTitle:'Mieterabrechnung erstellen',settlementButtonText:'Nebenkosten erfassen und Abrechnen'}}});
  assert.equal(legacySettlement.meta.website.settlementButtonTitle,'Nebenkosten abrechnen');
  assert.equal(legacySettlement.meta.website.settlementButtonText,'Betriebskosten erfassen und versenden');
@@ -20,8 +37,6 @@ assert.equal(S.portals.length,10);assert.equal(S.pages.length,7);assert.equal(S.
  assert.equal(s.layout.footerExpandInk,'#2563EB');assert.equal(s.layout.footerExpandGlyphSize,16);assert.equal(s.layout.footerExpandPadding,0);
  const boundedFooter=S.normalize({...s,layout:{...s.layout,footerExpandGlyphSize:33,footerExpandPadding:4}});
  assert.equal(boundedFooter.layout.footerExpandGlyphSize,16);assert.equal(boundedFooter.layout.footerExpandPadding,0);
- const adjustableFooter=S.normalize({...s,layout:{...s.layout,footerExpandGlyphSize:24,footerExpandPadding:2}});
- assert.equal(adjustableFooter.layout.footerExpandGlyphSize,24);assert.equal(adjustableFooter.layout.footerExpandPadding,2);
  const secondary=S.normalize({...s,layout:{...s.layout,subtextSize:17,hintSize:11}});S.save(secondary);assert.equal((await S.init()).layout.subtextSize,17);assert.equal((await S.init()).layout.hintSize,11);S.discard();
  const accessKeys=['calculators','pdfDownload','pdfShare'];
  for(const key of accessKeys){

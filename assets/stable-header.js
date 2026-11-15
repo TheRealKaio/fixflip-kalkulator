@@ -35,9 +35,9 @@ function measure(){
  try{
   const heading=probe.querySelector('h1'),description=probe.querySelector('p');
   let maximum=0;
-  const states=[...variants,[hero.querySelector('h1').innerHTML,hero.querySelector('p').textContent]];
+  const states=[...variants,[hero.querySelector('h1').textContent,hero.querySelector('p').textContent]];
   for(const [title,text]of states){
-   heading.innerHTML=title;description.textContent=text;
+   heading.textContent=title;description.textContent=text;
    const rect=geometry(probe),style=getComputedStyle(probe);
    const bottom=Math.max(rect.top,...Array.from(probe.children).map(el=>geometry(el).bottom));
    // Measure every variant's actual text extent, including rental, before fixing
