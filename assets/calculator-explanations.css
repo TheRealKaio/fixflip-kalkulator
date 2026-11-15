@@ -17,6 +17,8 @@
 .nic-explanation-card [hidden]{display:none!important}
 /* Information main already supplies the shared 16 px footer gap. */
 body.nic-content-active .nic-explanation-card{margin-bottom:0}
+/* The merged settlement card inherits the full-height content-card behavior. */
+body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.section>[data-nic-explanation="settlement"]{flex:1 0 auto}
 .nic-content-card h2{margin:0 0 12px;line-height:1.3}
 .nic-content-card h3{margin:18px 0 8px;line-height:1.3}
 .nic-content-card p,#nicContentView p{margin:0 0 12px;max-width:none;line-height:1.5}
