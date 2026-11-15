@@ -45,14 +45,79 @@ const assert=require('node:assert/strict');
      const pseudo=el.tagName==='SUMMARY';
      const style=getComputedStyle(el,pseudo?'::after':null);
      return {selector,width:style.width,height:style.height,bg:style.backgroundColor,
-       color:style.color,border:style.borderTopColor,content:pseudo?style.content:null};
+       color:style.color,border:style.borderTopColor,font:style.fontSize,padding:style.padding,
+       boxSizing:style.boxSizing,content:pseudo?style.content:null};
     }));
    });
+   assert(expandControls.length>0,'Plus controls exist on '+slug);
    for(const item of expandControls){
     assert(Math.abs(parseFloat(item.width)-38.4)<.1,'Expand button width: '+JSON.stringify(item));
     assert(Math.abs(parseFloat(item.height)-38.4)<.1,'Expand button height: '+JSON.stringify(item));
     assert.equal(item.bg,'rgb(253, 230, 138)','Expand button background: '+JSON.stringify(item));
     assert.equal(item.color,'rgb(0, 0, 0)','Expand button color: '+JSON.stringify(item));
+    assert.equal(item.font,'19.2px','Expand glyph size: '+JSON.stringify(item));
+    assert.equal(item.padding,'0px','Expand glyph padding: '+JSON.stringify(item));
+    assert.equal(item.boxSizing,'border-box','Expand control prevents box overflow: '+JSON.stringify(item));
+   }
+   const customizedExpandControls=await page.evaluate(()=>{
+    const original=JSON.parse(JSON.stringify(NICSettings.current));
+    const custom=JSON.parse(JSON.stringify(original));
+    Object.assign(custom.layout,{expandBackground:'#123456',expandBorder:'#654321',expandGlyphSize:24,expandPadding:6});
+    NICSettings.apply(custom);
+    const selectors=['.plus-btn','.market-check-toggle','.own-finance-card details.advanced>summary','.flip-section-card details.advanced>summary'];
+    const controls=selectors.flatMap(selector=>[...document.querySelectorAll(selector)].map(el=>{
+     const pseudo=el.tagName==='SUMMARY',style=getComputedStyle(el,pseudo?'::after':null);
+     return {selector,bg:style.backgroundColor,border:style.borderTopColor,font:style.fontSize,padding:style.padding,
+       width:style.width,height:style.height,boxSizing:style.boxSizing};
+    }));
+    NICSettings.apply(original);
+    return controls;
+   });
+   assert(customizedExpandControls.length===expandControls.length,'Every plus symbol is covered by the same layout settings: '+slug);
+   for(const item of customizedExpandControls){
+    assert.equal(item.bg,'rgb(18, 52, 86)','Admin plus background reaches '+item.selector+': '+JSON.stringify(item));
+    assert.equal(item.border,'rgb(101, 67, 33)','Admin plus border reaches '+item.selector+': '+JSON.stringify(item));
+    assert.equal(item.font,'24px','Admin plus glyph size reaches '+item.selector+': '+JSON.stringify(item));
+    assert.equal(item.padding,'6px','Admin plus margin reaches '+item.selector+': '+JSON.stringify(item));
+    assert(Math.abs(parseFloat(item.width)-38.4)<.1&&Math.abs(parseFloat(item.height)-38.4)<.1&&item.boxSizing==='border-box',
+      'Maximum glyph and inset remain within the existing button dimensions: '+JSON.stringify(item));
+   }
+   if(width===390){
+    const footerExpand=await page.evaluate(()=>[...document.querySelectorAll('.nic-footer-section>summary')].map(el=>{
+     const s=getComputedStyle(el,'::after');return {background:s.backgroundColor,border:s.borderTopColor,color:s.color,
+       font:s.fontSize,padding:s.padding,width:s.width,height:s.height,boxSizing:s.boxSizing};
+    }));
+    assert.equal(footerExpand.length,3,'All three footer plus symbols are present on '+slug);
+    for(const item of footerExpand){
+     assert.equal(item.background,'rgb(237, 243, 255)','Footer plus background default: '+JSON.stringify(item));
+     assert.equal(item.border,'rgb(199, 216, 255)','Footer plus border default: '+JSON.stringify(item));
+     assert.equal(item.color,'rgb(37, 99, 235)','Footer plus glyph color default: '+JSON.stringify(item));
+     assert.equal(item.font,'13px','Footer plus glyph size default: '+JSON.stringify(item));
+     assert.equal(item.padding,'0px','Footer plus inset default: '+JSON.stringify(item));
+     assert.equal(item.width,'24px');assert.equal(item.height,'24px');
+    }
+   }
+   if(width===390){
+   const customizedFooterExpand=await page.evaluate(()=>{
+    const original=JSON.parse(JSON.stringify(NICSettings.current));
+    const custom=JSON.parse(JSON.stringify(original));
+    Object.assign(custom.layout,{footerExpandBackground:'#111827',footerExpandBorder:'#FDE68A',footerExpandInk:'#FFFFFF',footerExpandGlyphSize:16,footerExpandPadding:3});
+    NICSettings.apply(custom);
+    const controls=[...document.querySelectorAll('.nic-footer-section>summary')].map(el=>{
+     const s=getComputedStyle(el,'::after');return {background:s.backgroundColor,border:s.borderTopColor,color:s.color,
+       font:s.fontSize,padding:s.padding,width:s.width,height:s.height,boxSizing:s.boxSizing};
+    });
+    NICSettings.apply(original);return controls;
+   });
+   assert.equal(customizedFooterExpand.length,3,'Footer settings reach each of the three plus symbols: '+slug);
+   for(const item of customizedFooterExpand){
+    assert.equal(item.background,'rgb(17, 24, 39)','Footer background setting reaches pseudo-icon: '+JSON.stringify(item));
+    assert.equal(item.border,'rgb(253, 230, 138)','Footer border setting reaches pseudo-icon: '+JSON.stringify(item));
+    assert.equal(item.color,'rgb(255, 255, 255)','Footer glyph color setting reaches pseudo-icon: '+JSON.stringify(item));
+    assert.equal(item.font,'16px','Footer glyph size setting reaches pseudo-icon: '+JSON.stringify(item));
+    assert.equal(item.padding,'3px','Footer inset setting reaches pseudo-icon: '+JSON.stringify(item));
+    assert.equal(item.width,'24px');assert.equal(item.height,'24px');assert.equal(item.boxSizing,'border-box');
+   }
    }
    if(['eigennutzung','vermietung','fix-flip'].includes(slug)){
     const id=slug==='vermietung'?'rentFinanceAcquisition':'financeAcquisition';
@@ -534,6 +599,48 @@ const assert=require('node:assert/strict');
  await admin.locator('#layout-subtextSize').waitFor({state:'visible'});
  assert.equal(await admin.locator('#layout-subtextSize').inputValue(),'17');
  assert.equal(await admin.locator('#layout-hintSize').inputValue(),'11');
+ await admin.locator('#layout-expandBackground').fill('#123456');
+ await admin.locator('#layout-expandBorder').fill('#654321');
+ await admin.locator('#layout-expandGlyphSize').fill('24');
+ await admin.locator('#layout-expandPadding').fill('6');
+ await admin.locator('#saveSettings').click();
+ const savedExpand=await page.evaluate(()=>NICSettings.current.layout);
+ assert.equal(savedExpand.expandBackground,'#123456');assert.equal(savedExpand.expandBorder,'#654321');
+ assert.equal(savedExpand.expandGlyphSize,24);assert.equal(savedExpand.expandPadding,6);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await admin.locator('#layout-expandBackground').waitFor({state:'visible'});
+ assert.equal(await admin.locator('#layout-expandBackground').inputValue(),'#123456');
+ assert.equal(await admin.locator('#layout-expandBorder').inputValue(),'#654321');
+ assert.equal(await admin.locator('#layout-expandGlyphSize').inputValue(),'24');
+ assert.equal(await admin.locator('#layout-expandPadding').inputValue(),'6');
+ await admin.locator('#layout-expandBackground').fill('#FDE68A');
+ await admin.locator('#layout-expandBorder').fill('#FDE68A');
+ await admin.locator('#layout-expandGlyphSize').fill('19.2');
+ await admin.locator('#layout-expandPadding').fill('0');
+ await admin.locator('#layout-footerExpandBackground').fill('#111827');
+ await admin.locator('#layout-footerExpandBorder').fill('#FDE68A');
+ await admin.locator('#layout-footerExpandInk').fill('#FFFFFF');
+ await admin.locator('#layout-footerExpandGlyphSize').fill('16');
+ await admin.locator('#layout-footerExpandPadding').fill('3');
+ await admin.locator('#saveSettings').click();
+ const savedFooterExpand=await page.evaluate(()=>NICSettings.current.layout);
+ assert.equal(savedFooterExpand.footerExpandBackground,'#111827');
+ assert.equal(savedFooterExpand.footerExpandBorder,'#FDE68A');
+ assert.equal(savedFooterExpand.footerExpandInk,'#FFFFFF');
+ assert.equal(savedFooterExpand.footerExpandGlyphSize,16);assert.equal(savedFooterExpand.footerExpandPadding,3);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await admin.locator('#layout-footerExpandBackground').waitFor({state:'visible'});
+ assert.equal(await admin.locator('#layout-footerExpandBackground').inputValue(),'#111827');
+ assert.equal(await admin.locator('#layout-footerExpandBorder').inputValue(),'#FDE68A');
+ assert.equal(await admin.locator('#layout-footerExpandInk').inputValue(),'#FFFFFF');
+ assert.equal(await admin.locator('#layout-footerExpandGlyphSize').inputValue(),'16');
+ assert.equal(await admin.locator('#layout-footerExpandPadding').inputValue(),'3');
+ await admin.locator('#layout-footerExpandBackground').fill('#EDF3FF');
+ await admin.locator('#layout-footerExpandBorder').fill('#C7D8FF');
+ await admin.locator('#layout-footerExpandInk').fill('#2563EB');
+ await admin.locator('#layout-footerExpandGlyphSize').fill('13');
+ await admin.locator('#layout-footerExpandPadding').fill('0');
+ await admin.locator('#saveSettings').click();
  // Native administration shares the document and browser scroll on every tab.
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
   await page.setViewportSize(viewport);

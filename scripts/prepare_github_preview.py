@@ -22,11 +22,12 @@ def public_layout(defaults, opener=urlopen):
     layout = json.loads(payload)['settings']['layout']
     result = {}
     for key, default in defaults.items():
-        value = layout[key]
+        value = layout.get(key, default)
         if key == 'font':
             valid = value in {'system','arial','verdana','georgia','trebuchet'}
         elif isinstance(default, (int, float)):
-            valid = type(value) in {int,float} and (0 if key == 'cornerRadius' else 10) <= value <= (40 if key == 'cornerRadius' else 72)
+            lower, upper = {'cornerRadius':(0,40),'expandGlyphSize':(8,24),'expandPadding':(0,6),'footerExpandGlyphSize':(8,16),'footerExpandPadding':(0,3)}.get(key,(10,72))
+            valid = type(value) in {int,float} and lower <= value <= upper
         else:
             valid = isinstance(value,str) and (bool(re.fullmatch(r'#[0-9a-fA-F]{6}',value)) or (key.endswith('Text') and value == 'AUTO'))
         if not valid:

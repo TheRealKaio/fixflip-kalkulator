@@ -128,6 +128,17 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Farben, Button-Hintergrund, Button-Textfarbe und Button-Radius werden aus
   den zentralen Admin-Einstellungen übernommen, auch in Nutzer-/Profilansichten.
   Keine neuen fest kodierten dunklen Standardbuttons als Ersatz.
+- Plus-Aufklappsymbole verwenden auf allen Rechnern dasselbe zentrale Layout.
+  Admin → Layout → Style steuert Plusflächen-Hintergrund, Umrandungsfarbe,
+  Zeichen-Größe (8–24 px) und Innenabstand zum Rand (0–6 px). Die Schaltfläche
+  bleibt 38,4 × 38,4 px groß; die Werte sind so begrenzt, dass Pluszeichen,
+  Innenabstand und Umrandung zusammen in diese Fläche passen. Änderungen gelten
+  für `.plus-btn`, `.market-check-toggle` und die Plus-Pseudoelemente der
+  aufklappbaren Rechnerkarten.
+- Die drei Pluszeichen im dunklen Footer haben eine eigene Admin-Gruppe. Sie
+  steuert Flächen-, Rand- und Zeichenfarbe sowie Zeichen-Größe (8–16 px) und
+  Innenabstand (0–3 px) unabhängig von den Rechner-Pluszeichen. Das Footer-Icon
+  bleibt 24 × 24 px; die Maximalwerte füllen die Fläche, ohne sie zu überragen.
 - Texte nutzen die verfügbare Breite ihrer vorgesehenen Karte. Keine zusätzliche
   schmale Textspalte oder versteckte `max-width` innerhalb der Einführung.
 - HTML-Sprache `de`; längere deutsche Texte mit automatischer Silbentrennung

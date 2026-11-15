@@ -58,6 +58,21 @@ class PreviewTests(unittest.TestCase):
             response.read.return_value=json.dumps({'settings':{'layout':{**expected,'bodySize':bad}}}).encode()
             with self.assertRaises(ValueError):public_layout(defaults,opener)
 
+    def test_footer_layout_values_default_and_stay_inside_the_icon(self):
+        defaults={'footerExpandBackground':'#EDF3FF','footerExpandBorder':'#C7D8FF',
+                  'footerExpandInk':'#2563EB','footerExpandGlyphSize':13,'footerExpandPadding':0}
+        opener=MagicMock()
+        response=opener.return_value.__enter__.return_value
+        response.read.return_value=json.dumps({'settings':{'layout':{}}}).encode()
+        self.assertEqual(public_layout(defaults,opener),defaults)
+        custom={**defaults,'footerExpandBackground':'#111827','footerExpandBorder':'#FDE68A',
+                'footerExpandInk':'#FFFFFF','footerExpandGlyphSize':16,'footerExpandPadding':3}
+        response.read.return_value=json.dumps({'settings':{'layout':custom}}).encode()
+        self.assertEqual(public_layout(defaults,opener),custom)
+        for layout in ({**custom,'footerExpandGlyphSize':17},{**custom,'footerExpandPadding':4}):
+            response.read.return_value=json.dumps({'settings':{'layout':layout}}).encode()
+            with self.assertRaises(ValueError):public_layout(defaults,opener)
+
     def test_rejects_overwriting_source(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)

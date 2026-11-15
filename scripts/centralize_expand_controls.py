@@ -11,9 +11,10 @@ css="""/* One visual language for the five calculators' expand/collapse controls
   --nic-clear-height:32px;
   --nic-clear-glyph-size:calc(var(--nic-body-font-size,16px) * .8);
   --nic-expand-glyph-size:19.2px;
+  --nic-expand-padding:0px;
   --nic-expand-radius:12px;
-  --nic-expand-border:var(--nic-highlight-bg,#c7d8ff);
-  --nic-expand-bg:var(--nic-highlight-bg,#edf3ff);
+  --nic-expand-border:#FDE68A;
+  --nic-expand-bg:#FDE68A;
   --nic-expand-ink:var(--nic-highlight-text,#2563eb);
 }
 body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
@@ -25,7 +26,7 @@ body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
   min-height:var(--nic-expand-size)!important;
   max-width:var(--nic-expand-size)!important;
   max-height:var(--nic-expand-size)!important;
-  padding:0!important;
+  padding:var(--nic-expand-padding)!important;
   margin:0!important;
   border:1.2px solid var(--nic-expand-border)!important;
   border-radius:var(--nic-expand-radius)!important;
@@ -52,7 +53,7 @@ body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>
   min-width:var(--nic-expand-size)!important;
   min-height:var(--nic-expand-size)!important;
   margin:0!important;
-  padding:0!important;
+  padding:var(--nic-expand-padding)!important;
   border:1.2px solid var(--nic-expand-border)!important;
   border-radius:var(--nic-expand-radius)!important;
   background:var(--nic-expand-bg)!important;
