@@ -67,7 +67,7 @@ function setupCalculatorActions(){
    reset.dataset.nicConfirmReset='1';
    reset.addEventListener('click',event=>{
     const confirmOriginal=window.confirm;
-    const accepted=confirmOriginal.call(window,'Möchtest du wirklich neu kalkulieren und deine bisherigen Eingaben löschen?');
+    const accepted=confirmOriginal.call(window,'Möchtest du wirklich neu berechnen und deine bisherigen Eingaben löschen?');
     if(!accepted){
      event.preventDefault();
      event.stopImmediatePropagation();
@@ -84,7 +84,7 @@ function setupCalculatorActions(){
    },true);
   }
   const normalize=()=>{
-   if(reset.textContent.trim()!=='Neu kalkulieren')reset.textContent='Neu kalkulieren';
+   if(reset.textContent.trim()!=='Neu berechnen')reset.textContent='Neu berechnen';
    if(share.textContent.trim()!=='PDF teilen')share.textContent='PDF teilen';
   };
   normalize();
