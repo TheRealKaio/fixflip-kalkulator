@@ -28,6 +28,25 @@ if(!legal&&legalMeta){
  title.prepend(headingIcon('<path d="m12 2 9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6Z"/><path d="m8 12 3 3 5-6"/>','nic-footer-legal-icon'));
  summary.append(title);legalMeta.before(legal);legal.append(summary,legalMeta);
 }
+// Reveal opened legal content without jumping when closing it.
+if(legal&&!legal.dataset.nicScrollBound){
+ legal.dataset.nicScrollBound='true';
+ legal.addEventListener('toggle',()=>{
+  if(!legal.open||mobileQuery?.matches)return;
+  requestAnimationFrame(()=>{
+   if(!legal.open)return;
+   const rect=legal.getBoundingClientRect();
+   const topInset=16;
+   const bottomInset=16;
+   // Scroll only the amount needed to reveal the opened panel.
+   const delta=rect.bottom-(window.innerHeight-bottomInset);
+   if(delta>0){
+    const maxUp=Math.max(0,rect.top-topInset);
+    window.scrollBy({top:Math.min(delta,maxUp),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+   }
+  });
+ });
+}
 const socialIconPaths={
  instagram:'<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2"/>',
  facebook:'<path d="M13.6 21v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5H17V3.6c-.7-.1-1.5-.2-2.5-.2-2.5 0-4.2 1.5-4.2 4.3v2.2H7.5V13h2.8v8z"/>',
