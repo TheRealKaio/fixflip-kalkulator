@@ -264,7 +264,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 
    }else {
     const key=({'ueber-uns':'about','kontakt':'contact'})[routeName];
-    assert(await page.locator('.app>.hero').isVisible(),'Shared image header missing on '+routeName);
+    const heroDiagnostic=await page.evaluate(()=>{const el=document.querySelector('.app>.hero');if(!el)return {exists:false,body:document.body.className,app:!!document.querySelector('.app')};const css=getComputedStyle(el),rect=el.getBoundingClientRect();return {exists:true,display:css.display,visibility:css.visibility,opacity:css.opacity,width:rect.width,height:rect.height,html:document.documentElement.outerHTML.slice(0,400),body:document.body.className,inline:el.getAttribute('style'),hidden:el.hidden};});
+    assert(await page.locator('.app>.hero').isVisible(),'Shared image header missing on '+routeName+' '+JSON.stringify(heroDiagnostic));
     assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content[key].headerTitle,'Content header title differs on '+routeName);
     assert.equal(await page.locator('.nic-content-card h1').count(),0,'Content page must not duplicate header title');
    }
