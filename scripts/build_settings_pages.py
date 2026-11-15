@@ -218,7 +218,7 @@ urls=[base+p for p in pages.values()]+[base+p for k,p in content_routes.items() 
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
 print('Settings metadata pages built: website, company, four calculators and six content pages')
 
-for name in ('admin.css','admin.js','legal-drafts.js'):
+for name in ('admin.css','admin-immobilien-abc.js','admin.js','legal-drafts.js'):
     shutil.copyfile(Path('assets')/name,site/name)
 docs_dir=site/'docs'
 docs_dir.mkdir(exist_ok=True)
