@@ -237,7 +237,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     const measure=await page.locator('#nicContentView').evaluate(card=>{
      const search=card.querySelector('.nic-abc-search'),area=card.querySelector('.nic-abc-toolbar'),rows=card.querySelector('.nic-abc-list');
      const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
-     return {search:rect(search),toolbar:rect(area),list:rect(rows),placeholder:search.placeholder};
+     return {search:rect(search),toolbar:rect(area),list:rect(rows),placeholder:search.placeholder,html:search.outerHTML,style:search.getAttribute('style'),computedWidth:getComputedStyle(search).width,abcReady:!!window.NICABC,stylesheets:[...document.styleSheets].map(x=>x.href).filter(Boolean).filter(h=>h.includes('immobilien'))};
     });
     assert.equal(measure.placeholder,'Begriff suchen, z. B. Grundschuld …');
     assert(Math.abs(measure.search.left-measure.list.left)<4&&Math.abs(measure.search.right-measure.list.right)<4,
