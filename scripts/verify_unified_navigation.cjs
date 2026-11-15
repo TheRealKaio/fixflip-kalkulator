@@ -230,6 +230,18 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await page.locator('[data-nic-site-nav] a[href="/'+slug+'/"]').click();
    await page.waitForURL('http://localhost/'+slug+'/');
    await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').waitFor({state:'visible'});
+   if(slug==='immobilien-abc'){
+    await page.locator('#nicContentView .nic-abc-search').waitFor({state:'visible'});
+    await page.locator('#nicContentView .nic-abc-entry').first().waitFor({state:'visible'});
+    const measure=await page.locator('#nicContentView').evaluate(card=>{
+     const search=card.querySelector('.nic-abc-search'),area=card.querySelector('.nic-abc-toolbar'),rows=card.querySelector('.nic-abc-list');
+     const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};};
+     return {search:rect(search),toolbar:rect(area),list:rect(rows),placeholder:search.placeholder};
+    });
+    assert.equal(measure.placeholder,'Begriff suchen, z. B. Grundschuld …');
+    assert(Math.abs(measure.search.left-measure.list.left)<4&&Math.abs(measure.search.right-measure.list.right)<4,
+      'ABC search must span available list/content width: '+JSON.stringify(measure));
+   }
    assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Information menu must retain the document');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
    assert(await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
