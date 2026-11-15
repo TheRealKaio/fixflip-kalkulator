@@ -86,3 +86,27 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
 body.nic-admin .configuration-tools .tool-row{align-items:center!important;gap:12px}
 body.nic-admin .configuration-tools .tool-row>button,body.nic-admin .configuration-tools .tool-row>.import-label{box-sizing:border-box;height:50px;min-height:50px;display:inline-flex;align-items:center;justify-content:center;align-self:center!important;margin:0!important;position:static!important;transform:none!important;line-height:1.25;vertical-align:middle}
 body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:50px;min-height:50px;align-self:center!important;margin:0!important;position:static!important;transform:none!important;line-height:1.25}
+
+/* Immobilien ABC admin records: shared typography, full-width editor, red delete X. */
+#panel-immobilien-abc .nic-abc-admin-card{max-width:none;width:100%;box-sizing:border-box}
+.nic-abc-admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.nic-abc-admin-toolbar h3{margin:0}
+.nic-abc-admin-add{min-height:44px;border:0;border-radius:var(--nic-control-radius,10px);padding:10px 18px;background:var(--nic-green-bg,#075c55);color:var(--nic-green-text,#fff);font:inherit;font-weight:700;cursor:pointer}
+.nic-abc-admin-find-label{display:block;margin:0 0 6px;font-weight:700}
+#abcAdminSearch{box-sizing:border-box;display:block;width:100%!important;min-width:0;max-width:none!important;min-height:46px;padding:10px 14px;border:1px solid #cfd8e3;border-radius:var(--nic-control-radius,10px);background:#fff;color:inherit;font:inherit}
+#abcAdminCount{margin:10px 0 16px;text-align:right}
+.nic-abc-admin-rows{display:grid;gap:10px}
+.nic-abc-admin-record{min-width:0;border:1px solid #e2e8f0;border-radius:var(--nic-control-radius,10px);overflow:hidden;background:#fff}
+.nic-abc-admin-record>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;margin:0!important;padding:12px 14px}
+.nic-abc-admin-record>summary::-webkit-details-marker{display:none}
+.nic-abc-admin-labels{min-width:0;display:flex;flex-direction:column;gap:3px;flex:1}
+.nic-abc-admin-labels strong{overflow-wrap:anywhere}
+.nic-abc-admin-labels small{font-size:var(--nic-subtext-font-size,14px);color:var(--muted,#64748b);font-weight:400}
+.nic-abc-admin-remove{width:38px;height:38px;flex:0 0 38px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:var(--nic-control-radius,10px);background:var(--nic-red-bg,#b42318);color:var(--nic-red-text,#fff);font-size:28px;font-weight:700;line-height:1;cursor:pointer}
+.nic-abc-admin-fields{padding:16px;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.nic-abc-admin-field{display:flex;flex-direction:column;min-width:0;gap:7px;font-size:var(--nic-body-font-size,16px);font-weight:650}
+.nic-abc-admin-field:has(textarea){grid-column:1/-1}
+.nic-abc-admin-field input,.nic-abc-admin-field textarea{display:block;width:100%;max-width:none;min-width:0;box-sizing:border-box;padding:10px 12px;border:1px solid #cfd8e3;border-radius:var(--nic-control-radius,10px);background:#fff;color:inherit;font:inherit;font-weight:400}
+.nic-abc-admin-field textarea{resize:vertical;min-height:100px}
+.nic-abc-admin-remove:focus-visible,.nic-abc-admin-add:focus-visible,.nic-abc-admin-field :focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+@media(max-width:760px){.nic-abc-admin-fields{grid-template-columns:1fr}.nic-abc-admin-toolbar{flex-wrap:wrap}.nic-abc-admin-add{margin-left:auto}}
