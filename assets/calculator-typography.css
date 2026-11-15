@@ -65,6 +65,13 @@ html body:not(.nic-admin) :is(
 ) {
   font-size: var(--nic-hint-font-size, 12px) !important;
 }
+/* The refinancing slider's endpoint percentages and current rate are subtexts.
+   This explicit selector beats the calculator-wide base-size reset above. */
+html body:not(.nic-admin) .app .refinance-slider .rangehead,
+html body:not(.nic-admin) .app .refinance-slider .rangehead * {
+  font-size: var(--nic-subtext-font-size, 14px) !important;
+  line-height: 1.5 !important;
+}
 /* The 'i' help control is a typographic icon, sized with Hinweistexte. */
 html body:not(.nic-admin) :is(.info-btn,.info-dot) {
   font-size: var(--nic-hint-font-size, 12px) !important;
