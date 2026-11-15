@@ -1,0 +1,842 @@
+[
+  {
+    "term": "Annuität",
+    "category": "Finanzierung",
+    "explanation": "Gleichbleibende Kreditrate aus Zins und Tilgung.",
+    "example": "1.200 € monatlich bleiben während der Zinsbindung konstant.",
+    "id": "annuitat"
+  },
+  {
+    "term": "Annuitätendarlehen",
+    "category": "Finanzierung",
+    "explanation": "Darlehen mit regelmäßig gleichbleibender Rate während der Zinsbindung.",
+    "example": "Monatlich werden 950 € gezahlt.",
+    "id": "annuitatendarlehen"
+  },
+  {
+    "term": "Anschlussfinanzierung",
+    "category": "Finanzierung",
+    "explanation": "Neue Finanzierung der Restschuld nach Ende der Zinsbindung.",
+    "example": "140.000 € bleiben nach zehn Jahren offen.",
+    "id": "anschlussfinanzierung"
+  },
+  {
+    "term": "Anfängliche Tilgung",
+    "category": "Finanzierung",
+    "explanation": "Tilgungsprozentsatz zu Beginn des Darlehens.",
+    "example": "2 % von 200.000 € sind anfangs 4.000 € pro Jahr.",
+    "id": "anfangliche-tilgung"
+  },
+  {
+    "term": "Beleihungsauslauf",
+    "category": "Finanzierung",
+    "explanation": "Verhältnis zwischen Kredit und Beleihungswert.",
+    "example": "180.000 € Kredit bei 240.000 € Wert entsprechen 75 %.",
+    "id": "beleihungsauslauf"
+  },
+  {
+    "term": "Bereitstellungszinsen",
+    "category": "Finanzierung",
+    "explanation": "Kosten für zugesagtes, noch nicht abgerufenes Darlehen.",
+    "example": "Eine verspätete Bauphase löst Zusatzkosten aus.",
+    "id": "bereitstellungszinsen"
+  },
+  {
+    "term": "Bonität",
+    "category": "Finanzierung",
+    "explanation": "Einschätzung der Fähigkeit, Zahlungsverpflichtungen zu erfüllen.",
+    "example": "Regelmäßiges Einkommen beeinflusst die Kreditprüfung.",
+    "id": "bonitat"
+  },
+  {
+    "term": "Darlehensbetrag",
+    "category": "Finanzierung",
+    "explanation": "Ursprünglich aufgenommene Kreditsumme.",
+    "example": "Du finanzierst 220.000 € über die Bank.",
+    "id": "darlehensbetrag"
+  },
+  {
+    "term": "Effektiver Jahreszins",
+    "category": "Finanzierung",
+    "explanation": "Zinssatz einschließlich bestimmter zusätzlicher Kreditkosten.",
+    "example": "Zwei Angebote mit gleichem Sollzins haben unterschiedliche Effektivzinsen.",
+    "id": "effektiver-jahreszins"
+  },
+  {
+    "term": "Eigenkapital",
+    "category": "Finanzierung",
+    "explanation": "Selbst eingebrachte finanzielle Mittel.",
+    "example": "50.000 € Ersparnisse verringern den Kreditbedarf.",
+    "id": "eigenkapital"
+  },
+  {
+    "term": "Haushaltsrechnung",
+    "category": "Finanzierung",
+    "explanation": "Gegenüberstellung regelmäßiger Einnahmen und Ausgaben.",
+    "example": "4.000 € minus 2.700 € lassen 1.300 € übrig.",
+    "id": "haushaltsrechnung"
+  },
+  {
+    "term": "Kapitaldienst",
+    "category": "Finanzierung",
+    "explanation": "Regelmäßige Zahlungen für Zinsen und Kreditrückzahlung.",
+    "example": "1.100 € monatlich gehören zum Kapitaldienst.",
+    "id": "kapitaldienst"
+  },
+  {
+    "term": "Kreditlaufzeit",
+    "category": "Finanzierung",
+    "explanation": "Zeitraum bis zur vollständigen Kreditrückzahlung.",
+    "example": "Der Tilgungsplan reicht über 28 Jahre.",
+    "id": "kreditlaufzeit"
+  },
+  {
+    "term": "Prolongation",
+    "category": "Finanzierung",
+    "explanation": "Anschlusskredit bei der bisherigen Bank.",
+    "example": "Die Bank verlängert deinen Vertrag zu neuem Zins.",
+    "id": "prolongation"
+  },
+  {
+    "term": "Restschuld",
+    "category": "Finanzierung",
+    "explanation": "Noch offener Kreditbetrag.",
+    "example": "Nach zehn Jahren sind 185.000 € zurückzuzahlen.",
+    "id": "restschuld"
+  },
+  {
+    "term": "Sollzins",
+    "category": "Finanzierung",
+    "explanation": "Vertraglicher Zinssatz ohne sämtliche Effektivzinsbestandteile.",
+    "example": "200.000 € mit 3 % Zins kosten anfänglich rund 6.000 € pro Jahr.",
+    "id": "sollzins"
+  },
+  {
+    "term": "Sondertilgung",
+    "category": "Finanzierung",
+    "explanation": "Zusätzliche vertraglich erlaubte Rückzahlung.",
+    "example": "Zum Jahresende zahlst du 5.000 € extra.",
+    "id": "sondertilgung"
+  },
+  {
+    "term": "Tilgung",
+    "category": "Finanzierung",
+    "explanation": "Rückzahlung der Kreditschuld.",
+    "example": "Von 1.000 € Rate werden 400 € getilgt.",
+    "id": "tilgung"
+  },
+  {
+    "term": "Volltilgerdarlehen",
+    "category": "Finanzierung",
+    "explanation": "Kredit, der bis Ende der vereinbarten Zinsbindung komplett getilgt wird.",
+    "example": "Nach 20 Jahren beträgt die Restschuld 0 €.",
+    "id": "volltilgerdarlehen"
+  },
+  {
+    "term": "Zinsbindung",
+    "category": "Finanzierung",
+    "explanation": "Vertraglich festgelegte Dauer des Sollzinses.",
+    "example": "Der Zins bleibt für 15 Jahre fix.",
+    "id": "zinsbindung"
+  },
+  {
+    "term": "Angebotspreis",
+    "category": "Immobilienkauf",
+    "explanation": "Im Inserat verlangter Preis einer Immobilie.",
+    "example": "Die Wohnung wird für 320.000 € angeboten.",
+    "id": "angebotspreis"
+  },
+  {
+    "term": "Baujahr",
+    "category": "Immobilienkauf",
+    "explanation": "Jahr der ursprünglichen Errichtung eines Gebäudes.",
+    "example": "Das Haus wurde 1978 gebaut.",
+    "id": "baujahr"
+  },
+  {
+    "term": "Besichtigung",
+    "category": "Immobilienkauf",
+    "explanation": "Termin zur Prüfung einer zum Verkauf stehenden Immobilie.",
+    "example": "Du kontrollierst Dach, Keller und Fenster.",
+    "id": "besichtigung"
+  },
+  {
+    "term": "Bestandsimmobilie",
+    "category": "Immobilienkauf",
+    "explanation": "Bereits vorhandene statt neu errichtete Immobilie.",
+    "example": "Du kaufst ein 25 Jahre altes Haus.",
+    "id": "bestandsimmobilie"
+  },
+  {
+    "term": "Courtage",
+    "category": "Immobilienkauf",
+    "explanation": "Andere Bezeichnung für die Maklerprovision.",
+    "example": "Zum Kaufpreis kommt gegebenenfalls eine Courtage hinzu.",
+    "id": "courtage"
+  },
+  {
+    "term": "Energieausweis",
+    "category": "Immobilienkauf",
+    "explanation": "Dokument mit Angaben zur energetischen Qualität des Gebäudes.",
+    "example": "Du vergleichst den Energiekennwert zweier Häuser.",
+    "id": "energieausweis"
+  },
+  {
+    "term": "Erschließungskosten",
+    "category": "Immobilienkauf",
+    "explanation": "Aufwand für Infrastrukturanschlüsse oder entsprechende Beiträge.",
+    "example": "Beim Baugrundstück fallen Kosten für Straße und Kanal an.",
+    "id": "erschliessungskosten"
+  },
+  {
+    "term": "Flurstück",
+    "category": "Immobilienkauf",
+    "explanation": "Katastermäßig abgegrenzte Grundstücksfläche.",
+    "example": "Das Grundstück trägt die Nummer 123/4.",
+    "id": "flurstuck"
+  },
+  {
+    "term": "Gebäudeversicherung",
+    "category": "Immobilienkauf",
+    "explanation": "Vertraglicher Schutz gegen bestimmte Gebäudeschäden.",
+    "example": "Ein versicherter Sturmschaden wird reguliert.",
+    "id": "gebaudeversicherung"
+  },
+  {
+    "term": "Grunderwerbsteuer",
+    "category": "Immobilienkauf",
+    "explanation": "Landessteuer beim Kauf eines Grundstücks oder einer Immobilie.",
+    "example": "Bei 300.000 € und 5 % wären 15.000 € fällig.",
+    "id": "grunderwerbsteuer"
+  },
+  {
+    "term": "Kaufnebenkosten",
+    "category": "Immobilienkauf",
+    "explanation": "Zusätzliche Erwerbskosten neben dem Kaufpreis.",
+    "example": "Du planst Geld für Steuer, Notar und Grundbuch ein.",
+    "id": "kaufnebenkosten"
+  },
+  {
+    "term": "Kaufpreis",
+    "category": "Immobilienkauf",
+    "explanation": "Vertraglich vereinbarter Preis einer Immobilie.",
+    "example": "Der Kaufvertrag nennt 275.000 €.",
+    "id": "kaufpreis"
+  },
+  {
+    "term": "Kaufpreisfälligkeit",
+    "category": "Immobilienkauf",
+    "explanation": "Zeitpunkt der vertraglich geschuldeten Kaufpreiszahlung.",
+    "example": "Der Notar bestätigt die Zahlungsvoraussetzungen.",
+    "id": "kaufpreisfalligkeit"
+  },
+  {
+    "term": "Maklerprovision",
+    "category": "Immobilienkauf",
+    "explanation": "Vergütung für eine vertraglich vereinbarte Immobilienvermittlung.",
+    "example": "Beim Kauf kann eine Provision anfallen.",
+    "id": "maklerprovision"
+  },
+  {
+    "term": "Modernisierung",
+    "category": "Immobilienkauf",
+    "explanation": "Maßnahmen zur dauerhaften Verbesserung eines Gebäudes.",
+    "example": "Du baust effizientere Fenster ein.",
+    "id": "modernisierung"
+  },
+  {
+    "term": "Neubau",
+    "category": "Immobilienkauf",
+    "explanation": "Neu errichtete Immobilie.",
+    "example": "Du kaufst eine gerade fertiggestellte Wohnung.",
+    "id": "neubau"
+  },
+  {
+    "term": "Sanierung",
+    "category": "Immobilienkauf",
+    "explanation": "Umfassende Instandsetzung oder Erneuerung.",
+    "example": "Du erneuerst Dach und Leitungen.",
+    "id": "sanierung"
+  },
+  {
+    "term": "Teilungserklärung",
+    "category": "Immobilienkauf",
+    "explanation": "Grundlage für die Aufteilung in Wohnungs- und Teileigentum.",
+    "example": "Sie ordnet einen Kellerraum deiner Wohnung zu.",
+    "id": "teilungserklarung"
+  },
+  {
+    "term": "Verhandlungsspielraum",
+    "category": "Immobilienkauf",
+    "explanation": "Möglicher Unterschied zwischen Angebot und vereinbartem Preis.",
+    "example": "Du bietest 290.000 € statt 310.000 €.",
+    "id": "verhandlungsspielraum"
+  },
+  {
+    "term": "Wohnfläche",
+    "category": "Immobilienkauf",
+    "explanation": "Nach der maßgeblichen Methode bestimmte Fläche einer Wohnung.",
+    "example": "Der Balkon zählt gegebenenfalls nur anteilig.",
+    "id": "wohnflache"
+  },
+  {
+    "term": "Abteilung I des Grundbuchs",
+    "category": "Notar & Recht",
+    "explanation": "Grundbuchteil mit Eigentümerangaben.",
+    "example": "Nach dem Kauf wird dein Name dort eingetragen.",
+    "id": "abteilung-i-des-grundbuchs"
+  },
+  {
+    "term": "Abteilung II des Grundbuchs",
+    "category": "Notar & Recht",
+    "explanation": "Grundbuchteil mit Lasten und Beschränkungen.",
+    "example": "Hier kann ein Wegerecht stehen.",
+    "id": "abteilung-ii-des-grundbuchs"
+  },
+  {
+    "term": "Abteilung III des Grundbuchs",
+    "category": "Notar & Recht",
+    "explanation": "Grundbuchteil mit Grundpfandrechten.",
+    "example": "Eine Bankgrundschuld wird hier eingetragen.",
+    "id": "abteilung-iii-des-grundbuchs"
+  },
+  {
+    "term": "Auflassung",
+    "category": "Notar & Recht",
+    "explanation": "Einigung über die Übertragung des Immobilieneigentums.",
+    "example": "Der Notar beurkundet die Auflassung.",
+    "id": "auflassung"
+  },
+  {
+    "term": "Auflassungsvormerkung",
+    "category": "Notar & Recht",
+    "explanation": "Grundbuchsicherung für den Anspruch des Käufers.",
+    "example": "Sie schützt vor nachteiligen Verfügungen des Verkäufers.",
+    "id": "auflassungsvormerkung"
+  },
+  {
+    "term": "Baulast",
+    "category": "Notar & Recht",
+    "explanation": "Öffentlich-rechtliche Grundstücksverpflichtung.",
+    "example": "Eine Abstandsfläche wird auf dem Nachbargrundstück gesichert.",
+    "id": "baulast"
+  },
+  {
+    "term": "Dienstbarkeit",
+    "category": "Notar & Recht",
+    "explanation": "Recht, ein fremdes Grundstück in bestimmter Weise zu nutzen.",
+    "example": "Der Nachbar darf einen Weg benutzen.",
+    "id": "dienstbarkeit"
+  },
+  {
+    "term": "Eigentumsumschreibung",
+    "category": "Notar & Recht",
+    "explanation": "Eintragung des neuen Eigentümers im Grundbuch.",
+    "example": "Nach der Kaufabwicklung wird der Käufer eingetragen.",
+    "id": "eigentumsumschreibung"
+  },
+  {
+    "term": "Erbbaurecht",
+    "category": "Notar & Recht",
+    "explanation": "Recht, auf fremdem Grund ein Gebäude zu haben.",
+    "example": "Du besitzt das Haus, zahlst aber Erbbauzins.",
+    "id": "erbbaurecht"
+  },
+  {
+    "term": "Fälligkeitsmitteilung",
+    "category": "Notar & Recht",
+    "explanation": "Notarmitteilung über das Vorliegen von Zahlungsvoraussetzungen.",
+    "example": "Erst dann überweist du den Kaufpreis.",
+    "id": "falligkeitsmitteilung"
+  },
+  {
+    "term": "Grundbuch",
+    "category": "Notar & Recht",
+    "explanation": "Öffentliches Register von Eigentum und Grundstücksrechten.",
+    "example": "Du prüfst vor dem Kauf eingetragene Belastungen.",
+    "id": "grundbuch"
+  },
+  {
+    "term": "Grundbuchauszug",
+    "category": "Notar & Recht",
+    "explanation": "Dokument mit den aktuellen Grundbucheintragungen.",
+    "example": "Darin findest du Eigentümer und Grundschulden.",
+    "id": "grundbuchauszug"
+  },
+  {
+    "term": "Grundschuld",
+    "category": "Notar & Recht",
+    "explanation": "Grundpfandrecht zur Kreditsicherung.",
+    "example": "Die Bank sichert 200.000 € im Grundbuch ab.",
+    "id": "grundschuld"
+  },
+  {
+    "term": "Löschungsbewilligung",
+    "category": "Notar & Recht",
+    "explanation": "Erklärung zur Löschung eines Grundbuchrechts.",
+    "example": "Nach Rückzahlung stellt die Bank diese aus.",
+    "id": "loschungsbewilligung"
+  },
+  {
+    "term": "Nießbrauch",
+    "category": "Notar & Recht",
+    "explanation": "Umfassendes Nutzungsrecht an einer fremden Sache.",
+    "example": "Eltern behalten nach Übertragung die Mieteinnahmen.",
+    "id": "niessbrauch"
+  },
+  {
+    "term": "Notarkosten",
+    "category": "Notar & Recht",
+    "explanation": "Gesetzlich bestimmte Gebühren für notarielle Tätigkeiten.",
+    "example": "Die Beurkundung löst Notargebühren aus.",
+    "id": "notarkosten"
+  },
+  {
+    "term": "Notarielle Beurkundung",
+    "category": "Notar & Recht",
+    "explanation": "Formelle Aufnahme eines Rechtsgeschäfts durch einen Notar.",
+    "example": "Ein Grundstückskaufvertrag muss grundsätzlich beurkundet werden.",
+    "id": "notarielle-beurkundung"
+  },
+  {
+    "term": "Sicherungszweckerklärung",
+    "category": "Notar & Recht",
+    "explanation": "Vereinbarung, welche Forderungen eine Grundschuld absichert.",
+    "example": "Die Sicherheit gilt für das vereinbarte Darlehen.",
+    "id": "sicherungszweckerklarung"
+  },
+  {
+    "term": "Vorkaufsrecht",
+    "category": "Notar & Recht",
+    "explanation": "Recht, bei einem Verkauf unter Voraussetzungen in den Kauf einzutreten.",
+    "example": "Ein Berechtigter kann unter Umständen vorrangig kaufen.",
+    "id": "vorkaufsrecht"
+  },
+  {
+    "term": "Wegerecht",
+    "category": "Notar & Recht",
+    "explanation": "Recht zur Nutzung eines fremden Grundstücks als Weg.",
+    "example": "Deine Zufahrt führt über Nachbarland.",
+    "id": "wegerecht"
+  },
+  {
+    "term": "Abgeschlossenheitsbescheinigung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Bescheinigung zur baulichen Abgeschlossenheit bestimmter Einheiten.",
+    "example": "Sie wird bei der Aufteilung in Wohnungseigentum benötigt.",
+    "id": "abgeschlossenheitsbescheinigung"
+  },
+  {
+    "term": "Beschlusssammlung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Dokumentation wichtiger Beschlüsse einer Eigentümergemeinschaft.",
+    "example": "Du siehst frühere Sanierungsentscheidungen.",
+    "id": "beschlusssammlung"
+  },
+  {
+    "term": "Eigentümerversammlung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Versammlung zur Entscheidung gemeinschaftlicher Angelegenheiten.",
+    "example": "Über eine Dachsanierung wird abgestimmt.",
+    "id": "eigentumerversammlung"
+  },
+  {
+    "term": "Erhaltungsrücklage",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Für künftige Erhaltungsmaßnahmen angespartes Gemeinschaftsgeld.",
+    "example": "Ein Teil des Hausgelds fließt monatlich hinein.",
+    "id": "erhaltungsrucklage"
+  },
+  {
+    "term": "Gemeinschaftseigentum",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Teile des Gebäudes, die nicht im Sondereigentum stehen.",
+    "example": "Das Dach gehört regelmäßig dazu.",
+    "id": "gemeinschaftseigentum"
+  },
+  {
+    "term": "Hausgeld",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Laufender Vorschuss eines Eigentümers für Gemeinschaftskosten.",
+    "example": "Du zahlst 320 € monatlich an die WEG.",
+    "id": "hausgeld"
+  },
+  {
+    "term": "Hausordnung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Regeln für gemeinsame Nutzung und Zusammenleben.",
+    "example": "Sie enthält etwa Ruhezeiten.",
+    "id": "hausordnung"
+  },
+  {
+    "term": "Hausverwaltung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Organisation oder Dienstleister für die Gebäudeverwaltung.",
+    "example": "Sie bereitet die WEG-Jahresabrechnung vor.",
+    "id": "hausverwaltung"
+  },
+  {
+    "term": "Instandhaltung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Maßnahmen zum Erhalt eines ordnungsgemäßen Zustands.",
+    "example": "Die Heizung wird regelmäßig gewartet.",
+    "id": "instandhaltung"
+  },
+  {
+    "term": "Instandsetzung",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Reparatur zur Wiederherstellung eines ordnungsgemäßen Zustands.",
+    "example": "Das undichte Dach wird repariert.",
+    "id": "instandsetzung"
+  },
+  {
+    "term": "Jahresabrechnung der WEG",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Abrechnung der tatsächlichen Gemeinschaftseinnahmen und -ausgaben.",
+    "example": "Du erfährst die auf deine Einheit entfallenden Kosten.",
+    "id": "jahresabrechnung-der-weg"
+  },
+  {
+    "term": "Miteigentumsanteil",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Rechnerischer Anteil am gemeinschaftlichen Eigentum.",
+    "example": "Dir gehören 125 von 1.000 Anteilen.",
+    "id": "miteigentumsanteil"
+  },
+  {
+    "term": "Sondereigentum",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Eigentum an bestimmten, rechtlich abgegrenzten Räumen.",
+    "example": "Das Innere deiner Wohnung gehört typischerweise dazu.",
+    "id": "sondereigentum"
+  },
+  {
+    "term": "Sondernutzungsrecht",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Ausschließliches Nutzungsrecht an einer Gemeinschaftsfläche.",
+    "example": "Du nutzt einen bestimmten Gartenbereich allein.",
+    "id": "sondernutzungsrecht"
+  },
+  {
+    "term": "Sonderumlage",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Zusätzlicher Zahlungsbeitrag der Eigentümer.",
+    "example": "Für die Dachreparatur werden 2.000 € je Wohnung fällig.",
+    "id": "sonderumlage"
+  },
+  {
+    "term": "Verwaltervertrag",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Vereinbarung über die Leistung einer Verwaltung.",
+    "example": "Darin stehen Verwaltungsaufgaben und Vergütung.",
+    "id": "verwaltervertrag"
+  },
+  {
+    "term": "Verkehrssicherungspflicht",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Pflicht zu zumutbaren Schutzmaßnahmen gegen Gefahren.",
+    "example": "Glatte Gehwege müssen ordnungsgemäß gesichert werden.",
+    "id": "verkehrssicherungspflicht"
+  },
+  {
+    "term": "Wirtschaftsplan",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Plan über künftige Gemeinschaftseinnahmen und -ausgaben.",
+    "example": "Er bildet die Grundlage für Hausgeldvorschüsse.",
+    "id": "wirtschaftsplan"
+  },
+  {
+    "term": "Wohnungseigentümergemeinschaft",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Gesamtheit der Eigentümer einer Wohnanlage.",
+    "example": "Alle entscheiden über das gemeinsame Treppenhaus.",
+    "id": "wohnungseigentumergemeinschaft"
+  },
+  {
+    "term": "Zählerstand",
+    "category": "Eigentum & Verwaltung",
+    "explanation": "Abgelesener Verbrauchswert eines Messgeräts.",
+    "example": "Zum Jahresende liest du den Wasserzähler ab.",
+    "id": "zahlerstand"
+  },
+  {
+    "term": "Abrechnungszeitraum",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Zeitspanne einer Betriebskostenabrechnung.",
+    "example": "Die Abrechnung betrifft Januar bis Dezember.",
+    "id": "abrechnungszeitraum"
+  },
+  {
+    "term": "Betriebskosten",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Laufende Kosten des Grundstücks oder Gebäudes nach den einschlägigen Regeln.",
+    "example": "Müllabfuhr und Wasser können dazugehören.",
+    "id": "betriebskosten"
+  },
+  {
+    "term": "Betriebskostenvorauszahlung",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Regelmäßige Vorauszahlung auf abzurechnende Kosten.",
+    "example": "Der Mieter zahlt monatlich 180 €.",
+    "id": "betriebskostenvorauszahlung"
+  },
+  {
+    "term": "CO₂-Kostenaufteilung",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Gesetzliche Verteilung bestimmter CO₂-Kosten zwischen Mietparteien.",
+    "example": "Bei Gasheizung trägt der Vermieter gegebenenfalls einen Anteil.",
+    "id": "co-kostenaufteilung"
+  },
+  {
+    "term": "Heizkostenabrechnung",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Abrechnung von Heiz- und Warmwasserkosten.",
+    "example": "Ein Teil wird nach gemessenem Verbrauch verteilt.",
+    "id": "heizkostenabrechnung"
+  },
+  {
+    "term": "Indexmiete",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Mietmodell mit vertraglicher Bindung an den Verbraucherpreisindex.",
+    "example": "Eine zulässige Anpassung folgt dem maßgeblichen Index.",
+    "id": "indexmiete"
+  },
+  {
+    "term": "Kaltmiete",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Miete ohne gesondert zu zahlende Betriebs- und Heizkosten.",
+    "example": "Die Kaltmiete beträgt 850 €.",
+    "id": "kaltmiete"
+  },
+  {
+    "term": "Kaution",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Sicherheit für Ansprüche aus dem Mietverhältnis.",
+    "example": "Der Mieter zahlt eine vereinbarte Barkaution.",
+    "id": "kaution"
+  },
+  {
+    "term": "Leerstand",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Zeitraum ohne vermietende Nutzung und Mieteinnahmen.",
+    "example": "Zwei Monate Leerstand verursachen Mietausfall.",
+    "id": "leerstand"
+  },
+  {
+    "term": "Mietspiegel",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Übersicht zur ortsüblichen Vergleichsmiete.",
+    "example": "Du vergleichst die verlangte Miete mit lokalen Werten.",
+    "id": "mietspiegel"
+  },
+  {
+    "term": "Nachzahlung",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Zusätzlicher Betrag nach Verrechnung der Vorauszahlungen.",
+    "example": "1.900 € Kosten minus 1.700 € Vorauszahlung ergeben 200 €.",
+    "id": "nachzahlung"
+  },
+  {
+    "term": "Nicht umlagefähige Kosten",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Ausgaben, die der Vermieter nicht als Betriebskosten weitergeben darf.",
+    "example": "Verwaltungskosten sind grundsätzlich nicht umlagefähig.",
+    "id": "nicht-umlagefahige-kosten"
+  },
+  {
+    "term": "Nettokaltmiete",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Miete ohne Betriebskosten- und Heizkostenzahlungen.",
+    "example": "Monatlich werden 900 € Nettokaltmiete vereinbart.",
+    "id": "nettokaltmiete"
+  },
+  {
+    "term": "Umlageschlüssel",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Regel zur Verteilung bestimmter Betriebskosten.",
+    "example": "Hausreinigung wird nach Wohnfläche aufgeteilt.",
+    "id": "umlageschlussel"
+  },
+  {
+    "term": "Umlagefähige Kosten",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Bei wirksamer Vereinbarung und nach geltendem Recht weiterberechenbare Betriebskosten.",
+    "example": "Müllabfuhr kann dazu gehören.",
+    "id": "umlagefahige-kosten"
+  },
+  {
+    "term": "Verbrauchsabhängige Umlage",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Aufteilung von Kosten nach gemessenem Verbrauch.",
+    "example": "Wasser wird nach Zählerständen verteilt.",
+    "id": "verbrauchsabhangige-umlage"
+  },
+  {
+    "term": "Vorauszahlungssaldo",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Differenz aus tatsächlichen Kosten und geleisteten Vorauszahlungen.",
+    "example": "Ein zu hoher Vorschuss führt zum Guthaben.",
+    "id": "vorauszahlungssaldo"
+  },
+  {
+    "term": "Warmmiete",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Gesamtmiete einschließlich vereinbarter Nebenkostenzahlungen.",
+    "example": "850 € plus 200 € ergeben 1.050 €.",
+    "id": "warmmiete"
+  },
+  {
+    "term": "Wohnflächenumlage",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Kostenverteilung nach Flächenanteilen.",
+    "example": "80 m² tragen mehr als 50 m².",
+    "id": "wohnflachenumlage"
+  },
+  {
+    "term": "Zahlungsrückstand",
+    "category": "Vermietung & Betriebskosten",
+    "explanation": "Offene fällige Zahlungsverpflichtung.",
+    "example": "Eine Monatsmiete wurde noch nicht überwiesen.",
+    "id": "zahlungsruckstand"
+  },
+  {
+    "term": "Amortisation",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Zeit bis zum rechnerischen Ausgleich einer Investition durch Rückflüsse.",
+    "example": "6.000 € Kosten bei 1.000 € jährlicher Ersparnis benötigen vereinfacht sechs Jahre.",
+    "id": "amortisation"
+  },
+  {
+    "term": "Bruttomietrendite",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Jahreskaltmiete geteilt durch Kaufpreis.",
+    "example": "12.000 € geteilt durch 240.000 € ergeben 5 %.",
+    "id": "bruttomietrendite"
+  },
+  {
+    "term": "Cashflow",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Saldo aus tatsächlichen Einzahlungen und Auszahlungen.",
+    "example": "1.100 € Einnahmen minus 900 € Ausgaben ergeben 200 €.",
+    "id": "cashflow"
+  },
+  {
+    "term": "Cash-on-Cash-Rendite",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Laufender Jahresüberschuss im Verhältnis zum Eigenkapital.",
+    "example": "2.000 € bei 40.000 € Eigenkapital entsprechen 5 %.",
+    "id": "cash-on-cash-rendite"
+  },
+  {
+    "term": "Eigenkapitalrendite",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Rendite bezogen auf die eingesetzten Eigenmittel nach definierter Berechnung.",
+    "example": "3.000 € Ergebnis bei 60.000 € Eigenkapital ergeben 5 %.",
+    "id": "eigenkapitalrendite"
+  },
+  {
+    "term": "Finanzierungslücke",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Nicht durch verfügbare Mittel gedeckter Finanzierungsbedarf.",
+    "example": "Nach allen Zusagen fehlen noch 25.000 €.",
+    "id": "finanzierungslucke"
+  },
+  {
+    "term": "Fixkosten",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Kosten, die kurzfristig nicht direkt mit der Auslastung schwanken.",
+    "example": "Eine feste Verwaltungsgebühr fällt immer an.",
+    "id": "fixkosten"
+  },
+  {
+    "term": "Gesamtkapitalbedarf",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Summe sämtlicher für das Vorhaben benötigten Mittel.",
+    "example": "Kauf, Nebenkosten und Sanierung kosten 340.000 €.",
+    "id": "gesamtkapitalbedarf"
+  },
+  {
+    "term": "Haushaltsüberschuss",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Verfügbare Einnahmen nach den erfassten Ausgaben.",
+    "example": "4.500 € minus 3.100 € ergeben 1.400 €.",
+    "id": "haushaltsuberschuss"
+  },
+  {
+    "term": "Kalkulationsreserve",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Geplanter Puffer für mögliche Mehrkosten.",
+    "example": "Zur Sanierung kommen 10.000 € Reserve.",
+    "id": "kalkulationsreserve"
+  },
+  {
+    "term": "Kaufpreisfaktor",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Kaufpreis geteilt durch jährliche Nettokaltmiete.",
+    "example": "300.000 € geteilt durch 15.000 € ergeben Faktor 20.",
+    "id": "kaufpreisfaktor"
+  },
+  {
+    "term": "Liquidität",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Kurzfristig verfügbares Geld.",
+    "example": "Nach dem Kauf bleiben 15.000 € auf dem Konto.",
+    "id": "liquiditat"
+  },
+  {
+    "term": "Marge",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Gewinn als Prozentsatz einer definierten Bezugsgröße.",
+    "example": "20.000 € Gewinn bei 200.000 € Erlös bedeuten 10 % Umsatzmarge.",
+    "id": "marge"
+  },
+  {
+    "term": "Mietausfallwagnis",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Kalkulierter Risikopuffer für ausbleibende Mieten.",
+    "example": "Ein Teil der erwarteten Miete wird vorsorglich zurückgelegt.",
+    "id": "mietausfallwagnis"
+  },
+  {
+    "term": "Monatliche Belastung",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Regelmäßige finanzielle Gesamtwirkung eines Vorhabens.",
+    "example": "Kredit, Hausgeld und Strom summieren sich auf 1.650 €.",
+    "id": "monatliche-belastung"
+  },
+  {
+    "term": "Nettomietrendite",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Mietertrag nach berücksichtigten Eigentümerkosten im Verhältnis zur Investitionsbasis.",
+    "example": "8.000 € bei 200.000 € entsprechen 4 %.",
+    "id": "nettomietrendite"
+  },
+  {
+    "term": "Projektgewinn",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Überschuss zwischen Verkaufserlös und berücksichtigten Projektkosten.",
+    "example": "Beim Fix & Flip bleiben 18.000 € Gewinn.",
+    "id": "projektgewinn"
+  },
+  {
+    "term": "Rendite",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Ertrag oder Ergebnis relativ zum eingesetzten Kapital nach definierter Methode.",
+    "example": "5.000 € bei 100.000 € entsprechen vereinfacht 5 %.",
+    "id": "rendite"
+  },
+  {
+    "term": "Tilgungsplan",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Zeitliche Übersicht über Rate, Zins, Tilgung und Restschuld.",
+    "example": "Die Tabelle zeigt die Restschuld nach jedem Jahr.",
+    "id": "tilgungsplan"
+  },
+  {
+    "term": "Verkaufserlös",
+    "category": "Rechner & Kennzahlen",
+    "explanation": "Geldbetrag aus dem Immobilienverkauf vor oder nach Kosten je nach Definition.",
+    "example": "Du verkaufst die Immobilie für 390.000 € vor Kosten.",
+    "id": "verkaufserlos"
+  }
+]
