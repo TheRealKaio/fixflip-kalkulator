@@ -24,7 +24,7 @@ function render(panel){
  const lead=element('p','nic-abc-lead','Wichtige Begriffe rund um Kauf, Notar, Finanzierung, Vermietung und die ImmoCheck-Rechner – einfach erklärt und mit Beispielen.');
  const toolbar=element('div','nic-abc-toolbar');
  const label=element('label','nic-abc-search-label','Begriff suchen');
- const search=element('input','nic-abc-search');search.type='search';search.placeholder='Begriff suchen, z. B. Grundschuld …';search.autocomplete='off';search.setAttribute('aria-label','Immobilienbegriff suchen');
+ const search=element('input','nic-abc-search');search.type='search';search.style.setProperty('display','block','important');search.style.setProperty('width','100%','important');search.style.setProperty('max-width','100%','important');search.style.setProperty('min-width','0','important');search.style.boxSizing='border-box';search.placeholder='Begriff suchen, z. B. Grundschuld …';search.autocomplete='off';search.setAttribute('aria-label','Immobilienbegriff suchen');
  label.append(search);toolbar.append(label);
  const categories=element('div','nic-abc-filters');categories.setAttribute('role','group');categories.setAttribute('aria-label','Thema auswählen');
  const headingRow=element('div','nic-abc-heading-row');
