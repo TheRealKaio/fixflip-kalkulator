@@ -83,6 +83,7 @@ async function load(settings){
 }
 function validate(){
  if(records.length>500)throw Error('Das Immobilien ABC darf höchstens 500 Einträge enthalten.');
+ if(new TextEncoder().encode(JSON.stringify(publicRows())).length>180000)throw Error('Das Immobilien ABC ist für die sichere Speicherung zu groß. Bitte kürze einzelne Erklärungen oder Beispiele.');
  const seen=new Set();
  for(const row of records){
   const field=(!row.term.trim()?'term':!row.category.trim()?'category':!row.explanation.trim()?'explanation':null);
