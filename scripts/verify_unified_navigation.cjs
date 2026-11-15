@@ -187,6 +187,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    const sectionToggle=page.locator('#nicAdminContent .admin-menu-toggle');
    if(await sectionToggle.isVisible()){await sectionToggle.click();await page.locator('#nicAdminContent #tab-layout').click();assert(await page.locator('#nicAdminContent #panel-layout').isVisible());}
   }
+  await page.waitForFunction(()=>!!window.NICAdminUI,null,{timeout:15000});
   // Real native-admin cascade: headings must fit inside their own grid cells.
   for(const viewport of [{width:320,height:740},{width:390,height:844},{width:844,height:390},{width:768,height:1024},{width:1440,height:900}]){
    await page.setViewportSize(viewport);
