@@ -19,6 +19,14 @@ for path in ('index.html','preise/index.html','immobilien-abc/index.html','finan
     markup=(site/path).read_text()
     assert '/immobilien-abc.css' in markup and '/immobilien-abc.js' in markup, path
     assert 'nic-header-variants' in markup, path
-for file in ('calculator-navigation.js','immobilien-abc.js'):
+for file in ('calculator-navigation.js','immobilien-abc.js','admin-immobilien-abc.js','admin.js'):
     subprocess.run(['node','--check',str(site/file)],check=True)
-print('Immobilien ABC contract: 120 entries, route, shared shell and JavaScript syntax OK')
+
+admin=(site/'admin.html').read_text()
+assert 'tab-immobilien-abc' in admin and 'panel-immobilien-abc' in admin
+assert 'admin-immobilien-abc' in admin
+assert 'abcAdminRows' in admin and 'abcAdd' in admin
+settings=(site/'site-settings.js').read_text()
+assert 'immobilienABC' in settings
+assert 'Immobilien ABC' in (site/'immobilien-abc/index.html').read_text()
+print('Immobilien ABC contract: terms, editor, route, shared shell and JS syntax OK')
