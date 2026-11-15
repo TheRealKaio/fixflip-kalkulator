@@ -416,15 +416,17 @@ const assert=require('node:assert/strict');
    assert(await page.locator('.footer-note').evaluate(el=>getComputedStyle(el).fontSize===NICSettings.current.layout.subtextSize+'px'&&getComputedStyle(el).fontFamily.includes('Georgia')));
    assert(await page.locator('.deal-type-title').evaluate(el=>getComputedStyle(el).fontSize==='24px'));
    if(slug==='finanzierungsrechner'){
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const typography=await page.evaluate(()=>{
      const size=el=>getComputedStyle(el).fontSize;
      const repay=[...document.querySelectorAll('#nicFinanceModule [data-finance-id="repayChart"] text, #repayChart text')];
      const rates=[...document.querySelectorAll('#nicFinanceModule [data-finance-id="rateChart"] text, #rateChart text')];
      const scenario=[...document.querySelectorAll('#nicFinanceModule .refinance-slider .rangehead *, .refinance-slider .rangehead *')];
-     return {repay:repay.map(size),rates:rates.map(size),scenario:scenario.map(size),repayText:repay.map(el=>el.textContent.trim()),rateText:rates.map(el=>el.textContent.trim())};
+     const chartSize=el=>{const svg=el.closest('svg');return Number.parseFloat(size(el))*svg.clientWidth/svg.viewBox.baseVal.width;};
+     return {repay:repay.map(chartSize),rates:rates.map(chartSize),scenario:scenario.map(size),repayText:repay.map(el=>el.textContent.trim()),rateText:rates.map(el=>el.textContent.trim())};
     });
-    assert(typography.repay.length>=2&&typography.repay.every(font=>font==='17px'),'Start/Jahr 10 follow Untertexte (px): '+JSON.stringify(typography));
-    assert(typography.rates.length>=5&&typography.rates.every(font=>font==='17px'),'Rate chart percentages and year labels follow Untertexte (px): '+JSON.stringify(typography));
+    assert(typography.repay.length>=2&&typography.repay.every(font=>Math.abs(font-17)<.05),'Start/Jahr 10 follow Untertexte (px): '+JSON.stringify(typography));
+    assert(typography.rates.length>=5&&typography.rates.every(font=>Math.abs(font-17)<.05),'Rate chart percentages and year labels follow Untertexte (px): '+JSON.stringify(typography));
     assert(typography.scenario.length>=3&&typography.scenario.every(font=>font==='17px'),'Scenario slider percentages follow Untertexte (px): '+JSON.stringify(typography));
     assert.deepEqual(typography.repayText,['Start','Jahr 10'],'Repayment chart endpoint labels are present');
     assert.equal(await page.locator('.bottom-primary').first().textContent(),'Neu berechnen');

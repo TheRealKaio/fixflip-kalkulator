@@ -45,6 +45,43 @@ function bindRenovationSplitH3(){
 bindRenovationSplitH3();
 new MutationObserver(bindRenovationSplitH3).observe(document.body,{childList:true,subtree:true});
 
+/* Keep SVG labels on the Admin subtext scale, independent of the viewBox scale. */
+const chartObservers=new WeakMap();
+let chartFrame=0;
+function refreshChartLabels(){
+ chartFrame=0;
+ document.querySelectorAll('svg.chart[viewBox]').forEach(svg=>{
+  if(!chartObservers.has(svg)){
+   const observer=new ResizeObserver(scheduleChartLabels);
+   observer.observe(svg);chartObservers.set(svg,{observer,key:''});
+  }
+  const width=svg.clientWidth,box=svg.viewBox.baseVal;
+  if(!width||!box.width)return;
+  svg.style.setProperty('--nic-chart-text-scale',String(box.width/width));
+  const state=chartObservers.get(svg),key=width+':'+getComputedStyle(svg).getPropertyValue('--nic-subtext-font-size');
+  if(state.key!==key&&typeof svg.nicRedraw==='function'){state.key=key;svg.nicRedraw();}
+  const years=[...svg.querySelectorAll('text')].filter(text=>/^\d{4}$/.test(text.textContent.trim()));
+  years.forEach(text=>text.style.removeProperty('display'));
+  years.at(-1)?.setAttribute('text-anchor','end');
+  // Preserve the first/last year, skipping intermediate ticks when space is tight.
+  const gap=8*box.width/width,visible=[];
+  years.forEach((text,index)=>{
+   const bounds=text.getBBox(),previous=visible.at(-1);
+   if(index===years.length-1){
+    while(visible.length>1&&visible.at(-1).right+gap>bounds.x){visible.pop().text.style.display='none';}
+   }else if(previous&&previous.right+gap>bounds.x){text.style.display='none';return;}
+   visible.push({text,right:bounds.x+bounds.width});
+  });
+ });
+}
+function scheduleChartLabels(){if(!chartFrame)chartFrame=requestAnimationFrame(refreshChartLabels);}
+new MutationObserver(scheduleChartLabels).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+new MutationObserver(scheduleChartLabels).observe(document.head,{childList:true,subtree:true,characterData:true});
+window.addEventListener('resize',scheduleChartLabels);
+window.addEventListener('nic-settings-ready',scheduleChartLabels);
+document.fonts?.ready.then(scheduleChartLabels);
+scheduleChartLabels();
+
 /* Shared action bar: one initialization, with original calculator event handlers retained. */
 function setupCalculatorActions(){
  const footer=document.querySelector('.footer-note, .nic-shared-footer');
