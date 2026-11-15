@@ -77,6 +77,7 @@ function refreshChartLabels(){
 function scheduleChartLabels(){if(!chartFrame)chartFrame=requestAnimationFrame(refreshChartLabels);}
 new MutationObserver(scheduleChartLabels).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
 new MutationObserver(scheduleChartLabels).observe(document.head,{childList:true,subtree:true,characterData:true});
+new MutationObserver(scheduleChartLabels).observe(document.documentElement,{attributes:true,attributeFilter:['style']});
 window.addEventListener('resize',scheduleChartLabels);
 window.addEventListener('nic-settings-ready',scheduleChartLabels);
 document.fonts?.ready.then(scheduleChartLabels);
