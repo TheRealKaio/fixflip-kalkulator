@@ -11,8 +11,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## 1. Gemeinsame Anwendung und Container
 
-- Startseite, fünf Rechner sowie Mieterabrechnung, Preise und Warum ImmoCheck?
-  verwenden dieselbe Anwendung, dieselbe Header-Instanz und `.app > main.section`.
+- Startseite, fünf Rechner sowie Mieterabrechnung, Preise, Warum ImmoCheck?
+  und Immobilien ABC verwenden dieselbe Anwendung, dieselbe Header-Instanz und `.app > main.section`.
 - Interne Wechsel zwischen diesen Ansichten erfolgen über den gemeinsamen
   Routencontroller ohne vollständigen Dokumentneustart. URL und Browserhistorie
   werden korrekt aktualisiert; Zurück und Vorwärts müssen funktionieren.
@@ -59,8 +59,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Auf breiten Ansichten sind Logo und Beschreibung über beide Rasterzeilen
   vertikal zentriert. Mobil bleibt das Logo links mit 176 px gemäß gemeinsamem Breakpoint.
 - Beschreibung: „Immobilienrechner für“ / „Kauf, Sanierung und Investment“.
-- Hauptnavigation: „Mieterabrechnung“, „Preise“, „Warum ImmoCheck?“.
-  Die bestehende Route `/nebenkostenabrechnung/` wird trotz Umbenennung beibehalten.
+- Hauptnavigation: „Preise“, „Warum ImmoCheck?“, „Immobilien ABC“ in dieser Reihenfolge.
+  Die Mieterabrechnung bleibt über `/nebenkostenabrechnung/` und ihre Startseiten-Kachel erreichbar.
+  Immobilien ABC unter `/immobilien-abc/` öffnet im gemeinsamen Contentfenster mit Suche,
+  Themenfiltern sowie 120 alphabetisch sortierten, aufklappbaren Begriffen mit Erklärung
+  und Beispiel; keine zweite Header-, Footer- oder Navigationsinstanz.
 - Die Admin-Bereichsauswahl verwendet auf Desktop und Mobil dasselbe
   aufklappbare „Admin-Menü“ mit aktivem Bereich im Auslöser und senkrechter Liste.
   Die Liste startet geschlossen und schließt nach Auswahl, Escape oder Außenklick.
@@ -324,3 +327,11 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - SVG-Beschriftungen in Tilgungs- und Zinsdiagramm entsprechen sichtbar der Admin-Einstellung „Untertexte (px)“. Die Skalierung der SVG-viewBox wird ausgeglichen; die gemeinsame Desktop-Dichte von 75 % gilt wie für HTML-Untertexte.
 - Bei Größenänderungen, Drehen des Geräts, Schriftwechsel und internem Rechnerwechsel neu messen. Jahresbeschriftungen auf schmalen Ansichten ausdünnen, ohne die Datenreihe zu kürzen; erstes und letztes Jahr erhalten.
 - Nicht nur computed font-size prüfen: die tatsächlich gerenderte Schrift mit gleich eingestelltem HTML-Text vergleichen, einschließlich Mobil, Querformat, Tablet und breiten Desktopansichten.
+
+## Immobilien ABC (15. November 2026)
+
+- Begriffstitel: Grundschrift fett, Erklärung und Beispiel: Grundschrift, Themen- und Statusangaben: Untertext aus den Admin-Layout-Variablen.
+- Auf Mobil sind Themenfilter horizontal scrollbar; Texte haben keine feste Höhe und bleiben barrierearm über native Details/Summary aufklappbar.
+- Rechner-Infohilfen verlinken auf den zugehörigen Begriff und erhalten den gemeinsamen Routencontroller. Die bisherigen Rechnereingaben werden beim Wechsel nicht zurückgesetzt.
+- Glossareinträge werden separat in `assets/immobilien-abc.json` gepflegt; Skript und Styles liegen unter `assets/`, der Build-Einbau unter `scripts/add_immobilien_abc.py`.
+- Die neue Route wird nach dem vereinheitlichten Rechner-Build und vor der Fingerprint-Erzeugung ergänzt; STRATO-Live wird durch diesen Dev-Schritt nicht aktualisiert.
