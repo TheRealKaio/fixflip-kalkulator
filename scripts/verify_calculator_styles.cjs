@@ -40,6 +40,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
      assert(labelValue.every(item=>item.value.top>=item.label.bottom+2),'Financing tile values have visible separation below their labels at '+width+'px: '+JSON.stringify(labelValue));
      await page.waitForFunction(()=>document.querySelector('#nicFinanceModule #nicFinance-rateChart text'));
      await page.evaluate(()=>document.documentElement.style.setProperty('--nic-subtext-font-size','18px'));
+     await page.evaluate(()=>document.fonts.ready);
+     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
      const chart=await page.evaluate(()=>{const svg=document.querySelector('#nicFinanceModule #nicFinance-rateChart');return [...svg.querySelectorAll('text')].map(node=>{const box=node.getBBox();return {text:node.textContent,x:box.x,right:box.x+box.width}})});
      assert(chart.length>=5,'Rate chart axis/year labels rendered at '+width+'px');
      assert(chart.every(label=>label.x>=-0.5&&label.right<=560.5),'Rate chart labels stay inside the SVG at '+width+'px: '+JSON.stringify(chart));
