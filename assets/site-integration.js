@@ -47,7 +47,7 @@ window.addEventListener('nic-auth-changed',syncAccountLink);
 function adminPanelRoute(){
  const profile=location.hash==='#account';
  const section=location.hash.startsWith('#admin-')?location.hash.slice(7):'';
- const allowed=['company','content','layout','social','meta','legal','users','stats'];
+ const allowed=['company','content','immobilien-abc','layout','social','meta','legal','users','stats'];
  const selected=allowed.includes(section)?section:'';
  return {profile,section:selected,key:profile?'account':'admin'+(selected?'-'+selected:'')};
 }
@@ -114,7 +114,7 @@ function ensureNativeView(profile){
   document.head.append(style);
   for(const script of doc.querySelectorAll('script[src]')){
    const src=new URL(script.getAttribute('src'),url),name=src.pathname.split('/').pop().replace(/\.[a-f0-9]{16}(?=\.js$)/,'');
-   if(!['statistics-core.js','statistics-admin.js','legal-drafts.js','admin.js','user-data.js'].includes(name))continue;
+   if(!['statistics-core.js','statistics-admin.js','legal-drafts.js','admin-immobilien-abc.js','admin.js','user-data.js'].includes(name))continue;
    if(name==='statistics-core.js'&&window.NICStatsCore)continue;
    await loadNativeScript(src.href);
   }
