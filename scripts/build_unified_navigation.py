@@ -158,7 +158,7 @@ for page in site.rglob('*.html'):
   s=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+finance_header[0]+m[2],s,count=1,flags=re.S)
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
  if 'homepage.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/homepage.css"></head>',1)
- key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck')] if page==site/slug/'index.html'),'budget'))
+ key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck'),('about','ueber-uns'),('contact','kontakt'),('login','anmelden')] if page==site/slug/'index.html'),'budget'))
  header_key='welcome' if key=='home' else key
  header_config=json.loads((site/'site-settings.json').read_text()).get('content',{}).get(header_key,{})
  if header_config and 'id="heroTitle"' in s:
@@ -181,9 +181,8 @@ for page in site.rglob('*.html'):
   if target.exists() and target.read_text()!=payload:raise SystemExit('Information routes must share identical calculator controls')
   target.write_text(payload)
   s=s[:main.start()]+main[1]+article[0]+'<script src="/'+bundle+'"></script>'+main[3]+s[main.end():]
- if page.parent.name in {'ueber-uns','kontakt','anmelden'}:
-  s=re.sub(r'<h1\b([^>]*id="heroTitle"[^>]*)>.*?</h1>',r'<h1\1></h1>',s,count=1,flags=re.S)
-  s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',r'\1\2',s,count=1,flags=re.S)
+ # Informational routes now share the same visible hero; never blank their
+ # prerendered title and description after build_settings_pages creates them.
  for explanation_key,slug in ROUTES.items():
   if page==site/slug/'index.html':
    s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+explanation_templates[explanation_key],s,count=1)
