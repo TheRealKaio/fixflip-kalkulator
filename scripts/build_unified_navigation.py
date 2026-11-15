@@ -149,12 +149,9 @@ for page in site.rglob('*.html'):
   items=json.loads(match[2])
   config=json.loads((site/'site-settings.json').read_text())
   home=config.get('meta',{}).get('website',{})
-  headers=[finance_header,[home.get('homeTitle','Deine Immobilie. Dein Plan. Dein Überblick.'),home.get('homeDescription','')]]
-  for content_key in ['settlement','prices','why']:
-   content=config.get('content',{}).get(content_key,{})
-   headers.append([content.get('title',''),content.get('metaDescription','')])
-  for header in headers:
-   if header[0] and header not in items:items.append(header)
+  # Only the bounded, editable headers contribute to responsive measurements.
+  headers=[[entry.get('headerTitle',''),entry.get('headerDescription','')] for entry in config.get('content',{}).values()]
+  items=[pair for pair in headers if any(pair)]
   return match[1]+json.dumps(items,ensure_ascii=False).replace('<','\\u003c')+match[3]
  s=re.sub(r'(<script type="application/json" id="nic-header-variants">)(.*?)(</script>)',variants,s,flags=re.S)
  if page==site/'finanzierungsrechner/index.html':
@@ -162,6 +159,12 @@ for page in site.rglob('*.html'):
   s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
  if 'homepage.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/homepage.css"></head>',1)
  key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck')] if page==site/slug/'index.html'),'budget'))
+ header_key='welcome' if key=='home' else key
+ header_config=json.loads((site/'site-settings.json').read_text()).get('content',{}).get(header_key,{})
+ if header_config and 'id="heroTitle"' in s:
+  for tag,identifier,name in [('h1','heroTitle','headerTitle'),('p','heroText','headerDescription')]:
+   pattern=r'(<'+tag+r'\\b[^>]*id="'+identifier+r'"[^>]*>).*?(</'+tag+'>)'
+   s=re.sub(pattern,lambda m:m[1]+html.escape(header_config.get(name,''))+m[2],s,count=1,flags=re.S)
  s=re.sub(r'<html\b', '<html data-calculator="'+key+'"',s,count=1)
  s=re.sub(r'calculator-navigation\.[a-f0-9]{16}\.js','calculator-navigation.js',s)
  # Keep inactive calculator form copy out of information pages' initial HTML.
