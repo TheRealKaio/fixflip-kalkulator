@@ -84,5 +84,5 @@ body.nic-admin .save-bar{position:static!important;inset:auto!important;z-index:
 
 /* Keep the configuration actions centered on one shared vertical axis. */
 body.nic-admin .configuration-tools .tool-row{align-items:center!important;gap:12px}
-body.nic-admin .configuration-tools .tool-row>button,body.nic-admin .configuration-tools .tool-row>.import-label{box-sizing:border-box;min-height:50px;display:inline-flex;align-items:center;justify-content:center;line-height:1.25;vertical-align:middle}
-body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;min-height:50px;line-height:1.25}
+body.nic-admin .configuration-tools .tool-row>button,body.nic-admin .configuration-tools .tool-row>.import-label{box-sizing:border-box;height:50px;min-height:50px;display:inline-flex;align-items:center;justify-content:center;align-self:center!important;margin:0!important;position:static!important;transform:none!important;line-height:1.25;vertical-align:middle}
+body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:50px;min-height:50px;align-self:center!important;margin:0!important;position:static!important;transform:none!important;line-height:1.25}
