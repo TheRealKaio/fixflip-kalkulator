@@ -15,23 +15,28 @@ function render(panel){
  const lead=element('p','nic-abc-lead','Wichtige Begriffe rund um Kauf, Notar, Finanzierung, Vermietung und die ImmoCheck-Rechner – einfach erklärt und mit Beispielen.');
  const toolbar=element('div','nic-abc-toolbar');
  const label=element('label','nic-abc-search-label','Begriff suchen');
- const search=element('input','nic-abc-search');search.type='search';search.placeholder='Zum Beispiel: Grundschuld, Restschuld …';search.autocomplete='off';search.setAttribute('aria-label','Immobilienbegriff suchen');
+ const search=element('input','nic-abc-search');search.type='search';search.placeholder='Begriff suchen, z. B. Grundschuld …';search.autocomplete='off';search.setAttribute('aria-label','Immobilienbegriff suchen');
  label.append(search);toolbar.append(label);
  const categories=element('div','nic-abc-filters');categories.setAttribute('role','group');categories.setAttribute('aria-label','Thema auswählen');
+ const headingRow=element('div','nic-abc-heading-row');
+ const heading=element('h2','nic-abc-heading','Begriffe von A bis Z');
  const count=element('p','nic-abc-count');count.setAttribute('aria-live','polite');
+ headingRow.append(heading,count);
  const list=element('div','nic-abc-list');
- view.append(lead,toolbar,categories,count,list);panel.append(view);
+ view.append(lead,toolbar,categories,headingRow,list);panel.append(view);
  let category='Alle',rows=[];
  const termId=new URLSearchParams(location.search).get('begriff');
  function draw(){
   const query=normalize(search.value.trim());
   const filtered=rows.filter(row=>(category==='Alle'||row.category===category)&&normalize(row.term+' '+row.explanation+' '+row.example).includes(query));
-  count.textContent=filtered.length+' von '+rows.length+' Begriffen';
+  count.textContent=filtered.length+' Begriffe von '+rows.length+' Begriffen';
   const fragment=document.createDocumentFragment();
   for(const item of filtered){
    const details=element('details','nic-abc-entry');details.id='begriff-'+item.id;
    const summary=element('summary','nic-abc-summary');
-   summary.append(element('strong','',item.term),element('small','nic-abc-subtext',item.category));
+   const labelStack=element('span','nic-abc-title-stack');
+   labelStack.append(element('strong','',item.term),element('small','nic-abc-subtext',item.category));
+   summary.append(labelStack);
    const body=element('div','nic-abc-detail');
    body.append(element('p','',item.explanation));
    const example=element('div','nic-abc-example');
