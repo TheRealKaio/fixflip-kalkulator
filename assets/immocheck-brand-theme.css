@@ -882,3 +882,12 @@ html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal
  html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal .footer-meta{margin:0!important;padding:12px 0 0!important;border:0!important;text-align:left!important;justify-content:flex-start!important}
  html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) .nic-footer-legal .footer-legal-links{justify-content:flex-start!important;text-align:left!important;margin-left:0!important;margin-right:0!important;white-space:normal!important;flex-wrap:wrap!important}
 }
+
+/* All public content routes use the shared image header. Keep this rule in the
+   persistent stylesheet: generated inline styles may be modularized away. */
+html[data-nic-page="about"] body.nic-content-page .app > header.hero,
+html[data-nic-page="contact"] body.nic-content-page .app > header.hero,
+html[data-nic-page="login"] body.nic-content-page .app > header.hero {
+ display:block!important;
+ visibility:visible!important;
+}
