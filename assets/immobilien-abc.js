@@ -48,8 +48,10 @@ function render(panel){
    summary.append(labelStack);
    const body=element('div','nic-abc-detail');
    body.append(element('p','',item.explanation));
-   const example=element('div','nic-abc-example');
-   example.append(element('strong','','Beispiel'),element('p','',item.example));body.append(example);
+   if(item.example?.trim()){
+    const example=element('div','nic-abc-example');
+    example.append(element('strong','','Beispiel'),element('p','',item.example));body.append(example);
+   }
    details.append(summary,body);fragment.append(details);
    if(item.id===termId){details.open=true;requestAnimationFrame(()=>details.scrollIntoView({block:'center'}));}
   }
