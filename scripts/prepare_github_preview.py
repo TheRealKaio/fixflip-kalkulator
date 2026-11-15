@@ -88,7 +88,7 @@ def prepare(source, target, live_layout=False):
             # Preview-only: the production admin redirects to the login-gated
             # app shell. GitHub Pages has no backend, so keep the standalone
             # admin editor accessible with browser-local settings.
-            redirect = "if(window.self===window.top){const section=location.hash.slice(1);location.replace('./#admin'+(['company','content','layout','social','meta','legal','users','stats'].includes(section)?'-'+section:''));}"
+            redirect = "if(window.self===window.top){const section=location.hash.slice(1);location.replace('./#admin'+(['company','content','immobilien-abc','layout','social','meta','legal','users','stats'].includes(section)?'-'+section:''));}"
             if text.count(redirect) != 1:
                 raise ValueError('Admin redirect changed; review preview-only access')
             text = text.replace(redirect, "if(window.self===window.top){document.documentElement.classList.add('nic-admin-preview');}")
