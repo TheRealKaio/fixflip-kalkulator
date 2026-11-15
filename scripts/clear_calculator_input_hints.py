@@ -12,7 +12,7 @@ SCRIPT = r'''<script id="nic-clear-calculator-input-hints">
     if(root instanceof Element && root.matches('input[placeholder],textarea[placeholder]'))fields.push(root);
     if(root.querySelectorAll)fields.push(...root.querySelectorAll('input[placeholder],textarea[placeholder]'));
     fields.forEach(field=>{
-      if(field.closest('#ownBudgetTransferCard'))return;
+      if(field.closest('#ownBudgetTransferCard, #nicContentView .nic-abc'))return;
       field.removeAttribute('placeholder');
     });
     // Financing has its own open Shadow DOM, outside document selectors.
