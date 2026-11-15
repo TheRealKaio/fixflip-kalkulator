@@ -7,6 +7,23 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
 (async()=>{
  const s=await S.init();
+ // Editable header copy: limits, deliberate emptiness, and JSON export/import.
+ for(const [key,entry] of Object.entries(s.content)){
+  assert.equal(typeof entry.headerTitle,'string',key+' header title missing');
+  assert.equal(typeof entry.headerDescription,'string',key+' header description missing');
+  assert(entry.headerTitle.length<=70,key+' header title too long');
+  assert(entry.headerDescription.length<=90,key+' header description too long');
+ }
+ const editedHeader=S.normalize({...s,content:{...s.content,budget:{...s.content.budget,headerTitle:'',headerDescription:''},rent:{...s.content.rent,headerTitle:'T'.repeat(90),headerDescription:'D'.repeat(120)}}});
+ assert.equal(editedHeader.content.budget.headerTitle,'');
+ assert.equal(editedHeader.content.budget.headerDescription,'');
+ assert.equal(editedHeader.content.rent.headerTitle.length,70);
+ assert.equal(editedHeader.content.rent.headerDescription.length,90);
+ assert.equal(S.normalize(JSON.parse(JSON.stringify(editedHeader))).content.budget.headerDescription,'');
+ S.save(editedHeader);
+ assert.equal((await S.init()).content.budget.headerTitle,'');
+ assert.equal((await S.init()).content.budget.headerDescription,'');
+ S.discard();
  const legacySettlement=S.normalize({...s,meta:{...s.meta,website:{...s.meta.website,settlementButtonTitle:'Mieterabrechnung erstellen',settlementButtonText:'Nebenkosten erfassen und Abrechnen'}}});
  assert.equal(legacySettlement.meta.website.settlementButtonTitle,'Nebenkosten abrechnen');
  assert.equal(legacySettlement.meta.website.settlementButtonText,'Betriebskosten erfassen und versenden');
