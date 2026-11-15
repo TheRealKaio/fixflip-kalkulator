@@ -92,7 +92,7 @@ const assert=require('node:assert/strict');
      assert.equal(item.background,'rgb(237, 243, 255)','Footer plus background default: '+JSON.stringify(item));
      assert.equal(item.border,'rgb(199, 216, 255)','Footer plus border default: '+JSON.stringify(item));
      assert.equal(item.color,'rgb(37, 99, 235)','Footer plus glyph color default: '+JSON.stringify(item));
-     assert.equal(item.font,'13px','Footer plus glyph size default: '+JSON.stringify(item));
+     assert.equal(item.font,'16px','Footer plus glyph size default: '+JSON.stringify(item));
      assert.equal(item.padding,'0px','Footer plus inset default: '+JSON.stringify(item));
      assert.equal(item.width,'24px');assert.equal(item.height,'24px');
     }
@@ -670,7 +670,7 @@ const assert=require('node:assert/strict');
  await admin.locator('#layout-footerExpandBackground').fill('#EDF3FF');
  await admin.locator('#layout-footerExpandBorder').fill('#C7D8FF');
  await admin.locator('#layout-footerExpandInk').fill('#2563EB');
- await admin.locator('#layout-footerExpandGlyphSize').fill('13');
+ await admin.locator('#layout-footerExpandGlyphSize').fill('16');
  await admin.locator('#layout-footerExpandPadding').fill('0');
  await admin.locator('#saveSettings').click();
  // Native administration shares the document and browser scroll on every tab.
