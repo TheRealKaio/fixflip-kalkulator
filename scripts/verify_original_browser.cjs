@@ -92,7 +92,7 @@ const assert=require('node:assert/strict');
      assert.equal(item.background,'rgb(237, 243, 255)','Footer plus background default: '+JSON.stringify(item));
      assert.equal(item.border,'rgb(199, 216, 255)','Footer plus border default: '+JSON.stringify(item));
      assert.equal(item.color,'rgb(37, 99, 235)','Footer plus glyph color default: '+JSON.stringify(item));
-     assert.equal(item.font,'13px','Footer plus glyph size default: '+JSON.stringify(item));
+     assert.equal(item.font,'16px','Footer plus glyph size default: '+JSON.stringify(item));
      assert.equal(item.padding,'0px','Footer plus inset default: '+JSON.stringify(item));
      assert.equal(item.width,'24px');assert.equal(item.height,'24px');
     }
