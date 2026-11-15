@@ -17,7 +17,7 @@ css="""/* One visual language for the five calculators' expand/collapse controls
   --nic-expand-bg:#FDE68A;
   --nic-expand-ink:var(--nic-highlight-text,#2563eb);
 }
-body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
+html body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
   box-sizing:border-box!important;
   flex:0 0 var(--nic-expand-size)!important;
   width:var(--nic-expand-size)!important;
@@ -43,7 +43,7 @@ body:not(.nic-admin) :is(.plus-btn,.market-check-toggle){
   box-shadow:none!important;
   cursor:pointer;
 }
-body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>summary::after{
+html body:not(.nic-admin) :is(.own-finance-card,.flip-section-card) details.advanced>summary::after{
   content:"+"!important;
   box-sizing:border-box!important;
   float:none!important;
