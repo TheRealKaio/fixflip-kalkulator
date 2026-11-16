@@ -176,6 +176,13 @@ function initResponsiveCalculatorMenu(){
   console.error('Calculator menu initialization failed: missing menu or header', {menu:!!menu,header:!!header});
   return;
  }
+ // Align the original shared calculator tiles with the central menu label.
+ for(const tile of menu.querySelectorAll('.deal-type-option')){
+  if(tile.dataset.calculator==='budget'||tile.dataset.href==='/budget/'){
+   const heading=tile.querySelector('strong');
+   if(heading?.textContent.trim()==='Budget')heading.textContent='Budgetrechner';
+  }
+ }
  if(menu.querySelector('#nicMobileCalculatorSelect'))return;
  calculatorMenuAnchor=document.createComment('Original calculator menu position');
  menu.after(calculatorMenuAnchor);
@@ -191,6 +198,8 @@ function initResponsiveCalculatorMenu(){
  picker.id='nicMobileCalculatorSelect';
  picker.className='nic-mobile-calculator-select';
  picker.setAttribute('aria-label','Rechner auswählen');
+ picker.tabIndex=-1;
+ picker.setAttribute('aria-hidden','true');
  for(const item of calculators){
   const option=document.createElement('option');
   option.value=item.id;
