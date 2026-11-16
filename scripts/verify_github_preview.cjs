@@ -73,7 +73,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    }
    // A direct admin URL must remain in the same application with the shared hero.
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
-   await page.waitForURL('**/fixflip-kalkulator/#admin');
+   await page.waitForFunction(()=>location.pathname==='/fixflip-kalkulator/'&&location.hash.startsWith('#admin'),null,{timeout:10000}).catch(async error=>{
+    throw new Error('Direct admin redirect failed: '+JSON.stringify({url:page.url(),errors})+'; '+error.message);
+   });
    await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
    assert(await page.locator('.app > .hero').isVisible(),'Admin shares the main website header');
    assert.equal(await page.locator('iframe').count(),0,'Admin is native, not a separate iframe');
