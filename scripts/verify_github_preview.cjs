@@ -93,7 +93,18 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Standalone about page has a visible picker');
     await page.locator('#nicMobileCalculatorSelect').selectOption('finance');
     await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
-    assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible(),'Standalone picker opens real calculator form');
+    try{
+     await page.locator('#nicFinanceModule [data-finance-id="loan"]').waitFor({state:'visible',timeout:15000});
+     await page.waitForFunction(()=>window.NICCalculators?.active==='finance',{timeout:15000});
+    }catch(error){
+     const diagnostic=await page.evaluate(()=>({
+      route:location.pathname,page:document.documentElement.dataset.nicPage,
+      active:window.NICCalculators?.active,body:document.body.className,
+      financeHost:!!document.getElementById('nicFinanceModule'),
+      loanField:!!document.querySelector('#nicFinanceModule [data-finance-id="loan"]')
+     }));
+     throw new Error('Standalone picker must load the complete finance calculator: '+JSON.stringify(diagnostic)+'; '+error.message);
+    }
     await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
     const originalMenu=await page.locator('.deal-type-card').elementHandle();
     await page.setViewportSize({width:844,height:390});
