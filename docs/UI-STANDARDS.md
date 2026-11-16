@@ -357,3 +357,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Fehlende Begriffe aus den geprüften vollständigen Miet-Erklärungen werden ohne Überschreiben bestehender Einträge zur generierten ABC-Datenbasis ergänzt; die 120 Ausgangsbegriffe bleiben vollständig erhalten.
 - Bestehende Infoknöpfe werden nur dann ausgeblendet, wenn die erforderlichen Inhalte in der neuen Darstellung verfügbar sind. Noch nicht sicher migrierte Hinweise dürfen nicht verloren gehen.
 - Der Browser-Regressionstest überprüft die Erklärung, die zusätzlichen Abschnitte sowie unveränderte URL, Dokumentinstanz und Rechnerwerte nach dem Schließen.
+
+### Vollständiger Abgleich der historischen Info-Logik
+
+- Der Dev-Build extrahiert die 20 vollständigen Hilfetexte aus dem vorhandenen Fix-&-Flip-`info`-Objekt sowie die neun strukturierten Vermietungs-Hinweise, jeweils mit Haupttext, „Einfach gesagt“ und „Gut zu wissen“.
+- Historische Feldschlüssel und KPI-Titel werden aus dem tatsächlich generierten HTML zugeordnet; unbekannte Schlüssel verhindern ein stilles Entfernen der alten Information.
+- Die Kontextansicht ersetzt die Symbole auch bei Fix-&-Flip-Kennzahlen und bei den beiden Vermietungskennzahlen „Monatlicher Cashflow“ und „Kaufpreisfaktor“. Der Link ist der dezent punktiert unterstrichene Feld- bzw. Kennzahlentitel.
+- Automatische Tests stellen für ausgewählte Feld- und KPI-Typen sicher, dass kein Seitenwechsel erfolgt und die Originalabschnitte weiterhin abrufbar sind. Die initialen 120 ABC-Einträge bleiben erhalten, die ergänzten Begriffe werden alphabetisch eingeordnet.
