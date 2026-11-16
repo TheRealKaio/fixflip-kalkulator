@@ -78,7 +78,7 @@ if begin<0:
 end=source.find("};",begin)
 if end<0:raise SystemExit("Unterminated legacy information map")
 part=source[begin:end]
-pattern=re.compile(r'([A-Za-z][A-Za-z0-9_]*):\\s*\\{\\s*title:\\s*"([^"]+)",\\s*body:\\s*"([^"]+)",\\s*plain:\\s*"([^"]+)",\\s*know:\\s*"([^"]+)"\\s*\\}',re.S)
+pattern=re.compile(r'([A-Za-z][A-Za-z0-9_]*):\s*\{\s*title:\s*"([^"]+)",\s*body:\s*"([^"]+)",\s*plain:\s*"([^"]+)",\s*know:\s*"([^"]+)"\s*\}',re.S)
 full=list(pattern.finditer(part))
 if len(full)!=20:
     raise SystemExit(f"Expected 20 complete Fix & Flip information sheets; found {len(full)}")
@@ -91,7 +91,7 @@ for match in full:
     if not name:
         # KPI information is attached to the visible .name element rather
         # than a field label. Never infer the term from the script key.
-        pat=r'<button\\b[^>]*data-info="'+re.escape(key)+r'"[^>]*>[^<]*</button>\\s*<div class="name"[^>]*>([^<]+)</div>'
+        pat=r'<button\b[^>]*data-info="'+re.escape(key)+r'"[^>]*>[^<]*</button>\s*<div class="name"[^>]*>([^<]+)</div>'
         label=re.search(pat,source,re.S)
         if not label:raise SystemExit("Cannot match legacy KPI information: "+key)
         name=trim(html.unescape(label.group(1)))
