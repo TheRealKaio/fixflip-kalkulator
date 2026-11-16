@@ -182,7 +182,7 @@ function initResponsiveCalculatorMenu(){
  const label=document.createElement('label');
  label.htmlFor='nicMobileCalculatorSelect';
  label.className='nic-mobile-calculator-label';
- label.append(document.createTextNode('Rechner wählen '));
+ label.append(document.createTextNode('Rechner auswählen '));
  const arrow=document.createElement('span');
  arrow.setAttribute('aria-hidden','true');
  arrow.textContent='→';
@@ -207,6 +207,74 @@ function initResponsiveCalculatorMenu(){
  compact.className='nic-mobile-calculator-controls';
  compact.append(label,picker);
  menu.append(compact);
+ // Custom portrait menu: the underlying select remains the route-state source.
+ const trigger=document.createElement('button');
+ trigger.type='button';trigger.id='nicMobileCalculatorTrigger';
+ trigger.className='nic-mobile-calculator-trigger';
+ trigger.setAttribute('aria-label','Rechner auswählen');
+ trigger.setAttribute('aria-expanded','false');
+ trigger.setAttribute('aria-controls','nicMobileCalculatorOptions');
+ trigger.innerHTML='<span class="nic-mobile-calculator-trigger-label">Rechner auswählen <span aria-hidden="true">→</span></span><span class="nic-mobile-calculator-current"><span class="nic-mobile-calculator-current-text"></span><span class="nic-mobile-calculator-chevron" aria-hidden="true">⌄</span></span>';
+ const options=document.createElement('div');
+ options.id='nicMobileCalculatorOptions';options.className='nic-mobile-calculator-options';
+ options.setAttribute('role','listbox');options.setAttribute('aria-label','Rechner auswählen');
+ options.hidden=true;
+ const icons={
+  budget:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M7 7h10M8 11h1m3 0h1m3 0h1M8 15h1m3 0h1m3 0h1M8 19h1m3 0h1m3 0h1"/>',
+  own:'<path d="M3 10.5 12 3l9 7.5V21h-6v-7H9v7H3z"/>',
+  rent:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 4 16 4 16 0V5M4 11v6c0 4 16 4 16 0v-6"/>',
+  flip:'<path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/>',
+  finance:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 4 16 4 16 0V5M4 11v6c0 4 16 4 16 0v-6"/>',
+  settlement:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>'
+ };
+ const rows=[];
+ for(const option of picker.options){
+  const row=document.createElement('button');row.type='button';
+  row.className='nic-mobile-calculator-option';row.dataset.value=option.value;
+  row.setAttribute('role','option');
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');
+  svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','1.8');
+  svg.setAttribute('stroke-linejoin','round');svg.setAttribute('stroke-linecap','round');
+  svg.setAttribute('aria-hidden','true');svg.innerHTML=icons[option.value];
+  const name=document.createElement('span');name.textContent=option.textContent;
+  name.className='nic-mobile-calculator-option-text';
+  const check=document.createElement('span');check.className='nic-mobile-calculator-check';
+  check.setAttribute('aria-hidden','true');check.textContent='✓';
+  row.append(svg,name,check);options.append(row);rows.push(row);
+ }
+ compact.append(trigger,options);
+ function renderSelection(){
+  trigger.querySelector('.nic-mobile-calculator-current-text').textContent=picker.selectedOptions[0]?.textContent||'Budgetrechner';
+  for(const row of rows){
+   const selected=row.dataset.value===picker.value;
+   row.classList.toggle('is-selected',selected);
+   row.setAttribute('aria-selected',String(selected));
+  }
+ }
+ function setOpen(open,focus=false){
+  const show=!!open&&menu.classList.contains('nic-portrait-calculator-menu');
+  options.hidden=!show;trigger.setAttribute('aria-expanded',String(show));
+  if(show&&focus)(rows.find(row=>row.dataset.value===picker.value)||rows[0])?.focus();
+ }
+ trigger.addEventListener('click',()=>setOpen(options.hidden,true));
+ trigger.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();setOpen(true,true);}
+ });
+ options.addEventListener('click',e=>{
+  const row=e.target.closest('.nic-mobile-calculator-option');if(!row)return;
+  picker.value=row.dataset.value;renderSelection();setOpen(false);trigger.focus();
+  picker.dispatchEvent(new Event('change',{bubbles:true}));
+ });
+ options.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();setOpen(false);trigger.focus();return;}
+  if(e.key==='Tab'){setOpen(false);return;}
+  const index=rows.indexOf(document.activeElement);
+  const n=e.key==='ArrowDown'?(index+1)%rows.length:e.key==='ArrowUp'?(index-1+rows.length)%rows.length:e.key==='Home'?0:e.key==='End'?rows.length-1:-1;
+  if(n>=0){e.preventDefault();rows[n].focus();}
+ });
+ document.addEventListener('pointerdown',e=>{if(!compact.contains(e.target))setOpen(false);});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!options.hidden){setOpen(false);trigger.focus();}});
  function sync(){
   const path=location.pathname.toLowerCase();
   // The welcome page alone keeps its tile overview. Subpages, including
@@ -227,13 +295,17 @@ function initResponsiveCalculatorMenu(){
    }else{
     picker.value='budget';
    }
+   renderSelection();
   }else{
+   setOpen(false);
    menu.classList.remove('nic-portrait-calculator-menu');
    if(calculatorMenuAnchor?.parentNode&&menu.previousSibling!==calculatorMenuAnchor)calculatorMenuAnchor.after(menu);
   }
   window.NICHeader?.refresh();
  }
  picker.addEventListener('change',()=>{
+  renderSelection();
+  setOpen(false);
   if(menu.classList.contains('nic-standalone-calculator-menu')){
    // Standalone information shells do not contain calculator forms.
    // Load the full calculator document rather than switching an empty shell.
