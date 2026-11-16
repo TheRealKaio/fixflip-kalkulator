@@ -150,7 +150,7 @@ function setAdmin(open){
  if(!adminPanel){
   adminPanel=document.createElement('section');adminPanel.id='nicAdminPanel';adminPanel.setAttribute('aria-label','Admin-Bereich');
   const toolbar=document.createElement('div');toolbar.className='nic-admin-toolbar';
-  const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zu den Kalkulatoren';close.addEventListener('click',()=>{history.pushState(null,'',accountReturnUrl||location.pathname+location.search);accountReturnUrl=null;setAdmin(false);});
+  const close=document.createElement('button');close.type='button';close.className='nic-admin-back';close.textContent='← Zurück';close.addEventListener('click',()=>{window.location.assign(S.ROOT.href);});
   adminLogout=document.createElement('button');adminLogout.type='button';adminLogout.className='nic-admin-logout';adminLogout.textContent='ABMELDEN';adminLogout.hidden=true;adminLogout.addEventListener('click',async()=>{if(!window.NICAccess?.logout)return;adminLogout.disabled=true;try{await window.NICAccess.logout();}catch(error){adminLogout.disabled=false;window.alert(error.message||'Abmelden fehlgeschlagen.');}});
   toolbar.append(close,adminLogout);
   adminPanel.append(toolbar);hero.after(adminPanel);
