@@ -30,6 +30,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    const snapshots=[];
    for(const key of ['budget','own','rent','flip','finance']){
     await page.evaluate(k=>window.NICCalculatorNavigation.select(k),key);
+    await page.waitForFunction(k=>window.NICCalculators?.active===k&&document.body.dataset.calculator===k&&document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
+    // Let legacy calculator-specific DOM updates complete before comparing
+    // inline/external CSS. The comparison must inspect the same mode on both.
+    await page.waitForTimeout(120);
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     if(key==='finance'){
      const tracks=await page.evaluate(()=>{const count=selector=>{const value=getComputedStyle(document.querySelector(selector)).gridTemplateColumns;return value.match(/\d+(?:\.\d+)?px/g)?.length||0};return {results:count('#nicFinanceModule .finance-result-grid'),scenarios:count('#nicFinanceModule .refinance-grid')}});
