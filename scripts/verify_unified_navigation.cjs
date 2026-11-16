@@ -109,6 +109,12 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    }
   }
   assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one shared calculator menu exists on the calculator route');
+  if(width<=700){
+   const picker=page.locator('#nicMobileCalculatorSelect');
+   assert.deepEqual(await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value)),['budget','own','rent','flip','finance','settlement'],'Mieter-Abrechnung is the final mobile option');
+   const corners=await picker.evaluate(el=>{const style=getComputedStyle(el);return [style.borderTopLeftRadius,style.borderTopRightRadius,style.borderBottomRightRadius,style.borderBottomLeftRadius].map(parseFloat);});
+   assert(corners.every(value=>value>0),'All four dropdown corners inherit a positive layout radius');
+  }
   assert.deepEqual(errors,[], 'Page initialization must complete without JavaScript errors');
   const origin=await page.evaluate(()=>performance.timeOrigin);
   assert.equal(await page.locator('script[src*="calculator-finance"]').count(),0,'Finance must use the shared controller bundle');
