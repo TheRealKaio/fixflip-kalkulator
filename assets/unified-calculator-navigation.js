@@ -158,8 +158,13 @@ let calculatorMenuAnchor=null;
 function initResponsiveCalculatorMenu(){
  const menu=document.querySelector('.app>main.section>.deal-type-card');
  const header=document.querySelector('.app>.hero');
- const brand=header?.querySelector('.nic-brand-bar')||header?.querySelector('.hero-top');
- if(!menu||!brand)return;
+ // The built calculator pages do not all use the same branding wrapper.
+ // Use the real shared header, with the same fallback as createSiteNavigation.
+ const brand=header?.querySelector('.nic-brand-bar,.hero-top')||header?.firstElementChild;
+ if(!menu||!header||!brand){
+  console.error('Calculator menu initialization failed: missing menu or header', {menu:!!menu,header:!!header,brand:!!brand});
+  return;
+ }
  if(menu.querySelector('#nicMobileCalculatorSelect'))return;
  calculatorMenuAnchor=document.createComment('Original calculator menu position');
  menu.after(calculatorMenuAnchor);
