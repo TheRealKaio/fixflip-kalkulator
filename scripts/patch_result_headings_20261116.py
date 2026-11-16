@@ -134,11 +134,53 @@ flip_script = r"""
 """
 if 'nic-neutral-flip-result-heading' not in s:
     s = s.replace('</body>', flip_script + '</body>', 1)
-# Temporary diagnostic of the generated rental result to locate its actual DOM anchor.
-for phrase in ('function renderDecision(', 'Negativer monatlicher Cashflow', 'rentDecision'):
-    pos=s.find(phrase)
-    print("RENTAL_DIAG", phrase, "matches", s.count(phrase))
-    if pos>=0:
-        print("RENTAL_DIAG_SNIPPET",repr(s[max(0,pos-450):pos+1400]))
+
+# Rental decision headlines are rendered dynamically (not static H2 markup).
+# Normalize the title whenever the result recalculates, retaining its explanation.
+rental_headline_script = r"""
+<script id="nic-rental-neutral-result-title">
+(function(){
+  'use strict';
+  const title='4. Ergebnis Vermietung';
+  const old=/^(?:Negativer|Positiver|Neutraler)\s+monatlicher\s+Cashflow$/i;
+  function normalize(){
+    if(!(/\/vermietung\/?$/.test(location.pathname)))return;
+    for(const box of document.querySelectorAll('.decision')){
+      const candidates=[...box.querySelectorAll('h2,h3,h4,strong,b,span,div')];
+      const el=candidates.find(n=>n.children.length===0 && old.test((n.textContent||'').trim()))
+        || candidates.find(n=>old.test((n.textContent||'').trim()));
+      if(!el)continue;
+      if(el.textContent.trim()!==title)el.textContent=title;
+      el.style.setProperty('color','#111827','important');
+      el.style.setProperty('text-align','left','important');
+      el.style.setProperty('font-size','var(--nic-h2-font-size,25px)','important');
+      el.style.setProperty('font-weight','700','important');
+      for(const icon of box.querySelectorAll('.light,[aria-hidden="true"]')){
+        icon.style.setProperty('display','none','important');
+      }
+      box.style.setProperty('background','transparent','important');
+      box.style.setProperty('border','0','important');
+      box.style.setProperty('box-shadow','none','important');
+      box.style.setProperty('text-align','left','important');
+    }
+  }
+  let queued=false;
+  function schedule(){
+    if(queued)return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;normalize();});
+  }
+  function init(){
+    normalize();
+    new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
+})();
+</script>
+"""
+if 'nic-rental-neutral-result-title' not in s:
+    s=s.replace('</body>',rental_headline_script+'</body>',1)
+
 path.write_text(s,encoding="utf-8")
 print("Preview heading and input-alignment pass applied")
