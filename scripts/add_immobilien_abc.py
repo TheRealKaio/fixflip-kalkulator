@@ -32,7 +32,7 @@ if len({entry['id'] for entry in items})!=len(items):
     raise SystemExit('ABC identifiers must be unique')
 for name in ('immobilien-abc.js','immobilien-abc.css'):
     shutil.copyfile(Path('assets')/name,site/name)
-(site/'immobilien-abc.json').write_text(json.dumps(items,ensure_ascii=False,indent=2)+'\\n',encoding='utf-8')
+(site/'immobilien-abc.json').write_text(json.dumps(items,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
 navigation=site/'calculator-navigation.js'
 nav=navigation.read_text(encoding='utf-8')
