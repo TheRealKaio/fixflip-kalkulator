@@ -14,9 +14,10 @@ assert len(original)==120
 assert {e['id'] for e in original}.issubset({e['id'] for e in entries})
 contexts=json.loads((site/'immobilien-abc-context.json').read_text())
 audit=json.loads((site/'immobilien-abc-legacy-audit.json').read_text())
-assert len(contexts)==9
+assert len(contexts)>=14
 assert audit['fullRentalSheets']==9 and audit['totalInfoButtons']>=9
-assert all(all(c.get(k) for k in ('term','body','plain','know')) for c in contexts)
+assert all(all(c.get(k) for k in ('term','body','source')) for c in contexts)
+assert sum(bool(c.get('plain')) and bool(c.get('know')) for c in contexts)==9
 assert all(any(e['term']==c['term'] for e in entries) for c in contexts)
 nav=(site/'calculator-navigation.js').read_text()
 assert "immobilien-abc':'/immobilien-abc/" in nav
