@@ -100,6 +100,10 @@ function contextOpen(trigger,item,legacy,rich){
   section.append(element('h3','','Zum Rechner'),element('p','',legacy));dialog.append(section);
  }
  if(rich){
+  if(rich.body?.trim()&&normalize(rich.body)!==normalize(item.explanation)&&normalize(rich.body)!==normalize(legacy)){
+   const calculator=element('section','nic-abc-context-additional');
+   calculator.append(element('h3','','Zum Rechner'),element('p','',rich.body));dialog.append(calculator);
+  }
   if(rich.plain?.trim()){
    const simple=element('section','nic-abc-context-additional');
    simple.append(element('h3','','Einfach gesagt'),element('p','',rich.plain));dialog.append(simple);
