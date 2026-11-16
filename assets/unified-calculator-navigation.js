@@ -173,6 +173,7 @@ function initMobileCalculatorChooser(){
  label.append(arrow);
  const selectInput=document.createElement('select');
  selectInput.id='nicMobileCalculatorSelect';
+ selectInput.className='nic-mobile-calculator-select';
  selectInput.setAttribute('aria-label','Rechner auswählen');
  for(const item of calculators){
   const option=document.createElement('option');
