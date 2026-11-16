@@ -2,6 +2,7 @@
 /* EXPLANATION_TEMPLATES */
 window.NICExplanations=(()=>{
  const mobile=matchMedia('(max-width:760px),(max-width:1024px) and (max-height:600px) and (orientation:landscape)');
+ const compactPortrait=matchMedia('(max-width:700px) and (orientation:portrait)');
  const bound=new WeakSet(),observed=new WeakSet();
  let active=null,queued=false,lastSignature='';
  function markup(key){
@@ -35,6 +36,7 @@ window.NICExplanations=(()=>{
   queued=false;
   const card=document.querySelector('[data-nic-explanation]'),main=card?.parentElement;
   if(!card||!main)return;
+  if(compactPortrait.matches&&card.dataset.nicExplanation!=='settlement'){main.style.setProperty('--nic-explanation-height','0px');return;}
   const rect=card.getBoundingClientRect(),style=getComputedStyle(card),width=parseFloat(style.width);
   if(!width||!rect.width)return;
   const signature=[width,mobile.matches,style.font, getComputedStyle(card.querySelector('h2')).font,getComputedStyle(card.querySelector('h3')||card.querySelector('h2')).font].join('|');
@@ -78,6 +80,7 @@ window.NICExplanations=(()=>{
   if(!observed.has(main)){observer.observe(main);observed.add(main);}
   schedule();
  }
+ compactPortrait.addEventListener('change',()=>{lastSignature='';schedule();});
  mobile.addEventListener('change',()=>{
   const card=document.querySelector('[data-nic-explanation]');if(card){bind(card).open=!mobile.matches;lastSignature='';schedule();}
  });

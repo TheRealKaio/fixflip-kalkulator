@@ -412,3 +412,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Eingebettetes CSS wird geparst und auf die jeweilige Contentbox begrenzt. Imports und URL-Ladevorgänge werden nicht übernommen. Rechtstexte behalten ihren getrennten Filter.
 - Statisches HTML erhält Texte und FAQ-Struktur; CSS-Quelltext erscheint nicht als sichtbarer Text. Content-CSS wird beim Anwenden der Einstellungen lokal ergänzt.
 - Keine automatische Übernahme von Beispieltext in veröffentlichte Inhalte; nur develop.
+
+## Fünf Rechner: kompakte Contentbox im mobilen Hochformat
+- Bis 700 px im Hochformat steht die Contentbox von Budget, Eigenheim, Vermietung, Fix & Flip und Finanzierung wieder zuerst unter dem Bildheader, vor den Rechnereingaben.
+- Zunächst geschlossen: nur die ersten maximal zwei Titelzeilen plus „weiterlesen“. Der Einleitungsabsatz bleibt geschlossen unsichtbar; keine vom langen Text abgeleitete Mindesthöhe.
+- „weiterlesen“ zeigt den vollständigen Titel, Einleitung und restlichen Text. Erneutes Schließen sowie Tastaturbedienung bleiben erhalten; beim Rechnerwechsel beginnt die Box geschlossen.
+- Mieterabrechnung, Mobil-Querformat, Tablet/Desktop behalten ihre bisherige Darstellung. Alle Texte bleiben im DOM vorhanden und über dieselben Adminfelder bearbeitbar.

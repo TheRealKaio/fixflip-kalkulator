@@ -97,7 +97,7 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
   display:flex;flex-direction:column;
  }
  body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app>main.section>.nic-explanation-card{
-  order:90;
+  order:-1;
  }
 }
 
