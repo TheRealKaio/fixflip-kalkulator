@@ -85,13 +85,12 @@ def prepare(source, target, live_layout=False):
                 raise ValueError('Preview settings storage hook changed')
             text = text.replace(old_key, "const KEY='nic_preview_site_settings_v2';")
         if path.name == 'admin.html':
-            # Preview-only: the production admin redirects to the login-gated
-            # app shell. GitHub Pages has no backend, so keep the standalone
-            # admin editor accessible with browser-local settings.
+            # The preview uses the same native admin panel beneath the shared
+            # header as the main application; local settings remain isolated.
             redirect = "if(window.self===window.top){const section=location.hash.slice(1);location.replace('./#admin'+(['company','content','immobilien-abc','layout','social','meta','legal','users','stats'].includes(section)?'-'+section:''));}"
             if text.count(redirect) != 1:
                 raise ValueError('Admin redirect changed; review preview-only access')
-            text = text.replace(redirect, "if(window.self===window.top){document.documentElement.classList.add('nic-admin-preview');}")
+            # Keep the existing top-level redirect to /#admin intact.
         if path.suffix == '.html':
             if layout is not None:
                 def bootstrap(match):
