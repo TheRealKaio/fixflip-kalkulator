@@ -92,7 +92,22 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Homepage overflows horizontally');
   await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
+  await page.waitForFunction(()=>window.NICCalculators?.active==='budget'&&document.body.dataset.calculator==='budget');
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
+  if(width<=700){
+   try{await page.locator('#nicMobileCalculatorSelect').waitFor({state:'visible',timeout:10000});}
+   catch(error){
+    const diagnostic=await page.evaluate(()=>{
+     const menu=document.querySelector('.deal-type-card'),picker=document.getElementById('nicMobileCalculatorSelect');
+     return {route:location.pathname,active:window.NICCalculators?.active,htmlCalculator:document.documentElement.dataset.calculator,
+      bodyCalculator:document.body.dataset.calculator,bodyClasses:document.body.className,
+      menuParent:menu?.parentElement?.className,menuClass:menu?.className,menuHidden:menu?.hidden,
+      menuDisplay:menu?getComputedStyle(menu).display:null,pickerFound:!!picker,pickerDisplay:picker?getComputedStyle(picker).display:null,
+      compactDisplay:picker?.parentElement?getComputedStyle(picker.parentElement).display:null,media:matchMedia('(max-width:700px) and (orientation:portrait)').matches};
+    });
+    throw new Error('Portrait menu not visible after route initialization: '+JSON.stringify(diagnostic)+'; '+error.message);
+   }
+  }
   assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one shared calculator menu exists on the calculator route');
   assert.deepEqual(errors,[], 'Page initialization must complete without JavaScript errors');
   const origin=await page.evaluate(()=>performance.timeOrigin);
