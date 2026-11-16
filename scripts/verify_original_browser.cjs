@@ -200,7 +200,7 @@ const assert=require('node:assert/strict');
      const fees=await page.evaluate(slug=>{
       const card=document.querySelector(slug==='eigennutzung'?'#ownFinanceCard':'#flipFinanceCard');
       const notary=card?.querySelector('.field:has(#notary)');
-      const broker=card?.querySelector('.field:has(#broker)');
+      const broker=card?.querySelector('.field:has(#buyBroker)');
       if(!notary||!broker)return {missing:true,notary:!!notary,broker:!!broker,card:!!card,
        labels:[...(card?.querySelectorAll('.field')||[])].map(el=>({label:el.querySelector('label')?.textContent?.trim(),id:el.querySelector('input,select')?.id})).filter(x=>/Notar|Makler/i.test(x.label||''))};
       const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,width:r.width};};
