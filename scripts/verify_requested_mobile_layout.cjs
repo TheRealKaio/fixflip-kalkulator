@@ -21,6 +21,15 @@ const fs=require('node:fs'),path=require('node:path');
    for(const slug of ['budget','vermietung']){
     await page.goto('http://127.0.0.1:8766/'+slug+'/',{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(1100);
+    if(slug==='vermietung'){
+     const toggle=page.locator('#rentFinanceToggle');
+     if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();
+     const checkbox=page.locator('#rentFinanceAcquisition');
+     const details=page.locator('details').filter({has:checkbox});
+     const closed=await checkbox.evaluate(el=>el.closest('details')?.open===false);
+     if(closed)await details.locator(':scope > summary').click();
+     await page.waitForTimeout(100);
+    }
     if(slug==='budget'){
      // The financing assumptions are collapsed by default. Open their
      // real section before measuring the on-screen input fields.
