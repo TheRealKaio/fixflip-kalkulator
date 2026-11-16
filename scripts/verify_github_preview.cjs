@@ -73,6 +73,21 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(!(await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Landscape restores configured title');
     await page.setViewportSize({width:390,height:900});
     assert(await page.locator('#nicMobileCalculatorChooser').isVisible(),'Portrait selection restored on rotate');
+    for(const narrowWidth of [320,375,390,430]){
+     await page.setViewportSize({width:narrowWidth,height:900});
+     const dimensions=await page.locator('#nicMobileCalculatorChooser').evaluate(el=>{
+      const green=el.querySelector('.nic-mobile-calculator-label').getBoundingClientRect();
+      const white=el.querySelector('.nic-mobile-calculator-select').getBoundingClientRect();
+      const container=el.getBoundingClientRect();
+      const header=el.closest('.hero').getBoundingClientRect();
+      return {gap:white.left-green.right,topGap:white.top-green.top,right:white.right,limit:container.right,
+       headerHeight:header.height,scrollWidth:document.documentElement.scrollWidth,screenWidth:document.documentElement.clientWidth};
+     });
+     assert(Math.abs(dimensions.gap)<1&&Math.abs(dimensions.topGap)<1,'Flush selector at '+narrowWidth+'px');
+     assert(dimensions.right<=dimensions.limit+1,'Dropdown within header at '+narrowWidth+'px');
+     assert(dimensions.scrollWidth<=dimensions.screenWidth+1,'No horizontal overflow at '+narrowWidth+'px');
+     assert(dimensions.headerHeight>0,'Header height retained at '+narrowWidth+'px');
+    }
    }
    await page.goto('http://localhost/fixflip-kalkulator/nebenkostenabrechnung/',{waitUntil:'networkidle'});
    const disclosure=page.locator('[data-nic-explanation] summary');
