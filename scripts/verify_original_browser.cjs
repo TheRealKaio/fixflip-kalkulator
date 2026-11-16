@@ -201,7 +201,8 @@ const assert=require('node:assert/strict');
       const card=document.querySelector(slug==='eigennutzung'?'#ownFinanceCard':'#flipFinanceCard');
       const notary=card?.querySelector('.field:has(#notary)');
       const broker=card?.querySelector('.field:has(#broker)');
-      if(!notary||!broker)return {missing:true,notary:!!notary,broker:!!broker,card:!!card};
+      if(!notary||!broker)return {missing:true,notary:!!notary,broker:!!broker,card:!!card,
+       labels:[...(card?.querySelectorAll('.field')||[])].map(el=>({label:el.querySelector('label')?.textContent?.trim(),id:el.querySelector('input,select')?.id})).filter(x=>/Notar|Makler/i.test(x.label||''))};
       const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,width:r.width};};
       const ancestor=[notary.parentElement,...(function*(){let n=notary.parentElement;while(n&&n!==card){n=n.parentElement;if(n)yield n;}})()]
        .find(el=>el&&getComputedStyle(el).display.includes('grid')&&el.getBoundingClientRect().width>0);
