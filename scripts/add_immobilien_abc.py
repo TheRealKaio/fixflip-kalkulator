@@ -14,8 +14,25 @@ site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 items=json.loads(Path('assets/immobilien-abc.json').read_text(encoding='utf-8'))
 assert len(items)==120 and len({entry['id'] for entry in items})==120
 assert all(all(entry.get(k) for k in ('term','category','explanation','example','id')) for entry in items)
-for name in ('immobilien-abc.json','immobilien-abc.js','immobilien-abc.css'):
+context_file=site/'immobilien-abc-context.json'
+if not context_file.exists():
+    raise SystemExit('Legacy info audit must run before glossary integration')
+contexts=json.loads(context_file.read_text(encoding='utf-8'))
+existing={entry['term'].casefold() for entry in items}
+for row in contexts:
+    name=row['term'].strip()
+    if name.casefold() in existing:continue
+    from unicodedata import normalize
+    key=''.join(c for c in normalize('NFD',name.lower()) if not ('\\u0300'<=c<='\\u036f'))
+    key=re.sub(r'[^a-z0-9]+','-',key.replace('ß','ss')).strip('-')
+    items.append({'term':name,'category':'Vermietung & Betriebskosten',
+                  'explanation':row['body'],'example':'','id':key})
+    existing.add(name.casefold())
+if len({entry['id'] for entry in items})!=len(items):
+    raise SystemExit('ABC identifiers must be unique')
+for name in ('immobilien-abc.js','immobilien-abc.css'):
     shutil.copyfile(Path('assets')/name,site/name)
+(site/'immobilien-abc.json').write_text(json.dumps(items,ensure_ascii=False,indent=2)+'\\n',encoding='utf-8')
 
 navigation=site/'calculator-navigation.js'
 nav=navigation.read_text(encoding='utf-8')
@@ -55,9 +72,10 @@ static_terms=''.join(
     '<details class="nic-abc-entry" id="begriff-'+html.escape(entry['id'])+'">'
     '<summary class="nic-abc-summary"><span class="nic-abc-title-stack"><strong>'+html.escape(entry['term'])+'</strong><small class="nic-abc-subtext">'+html.escape(entry['category'])+'</small></span></summary>'
     '<div class="nic-abc-detail"><p>'+html.escape(entry['explanation'])+'</p>'
-    '<div class="nic-abc-example"><strong>Beispiel</strong><p>'+html.escape(entry['example'])+'</p></div></div></details>'
+    ('<div class="nic-abc-example"><strong>Beispiel</strong><p>'+html.escape(entry['example'])+'</p></div>' if entry['example'] else '')+'</div></details>'
     for entry in sorted(items,key=lambda e:e['term'].casefold()))
-static_content='<section class="nic-abc"><p class="nic-abc-lead">120 Immobilienbegriffe rund um Kauf, Finanzierung, Notar und Vermietung – einfach erklärt mit Beispielen.</p><div class="nic-abc-toolbar"><input class="nic-abc-search" style="display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box" type="search" placeholder="Begriff suchen, z. B. Grundschuld …" aria-label="Immobilienbegriff suchen"></div><div class="nic-abc-heading-row"><h2 class="nic-abc-heading">Begriffe von A bis Z</h2><p class="nic-abc-count">120 Begriffe von 120 Begriffen</p></div><div class="nic-abc-list">'+static_terms+'</div></section>'
+static_content='<section class="nic-abc"><p class="nic-abc-lead">Immobilienbegriffe rund um Kauf, Finanzierung, Notar und Vermietung – einfach erklärt mit Beispielen.</p><div class="nic-abc-toolbar"><input class="nic-abc-search" style="display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box" type="search" placeholder="Begriff suchen, z. B. Grundschuld …" aria-label="Immobilienbegriff suchen"></div><div class="nic-abc-heading-row"><h2 class="nic-abc-heading">Begriffe von A bis Z</h2><p class="nic-abc-count">{count} Begriffe von {count} Begriffen</p></div><div class="nic-abc-list">'+static_terms+'</div></section>'
+static_content=static_content.replace('{count}',str(len(items)))
 page=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>',
     lambda _: '<article id="nicContentView" class="nic-content-card">'+static_content+'</article>',
     page,count=1,flags=re.S)
