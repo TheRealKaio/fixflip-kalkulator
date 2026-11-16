@@ -47,9 +47,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      const metrics=await chooser.evaluate(el=>{
       const button=el.querySelector('.nic-mobile-calculator-label'),dropdown=el.querySelector('.nic-mobile-calculator-select');
       const a=button.getBoundingClientRect(),b=dropdown.getBoundingClientRect();
-      return {gap:b.left-a.right,aligned:Math.abs(a.top-b.top)<1,selectRight:b.right,containerRight:el.getBoundingClientRect().right};
+      const controls=el.querySelector('.nic-mobile-calculator-controls');
+      const style=getComputedStyle(controls);
+      const corners=[button,dropdown].map(node=>{const css=getComputedStyle(node);return [css.borderTopLeftRadius,css.borderTopRightRadius,css.borderBottomRightRadius,css.borderBottomLeftRadius].map(parseFloat);});
+      return {gap:b.left-a.right,expectedGap:parseFloat(style.columnGap),aligned:Math.abs(a.top-b.top)<1,selectRight:b.right,containerRight:el.getBoundingClientRect().right,corners};
      });
-     assert(Math.abs(metrics.gap)<1&&metrics.aligned,'Flush single-row portrait control: '+slug);
+     assert(Math.abs(metrics.gap-metrics.expectedGap)<1&&metrics.aligned,'Separate rounded selector fields align with configured gap: '+slug+' '+JSON.stringify(metrics));
+     assert(metrics.corners.every(side=>side.every(value=>value>0)),'Both selector fields have all four layout radii: '+slug);
      assert(metrics.selectRight<=metrics.containerRight+1,'Selector does not overflow: '+slug);
      assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),0,'Original menu moved into header: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one calculator menu: '+slug);
@@ -71,6 +75,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.match(await page.locator('#heroTitle').innerText(),/Jetzt Finanzierung & Restschuld berechnen!/);
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
+    const options=await page.locator('#nicMobileCalculatorSelect option').evaluateAll(nodes=>nodes.map(node=>({key:node.value,label:node.textContent.trim()})));
+    assert.deepEqual(options.map(o=>o.key),['budget','own','rent','flip','finance','settlement'],'Exactly five calculators followed by settlement');
+    assert.equal(options[5].label,'Mieter-Abrechnung','Final option has the agreed wording');
+    await page.locator('#nicMobileCalculatorSelect').selectOption('settlement');
+    await page.waitForURL('**/fixflip-kalkulator/nebenkostenabrechnung/');
+    assert.equal(await page.locator('html').getAttribute('data-calculator'),'settlement','Settlement content route activated');
+    await page.goBack({waitUntil:'networkidle'});
+    assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Back from settlement restores calculator');
     const originalMenu=await page.locator('.deal-type-card').elementHandle();
     await page.setViewportSize({width:844,height:390});
     assert.equal(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),false,'Landscape does not show portrait selector');
@@ -87,10 +99,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       const white=el.querySelector('.nic-mobile-calculator-select').getBoundingClientRect();
       const container=el.getBoundingClientRect();
       const header=el.closest('.hero').getBoundingClientRect();
-      return {gap:white.left-green.right,topGap:white.top-green.top,right:white.right,limit:container.right,
+      const style=getComputedStyle(el.querySelector('.nic-mobile-calculator-controls'));
+      return {gap:white.left-green.right,expectedGap:parseFloat(style.columnGap),topGap:white.top-green.top,right:white.right,limit:container.right,
        headerHeight:header.height,scrollWidth:document.documentElement.scrollWidth,screenWidth:document.documentElement.clientWidth};
      });
-     assert(Math.abs(dimensions.gap)<1&&Math.abs(dimensions.topGap)<1,'Flush selector at '+narrowWidth+'px');
+     assert(Math.abs(dimensions.gap-dimensions.expectedGap)<1&&Math.abs(dimensions.topGap)<1,'Aligned selector fields at '+narrowWidth+'px');
      assert(dimensions.right<=dimensions.limit+1,'Dropdown within header at '+narrowWidth+'px');
      assert(dimensions.scrollWidth<=dimensions.screenWidth+1,'No horizontal overflow at '+narrowWidth+'px');
      assert(dimensions.headerHeight>0,'Header height retained at '+narrowWidth+'px');
