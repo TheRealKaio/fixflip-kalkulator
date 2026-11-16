@@ -14,7 +14,7 @@ labels = [
 ]
 for original, desired in labels:
     # Change only heading content; avoid copies in SEO text and PDF.
-    pattern = r"(<h[1-4]\\b[^>]*>\\s*)" + re.escape(original) + r"(\\s*</h[1-4]>)"
+    pattern = r"(<h[1-4]\b[^>]*>\s*)" + re.escape(original) + r"(\s*</h[1-4]>)"
     s, changed = re.subn(pattern, lambda m: m[1] + desired + m[2], s, count=1)
     if not changed:
         print("Heading not found in h1-h4:", original)
@@ -25,7 +25,7 @@ for original, desired in [
     ("Negativer monatlicher Cashflow", "4. Ergebnis Vermietung"),
     ("Positiver monatlicher Cashflow", "4. Ergebnis Vermietung"),
 ]:
-    pattern = r"(<h2\\b[^>]*>\\s*)" + re.escape(original) + r"(\\s*</h2>)"
+    pattern = r"(<h2\b[^>]*>\s*)" + re.escape(original) + r"(\s*</h2>)"
     s, changed = re.subn(pattern, lambda m: m[1] + desired + m[2], s, count=1)
     if changed:
         print("Result heading updated:", desired)
