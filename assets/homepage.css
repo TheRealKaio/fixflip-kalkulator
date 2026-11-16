@@ -103,6 +103,7 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
 
 /* Portrait-only integrated calculator selector — screenshot-approved design. */
 @media(max-width:700px) and (orientation:portrait){
+ .app>.hero:has(>.deal-type-card.nic-portrait-calculator-menu){overflow:visible!important;position:relative;z-index:10}
  .app>.hero>.deal-type-card.nic-portrait-calculator-menu{
   position:relative!important;z-index:20!important;
   padding:12px!important;margin:0!important;
