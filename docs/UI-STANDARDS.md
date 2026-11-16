@@ -402,3 +402,6 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Diese neue Vorgabe ersetzt die älteren zweiteiligen Darstellungsregeln oben. Nur develop/GitHub-Entwicklungsvorschau.
 
 - Feldbeschriftungen und ihre Einheiten stehen gemeinsam linksbündig mit kleinem Abstand; Einheiten wie (€), p. a. und jährlich werden nicht zum rechten Feldrand geschoben.
+
+### Darlehensbetrag: Euro im Eingabefeld
+- Finanzierungsrechner: „Darlehensbetrag“ ohne (€) im Label; € als hellgraue `.input-wrap .unit` rechts im Eingabefeld. Einheit nutzt `--nic-hint-font-size`, Beschriftung einschließlich Glossarlink nutzt `--nic-body-font-size` wie andere Feldbeschriftungen.

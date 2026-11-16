@@ -11,6 +11,14 @@ finance_header=[re.search(r'<h1\b[^>]*>(.*?)</h1>',finance,re.S)[1], html.unesca
 body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main>',finance,re.S)
 if not body:raise SystemExit('Finance content missing')
 markup=body[1]
+
+# Loan currency follows the shared input-unit pattern; preserve glossary links.
+loan_label=re.compile(r'(<label\b[^>]*\bfor="loan"[^>]*>)(.*?)(</label>)',re.S)
+if len(loan_label.findall(markup))!=1:raise SystemExit('Expected one loan caption')
+markup=loan_label.sub(lambda m:m[1]+m[2].replace('(€)','').rstrip()+m[3],markup,count=1)
+loan_input=re.compile(r'<input\b[^>]*\bid="loan"[^>]*>')
+if len(loan_input.findall(markup))!=1:raise SystemExit('Expected one loan input')
+markup=loan_input.sub(lambda m:'<div class="input-wrap">'+m[0]+'<span class="unit" aria-hidden="true">€</span></div>',markup,count=1)
 markup=markup.replace('<div class="grid">','<div class="grid finance-result-grid">',1)
 markup=markup.replace('<h3>Anschlussfinanzierung</h3>','<h3 class="finance-h2-equivalent">Anschlussfinanzierung</h3>')
 markup=markup.replace('<h3>Hypothekenzinsen – 10 Jahre</h3>','<h3 class="finance-h2-equivalent">Hypothekenzinsen – 10 Jahre</h3>')

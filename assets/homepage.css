@@ -244,3 +244,16 @@ html body:not(.nic-admin) .app main.section .field label{
 html body:not(.nic-admin) .app main.section .field label>:is(.unit,.hint,.label-unit,.field-unit){
  margin-left:0!important;margin-inline-start:0!important;text-align:left!important;flex:0 0 auto!important;
 }
+
+/* Financing uses the same caption and input currency typography as other fields. */
+html body:not(.nic-admin) .app #nicFinanceModule .field label,
+html body:not(.nic-admin) .app #nicFinanceModule .field label *{
+ font-size:var(--nic-body-font-size,16px)!important;
+}
+html body:not(.nic-admin) .app #nicFinanceModule .field .input-wrap{position:relative}
+html body:not(.nic-admin) .app #nicFinanceModule .field .input-wrap input{padding-right:44px!important}
+html body:not(.nic-admin) .app #nicFinanceModule .field .input-wrap .unit{
+ position:absolute;right:14px;top:50%;transform:translateY(-50%);
+ color:#94a3b8!important;font-size:var(--nic-hint-font-size,12px)!important;
+ font-weight:400!important;pointer-events:none;
+}
