@@ -378,3 +378,13 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Nach der weißen Karte „2. Finanzierungsergebnis“ beginnt eine eigenständige weiße Contentkarte mit der H2 „3. Anschlussfinanzierung“.
 - Die Karte verwendet die bestehenden gemeinsamen Klassen und Abstände (`card`), ohne gesonderte Farben, Abmessungen oder mobile Layoutvarianten.
 - Zinsszenarien, Schieberegler, historische Zinsgrafik, Beschriftungen, Datenquelle und Berechnungslogik verbleiben unverändert in der neuen Karte.
+
+
+### Rechnerauswahl ausschließlich Mobil Portrait (16.11.2026)
+
+- Auf der Startseite bleibt die bestehende große Rechner-Kachelübersicht unverändert. Die neue Auswahlnavigation erscheint ausschließlich auf den fünf Rechnerseiten im Hochformat bis 700 px Breite, direkt nach der gemeinsamen Markenleiste im bestehenden Header.
+- Das Auswahlmenü ist genau eine Zeile: links ein grünes Feld „Rechner wählen →“, unmittelbar und ohne Abstand daneben ein weißes natives Dropdown mit dem aktiven Rechner und Pfeil rechts. Die beiden Felder bilden eine gemeinsame, bündige Einheit. Keine zusätzliche Schaltfläche und kein zweizeiliger Aufbau.
+- Das Dropdown verwendet dieselben zentral registrierten Rechner wie die vorhandene Navigation und wechselt über den gemeinsamen Controller einschließlich URL und Browserhistorie. Die aktuelle Auswahl wird bei Seitenwechsel synchronisiert.
+- Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der jeweilige Bildheader zeigt die mobile Überschrift „Jetzt [Rechnername] berechnen!“ mit passendem kurzem Subtext. Die ausführliche Erklär-/SEO-Karte wird im Dokumentfluss nach den Rechnermodulen dargestellt, nicht davor. Die Inhalte bleiben erhalten.
+- Startseite, Querformat, Tablet/Desktop, administrative und rechtliche Ansichten werden durch diesen rechnerspezifischen Portrait-Stil nicht umgestellt.
+- Vor Freigabe sind 320/375/390/430 px Hochformat, 700/701 px Übergang, Wechsel aller fünf Rechner einschließlich Browser-Zurück/Vorwärts, sowie Homepage, Landscape und Desktop auf Seiteneffekte zu prüfen.
