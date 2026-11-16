@@ -165,7 +165,11 @@ function markTerm(label,item,legacy,rich){
   node.replaceWith(before,button,after);
   // A previously visible help control can be removed only if its complete
   // textual content has been carried over. Unknown legacy controls stay.
-  if(legacy&&!legacy.isReference&&(legacy.detail||rich)){legacy.control.hidden=true;legacy.control.setAttribute('aria-hidden','true');}
+  if(legacy&&(legacy.detail||rich)&&(!legacy.isReference||(rich&&rich.key===legacy.detail))){
+   legacy.control.hidden=true;
+   legacy.control.setAttribute('aria-hidden','true');
+   legacy.control.style.setProperty('display','none','important');
+  }
   return true;
  }
  return false;
@@ -181,6 +185,7 @@ function showHints(){
   const byId=new Map(items.map(x=>[x.id,x]));
   const byName=new Map(items.map(x=>[normalize(x.term),x]));
   const byContext=new Map(contexts.map(x=>[normalize(x.term),x]));
+  const byContextKey=new Map(contexts.filter(x=>x.key).map(x=>[x.key,x]));
   const terms=[...items].sort((a,b)=>b.term.length-a.term.length);
   for(const label of main.querySelectorAll('label')){
    if(label.closest('#nicContentView')||label.querySelector('.nic-abc-term'))continue;
@@ -196,11 +201,22 @@ function showHints(){
    });
    if(!entry)continue;
    const rich=byContext.get(normalize(entry.term))||byContext.get(full);
-   // A context may be reused for a shortened glossary term (e.g. Hausgeld).
-   const context=rich||(key&&byContext.get(normalize(key)));
+   // A source key takes precedence over a similarly named generic term.
+   const context=(legacy?.isReference&&byContextKey.get(legacy.detail))||rich||(key&&byContext.get(normalize(key)));
    if(markTerm(label,entry,legacy,context)){
     label.querySelectorAll('.nic-abc-help').forEach(button=>button.remove());
    }
+  }
+  // Existing KPI information icons use the same structured legacy sheets.
+  // Attach the subtle term interaction to each KPI heading, not its value.
+  for(const card of main.querySelectorAll('.kpi')){
+   const control=card.querySelector(':scope > button.info-btn[data-info]');
+   const heading=card.querySelector(':scope > .name');
+   if(!control||!heading||heading.querySelector('.nic-abc-term'))continue;
+   const info=byContextKey.get(control.dataset.info);
+   const entry=info&&byName.get(normalize(info.term));
+   if(!entry)continue;
+   markTerm(heading,entry,{control,detail:control.dataset.info,isReference:true},info);
   }
  }).catch(error=>console.warn('Kontexthilfe konnte nicht geladen werden:',error)).finally(()=>{hintRunning=false;});
 }
