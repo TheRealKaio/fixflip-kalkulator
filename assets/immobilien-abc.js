@@ -14,6 +14,11 @@ const fetchEntries=()=>{
  return entriesPromise||(entriesPromise=fetch(new URL('immobilien-abc.json',ROOT)).then(r=>{if(!r.ok)throw Error('Immobilien ABC konnte nicht geladen werden');return r.json();}).then(rows=>rows.sort((a,b)=>a.term.localeCompare(b.term,'de'))).catch(e=>{entriesPromise=null;throw e;}));
 };
 const normalize=value=>String(value||'').toLocaleLowerCase('de').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+let contextPromise=null;
+const fetchContexts=()=>contextPromise||(contextPromise=fetch(new URL('immobilien-abc-context.json',ROOT))
+ .then(r=>{if(!r.ok)throw Error('Rechnererklärungen nicht verfügbar');return r.json();})
+ .catch(error=>{contextPromise=null;console.warn(error);return [];}));
+
 const element=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
 function render(panel){
  if(!panel)return;
@@ -79,7 +84,7 @@ function contextClose(){
  const prior=openTrigger;openTrigger=null;
  if(prior&&prior.isConnected)prior.focus({preventScroll:true});
 }
-function contextOpen(trigger,item,legacy){
+function contextOpen(trigger,item,legacy,rich){
  contextClose();
  openTrigger=trigger;
  const wrap=element('div','nic-abc-context-backdrop');
@@ -93,6 +98,16 @@ function contextOpen(trigger,item,legacy){
  if(legacy&&normalize(legacy)!==normalize(item.explanation)){
   const section=element('section','nic-abc-context-additional');
   section.append(element('h3','','Zum Rechner'),element('p','',legacy));dialog.append(section);
+ }
+ if(rich){
+  if(rich.plain?.trim()){
+   const simple=element('section','nic-abc-context-additional');
+   simple.append(element('h3','','Einfach gesagt'),element('p','',rich.plain));dialog.append(simple);
+  }
+  if(rich.know?.trim()){
+   const know=element('section','nic-abc-context-additional');
+   know.append(element('h3','','Gut zu wissen'),element('p','',rich.know));dialog.append(know);
+  }
  }
  if(item.example?.trim()){
   const examples=element('details','nic-abc-context-example');
@@ -122,7 +137,7 @@ function identifyLegacy(label){
  const detail=(control.getAttribute('data-info')||control.getAttribute('data-tooltip')||'').trim();
  return {control,detail};
 }
-function markTerm(label,item,legacy){
+function markTerm(label,item,legacy,rich){
  const walker=document.createTreeWalker(label,NodeFilter.SHOW_TEXT,{
   acceptNode(node){
    return node.parentElement?.closest('button, input, select, textarea, .nic-abc-term, .nic-abc-help, .inline-info, .info-btn, .info-dot, .rent-info-dot')
@@ -141,12 +156,12 @@ function markTerm(label,item,legacy){
   if(normalize(original)!==word)continue;
   const button=element('button','nic-abc-term',original);
   button.type='button';button.setAttribute('aria-label',original+' erklären');
-  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,legacy?.detail||'');});
+  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,rich?'':legacy?.detail||'',rich);});
   const before=document.createTextNode(raw.slice(0,pos)),after=document.createTextNode(raw.slice(pos+original.length));
   node.replaceWith(before,button,after);
   // A previously visible help control can be removed only if its complete
   // textual content has been carried over. Unknown legacy controls stay.
-  if(legacy?.detail){legacy.control.hidden=true;legacy.control.setAttribute('aria-hidden','true');}
+  if(legacy&&(legacy.detail||rich)){legacy.control.hidden=true;legacy.control.setAttribute('aria-hidden','true');}
   return true;
  }
  return false;
@@ -156,18 +171,30 @@ function showHints(){
  if(hintRunning||document.documentElement.dataset.nicPage==='immobilien-abc')return;
  const main=document.querySelector('.app>main.section');if(!main)return;
  hintRunning=true;
- fetchEntries().then(items=>{
+ Promise.all([fetchEntries(),fetchContexts()]).then(([items,contexts])=>{
   if(!main.isConnected)return;
   contextEntries=items;
   const byId=new Map(items.map(x=>[x.id,x]));
+  const byName=new Map(items.map(x=>[normalize(x.term),x]));
+  const byContext=new Map(contexts.map(x=>[normalize(x.term),x]));
+  const terms=[...items].sort((a,b)=>b.term.length-a.term.length);
   for(const label of main.querySelectorAll('label')){
    if(label.closest('#nicContentView')||label.querySelector('.nic-abc-term'))continue;
-   const full=normalize(label.textContent).trim();
+   const legacy=identifyLegacy(label);
+   // Some legacy labels contain an inline help icon: only the visible field
+   // name is considered a glossary match, not the icon text.
+   const clone=label.cloneNode(true);
+   clone.querySelectorAll('button,.nic-abc-help,.info-btn,.info-dot').forEach(x=>x.remove());
+   const full=normalize(clone.textContent).trim();
    const key=Object.keys(aliases).sort((a,b)=>b.length-a.length).find(k=>full===normalize(k)||full.startsWith(normalize(k)+' ')||full.startsWith(normalize(k)+'('));
-   const entry=key&&byId.get(aliases[key]);
+   const entry=(key&&byId.get(aliases[key]))||terms.find(x=>{
+    const term=normalize(x.term);return full===term||full.startsWith(term+' ')||full.startsWith(term+'(');
+   });
    if(!entry)continue;
-   // The old question-mark navigation is removed only once the term works.
-   if(markTerm(label,entry,identifyLegacy(label))){
+   const rich=byContext.get(normalize(entry.term))||byContext.get(full);
+   // A context may be reused for a shortened glossary term (e.g. Hausgeld).
+   const context=rich||(key&&byContext.get(normalize(key)));
+   if(markTerm(label,entry,legacy,context)){
     label.querySelectorAll('.nic-abc-help').forEach(button=>button.remove());
    }
   }
