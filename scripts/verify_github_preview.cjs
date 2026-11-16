@@ -71,6 +71,16 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')&&!new URL(u).pathname.startsWith('/fixflip-kalkulator/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
    }
+   // A direct admin URL must remain in the same application with the shared hero.
+   await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
+   await page.waitForURL('**/fixflip-kalkulator/#admin');
+   await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
+   assert(await page.locator('.app > .hero').isVisible(),'Admin shares the main website header');
+   assert.equal(await page.locator('iframe').count(),0,'Admin is native, not a separate iframe');
+   assert.equal(await page.locator('.nic-admin-back').innerText(),'← Zurück');
+   await page.locator('.nic-admin-back').click();
+   await page.waitForURL('http://localhost/fixflip-kalkulator/');
+   assert(await page.locator('.app > main.section').isVisible(),'Admin back returns to homepage');
    if(width===390){
     await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
     await page.locator('#nicMobileCalculatorSelect').selectOption('finance');
