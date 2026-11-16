@@ -91,6 +91,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     if(currentId==='finance'){
      const labels=page.locator('#nicFinanceModule .field label');
      assert(await labels.count()>0,'Finance labels present');
+     const loan=page.locator('#nicFinanceModule [data-finance-id="loan"]');
+     const loanField=loan.locator('..').locator('..');
+     assert(!((await loanField.locator('label').textContent()).includes('(€)')),'Currency removed from caption');
+     assert.equal((await loan.locator('..').locator('.unit').textContent()).trim(),'€','Currency inside input wrapper');
+     const unitSize=await loan.locator('..').locator('.unit').evaluate(el=>({actual:getComputedStyle(el).fontSize,expected:getComputedStyle(document.documentElement).getPropertyValue('--nic-hint-font-size').trim()}));
+     assert.equal(unitSize.actual,unitSize.expected,'Currency uses hint typography');
+     assert.equal(await loanField.locator('label').evaluate(el=>getComputedStyle(el).fontSize),layout.bodySize+'px','Loan caption uses shared body typography');
+
      for(const label of await labels.all()){
       assert.equal(await label.evaluate(el=>getComputedStyle(el).justifyContent),'flex-start','Finance caption and unit align left');
      }
