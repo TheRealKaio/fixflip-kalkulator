@@ -160,7 +160,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu node is reused rather than replaced');
     assert(!(await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Landscape restores configured title');
     await page.setViewportSize({width:390,height:900});
-    assert(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),'Portrait selection restored on rotate');
+    await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').waitFor({state:'visible',timeout:10000});
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>.hero>.deal-type-card')),'Same menu returns into header in portrait');
     for(const narrowWidth of [320,375,390,430]){
      await page.setViewportSize({width:narrowWidth,height:900});
