@@ -116,6 +116,17 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     assert.equal(await page.locator('#result #kpiMaxBuy').isVisible(),false,'Project purchase-price KPI is hidden in Eigenheim');
    }else assert.equal(await page.locator('#nicOwnIntro').count(),0,'Eigenheim explanation must leave other routes clean');
    if(key==='flip'){
+    const kpiTerm=page.locator('#kpiProfit .name .nic-abc-term');
+    await kpiTerm.waitFor({state:'visible',timeout:10000});
+    assert.equal(await page.locator('#kpiProfit > .info-btn').isVisible(),false,'Old KPI info icon is hidden after rich content migration');
+    const oldLocation=await page.evaluate(()=>({path:location.pathname,time:performance.timeOrigin}));
+    await kpiTerm.click();
+    const popup=page.locator('.nic-abc-context-dialog');
+    await popup.waitFor({state:'visible'});
+    const content=await popup.innerText();
+    assert(content.includes('Einfach gesagt')&&content.includes('Gut zu wissen'),'Original Fix & Flip explanation paragraphs must be preserved');
+    await popup.locator('.nic-abc-context-close').click();
+    assert.deepEqual(await page.evaluate(()=>({path:location.pathname,time:performance.timeOrigin})),oldLocation,'KPI contextual help never changes page');
     assert.equal(await page.locator('#ownUseKpis').isVisible(),false,'Eigenheim-only result KPIs are hidden in Fix & Flip');
     assert.equal(await page.locator('#ownBudgetTransferCard').isVisible(),false,'Household budget transfer is hidden in Fix & Flip');
    }
