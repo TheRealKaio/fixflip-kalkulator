@@ -908,3 +908,20 @@ html body:not(.nic-embed) :is(.footer-note,.nic-shared-footer) #nicFooterLegal>s
  font-size:max(var(--nic-footer-expand-glyph-size,16px),var(--nic-body-font-size,16px))!important;
  width:max(28px,1.8em);height:max(28px,1.8em);flex:0 0 max(28px,1.8em);
 }
+
+
+/* Shared sticky navigation bar: logo, account and burger stay visible,
+   while the large photo/title hero and content scroll normally. */
+html body:not(.nic-embed) .app > .nic-brand-bar#nicBrandBar,
+html body.nic-admin-open:not(.nic-embed) .app > .nic-brand-bar#nicBrandBar{
+ position:sticky!important;
+ top:0!important;
+ inset-inline:auto!important;
+ z-index:90!important;
+ transform:none!important;
+ isolation:isolate;
+ flex-shrink:0!important;
+ background:#fff!important;
+}
+/* Keep keyboard and anchor targets reachable below the sticky chrome. */
+html body:not(.nic-embed){scroll-padding-top:var(--nic-brand-bar-height,90px)}
