@@ -17,8 +17,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     if(!fs.existsSync(file))return route.fulfill({status:404,body:'Missing preview asset'});
     await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.json':'application/json','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'})[path.extname(file)]||'application/octet-stream'});
    });
+   await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
+   if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
-   await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
+   await page.waitForFunction(()=>location.hash.startsWith('#admin'),null,{timeout:10000});
+   await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000}).catch(async error=>{throw new Error('Admin setup: '+JSON.stringify({url:page.url(),errors,body:await page.locator('body').getAttribute('class')})+' '+error.message);});
    if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
    await page.evaluate(()=>window.NICAdminUI.select('content'));
    const editor=page.locator('[id$="content-why-description"]');
