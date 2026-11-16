@@ -291,6 +291,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   // Menu/content links use the same loaded application as calculator tiles.
   const sharedOrigin=await page.evaluate(()=>performance.timeOrigin);
   const headerNode=await page.locator('.app>.hero').elementHandle();
+  let subpageHeaderHeight=null;
   for(const slug of ['immobilien-abc','preise','warum-immocheck']){
    const menu=page.locator('.nic-brand-bar .nic-menu-toggle');
    if(await menu.isVisible())await menu.click();
@@ -313,7 +314,12 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
    assert(await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
-   assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes header height');
+   if(width<=700){
+    assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on '+slug);
+    assert(h>standardHeader.height,'Subpage header includes selector absent on homepage: '+slug);
+    if(subpageHeaderHeight===null)subpageHeaderHeight=h;
+    else assert(Math.abs(h-subpageHeaderHeight)<=1,'Information subpages retain equal header height: '+slug);
+   }else assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes desktop header height');
   }
   await page.goBack();await page.waitForURL('http://localhost/preise/');
   assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.headerTitle);
@@ -339,7 +345,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const header=await page.locator('.app>.hero').evaluate(el=>({height:el.getBoundingClientRect().height,background:getComputedStyle(el).backgroundImage,font:getComputedStyle(el.querySelector('h1')).fontFamily,size:getComputedStyle(el.querySelector('h1')).fontSize,logo:document.querySelector('.brand-logo').getBoundingClientRect().width}));
     for(const key of ['background','font','size','logo'])assert.equal(header[key],standardHeader[key],'Standard header '+key+' differs on '+routeName);
-    assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
+    if(width<=700){
+     assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on direct '+routeName);
+     assert(header.height>standardHeader.height,'Direct subpage includes selector absent on homepage: '+routeName);
+     if(subpageHeaderHeight!==null)assert(Math.abs(header.height-subpageHeaderHeight)<=1,'Direct and same-document informational header heights must match: '+routeName);
+    }else assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
 
    }else {
     const key=({'ueber-uns':'about','kontakt':'contact'})[routeName];
