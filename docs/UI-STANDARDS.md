@@ -390,3 +390,5 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der jeweilige Bildheader zeigt die mobile Überschrift „Jetzt [Rechnername] berechnen!“ mit kurzem Subtext. Die ausführliche Erklär-/SEO-Karte steht im Dokumentfluss nach den Rechnermodulen.
 - Startseite, Querformat, Tablet/Desktop und rechtliche/adminstrative Überlagerungen auf der Startseite bleiben außerhalb dieser Porträt-Navigation.
 - Vor Freigabe: alle Unterseiten, 320/375/390/430 px Hochformat, 700/701 px Übergang, sämtliche sechs Ziele, Browser-Zurück/Vorwärts, direkte Routen, Wechsel zwischen Hoch-/Querformat und Live-Layout-Radius testen.
+
+- DEV-Freigabe: Die freigegebene grüne Mobil-Portrait-Auswahl wird über den GitHub-Pages-Workflow auf `develop` gebaut und getestet; keine automatische Veröffentlichung auf `main` oder STRATO.
