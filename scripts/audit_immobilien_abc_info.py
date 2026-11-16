@@ -69,7 +69,18 @@ for label in re.finditer(r"<label\b[^>]*>(.*?)</label>",source,re.S|re.I):
 },ensure_ascii=False,indent=2)+"\n")
 # For the public contextual info we preserve the original information as a
 # separate data source even if a glossary entry is edited or deleted.
-(site/"immobilien-abc-context.json").write_text(json.dumps(list(rental.values()),ensure_ascii=False,indent=2)+"\n")
+context=list(rental.values())
+seen={entry["term"].casefold() for entry in context}
+for button in legacy:
+    term=button["term"].strip()
+    detail=button["dataInfo"].strip()
+    if not term or term.casefold() in seen or len(detail)<40 or re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*",detail):
+        continue
+    category="Immobilienkauf" if "Kaufnebenkosten" in term else "Finanzierung"
+    context.append({"term":term,"body":detail,"plain":"","know":"",
+                    "category":category,"source":"field-data-info"})
+    seen.add(term.casefold())
+(site/"immobilien-abc-context.json").write_text(json.dumps(context,ensure_ascii=False,indent=2)+"\n")
 print(f"Legacy info audit: {all_buttons} info controls in labels; {len(rental)} complete structured rental sheets preserved")
 for entry in legacy:
     print("Legacy info field:", json.dumps({
