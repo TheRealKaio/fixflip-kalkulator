@@ -82,7 +82,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal((await page.locator('.nic-admin-back').textContent()).trim(),'← Zurück','Admin back button retains its configured label despite CSS uppercase');
    await page.locator('.nic-admin-back').click();
    await page.waitForURL('http://localhost/fixflip-kalkulator/');
-   assert(await page.locator('.app > main.section').isVisible(),'Admin back returns to homepage');
+   await page.locator('.app > main.section').waitFor({state:'visible',timeout:15000});
+   await page.waitForFunction(()=>document.documentElement.dataset.nicPage==='website',null,{timeout:15000});
+   assert.equal(page.url(),'http://localhost/fixflip-kalkulator/','Admin back returns to the exact preview homepage');
    if(width===390){
     await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
     await page.locator('#nicMobileCalculatorSelect').selectOption('finance');
