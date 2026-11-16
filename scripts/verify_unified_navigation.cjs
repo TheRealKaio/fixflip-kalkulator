@@ -130,6 +130,18 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 
    if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
    if(key==='rent'){
+    const term=page.locator('.nic-abc-term', {hasText:'Nettokaltmiete pro Monat'}).first();
+    await term.waitFor({state:'visible',timeout:10000});
+    const before=await page.evaluate(()=>({url:location.pathname,origin:performance.timeOrigin,inputs:document.querySelector('#rentInterest')?.value}));
+    await term.click();
+    const popup=page.locator('.nic-abc-context-dialog');
+    await popup.waitFor({state:'visible'});
+    const popupText=await popup.innerText();
+    assert(popupText.includes('Einfach gesagt')&&popupText.includes('Gut zu wissen'),'Original rental explanation sections survive ABC integration');
+    assert(popupText.includes('Nettokaltmiete'),'Context displays relevant ABC definition');
+    await popup.locator('.nic-abc-context-close').click();
+    assert.equal(await page.locator('.nic-abc-context-dialog').count(),0,'Info closes without navigation');
+    assert.deepEqual(await page.evaluate(()=>({url:location.pathname,origin:performance.timeOrigin,inputs:document.querySelector('#rentInterest')?.value})),before,'ABC info preserves route, document and calculator values');
     const spacing=await page.evaluate(()=>['rentCashflowKpi','rentFactorKpi'].map(id=>{const card=document.getElementById(id);const info=card?.querySelector('.rent-kpi-info'),badge=card?.querySelector('.rent-kpi-rating');return {infoBottom:info?.getBoundingClientRect().bottom,badgeTop:badge?.getBoundingClientRect().top};}));
     for(const pair of spacing)if(pair.badgeTop!=null)assert(pair.infoBottom!=null&&pair.badgeTop>=pair.infoBottom+4,'Traffic badge has visible spacing below its info icon');
    }
