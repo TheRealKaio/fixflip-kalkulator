@@ -139,7 +139,7 @@ function identifyLegacy(label){
  // Only consolidate content we can actually read. Do not discard script-owned
  // calculation details from legacy sheets that are not present in the DOM.
  const detail=(control.getAttribute('data-info')||control.getAttribute('data-tooltip')||'').trim();
- return {control,detail};
+ return {control,detail,isReference:/^[A-Za-z][A-Za-z0-9_]*$/.test(detail)};
 }
 function markTerm(label,item,legacy,rich){
  const walker=document.createTreeWalker(label,NodeFilter.SHOW_TEXT,{
@@ -160,12 +160,12 @@ function markTerm(label,item,legacy,rich){
   if(normalize(original)!==word)continue;
   const button=element('button','nic-abc-term',original);
   button.type='button';button.setAttribute('aria-label',original+' erklären');
-  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,rich?'':legacy?.detail||'',rich);});
+  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);});
   const before=document.createTextNode(raw.slice(0,pos)),after=document.createTextNode(raw.slice(pos+original.length));
   node.replaceWith(before,button,after);
   // A previously visible help control can be removed only if its complete
   // textual content has been carried over. Unknown legacy controls stay.
-  if(legacy&&(legacy.detail||rich)){legacy.control.hidden=true;legacy.control.setAttribute('aria-hidden','true');}
+  if(legacy&&!legacy.isReference&&(legacy.detail||rich)){legacy.control.hidden=true;legacy.control.setAttribute('aria-hidden','true');}
   return true;
  }
  return false;
