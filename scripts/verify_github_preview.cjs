@@ -95,7 +95,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
     try{
      await page.locator('#nicFinanceModule [data-finance-id="loan"]').waitFor({state:'visible',timeout:15000});
-     await page.waitForFunction(()=>window.NICCalculators?.active==='finance',{timeout:15000});
+     await page.waitForFunction(()=>window.NICCalculators?.active==='finance',null,{timeout:15000});
     }catch(error){
      const diagnostic=await page.evaluate(()=>({
       route:location.pathname,page:document.documentElement.dataset.nicPage,
