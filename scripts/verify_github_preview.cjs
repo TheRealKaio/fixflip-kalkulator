@@ -87,6 +87,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await page.locator('html').getAttribute('data-calculator'),'settlement','Settlement content route activated');
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Back from settlement restores calculator');
+    // Standalone information pages do not contain calculator forms; their
+    // selector must open the complete target document, not switch an empty shell.
+    await page.goto('http://localhost/fixflip-kalkulator/ueber-uns/',{waitUntil:'networkidle'});
+    assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Standalone about page has a visible picker');
+    await page.locator('#nicMobileCalculatorSelect').selectOption('finance');
+    await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
+    assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible(),'Standalone picker opens real calculator form');
+    await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
     const originalMenu=await page.locator('.deal-type-card').elementHandle();
     await page.setViewportSize({width:844,height:390});
     assert.equal(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),false,'Landscape does not show portrait selector');
