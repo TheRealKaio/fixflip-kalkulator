@@ -410,6 +410,19 @@ const assert=require('node:assert/strict');
    assert.equal(await page.locator('.hero').evaluate(el=>parseFloat(getComputedStyle(el).borderTopRightRadius)),0,'Header top-right corner must be square');
    assert.equal(await page.locator('.nic-brand-bar').evaluate(el=>parseFloat(getComputedStyle(el).borderTopLeftRadius)),0,'White header top-left corner must be square');
    assert.equal(await page.locator('.nic-brand-bar').evaluate(el=>parseFloat(getComputedStyle(el).borderTopRightRadius)),0,'White header top-right corner must be square');
+   if(width===390&&slug==='budget'){
+    await page.evaluate(()=>window.scrollTo(0,420));
+    await page.waitForFunction(()=>window.scrollY>200);
+    const sticky=await page.locator('#nicBrandBar').evaluate(el=>{
+     const r=el.getBoundingClientRect(),css=getComputedStyle(el);
+     const hero=document.querySelector('.app>.hero')?.getBoundingClientRect();
+     return {top:r.top,bottom:r.bottom,position:css.position,heroTop:hero?.top};
+    });
+    assert.equal(sticky.position,'sticky','Brand navigation is sticky on mobile');
+    assert(Math.abs(sticky.top)<2,'Brand navigation stays at top when scrolled: '+JSON.stringify(sticky));
+    assert(sticky.heroTop<0,'Large hero scrolls normally below sticky brand bar: '+JSON.stringify(sticky));
+    await page.evaluate(()=>window.scrollTo(0,0));
+   }
    assert.equal(await page.locator('.footer-note').evaluate(el=>parseFloat(getComputedStyle(el).borderBottomLeftRadius)),0,'Footer bottom-left corner must be square');
    assert.equal(await page.locator('.footer-note').evaluate(el=>parseFloat(getComputedStyle(el).borderBottomRightRadius)),0,'Footer bottom-right corner must be square');
    const reject=page.getByRole('button',{name:'Ablehnen',exact:true});if(await reject.isVisible())await reject.click();
@@ -761,10 +774,10 @@ const assert=require('node:assert/strict');
   await page.waitForFunction(()=>window.scrollY>100);
   const scroll=await page.evaluate(()=>window.scrollY);
   const moved=await page.locator('.nic-brand-bar').evaluate(el=>el.getBoundingClientRect().top);
-  assert(Math.abs(moved-(top-scroll))<2,'Admin header scrolls upward with the page');
+  assert(Math.abs(moved)<2,'Admin brand bar remains sticky at viewport top: '+JSON.stringify({top,moved,scroll}));
   assert.equal(await page.locator('#nicAdminFrame').count(),0,'No independent admin browsing context exists');
  }
- console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
+ console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and sticky brand bar on desktop, portrait and landscape');
  await page.setViewportSize({width:1440,height:900});
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
