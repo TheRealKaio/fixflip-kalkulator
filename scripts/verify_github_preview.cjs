@@ -25,7 +25,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     if(!fs.existsSync(file)){missing.push(u.pathname);return route.fulfill({status:404,body:''});}
     await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'})[path.extname(file)]||'application/octet-stream'});
    });
-   for(const slug of ['','budget/','eigennutzung/','vermietung/','fix-flip/','finanzierungsrechner/','nebenkostenabrechnung/','preise/','warum-immocheck/']){
+   for(const slug of ['','budget/','eigennutzung/','vermietung/','fix-flip/','finanzierungsrechner/','nebenkostenabrechnung/','preise/','warum-immocheck/','immobilien-abc/','ueber-uns/','kontakt/','anmelden/']){
     await page.goto('http://localhost/fixflip-kalkulator/'+slug,{waitUntil:'networkidle'});
     await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady);
     if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
@@ -40,10 +40,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const currentId=(await page.locator('html').getAttribute('data-calculator'));
     const portrait=width===390;
     const calculatorIds=['budget','own','rent','flip','finance'];
+    const isHomepage=slug==='';
     const chooser=page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu');
-    if(portrait&&calculatorIds.includes(currentId)){
+    if(portrait&&!isHomepage){
      assert(await chooser.isVisible(),'Portrait selector shown for '+slug);
-     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
+     if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
+     else assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'','Information route must not misrepresent its active calculator: '+slug);
      const metrics=await chooser.evaluate(el=>{
       const button=el.querySelector('.nic-mobile-calculator-label'),dropdown=el.querySelector('.nic-mobile-calculator-select');
       const a=button.getBoundingClientRect(),b=dropdown.getBoundingClientRect();
@@ -53,12 +55,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       return {gap:b.left-a.right,expectedGap:parseFloat(style.columnGap),aligned:Math.abs(a.top-b.top)<1,selectRight:b.right,containerRight:el.getBoundingClientRect().right,corners};
      });
      assert(Math.abs(metrics.gap-metrics.expectedGap)<1&&metrics.aligned,'Separate rounded selector fields align with configured gap: '+slug+' '+JSON.stringify(metrics));
-     assert(metrics.corners.every(side=>side.every(value=>value>0)),'Both selector fields have all four layout radii: '+slug);
+     const expectedCorner=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-menu-radius')));
+     assert(metrics.corners.every(side=>side.every(value=>Math.abs(value-expectedCorner)<0.1)),'Both selector fields must use the actual published layout corner radius: '+slug+' '+JSON.stringify(metrics));
+     assert.equal(await page.locator('#nicMobileCalculatorSelect').evaluate(el=>getComputedStyle(el).appearance),'none','Custom arrow and visible rounded select shape: '+slug);
      assert(metrics.selectRight<=metrics.containerRight+1,'Selector does not overflow: '+slug);
      assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),0,'Original menu moved into header: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one calculator menu: '+slug);
      assert.equal(await chooser.locator('.deal-type-row').isVisible(),false,'Old cards hidden within same mobile menu');
-     assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
+     if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
     }else{
      assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),false,'No compact selector on homepage/content/desktop: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
