@@ -25,7 +25,7 @@ for row in contexts:
     from unicodedata import normalize
     key=''.join(c for c in normalize('NFD',name.lower()) if not ('\\u0300'<=c<='\\u036f'))
     key=re.sub(r'[^a-z0-9]+','-',key.replace('ß','ss')).strip('-')
-    items.append({'term':name,'category':'Vermietung & Betriebskosten',
+    items.append({'term':name,'category':row.get('category') or 'Vermietung & Betriebskosten',
                   'explanation':row['body'],'example':'','id':key})
     existing.add(name.casefold())
 if len({entry['id'] for entry in items})!=len(items):
