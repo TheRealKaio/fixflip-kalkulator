@@ -46,3 +46,57 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
 @media(max-width:760px){#nicContentView.nic-content-card{padding:18px}}
 
 @media(max-width:700px){#nic-home-intro .nic-home-copy{padding:18px}}
+
+
+/* Agreed portrait-only calculator navigation; homepage and landscape unchanged. */
+.nic-mobile-calculator-chooser{display:none!important}
+@media (max-width:700px) and (orientation:portrait){
+ .nic-mobile-calculator-chooser:not([hidden]){
+  display:flex!important;align-items:stretch;gap:0;width:100%;min-width:0;
+  box-sizing:border-box;padding:8px 12px 12px;background:#fff;
+ }
+ .nic-mobile-calculator-label{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  flex:0 0 auto;min-height:44px;margin:0;padding:0 12px;
+  border:1px solid var(--nic-green-bg,#075c55);border-radius:var(--nic-brand-radius,12px) 0 0 var(--nic-brand-radius,12px);
+  background:var(--nic-green-bg,#075c55);color:#fff;
+  font:700 var(--nic-subtext-font-size,14px)/1.2 var(--nic-body-font-family,inherit);
+  white-space:nowrap;cursor:pointer;
+ }
+ .nic-mobile-calculator-label span{font-size:1.3em;font-weight:500}
+ #nicMobileCalculatorSelect{
+  flex:1 1 auto;width:0;min-width:0;min-height:44px;margin:0;
+  padding:0 22px 0 10px;
+  border:1px solid #d9e2dc;border-left:0;
+  border-radius:0 var(--nic-brand-radius,12px) var(--nic-brand-radius,12px) 0;
+  background-color:#fff;color:var(--ink,#172033);
+  font:400 var(--nic-subtext-font-size,14px)/1.2 var(--nic-body-font-family,inherit);
+  text-overflow:ellipsis;white-space:nowrap;cursor:pointer;
+ }
+ #nicMobileCalculatorSelect:focus-visible,.nic-mobile-calculator-label:focus-visible{
+  outline:2px solid #b37b00;outline-offset:2px;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app>main.section{
+  display:flex;flex-direction:column;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app>main.section>.deal-type-card{
+  display:none!important;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app>main.section>.nic-explanation-card{
+  order:90;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroTitle[data-nic-mobile-title]{
+  font-size:0!important;line-height:1!important;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroTitle[data-nic-mobile-title]::after{
+  content:attr(data-nic-mobile-title);display:block;
+  font-size:var(--nic-h1-font-size,28px);line-height:1.2;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroText[data-nic-mobile-subtitle]{
+  font-size:0!important;line-height:1!important;
+ }
+ body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroText[data-nic-mobile-subtitle]::after{
+  content:attr(data-nic-mobile-subtitle);display:block;
+  font-size:var(--nic-subtext-font-size,14px);line-height:1.45;
+ }
+}
