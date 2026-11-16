@@ -627,6 +627,36 @@ if not any("@media (min-width:1001px)" in rule and
            for rule in rules):
  raise SystemExit("Desktop acquisition-cost width rule is missing")
 
+# Mobile purchase-cost fields: Notar + Grundbuch first, Makler beim Kauf
+# second; each field spans the full available width. Do not change desktop.
+# The rental finance layout uses a two-column display:contents grid and
+# explicit order 5/6, so we preserve that order and override only its span.
+rules.append("""
+@media (max-width:700px), (max-width:1000px) and (max-height:600px) and (orientation:landscape){
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentNotary),
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentBroker),
+ body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(#budgetNotaryPct),
+ body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(#budgetBuyBrokerPct){
+  grid-column:1/-1!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker))>.input-wrap,
+ body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct))>.input-wrap{
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)) input,
+ body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct)) input{
+  width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ }
+}
+""")
+if not any(" #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentNotary)" in rule and
+           " #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentBroker)" in rule and
+           "grid-column:1/-1!important" in rule for rule in rules):
+ raise SystemExit("Mobile Notar / Makler one-row-each rule missing")
+
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')
 
