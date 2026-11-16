@@ -71,7 +71,7 @@ page=source.read_text(encoding='utf-8')
 static_terms=''.join(
     '<details class="nic-abc-entry" id="begriff-'+html.escape(entry['id'])+'">'
     '<summary class="nic-abc-summary"><span class="nic-abc-title-stack"><strong>'+html.escape(entry['term'])+'</strong><small class="nic-abc-subtext">'+html.escape(entry['category'])+'</small></span></summary>'
-    '<div class="nic-abc-detail"><p>'+html.escape(entry['explanation'])+'</p>'
+    '<div class="nic-abc-detail"><p>'+html.escape(entry['explanation'])+'</p>'+
     ('<div class="nic-abc-example"><strong>Beispiel</strong><p>'+html.escape(entry['example'])+'</p></div>' if entry['example'] else '')+'</div></details>'
     for entry in sorted(items,key=lambda e:e['term'].casefold()))
 static_content='<section class="nic-abc"><p class="nic-abc-lead">Immobilienbegriffe rund um Kauf, Finanzierung, Notar und Vermietung – einfach erklärt mit Beispielen.</p><div class="nic-abc-toolbar"><input class="nic-abc-search" style="display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box" type="search" placeholder="Begriff suchen, z. B. Grundschuld …" aria-label="Immobilienbegriff suchen"></div><div class="nic-abc-heading-row"><h2 class="nic-abc-heading">Begriffe von A bis Z</h2><p class="nic-abc-count">{count} Begriffe von {count} Begriffen</p></div><div class="nic-abc-list">'+static_terms+'</div></section>'
