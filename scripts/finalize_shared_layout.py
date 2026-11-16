@@ -649,7 +649,7 @@ rules.append("""
  }
 }
 """)
-if not any(" #notary,#broker,#rentNotary,#rentBroker" in rule and
+if not any(":is(#notary,#broker,#rentNotary,#rentBroker)" in rule and
            "grid-column:1/-1!important" in rule for rule in rules):
  raise SystemExit("Mobile Notar / Makler full-width rule missing")
 
