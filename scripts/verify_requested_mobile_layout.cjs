@@ -21,6 +21,24 @@ const fs=require('node:fs'),path=require('node:path');
    for(const slug of ['budget','vermietung']){
     await page.goto('http://127.0.0.1:8766/'+slug+'/',{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(1100);
+    if(slug==='budget'){
+     // The financing assumptions are collapsed by default. Open their
+     // real section before measuring the on-screen input fields.
+     await page.evaluate(()=>{
+      document.querySelectorAll('details').forEach(el=>{el.open=true;});
+      const body=document.querySelector('#budgetAssumptionsBody');
+      if(body){
+       body.hidden=false;
+       body.style.removeProperty('display');
+       let el=body;
+       while(el&&el!==document.body){
+        if(el.hasAttribute('hidden'))el.removeAttribute('hidden');
+        el=el.parentElement;
+       }
+      }
+     });
+     await page.waitForTimeout(100);
+    }
     const ids=slug==='budget'?['budgetNotaryPct','budgetBuyBrokerPct']:['rentNotary','rentBroker'];
     const sizes=await page.evaluate(ids=>ids.map(id=>{
      const input=document.getElementById(id);
