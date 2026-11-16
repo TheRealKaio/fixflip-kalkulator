@@ -164,7 +164,7 @@ function bindBudgetAvailableEquityHint(){
   if(labelLeaves.length===1)labelLeaves[0].remove();
   else {
    [...label.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
-    node.textContent=node.textContent.replace(/\\bverfügbar\\b/i,'');
+    node.textContent=node.textContent.replace(/\bverfügbar\b/i,'');
    });
    if(/verfügbar/i.test(label.textContent))return; // Do not duplicate or damage ambiguous markup.
   }
