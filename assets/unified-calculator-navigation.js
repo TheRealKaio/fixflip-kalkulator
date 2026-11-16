@@ -156,8 +156,19 @@ function createSiteNavigation(){
 /* Reuse the existing calculator menu: one menu, two responsive presentations. */
 let calculatorMenuAnchor=null;
 function initResponsiveCalculatorMenu(){
- const menu=document.querySelector('.app>main.section>.deal-type-card');
+ const main=document.querySelector('.app>main.section');
+ let menu=main?.querySelector(':scope > .deal-type-card');
  const header=document.querySelector('.app>.hero');
+ // Standalone content pages omit calculator forms and the original tile menu.
+ // Provide the same picker once, without introducing an empty desktop card.
+ const path=location.pathname.toLowerCase();
+ const isHome=path==='/'||path==='/index.html'||path==='/fixflip-kalkulator/'||path==='/fixflip-kalkulator/index.html';
+ if(!menu&&main&&header&&!isHome){
+  menu=document.createElement('nav');
+  menu.className='deal-type-card nic-standalone-calculator-menu';
+  menu.setAttribute('aria-label','Rechner auswählen');
+  main.prepend(menu);
+ }
  // The built calculator pages do not all use the same branding wrapper.
  // Use the real shared header, with the same fallback as createSiteNavigation.
  const brand=header?.querySelector(':scope > .nic-brand-bar,:scope > .hero-top');
@@ -228,7 +239,14 @@ function initResponsiveCalculatorMenu(){
   }
   window.NICHeader?.refresh();
  }
- picker.addEventListener('change',()=>select(picker.value,true));
+ picker.addEventListener('change',()=>{
+  if(menu.classList.contains('nic-standalone-calculator-menu')){
+   // Standalone information shells do not contain calculator forms.
+   // Load the full calculator document rather than switching an empty shell.
+   const route=Object.keys(routes).find(path=>routes[path]===picker.value);
+   if(route)location.assign(route);
+  }else select(picker.value,true);
+ });
  window.addEventListener('nic-calculator-changed',sync);
  window.addEventListener('nic-route-changed',sync);
  portraitQuery.addEventListener('change',sync);
