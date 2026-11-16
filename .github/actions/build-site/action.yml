@@ -780,7 +780,9 @@ runs:
         python scripts/centralize_calculator_actions.py _site
         python scripts/centralize_layout_typography.py _site
         python scripts/clear_calculator_input_hints.py
-        python scripts/patch_result_headings_20261116.py _site/index.html
+        for nic_page in _site/index.html _site/budget/index.html _site/eigennutzung/index.html _site/vermietung/index.html _site/fix-flip/index.html; do
+          python scripts/patch_result_headings_20261116.py "$nic_page"
+        done
         python scripts/fingerprint_assets.py _site
         node scripts/verify_asset_refresh.js _site
         node scripts/verify_finance_updates.js _site
@@ -829,6 +831,7 @@ runs:
         PY
         python scripts/fingerprint_assets.py _site
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
+        NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_result_headings.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_chart_typography.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_responsive_footer.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_calculator_styles.cjs
