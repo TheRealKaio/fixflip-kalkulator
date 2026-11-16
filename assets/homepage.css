@@ -135,7 +135,7 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  }
  .nic-mobile-calculator-trigger-label{
   box-sizing:border-box;display:flex;align-items:center;justify-content:center;
-  gap:5px;flex:0 0 42%;min-width:0;padding:0 6px;
+  gap:5px;flex:0 0 auto;min-width:0;padding:0 9px;
   white-space:nowrap;font:inherit!important;color:inherit!important;
  }
  .nic-mobile-calculator-trigger-label>span{flex:none;font-size:1.18em}
