@@ -79,7 +79,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
    assert(await page.locator('.app > .hero').isVisible(),'Admin shares the main website header');
    assert.equal(await page.locator('iframe').count(),0,'Admin is native, not a separate iframe');
-   assert.equal(await page.locator('.nic-admin-back').innerText(),'← Zurück');
+   assert.equal((await page.locator('.nic-admin-back').textContent()).trim(),'← Zurück','Admin back button retains its configured label despite CSS uppercase');
    await page.locator('.nic-admin-back').click();
    await page.waitForURL('http://localhost/fixflip-kalkulator/');
    assert(await page.locator('.app > main.section').isVisible(),'Admin back returns to homepage');
