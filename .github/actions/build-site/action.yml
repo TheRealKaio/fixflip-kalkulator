@@ -813,7 +813,7 @@ runs:
         cp assets/mobile-button-haptics.js _site/mobile-button-haptics.js
         python - <<'PY'
         from pathlib import Path
-        pages = list(Path('_site').rglob('*.html'))
+        pages = [page for page in Path('_site').rglob('*.html') if '_checks' not in page.parts]
         if not pages:
             raise SystemExit('No pages available for mobile haptics')
         for page in pages:
