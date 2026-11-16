@@ -160,6 +160,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     const factorText=await popup.innerText();
     assert(factorText.includes('Einfach gesagt')&&factorText.includes('Gut zu wissen'),'Complete Kaufpreisfaktor help is still available');
     await popup.locator('.nic-abc-context-close').click();
+    const remainingIcons=await page.locator('.app>main .info-btn[data-info]:visible, .app>main .rent-info-dot[data-info]:visible').count();
+    assert.equal(remainingIcons,0,'Migrated calculator information icons must not remain visible in the rental view');
     const spacing=await page.evaluate(()=>['rentCashflowKpi','rentFactorKpi'].map(id=>{const card=document.getElementById(id);const info=card?.querySelector('.rent-kpi-info'),badge=card?.querySelector('.rent-kpi-rating');return {infoBottom:info?.getBoundingClientRect().bottom,badgeTop:badge?.getBoundingClientRect().top};}));
     for(const pair of spacing)if(pair.badgeTop!=null)assert(pair.infoBottom!=null&&pair.badgeTop>=pair.infoBottom+4,'Traffic badge has visible spacing below its info icon');
    }
