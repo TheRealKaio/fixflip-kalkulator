@@ -202,13 +202,7 @@ function initResponsiveCalculatorMenu(){
  settlementOption.value='settlement';
  settlementOption.textContent='Mieter-Abrechnung';
  picker.append(settlementOption);
- // Non-calculator pages need a neutral prompt, not a false active calculator.
- const placeholder=document.createElement('option');
- placeholder.value='';
- placeholder.textContent='Bitte wählen';
- placeholder.disabled=true;
- placeholder.hidden=true;
- picker.prepend(placeholder);
+ // 'Budget' is the default visible entry on information pages.
  const compact=document.createElement('div');
  compact.className='nic-mobile-calculator-controls';
  compact.append(label,picker);
@@ -231,7 +225,7 @@ function initResponsiveCalculatorMenu(){
    if(key==='settlement'||calculators.some(item=>item.id===key)){
     if(picker.value!==key)picker.value=key;
    }else{
-    picker.value='';
+    picker.value='budget';
    }
   }else{
    menu.classList.remove('nic-portrait-calculator-menu');
