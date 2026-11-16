@@ -643,7 +643,7 @@ rules.append("""
  }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker))>.input-wrap,
  body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct))>.input-wrap{
-  display:flex;width:100%!important;max-width:100%!important;min-width:0!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
   box-sizing:border-box!important;
  }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)) input,
