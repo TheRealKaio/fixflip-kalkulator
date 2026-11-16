@@ -7,7 +7,7 @@ const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus
  const browser=await chromium.launch({headless:true});
  try{
   for(const width of [390,1440]){
-   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[];
+   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[],headingFailures=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
@@ -22,7 +22,7 @@ const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus
     await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
     const snapshot=await page.locator('main').evaluate(root=>({headings:[...root.querySelectorAll('h1,h2,h3,h4')].filter(el=>el.getBoundingClientRect().height).map(el=>el.textContent.trim()),decisions:[...root.querySelectorAll('[class*="decision"]')].map(el=>({tag:el.tagName,id:el.id,class:el.className,text:el.textContent.trim().slice(0,250),display:getComputedStyle(el).display})),scripts:[...document.scripts].filter(el=>/neutral|result-heading/.test(el.id)).map(el=>el.id)}));
     console.log('RESULT HEADINGS',width,key,entry,JSON.stringify(snapshot));
-    for(const title of expected[key])assert(await page.getByRole('heading',{name:title,exact:true}).isVisible(),key+' '+entry+' must show '+title);
+    for(const title of expected[key])if(!await page.getByRole('heading',{name:title,exact:true}).isVisible())headingFailures.push(key+' '+entry+' must show '+title);
    }
    for(const [key,slug] of Object.entries(routes)){
     await page.goto('http://localhost/'+slug+'/',{waitUntil:'networkidle'});
@@ -35,7 +35,7 @@ const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus
    }
    await page.goto('http://localhost/',{waitUntil:'networkidle'});
    for(const key of Object.keys(routes)){await page.evaluate(key=>NICCalculatorNavigation.select(key,true),key);await check(key,'internal navigation');}
-   assert.deepEqual(errors,[]);await page.close();
+   assert.deepEqual(errors,[]);assert.deepEqual(headingFailures,[],'All numbered result headings');await page.close();
   }
   console.log('Numbered headings passed for all five calculators, direct/navigation/recalculation, mobile and desktop.');
  }finally{await browser.close();}
