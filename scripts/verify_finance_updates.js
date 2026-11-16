@@ -33,6 +33,14 @@ for(const interest of [0,1,5,9,10]){
  assert.equal($('refinanceRisesInterest').textContent,Math.min(10,interest+2)+' % Sollzins p. a.');
 }
 values={loan:0,interest:4,repay:2,extra:5,years:10};vm.runInContext('calculate()',ctx);for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])assert($(id).textContent.includes(fmt.format(0)));for(const id of ['refinanceFalls','refinanceStays','refinanceRises'])assert.equal($(id).textContent,whole.format(0));
+// Regression: Anschlussfinanzierung begins its own white content card,
+ // preserving the full original controls and historical rate chart.
+const financeSource=fs.readFileSync('assets/financing.html','utf8');
+assert(financeSource.includes('</section><section class="card nic-refinance-card" aria-labelledby="nic-refinance-title"><h2 id="nic-refinance-title">3. Anschlussfinanzierung</h2>'));
+assert(html.includes('id="nic-refinance-title"'));
+for(const id of ['refinanceFalls','refinanceStays','refinanceRises','refinanceChange','rateChart','monthPick','pointDetail','dataStatus']){
+ assert(financeSource.includes('id="'+id+'"'), 'Refinancing component missing: '+id);
+}
 assert(html.includes('Mtl. Kreditrate inkl. Tilgung'));assert(!html.includes('annualExtraValue'));assert(html.includes('<strong id="annualExtraAmount"'));assert(html.includes('<strong id="monthlyInterestValue"'));assert(html.includes('<strong id="monthlyRepaymentValue"'));assert(!html.includes('class="action-bar"'));assert(html.includes('data-nic-page="finance"'));assert(html.includes('Finanzierungsrechner: Rate &amp; Restschuld'));
 const admin=fs.readFileSync(site+'/admin.html','utf8');assert(admin.includes('href="/docs/README-Projektdokumentation.pdf"'));assert(fs.existsSync(site+'/docs/README-Projektdokumentation.pdf'));
 assert(html.includes('.refinance-grid .kpi:nth-child(2){background:#fef3c7'));assert(html.includes('.refinance-grid .kpi:nth-child(3){background:#fee2e2'));
