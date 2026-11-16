@@ -85,18 +85,5 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app>main.section>.nic-explanation-card{
   order:90;
  }
- body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroTitle[data-nic-mobile-title]{
-  font-size:0!important;line-height:1!important;
- }
- body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroTitle[data-nic-mobile-title]::after{
-  content:attr(data-nic-mobile-title);display:block;
-  font-size:var(--nic-h1-font-size,28px);line-height:1.2;
- }
- body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroText[data-nic-mobile-subtitle]{
-  font-size:0!important;line-height:1!important;
- }
- body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) #heroText[data-nic-mobile-subtitle]::after{
-  content:attr(data-nic-mobile-subtitle);display:block;
-  font-size:var(--nic-subtext-font-size,14px);line-height:1.45;
- }
+
 }
