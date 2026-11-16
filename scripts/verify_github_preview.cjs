@@ -59,12 +59,19 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       assert(metrics.corners.every(value=>Math.abs(value-expectedCorner)<.1),'Outer menu corners match Admin radius: '+slug);
       assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Custom green dropdown visible: '+slug);
       assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder: '+slug);
-      await page.locator('#nicMobileCalculatorTrigger').click();
-      assert(await page.locator('#nicMobileCalculatorOptions').isVisible(),'Dropdown opens: '+slug);
-      assert.equal(await page.locator('#nicMobileCalculatorOptions .nic-mobile-calculator-option.is-selected').count(),1,'One selected row');
-      assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Budgetrechner');
-      await page.locator('#nicMobileCalculatorTrigger').click();
-      assert.equal(await page.locator('#nicMobileCalculatorOptions').isVisible(),false,'Dropdown closes: '+slug);
+      // The login page intentionally opens a modal that blocks background clicks.
+      const loginDialog=page.locator('dialog.nic-auth-dialog[open]');
+      if(await loginDialog.count()){
+       assert.equal(slug,'anmelden/','Only login route should have a modal: '+slug);
+       assert(await loginDialog.isVisible(),'Login modal is visible');
+      }else{
+       await page.locator('#nicMobileCalculatorTrigger').click();
+       assert(await page.locator('#nicMobileCalculatorOptions').isVisible(),'Dropdown opens: '+slug);
+       assert.equal(await page.locator('#nicMobileCalculatorOptions .nic-mobile-calculator-option.is-selected').count(),1,'One selected row');
+       assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Budgetrechner');
+       await page.locator('#nicMobileCalculatorTrigger').click();
+       assert.equal(await page.locator('#nicMobileCalculatorOptions').isVisible(),false,'Dropdown closes: '+slug);
+      }
       assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),0,'Original menu moved into header: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one calculator menu: '+slug);
      assert.equal(await chooser.locator('.deal-type-row').isVisible(),false,'Old cards hidden within same mobile menu');
