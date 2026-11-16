@@ -93,7 +93,7 @@ flip_script = r"""
   'use strict';
   function isFlip(){
     return document.body.dataset.calculator === 'flip'
-      || /\\/fix-flip\\/?$/.test(location.pathname)
+      || /\/fix-flip\/?$/.test(location.pathname)
       || (document.getElementById('flipSection') && !document.getElementById('flipSection').hidden
           && getComputedStyle(document.getElementById('flipSection')).display!=='none');
   }
