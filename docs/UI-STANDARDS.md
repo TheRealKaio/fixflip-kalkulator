@@ -392,3 +392,11 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Vor Freigabe: alle Unterseiten, 320/375/390/430 px Hochformat, 700/701 px Übergang, sämtliche sechs Ziele, Browser-Zurück/Vorwärts, direkte Routen, Wechsel zwischen Hoch-/Querformat und Live-Layout-Radius testen.
 
 - DEV-Freigabe: Die freigegebene grüne Mobil-Portrait-Auswahl wird über den GitHub-Pages-Workflow auf `develop` gebaut und getestet; keine automatische Veröffentlichung auf `main` oder STRATO.
+
+### Kompakte Rechnerauswahl: freigegebener Vergleich (16.11.2026)
+- Die bestehende zweiteilige Mobil-Portrait-Leiste bleibt erhalten; links „Rechner auswählen →“, rechts der aktive Rechner mit Originalsymbol und Pfeil.
+- Weißer Innenabstand von 12 auf 6 px halbiert, Gesamtbreite um 2 px erweitert (je Seite 1 px); die äußeren Header-Abstände erhalten die sichtbare Hintergrundgrafik.
+- Auslöser und Optionsliste verwenden jetzt „Untertexte (px)“ minus 2 px, einschließlich aller Text-Spans. Gebündelter Standard: 14 → 12 px; gespeicherte Admin-Werte gelten entsprechend.
+- Linker/rechter Bereich im Verhältnis 43:57. Die aufgeklappte Liste ist rechts am Auswahlbereich ausgerichtet; lange Namen dürfen umbrechen.
+- Alle sechs vorhandenen Ziele und Originalsymbole einschließlich Vermietung bleiben erhalten. Aktiver Eintrag mit Hintergrund und Haken; Tastatur-, Außenklick- und Routingverhalten bleiben erhalten.
+- Nur develop/GitHub-Entwicklungsvorschau. Keine STRATO-Veröffentlichung.

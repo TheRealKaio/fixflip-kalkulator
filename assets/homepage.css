@@ -185,3 +185,34 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
   outline:2px solid #c28e16!important;outline-offset:2px!important;
  }
 }
+
+/* Approved compact two-part portrait menu, 16 November 2026. */
+@media(max-width:700px) and (orientation:portrait){
+ .app>.hero>.deal-type-card.nic-portrait-calculator-menu{
+  width:calc(100% + 2px)!important;margin-left:-1px!important;
+  padding:6px!important;
+ }
+ .nic-portrait-calculator-menu .nic-mobile-calculator-trigger{
+  display:grid!important;grid-template-columns:minmax(0,43fr) minmax(0,57fr);
+ }
+ .nic-mobile-calculator-trigger-label{padding:0 6px;gap:4px;white-space:normal}
+ .nic-mobile-calculator-current{gap:6px;margin:4px!important;padding:8px 6px!important}
+ .nic-mobile-calculator-current>svg{width:16px;height:18px;flex:none}
+ html body:not(.nic-admin) .app .nic-portrait-calculator-menu .nic-mobile-calculator-trigger *,
+ html body:not(.nic-admin) .app .nic-portrait-calculator-menu .nic-mobile-calculator-option *{
+  font-size:inherit!important;
+ }
+ .nic-portrait-calculator-menu .nic-mobile-calculator-options{
+  left:auto;right:4px;width:calc(57% - 4px);padding:0!important;
+ }
+ .nic-mobile-calculator-option{gap:7px;padding:10px 8px!important}
+ .nic-mobile-calculator-option svg{width:17px;height:19px}
+ .nic-mobile-calculator-option-text{overflow-wrap:anywhere;hyphens:auto}
+ .nic-mobile-calculator-chevron{
+  width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  font-size:0!important;transform:translateY(-2px) rotate(45deg);
+ }
+ .nic-mobile-calculator-trigger[aria-expanded="true"] .nic-mobile-calculator-chevron{
+  transform:translateY(2px) rotate(225deg);
+ }
+}
