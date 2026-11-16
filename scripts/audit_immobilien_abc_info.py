@@ -71,3 +71,9 @@ for label in re.finditer(r"<label\b[^>]*>(.*?)</label>",source,re.S|re.I):
 # separate data source even if a glossary entry is edited or deleted.
 (site/"immobilien-abc-context.json").write_text(json.dumps(list(rental.values()),ensure_ascii=False,indent=2)+"\n")
 print(f"Legacy info audit: {all_buttons} info controls in labels; {len(rental)} complete structured rental sheets preserved")
+for entry in legacy:
+    print("Legacy info field:", json.dumps({
+        "term":entry["term"],"key":entry["dataInfo"],
+        "source":entry["ariaLabel"],"rich":entry["hasRichSheet"]
+    },ensure_ascii=False))
+
