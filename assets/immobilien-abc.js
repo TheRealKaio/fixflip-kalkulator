@@ -210,13 +210,15 @@ function showHints(){
   // Existing KPI information icons use the same structured legacy sheets.
   // Attach the subtle term interaction to each KPI heading, not its value.
   for(const card of main.querySelectorAll('.kpi')){
-   const control=card.querySelector(':scope > button.info-btn[data-info]');
-   const heading=card.querySelector(':scope > .name');
+   const control=card.querySelector(':scope > button.info-btn[data-info], :scope > .name button.rent-info-dot[data-info]');
+   const name=card.querySelector(':scope > .name');
+   const heading=name?.querySelector(':scope > span')||name;
    if(!control||!heading||heading.querySelector('.nic-abc-term'))continue;
-   const info=byContextKey.get(control.dataset.info);
+   const info=byContextKey.get(control.dataset.info)||byContext.get(normalize(heading.textContent.trim()));
    const entry=info&&byName.get(normalize(info.term));
    if(!entry)continue;
-   markTerm(heading,entry,{control,detail:control.dataset.info,isReference:true},info);
+   markTerm(heading,entry,{control,detail:control.dataset.info,
+    isReference:/^[A-Za-z][A-Za-z0-9_]*$/.test(control.dataset.info)},info);
   }
  }).catch(error=>console.warn('Kontexthilfe konnte nicht geladen werden:',error)).finally(()=>{hintRunning=false;});
 }
