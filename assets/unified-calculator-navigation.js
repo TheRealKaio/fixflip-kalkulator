@@ -12,12 +12,21 @@ function setPage(key){
  document.documentElement.dataset.nicPage=key==='home'?'website':key;
  window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
 }
+const portraitHeaderCopy={
+ budget:['Jetzt Budget berechnen!','Wie viel Immobilie kann ich mir leisten?'],
+ own:['Jetzt Eigenheim & Eigennutzung berechnen!','Immobilie kaufen und selbst nutzen'],
+ rent:['Jetzt Vermietung berechnen!','Mietwohnung als Kapitalanlage prüfen'],
+ flip:['Jetzt Fix und Flip berechnen!','Kauf, Sanierung und Verkauf prüfen'],
+ finance:['Jetzt Finanzierung & Restschuld berechnen!','Ermittle Rate, Zinsen und Restschuld']
+};
+const portraitQuery=window.matchMedia('(max-width:700px) and (orientation:portrait)');
 function applyHeader(key){
  const name=key==='home'||key==='website'?'welcome':key;
  const values=window.NICSettings?.current?.content?.[name];
  if(!values)return;
  const title=document.getElementById('heroTitle'),description=document.getElementById('heroText');
- for(const [element,text] of [[title,values.headerTitle],[description,values.headerDescription]]){
+ const mobile=portraitQuery.matches?portraitHeaderCopy[key]:null;
+ for(const [element,text] of [[title,mobile?mobile[0]:values.headerTitle],[description,mobile?mobile[1]:values.headerDescription]]){
   if(!element)continue;
   const value=typeof text==='string'?text:'';
   if(element.textContent!==value)element.textContent=value;
@@ -25,6 +34,10 @@ function applyHeader(key){
  }
  window.NICHeader?.refresh();
 }
+portraitQuery.addEventListener('change',()=>{
+ const key=document.documentElement.dataset.calculator;
+ if(key&&portraitHeaderCopy[key])applyHeader(key);
+});
 window.NICHeaderContent={apply:applyHeader};
 function showContent(key,refresh=false){
  const main=document.querySelector('.app>main.section');if(!main)return;
@@ -169,22 +182,12 @@ function initMobileCalculatorChooser(){
  }
  nav.append(label,selectInput);
  anchor.after(nav);
- const shortText={
-  budget:['Jetzt Budget berechnen!','Wie viel Immobilie kann ich mir leisten?'],
-  own:['Jetzt Eigenheim & Eigennutzung berechnen!','Immobilie kaufen und selbst nutzen'],
-  rent:['Jetzt Vermietung berechnen!','Mietwohnung als Kapitalanlage prüfen'],
-  flip:['Jetzt Fix und Flip berechnen!','Kauf, Sanierung und Verkauf prüfen'],
-  finance:['Jetzt Finanzierung & Restschuld berechnen!','Ermittle Rate, Zinsen und Restschuld']
- };
  function sync(){
   const key=document.documentElement.dataset.calculator||active;
-  const valid=Object.prototype.hasOwnProperty.call(shortText,key);
+  const valid=Object.prototype.hasOwnProperty.call(portraitHeaderCopy,key);
   nav.hidden=!valid;
   if(!valid)return;
   if(selectInput.value!==key)selectInput.value=key;
-  const title=document.getElementById('heroTitle'),subtitle=document.getElementById('heroText');
-  if(title)title.dataset.nicMobileTitle=shortText[key][0];
-  if(subtitle)subtitle.dataset.nicMobileSubtitle=shortText[key][1];
  }
  selectInput.addEventListener('change',()=>select(selectInput.value,true));
  window.addEventListener('nic-calculator-changed',sync);
