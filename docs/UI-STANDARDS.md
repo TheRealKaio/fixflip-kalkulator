@@ -372,3 +372,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Historische Feldschlüssel und KPI-Titel werden aus dem tatsächlich generierten HTML zugeordnet; unbekannte Schlüssel verhindern ein stilles Entfernen der alten Information.
 - Die Kontextansicht ersetzt die Symbole auch bei Fix-&-Flip-Kennzahlen und bei den beiden Vermietungskennzahlen „Monatlicher Cashflow“ und „Kaufpreisfaktor“. Der Link ist der dezent punktiert unterstrichene Feld- bzw. Kennzahlentitel.
 - Automatische Tests stellen für ausgewählte Feld- und KPI-Typen sicher, dass kein Seitenwechsel erfolgt und die Originalabschnitte weiterhin abrufbar sind. Die initialen 120 ABC-Einträge bleiben erhalten, die ergänzten Begriffe werden alphabetisch eingeordnet.
+
+## Mobile haptische Rückmeldung (16. November 2026)
+
+- Bei direkter Touch-Betätigung eines aktivierten Buttons erfolgt einmalig ein kurzer Vibrationsimpuls von 12 ms, sofern der Browser die Vibrations-API unterstützt.
+- Die Funktion wird über `assets/mobile-button-haptics.js` zentral für alle Seiten im Build eingebunden. Sie umfasst native Buttons, Button-/Submit-/Reset-Eingaben und zugängliche Elemente mit `role="button"`.
+- Keine Änderung an Farbe, Größe, Schatten, Animation oder sonstigem visuellem Zustand.
+- Deaktivierte Elemente, Maus-/Stiftbedienung und synthetische Ereignisse lösen keinen Vibrationsimpuls aus. Bei Browsern ohne Vibrationsunterstützung bleibt die Bedienung unverändert.
