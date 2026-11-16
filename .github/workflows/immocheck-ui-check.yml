@@ -2,7 +2,7 @@ name: Original backup restoration checks (no deploy)
 on:
   workflow_dispatch:
   push:
-    branches: [main, restore/original-with-current-brand-2026-11]
+    branches: [main, restore/original-with-current-brand-2026-11, layout/home-intro-first-and-hint-text]
 permissions:
   contents: read
 jobs:
@@ -31,3 +31,6 @@ jobs:
           /tmp/nic-original-check/node_modules/.bin/playwright install --with-deps chromium
           python3 -m http.server 8766 --directory _site > /tmp/original-server.log 2>&1 &
           NODE_PATH=/tmp/nic-original-check/node_modules node scripts/verify_original_browser.cjs
+      - name: Verify requested homepage and mobile purchase-field changes
+        run: |
+          NODE_PATH=/tmp/nic-original-check/node_modules node scripts/verify_requested_mobile_layout.cjs

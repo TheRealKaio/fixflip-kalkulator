@@ -145,4 +145,39 @@ document.querySelector('.nic-login-button')?.addEventListener('click',async e=>{
  e.preventDefault();e.stopImmediatePropagation();
  try{const access=window.NICAccess;if(access&&await access.init())await access.login();}catch(error){alert(error.message);}
 },true);
+// Keep Budget's available-equity qualifier below its input as a proper hint.
+// Do not alter field values, IDs or calculator events.
+function bindBudgetAvailableEquityHint(){
+ const section=document.querySelector('#budgetSection');
+ if(!section)return;
+ section.querySelectorAll('.field').forEach(field=>{
+  const label=field.querySelector('label');
+  if(!label||!/Eigenkapital/i.test(label.textContent||'')||!/verfügbar/i.test(label.textContent||''))return;
+  const input=field.querySelector('.input-wrap')||field.querySelector('input');
+  if(!input)return;
+  const existing=field.querySelector('.nic-budget-free-equity-hint');
+  if(existing)return;
+  const hint=document.createElement('div');
+  hint.className='hint nic-budget-free-equity-hint';
+  hint.textContent='Frei verfügbarer Betrag';
+  const labelLeaves=[...label.querySelectorAll('*')].filter(el=>el.children.length===0&&/^verfügbar$/i.test(el.textContent.trim()));
+  if(labelLeaves.length===1)labelLeaves[0].remove();
+  else {
+   [...label.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
+    node.textContent=node.textContent.replace(/\bverfügbar\b/i,'');
+   });
+   if(/verfügbar/i.test(label.textContent))return; // Do not duplicate or damage ambiguous markup.
+  }
+  input.after(hint);
+ });
+}
+function bindFlipSaleReviewHint(){
+ document.querySelectorAll('#flipSection *, #result *').forEach(el=>{
+  if(el.children.length||el.textContent.trim()!=='geändert (bitte prüfen)')return;
+  el.classList.add('nic-flip-sale-review-hint');
+ });
+}
+bindBudgetAvailableEquityHint();
+bindFlipSaleReviewHint();
+new MutationObserver(()=>{bindBudgetAvailableEquityHint();bindFlipSaleReviewHint();}).observe(document.body,{childList:true,subtree:true});
 })();

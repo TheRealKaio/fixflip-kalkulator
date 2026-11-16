@@ -203,7 +203,7 @@ const assert=require('node:assert/strict');
      });
      assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Rental interest and repayment share the first mobile row: '+JSON.stringify(fields));
      assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Rental financed share and duration follow interest: '+JSON.stringify(fields));
-     assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.broker.top)<1,'Rental notary and broker follow duration on one row: '+JSON.stringify(fields));
+     assert(fields.notary.top>fields.duration.top&&fields.broker.top>fields.notary.top&&Math.abs(fields.notary.width-fields.financed.width)<2&&Math.abs(fields.broker.width-fields.financed.width)<2,'Rental notary and broker follow duration on separate full-width mobile rows: '+JSON.stringify(fields));
      assert(fields.total.top>fields.broker.top&&Math.abs(fields.total.top-fields.option.top)<1,'Rental acquisition total and financing toggle form the final row: '+JSON.stringify(fields));
      assert(Math.abs(fields.total.left-fields.row.left)<1&&Math.abs(fields.option.right-fields.row.right)<1,'Rental acquisition row spans the available width');
     }

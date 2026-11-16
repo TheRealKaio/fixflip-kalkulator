@@ -166,6 +166,14 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.
 
+## Startseiten-Einführung und spezielle Hinweistexte
+
+- Die bestehende Startseiten-Einführungsbox (`nic-home-copy`) steht innerhalb des Hauptinhalts **vor** den Gruppen mit Rechner- und Mieterabrechnungsbuttons. Zwischen Einführung, Buttongruppen und Footer gelten weiterhin die vorhandenen zentralen Abstandsregeln; die Einführungsbox erhält keine künstliche Höhenstreckung.
+- Im Budget-Rechner erscheint die Ergänzung zum Eigenkapital nicht mehr rechts in der Feldüberschrift, sondern als eigener Hinweis direkt unter dem Eingabefeld mit dem Wortlaut „Frei verfügbarer Betrag“.
+- Der Hinweis „geändert (bitte prüfen)“ beim Fix-und-Flip-Verkaufspreis und der Eigenkapital-Hinweis nutzen die zentrale Schriftgröße `--nic-hint-font-size` aus Admin → Layout → Hinweistexte (px); bestehende Farben und Funktionslogiken bleiben unverändert.
+
+- Auf Mobilgeräten stehen „Notar + Grundbuch“ und „Makler beim Kauf“ in den Kaufnebenkosten-Eingaben jeweils auf einer eigenen Zeile über die volle verfügbare Breite, in dieser Reihenfolge. Desktop-Spalten und bestehende Eingaben/Berechnungen bleiben erhalten.
+
 ## Ergebnisboxen der Rechner
 
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln

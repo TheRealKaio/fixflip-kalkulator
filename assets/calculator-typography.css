@@ -166,3 +166,10 @@ html body .app > :is(.nic-brand-bar,.hero,main) {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
+
+/* Budget liquidity explanation and Fix & Flip sale-source status use the
+   single Admin > Layout > Hinweistexte typography token. */
+html body:not(.nic-admin) .app :is(.nic-budget-free-equity-hint,.nic-flip-sale-review-hint){
+ font-size:var(--nic-hint-font-size,12px)!important;
+ line-height:1.5;
+}
