@@ -50,16 +50,16 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        const shell=el.getBoundingClientRect(),green=el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect();
        const css=getComputedStyle(el.querySelector('#nicMobileCalculatorTrigger'));
        return {left:green.left-shell.left,right:shell.right-green.right,font:css.fontSize,
-        expectedFont:(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-subtext-font-size'))-2)+'px',
+        expectedFont:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-subtext-font-size'))+'px',
         corners:['borderTopLeftRadius','borderTopRightRadius','borderBottomRightRadius','borderBottomLeftRadius'].map(k=>parseFloat(getComputedStyle(el)[k]))};
       });
       assert(Math.abs(metrics.left-metrics.right)<1,'Even white margins: '+slug+' '+JSON.stringify(metrics));
-      assert.equal(metrics.font,metrics.expectedFont,'Menu uses Admin Untertexte minus 2px: '+slug);
+      assert.equal(metrics.font,metrics.expectedFont,'Menu uses Admin Untertexte directly: '+slug);
       const expectedCorner=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-menu-radius')));
       assert(metrics.corners.every(value=>Math.abs(value-expectedCorner)<.1),'Outer menu corners match Admin radius: '+slug);
       assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Custom green dropdown visible: '+slug);
       assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder: '+slug);
-      assert.equal(await chooser.locator('.nic-mobile-calculator-current>svg').count(),1,'Active calculator icon');
+      assert.equal((await chooser.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Bitte Rechner wählen','Full-width prompt');
       assert.equal(await chooser.locator('.nic-mobile-calculator-option').count(),6,'All six destinations');
       assert.equal(await chooser.locator('.nic-mobile-calculator-option[data-value="rent"] svg').count(),1,'Vermietung icon retained');
       assert(Math.abs(metrics.left-6)<1,'White padding halved to 6px');
@@ -71,6 +71,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       }else{
        await page.locator('#nicMobileCalculatorTrigger').click();
        assert(await page.locator('#nicMobileCalculatorOptions').isVisible(),'Dropdown opens: '+slug);
+       const bounds=await chooser.evaluate(el=>({trigger:el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect().width,list:el.querySelector('#nicMobileCalculatorOptions').getBoundingClientRect().width}));
+       assert(Math.abs(bounds.trigger-bounds.list)<1,'Dropdown uses full width: '+slug);
        assert.equal(await page.locator('#nicMobileCalculatorOptions .nic-mobile-calculator-option.is-selected').count(),1,'One selected row');
        assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Budgetrechner');
        await page.locator('#nicMobileCalculatorTrigger').click();

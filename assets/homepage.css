@@ -186,14 +186,14 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  }
 }
 
-/* Approved compact two-part portrait menu, 16 November 2026. */
+/* Full-width portrait selector matching the approved screenshot. */
 @media(max-width:700px) and (orientation:portrait){
  .app>.hero>.deal-type-card.nic-portrait-calculator-menu{
   width:calc(100% + 2px)!important;margin-left:-1px!important;
   padding:6px!important;
  }
  .nic-portrait-calculator-menu .nic-mobile-calculator-trigger{
-  display:grid!important;grid-template-columns:minmax(0,43fr) minmax(0,57fr);
+  display:flex!important;
  }
  .nic-mobile-calculator-trigger-label{padding:0 6px;gap:4px;white-space:normal}
  .nic-mobile-calculator-current{gap:6px;margin:4px!important;padding:8px 6px!important}
@@ -203,7 +203,7 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
   font-size:inherit!important;
  }
  .nic-portrait-calculator-menu .nic-mobile-calculator-options{
-  left:auto;right:4px;width:calc(57% - 4px);padding:0!important;
+  left:0;right:0;width:100%;padding:0!important;
  }
  .nic-mobile-calculator-option{gap:7px;padding:10px 8px!important}
  .nic-mobile-calculator-option svg{width:17px;height:19px}
@@ -215,4 +215,24 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  .nic-mobile-calculator-trigger[aria-expanded="true"] .nic-mobile-calculator-chevron{
   transform:translateY(2px) rotate(225deg);
  }
+}
+
+@media(max-width:700px) and (orientation:portrait){
+ .nic-portrait-calculator-menu .nic-mobile-calculator-current{
+  position:relative;justify-content:center;gap:12px;width:100%;
+  margin:0!important;padding:14px 38px!important;
+  background:transparent!important;font-weight:700!important;
+ }
+ .nic-portrait-calculator-menu .nic-mobile-calculator-current-text{
+  flex:0 1 auto;text-align:center;white-space:normal;
+  overflow:visible;text-overflow:clip;
+ }
+ .nic-portrait-calculator-menu .nic-mobile-calculator-chevron{
+  position:absolute;right:18px;top:50%;margin-top:-3px;
+ }
+ .nic-portrait-calculator-menu .nic-mobile-calculator-option{
+  gap:14px;padding:14px 16px!important;min-height:48px!important;
+  font-weight:600!important;
+ }
+ .nic-portrait-calculator-menu .nic-mobile-calculator-option svg{width:24px;height:24px}
 }

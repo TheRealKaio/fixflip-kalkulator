@@ -393,10 +393,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 - DEV-Freigabe: Die freigegebene grüne Mobil-Portrait-Auswahl wird über den GitHub-Pages-Workflow auf `develop` gebaut und getestet; keine automatische Veröffentlichung auf `main` oder STRATO.
 
-### Kompakte Rechnerauswahl: freigegebener Vergleich (16.11.2026)
-- Die bestehende zweiteilige Mobil-Portrait-Leiste bleibt erhalten; links „Rechner auswählen →“, rechts der aktive Rechner mit Originalsymbol und Pfeil.
-- Weißer Innenabstand von 12 auf 6 px halbiert, Gesamtbreite um 2 px erweitert (je Seite 1 px); die äußeren Header-Abstände erhalten die sichtbare Hintergrundgrafik.
-- Auslöser und Optionsliste verwenden jetzt „Untertexte (px)“ minus 2 px, einschließlich aller Text-Spans. Gebündelter Standard: 14 → 12 px; gespeicherte Admin-Werte gelten entsprechend.
-- Linker/rechter Bereich im Verhältnis 43:57. Die aufgeklappte Liste ist rechts am Auswahlbereich ausgerichtet; lange Namen dürfen umbrechen.
-- Alle sechs vorhandenen Ziele und Originalsymbole einschließlich Vermietung bleiben erhalten. Aktiver Eintrag mit Hintergrund und Haken; Tastatur-, Außenklick- und Routingverhalten bleiben erhalten.
-- Nur develop/GitHub-Entwicklungsvorschau. Keine STRATO-Veröffentlichung.
+### Rechnerauswahl: neue Screenshot-Vorgabe (16.11.2026)
+- Mobil Portrait: ein durchgehender grüner Auslöser über die volle Breite, zentriert „Bitte Rechner wählen“, Pfeilsymbol rechts. Die bisherige linke Beschriftung entfällt.
+- Die Beschriftung bleibt auch auf Rechnerseiten „Bitte Rechner wählen“; das aktive Ziel wird in der geöffneten Liste hervorgehoben.
+- Geöffnete weiße Liste über die volle Breite, mit allen sechs vorhandenen Einträgen und unveränderten Originalsymbolen einschließlich Vermietung.
+- Auslöser und Liste verwenden wieder direkt „Untertexte (px)“ (`--nic-subtext-font-size`, Standard 14 px), ohne 2-px-Abzug.
+- Weißer Innenabstand 6 px, Gesamtbreite plus 2 px; bestehende äußere Grafikabstände, Admin-Radien und Bedienfunktionen bleiben erhalten.
+- Diese neue Vorgabe ersetzt die älteren zweiteiligen Darstellungsregeln oben. Nur develop/GitHub-Entwicklungsvorschau.
