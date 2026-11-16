@@ -139,6 +139,59 @@ function createSiteNavigation(){
   header.append(nav,toggle);
  }
 }
+
+/* One compact, route-aware calculator selector for mobile portrait only. */
+function initMobileCalculatorChooser(){
+ const header=document.querySelector('.app > .hero');
+ if(!header||document.getElementById('nicMobileCalculatorChooser'))return;
+ const anchor=header.querySelector('.nic-brand-bar')||header.querySelector('.hero-top');
+ if(!anchor)return;
+ const nav=document.createElement('nav');
+ nav.id='nicMobileCalculatorChooser';
+ nav.className='nic-mobile-calculator-chooser';
+ nav.setAttribute('aria-label','Rechner auswählen');
+ const label=document.createElement('label');
+ label.htmlFor='nicMobileCalculatorSelect';
+ label.className='nic-mobile-calculator-label';
+ label.append(document.createTextNode('Rechner wählen '));
+ const arrow=document.createElement('span');
+ arrow.setAttribute('aria-hidden','true');
+ arrow.textContent='→';
+ label.append(arrow);
+ const selectInput=document.createElement('select');
+ selectInput.id='nicMobileCalculatorSelect';
+ selectInput.setAttribute('aria-label','Rechner auswählen');
+ for(const item of calculators){
+  const option=document.createElement('option');
+  option.value=item.id;
+  option.textContent=item.id==='finance'?'Finanzierung & Restschuld':item.label;
+  selectInput.append(option);
+ }
+ nav.append(label,selectInput);
+ anchor.after(nav);
+ const shortText={
+  budget:['Jetzt Budget berechnen!','Wie viel Immobilie kann ich mir leisten?'],
+  own:['Jetzt Eigenheim & Eigennutzung berechnen!','Immobilie kaufen und selbst nutzen'],
+  rent:['Jetzt Vermietung berechnen!','Mietwohnung als Kapitalanlage prüfen'],
+  flip:['Jetzt Fix und Flip berechnen!','Kauf, Sanierung und Verkauf prüfen'],
+  finance:['Jetzt Finanzierung & Restschuld berechnen!','Ermittle Rate, Zinsen und Restschuld']
+ };
+ function sync(){
+  const key=document.documentElement.dataset.calculator||active;
+  const valid=Object.prototype.hasOwnProperty.call(shortText,key);
+  nav.hidden=!valid;
+  if(!valid)return;
+  if(selectInput.value!==key)selectInput.value=key;
+  const title=document.getElementById('heroTitle'),subtitle=document.getElementById('heroText');
+  if(title)title.dataset.nicMobileTitle=shortText[key][0];
+  if(subtitle)subtitle.dataset.nicMobileSubtitle=shortText[key][1];
+ }
+ selectInput.addEventListener('change',()=>select(selectInput.value,true));
+ window.addEventListener('nic-calculator-changed',sync);
+ window.addEventListener('nic-route-changed',sync);
+ sync();
+}
+
 function initWelcome(){
  if(document.documentElement.dataset.nicPage!=='website')return;
  const main=document.querySelector('main.section')||document.querySelector('main'),menu=document.querySelector('.deal-type-card');
@@ -197,6 +250,7 @@ window.addEventListener('nic-settings-updated',()=>{if(document.body.classList.c
 window.addEventListener('DOMContentLoaded',()=>{
  const css=document.createElement('style');css.textContent='.nic-finance-active main.section > :not(.deal-type-card):not(#nicFinanceModule):not(#nic-home-intro):not(.nic-explanation-card){display:none!important}#nicFinanceModule[hidden]{display:none!important}.deal-type-card[hidden]{display:none!important}.nic-home-intro{margin:20px 0 24px;padding:26px 30px;border:1px solid #e2e9e5;border-radius:12px;background:#f6f1e9;color:#263b3a}.nic-home-intro h2{margin:0;color:#075c55;font-size:26px}.nic-home-description{margin-top:10px;max-width:780px;line-height:1.55}.nic-home-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.nic-home-actions a,.nic-home-actions button{display:inline-flex;min-height:44px;align-items:center;padding:10px 18px;border:1px solid #075c55;border-radius:12px;background:linear-gradient(135deg,#16867a,#075c55);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}.nic-home-actions a{background:#fff;color:#075c55}[data-nic-site-nav]{display:flex;align-items:center;justify-content:flex-end;gap:clamp(10px,1.4vw,20px);margin-left:auto}[data-nic-site-nav] a{color:#263b3a;font-size:14px;text-decoration:none;white-space:nowrap}.nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:170px minmax(0,1fr) auto}.nic-brand-bar [data-nic-site-nav]{grid-column:1/-1;grid-row:2;padding-top:9px;border-top:1px solid #e9e1d6}.nic-menu-toggle{display:none;border:1px solid #dce6e1;border-radius:10px;background:#fff;color:#075c55;font-size:22px;padding:5px 10px}@media(max-width:700px),(max-width:1024px) and (max-height:600px) and (orientation:landscape){.nic-brand-bar:has([data-nic-site-nav]){grid-template-columns:minmax(0,1fr) auto auto!important;position:relative}.nic-brand-bar a.nic-login-button{grid-column:2!important;grid-row:1!important}.nic-brand-bar .nic-brand-description{display:none!important}.nic-brand-bar [data-nic-site-nav]{display:none;position:absolute;z-index:100;top:100%;left:0;right:0;grid-column:auto;grid-row:auto;margin:0;padding:16px;background:#fff;border-top:1px solid #e2e9e5;box-shadow:0 10px 20px #263b3a18;flex-direction:column;align-items:flex-start}.nic-brand-bar [data-nic-site-nav].is-open{display:flex}.nic-brand-bar .nic-menu-toggle{display:inline-flex!important;grid-column:3!important;grid-row:1!important;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;min-width:44px;padding:9px;margin:0;flex:none;cursor:pointer}.nic-brand-bar .nic-menu-toggle:focus-visible{outline:3px solid #b37b00;outline-offset:3px}.nic-home-intro{padding:22px 18px}.nic-home-actions{flex-direction:column}.nic-home-actions>*{justify-content:center}}';css.textContent+='@media(max-width:700px) and (orientation:portrait){.nic-brand-bar a.nic-login-button{box-sizing:border-box!important;width:44px!important;height:44px!important;padding:9px!important;gap:0!important}.nic-brand-bar a.nic-login-button>span{display:none!important}}';document.head.append(css);
  createSiteNavigation();
+ initMobileCalculatorChooser();
  function startDirectRoute(){const key=routes[location.pathname.toLowerCase()];if(key)select(key);}
  window.NICSettings.init().then(startDirectRoute).catch(async error=>{
   console.error(error);
