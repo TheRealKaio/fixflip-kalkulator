@@ -79,7 +79,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.match(await page.locator('#heroTitle').innerText(),/Jetzt Finanzierung & Restschuld berechnen!/);
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
-    const options=await page.locator('#nicMobileCalculatorSelect option').evaluateAll(nodes=>nodes.map(node=>({key:node.value,label:node.textContent.trim()})));
+    const options=await page.locator('#nicMobileCalculatorSelect option:not([disabled])').evaluateAll(nodes=>nodes.map(node=>({key:node.value,label:node.textContent.trim()})));
     assert.deepEqual(options.map(o=>o.key),['budget','own','rent','flip','finance','settlement'],'Exactly five calculators followed by settlement');
     assert.equal(options[5].label,'Mieter-Abrechnung','Final option has the agreed wording');
     await page.locator('#nicMobileCalculatorSelect').selectOption('settlement');
