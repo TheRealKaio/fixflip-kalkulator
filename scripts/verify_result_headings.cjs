@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-flip',finance:'finanzierungsrechner'};
-const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus kann ich mir leisten?','5. Wo geht das Geld hin?'],own:['4. Ergebnis Eigennutzung'],rent:['4. Ergebnis Vermietung'],flip:['4. Ergebnis Fix und Flip'],finance:['1. Finanzierung einstellen','2. Finanzierungsergebnis','3. Anschlussfinanzierung']};
+const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus kann ich mir leisten?','5. Monatliche Tilgung- und Restschuld'],own:['4. Ergebnis Eigennutzung'],rent:['4. Ergebnis Vermietung'],flip:['4. Ergebnis Fix und Flip'],finance:['1. Finanzierung einstellen','2. Finanzierungsergebnis','3. Anschlussfinanzierung']};
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
