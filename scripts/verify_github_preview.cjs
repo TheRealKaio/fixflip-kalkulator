@@ -37,9 +37,42 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const heading=await page.locator('#heroTitle').evaluate(e=>({configured:getComputedStyle(document.documentElement).getPropertyValue('--nic-h1-font-size').trim(),actual:parseFloat(getComputedStyle(e).fontSize)}));
     assert.equal(heading.configured,layout.h1+'px','Public heading setting: '+width+' '+slug);
     assert(heading.actual>0&&heading.actual<=layout.h1,'Shared responsive heading limit: '+width+' '+slug);
+    const currentId=(await page.locator('html').getAttribute('data-calculator'));
+    const portrait=width===390;
+    const calculatorIds=['budget','own','rent','flip','finance'];
+    const chooser=page.locator('#nicMobileCalculatorChooser');
+    if(portrait&&calculatorIds.includes(currentId)){
+     assert(await chooser.isVisible(),'Portrait selector shown for '+slug);
+     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
+     const metrics=await chooser.evaluate(el=>{
+      const button=el.querySelector('label'),dropdown=el.querySelector('select');
+      const a=button.getBoundingClientRect(),b=dropdown.getBoundingClientRect();
+      return {gap:b.left-a.right,aligned:Math.abs(a.top-b.top)<1,selectRight:b.right,containerRight:el.getBoundingClientRect().right};
+     });
+     assert(Math.abs(metrics.gap)<1&&metrics.aligned,'Flush single-row portrait control: '+slug);
+     assert(metrics.selectRight<=metrics.containerRight+1,'Selector does not overflow: '+slug);
+     assert.equal(await page.locator('.deal-type-card').isVisible(),false,'Large tile strip hidden in portrait: '+slug);
+     assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
+    }else{
+     assert.equal(await chooser.isVisible(),false,'No selector on homepage/content/desktop: '+slug);
+    }
     assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')&&!new URL(u).pathname.startsWith('/fixflip-kalkulator/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
+   }
+   if(width===390){
+    await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
+    await page.locator('#nicMobileCalculatorSelect').selectOption('finance');
+    await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
+    assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'finance','Dropdown switches to finance');
+    assert.match(await page.locator('#heroTitle').innerText(),/Jetzt Finanzierung & Restschuld berechnen!/);
+    await page.goBack({waitUntil:'networkidle'});
+    assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
+    await page.setViewportSize({width:844,height:390});
+    assert.equal(await page.locator('#nicMobileCalculatorChooser').isVisible(),false,'Landscape does not show portrait selector');
+    assert(!(await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Landscape restores configured title');
+    await page.setViewportSize({width:390,height:900});
+    assert(await page.locator('#nicMobileCalculatorChooser').isVisible(),'Portrait selection restored on rotate');
    }
    await page.goto('http://localhost/fixflip-kalkulator/nebenkostenabrechnung/',{waitUntil:'networkidle'});
    const disclosure=page.locator('[data-nic-explanation] summary');
