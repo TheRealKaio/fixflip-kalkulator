@@ -160,9 +160,9 @@ function initResponsiveCalculatorMenu(){
  const header=document.querySelector('.app>.hero');
  // The built calculator pages do not all use the same branding wrapper.
  // Use the real shared header, with the same fallback as createSiteNavigation.
- const brand=header?.querySelector('.nic-brand-bar,.hero-top')||header?.firstElementChild;
- if(!menu||!header||!brand){
-  console.error('Calculator menu initialization failed: missing menu or header', {menu:!!menu,header:!!header,brand:!!brand});
+ const brand=header?.querySelector(':scope > .nic-brand-bar,:scope > .hero-top');
+ if(!menu||!header){
+  console.error('Calculator menu initialization failed: missing menu or header', {menu:!!menu,header:!!header});
   return;
  }
  if(menu.querySelector('#nicMobileCalculatorSelect'))return;
@@ -195,7 +195,10 @@ function initResponsiveCalculatorMenu(){
   const compactMode=portraitQuery.matches&&Object.prototype.hasOwnProperty.call(portraitHeaderCopy,key)
    &&!document.body.matches('.nic-admin-open,.nic-legal-open');
   if(compactMode){
-   if(menu.parentElement!==header)brand.after(menu);
+   if(menu.parentElement!==header){
+    if(brand)brand.after(menu);
+    else header.insertBefore(menu,header.querySelector(':scope > h1')||header.firstChild);
+   }
    menu.classList.add('nic-portrait-calculator-menu');
    if(picker.value!==key)picker.value=key;
   }else{
