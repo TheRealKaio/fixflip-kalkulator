@@ -12,8 +12,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
-    if(u.origin!=='http://localhost'){external.push(u.href);return route.abort();}
-    const file=path.join('_preview',u.pathname.endsWith('/')?u.pathname+'index.html':u.pathname);
+    if(u.origin!=='http://localhost'){if(u.hostname==='invalid.example'||u.pathname.startsWith('/api/'))external.push(u.href);return route.abort();}
+    if(!u.pathname.startsWith('/fixflip-kalkulator/'))return route.fulfill({status:404,body:'Outside project'});
+    let name=u.pathname.slice('/fixflip-kalkulator/'.length);if(!name||name.endsWith('/'))name+='index.html';
+    const file=path.join('_preview',name);
     if(!fs.existsSync(file))return route.fulfill({status:404,body:'Missing preview asset'});
     await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.json':'application/json','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'})[path.extname(file)]||'application/octet-stream'});
    });
