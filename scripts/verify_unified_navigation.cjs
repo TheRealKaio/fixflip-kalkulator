@@ -93,6 +93,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
+  assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one shared calculator menu exists on the calculator route');
   assert.deepEqual(errors,[], 'Page initialization must complete without JavaScript errors');
   const origin=await page.evaluate(()=>performance.timeOrigin);
   assert.equal(await page.locator('script[src*="calculator-finance"]').count(),0,'Finance must use the shared controller bundle');
