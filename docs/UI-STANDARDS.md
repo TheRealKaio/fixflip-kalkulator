@@ -373,9 +373,32 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Die Kontextansicht ersetzt die Symbole auch bei Fix-&-Flip-Kennzahlen und bei den beiden Vermietungskennzahlen „Monatlicher Cashflow“ und „Kaufpreisfaktor“. Der Link ist der dezent punktiert unterstrichene Feld- bzw. Kennzahlentitel.
 - Automatische Tests stellen für ausgewählte Feld- und KPI-Typen sicher, dass kein Seitenwechsel erfolgt und die Originalabschnitte weiterhin abrufbar sind. Die initialen 120 ABC-Einträge bleiben erhalten, die ergänzten Begriffe werden alphabetisch eingeordnet.
 
-## Mobile haptische Rückmeldung (16. November 2026)
+### Finanzierungsrechner: Anschlussfinanzierung (16.11.2026)
 
-- Bei direkter Touch-Betätigung eines aktivierten Buttons erfolgt einmalig ein kurzer Vibrationsimpuls von 12 ms, sofern der Browser die Vibrations-API unterstützt.
-- Die Funktion wird über `assets/mobile-button-haptics.js` zentral für alle Seiten im Build eingebunden. Sie umfasst native Buttons, Button-/Submit-/Reset-Eingaben und zugängliche Elemente mit `role="button"`.
-- Keine Änderung an Farbe, Größe, Schatten, Animation oder sonstigem visuellem Zustand.
-- Deaktivierte Elemente, Maus-/Stiftbedienung und synthetische Ereignisse lösen keinen Vibrationsimpuls aus. Bei Browsern ohne Vibrationsunterstützung bleibt die Bedienung unverändert.
+- Nach der weißen Karte „2. Finanzierungsergebnis“ beginnt eine eigenständige weiße Contentkarte mit der H2 „3. Anschlussfinanzierung“.
+- Die Karte verwendet die bestehenden gemeinsamen Klassen und Abstände (`card`), ohne gesonderte Farben, Abmessungen oder mobile Layoutvarianten.
+- Zinsszenarien, Schieberegler, historische Zinsgrafik, Beschriftungen, Datenquelle und Berechnungslogik verbleiben unverändert in der neuen Karte.
+
+
+### Rechnerauswahl ausschließlich Mobil Portrait (16.11.2026)
+
+- Die Auswahlbox erscheint **auf allen öffentlichen Unterseiten**, aber **niemals auf der Startseite**, ausschließlich im Hochformat bis 700 px. Das gilt für alle fünf Rechner, Mieter-Abrechnung, Preise, Warum ImmoCheck?, Immobilien-ABC, Über uns, Kontakt und Anmelden.
+- Freigegebene Variante: **eine durchgehend dunkelgrüne, außen abgerundete Auswahlleiste** mit „Rechner auswählen →“ links und dem aktiven Rechner rechts in einem leicht helleren grünen Bereich samt Pfeil nach unten. Das weiße Trägerfeld hat ringsum gleichmäßige Innenabstände, alle vier äußeren Ecken folgen dem Admin-Menü-Radius (`--nic-menu-radius`). Das geöffnete Menü ist eine weiße Dropdown-Karte mit Rechner-Icons, Trennlinien und einem hellgrün hervorgehobenen aktiven Eintrag samt Haken. **Alle Texte der Auswahlleiste und Optionsliste** verwenden die Admin-Einstellung „Untertexte (px)“ (`--nic-subtext-font-size`).
+- Das Dropdown zeigt die fünf Rechner und als letzten auswählbaren Eintrag „Mieter-Abrechnung“. Auf Inhaltsseiten ist **Budgetrechner** als Standard vorausgewählt; es wird kein Platzhalter („Rechner auswählen“ / „Bitte wählen“) im Dropdown angelegt. Die Vorauswahl verändert den Inhalt der gerade geöffneten Seite nicht, bis ein Menüwechsel erfolgt.
+- Auf Rechner- und gemeinsamen Inhaltsseiten wird die vorhandene `.deal-type-card` als **einzige** Navigation wiederverwendet: im Mobil-Hochformat im Bildheader, sonst an ihrem ursprünglichen Ort im Hauptinhalt. Keine zweite Kachelleiste und keine doppelte Routing-Logik.
+- Reine Inhaltsseiten ohne Rechnerformular und ohne ursprüngliche Kachelleiste erzeugen über dieselbe Initialisierungsfunktion genau eine kompakte Navigation; sie bleibt außerhalb von Mobil Portrait unsichtbar. Die Auswahl eines Rechners lädt dort die vollständige Rechnerseite, während die gemeinsame Rechner-App weiterhin ohne kompletten Seitenwechsel navigiert.
+- Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der jeweilige Bildheader zeigt die mobile Überschrift „Jetzt [Rechnername] berechnen!“ mit kurzem Subtext. Die ausführliche Erklär-/SEO-Karte steht im Dokumentfluss nach den Rechnermodulen.
+- Startseite, Querformat, Tablet/Desktop und rechtliche/adminstrative Überlagerungen auf der Startseite bleiben außerhalb dieser Porträt-Navigation.
+- Vor Freigabe: alle Unterseiten, 320/375/390/430 px Hochformat, 700/701 px Übergang, sämtliche sechs Ziele, Browser-Zurück/Vorwärts, direkte Routen, Wechsel zwischen Hoch-/Querformat und Live-Layout-Radius testen.
+
+- DEV-Freigabe: Die freigegebene grüne Mobil-Portrait-Auswahl wird über den GitHub-Pages-Workflow auf `develop` gebaut und getestet; keine automatische Veröffentlichung auf `main` oder STRATO.
+
+### Rechnerauswahl: neue Screenshot-Vorgabe (16.11.2026)
+- Mobil Portrait: ein durchgehender grüner Auslöser über die volle Breite, zentriert „Bitte Rechner wählen“, Pfeilsymbol rechts. Die bisherige linke Beschriftung entfällt.
+- Auf Rechnerseiten und bei Mieterabrechnung zeigt das geschlossene Dropdown den aktiven Eintrag; auf sonstigen Inhaltsseiten steht „Bitte Rechner wählen“. Interne Navigation, direkte Aufrufe und Browser-Zurück/Vorwärts synchronisieren die Anzeige. Der aktive Eintrag bleibt in der Liste hervorgehoben.
+- Geöffnete weiße Liste über die volle Breite, mit allen sechs vorhandenen Einträgen und unveränderten Originalsymbolen einschließlich Vermietung.
+- Auslöser und Liste verwenden wieder direkt „Untertexte (px)“ (`--nic-subtext-font-size`, Standard 14 px), ohne 2-px-Abzug.
+- Weißer Innenabstand 6 px, Gesamtbreite plus 2 px; bestehende äußere Grafikabstände, Admin-Radien und Bedienfunktionen bleiben erhalten.
+- Diese neue Vorgabe ersetzt die älteren zweiteiligen Darstellungsregeln oben. Nur develop/GitHub-Entwicklungsvorschau.
+
+- Feldbeschriftungen und ihre Einheiten stehen gemeinsam linksbündig mit kleinem Abstand; Einheiten wie (€), p. a. und jährlich werden nicht zum rechten Feldrand geschoben.

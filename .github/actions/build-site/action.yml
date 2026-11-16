@@ -780,6 +780,7 @@ runs:
         python scripts/centralize_calculator_actions.py _site
         python scripts/centralize_layout_typography.py _site
         python scripts/clear_calculator_input_hints.py
+        python scripts/patch_result_headings_20261116.py _site/index.html
         python scripts/fingerprint_assets.py _site
         node scripts/verify_asset_refresh.js _site
         node scripts/verify_finance_updates.js _site

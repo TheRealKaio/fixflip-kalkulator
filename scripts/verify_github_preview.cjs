@@ -25,7 +25,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     if(!fs.existsSync(file)){missing.push(u.pathname);return route.fulfill({status:404,body:''});}
     await route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'})[path.extname(file)]||'application/octet-stream'});
    });
-   for(const slug of ['','budget/','eigennutzung/','vermietung/','fix-flip/','finanzierungsrechner/','nebenkostenabrechnung/','preise/','warum-immocheck/']){
+   for(const slug of ['','budget/','eigennutzung/','vermietung/','fix-flip/','finanzierungsrechner/','nebenkostenabrechnung/','preise/','warum-immocheck/','immobilien-abc/','ueber-uns/','kontakt/','anmelden/']){
     await page.goto('http://localhost/fixflip-kalkulator/'+slug,{waitUntil:'networkidle'});
     await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady);
     if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
@@ -37,9 +37,145 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const heading=await page.locator('#heroTitle').evaluate(e=>({configured:getComputedStyle(document.documentElement).getPropertyValue('--nic-h1-font-size').trim(),actual:parseFloat(getComputedStyle(e).fontSize)}));
     assert.equal(heading.configured,layout.h1+'px','Public heading setting: '+width+' '+slug);
     assert(heading.actual>0&&heading.actual<=layout.h1,'Shared responsive heading limit: '+width+' '+slug);
+    const currentId=(await page.locator('html').getAttribute('data-calculator'));
+    const portrait=width===390;
+    const calculatorIds=['budget','own','rent','flip','finance'];
+    const isHomepage=slug==='';
+    const chooser=page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu');
+    if(portrait&&!isHomepage){
+     assert(await chooser.isVisible(),'Portrait selector shown for '+slug);
+     if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
+     else assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Information route defaults to Budget: '+slug);
+     const metrics=await chooser.evaluate(el=>{
+       const shell=el.getBoundingClientRect(),green=el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect();
+       const css=getComputedStyle(el.querySelector('#nicMobileCalculatorTrigger'));
+       return {left:green.left-shell.left,right:shell.right-green.right,font:css.fontSize,
+        expectedFont:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-subtext-font-size'))+'px',
+        corners:['borderTopLeftRadius','borderTopRightRadius','borderBottomRightRadius','borderBottomLeftRadius'].map(k=>parseFloat(getComputedStyle(el)[k]))};
+      });
+      assert(Math.abs(metrics.left-metrics.right)<1,'Even white margins: '+slug+' '+JSON.stringify(metrics));
+      assert.equal(metrics.font,metrics.expectedFont,'Menu uses Admin Untertexte directly: '+slug);
+      const expectedCorner=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-menu-radius')));
+      assert(metrics.corners.every(value=>Math.abs(value-expectedCorner)<.1),'Outer menu corners match Admin radius: '+slug);
+      assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Custom green dropdown visible: '+slug);
+      assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder: '+slug);
+      const expectedLabel=(calculatorIds.includes(currentId)||currentId==='settlement')
+       ? await page.locator('#nicMobileCalculatorSelect option:checked').textContent() : 'Bitte Rechner wählen';
+      assert.equal((await chooser.locator('.nic-mobile-calculator-current-text').textContent()).trim(),expectedLabel.trim(),'Dropdown displays active destination or prompt');
+      assert.equal(await chooser.locator('.nic-mobile-calculator-option').count(),6,'All six destinations');
+      assert.equal(await chooser.locator('.nic-mobile-calculator-option[data-value="rent"] svg').count(),1,'Vermietung icon retained');
+      assert(Math.abs(metrics.left-6)<1,'White padding halved to 6px');
+      // The login page intentionally opens a modal that blocks background clicks.
+      const loginDialog=page.locator('dialog.nic-auth-dialog[open]');
+      if(await loginDialog.count()){
+       assert.equal(slug,'anmelden/','Only login route should have a modal: '+slug);
+       assert(await loginDialog.isVisible(),'Login modal is visible');
+      }else{
+       await page.locator('#nicMobileCalculatorTrigger').click();
+       assert(await page.locator('#nicMobileCalculatorOptions').isVisible(),'Dropdown opens: '+slug);
+       const bounds=await chooser.evaluate(el=>({trigger:el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect().width,list:el.querySelector('#nicMobileCalculatorOptions').getBoundingClientRect().width}));
+       assert(Math.abs(bounds.trigger-bounds.list)<1,'Dropdown uses full width: '+slug);
+       assert.equal(await page.locator('#nicMobileCalculatorOptions .nic-mobile-calculator-option.is-selected').count(),1,'One selected row');
+       assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Budgetrechner');
+       await page.locator('#nicMobileCalculatorTrigger').click();
+       assert.equal(await page.locator('#nicMobileCalculatorOptions').isVisible(),false,'Dropdown closes: '+slug);
+      }
+      assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),0,'Original menu moved into header: '+slug);
+     assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one calculator menu: '+slug);
+     assert.equal(await chooser.locator('.deal-type-row').isVisible(),false,'Old cards hidden within same mobile menu');
+     if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
+    }else{
+     assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),false,'No compact selector on homepage/content/desktop: '+slug);
+     assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
+    }
+    if(currentId==='finance'){
+     const labels=page.locator('#nicFinanceModule .field label');
+     assert(await labels.count()>0,'Finance labels present');
+     for(const label of await labels.all()){
+      assert.equal(await label.evaluate(el=>getComputedStyle(el).justifyContent),'flex-start','Finance caption and unit align left');
+     }
+    }
     assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')&&!new URL(u).pathname.startsWith('/fixflip-kalkulator/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
+   }
+   // A direct admin URL must remain in the same application with the shared hero.
+   await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
+   await page.waitForFunction(()=>location.pathname==='/fixflip-kalkulator/'&&location.hash.startsWith('#admin'),null,{timeout:10000}).catch(async error=>{
+    throw new Error('Direct admin redirect failed: '+JSON.stringify({url:page.url(),errors})+'; '+error.message);
+   });
+   await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
+   assert(await page.locator('.app > .hero').isVisible(),'Admin shares the main website header');
+   assert.equal(await page.locator('iframe').count(),0,'Admin is native, not a separate iframe');
+   assert.equal((await page.locator('.nic-admin-back').textContent()).trim(),'← Zurück','Admin back button retains its configured label despite CSS uppercase');
+   await page.locator('.nic-admin-back').click();
+   await page.waitForURL('http://localhost/fixflip-kalkulator/');
+   await page.locator('.app > main.section').waitFor({state:'visible',timeout:15000});
+   await page.waitForFunction(()=>document.documentElement.dataset.nicPage==='website',null,{timeout:15000});
+   assert.equal(page.url(),'http://localhost/fixflip-kalkulator/','Admin back returns to the exact preview homepage');
+   if(width===390){
+    await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
+    await page.locator('#nicMobileCalculatorTrigger').click();
+     await page.locator('#nicMobileCalculatorOptions [data-value="finance"]').click();
+    await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
+    assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'finance','Dropdown switches to finance');
+    assert.match(await page.locator('#heroTitle').innerText(),/Jetzt Finanzierung & Restschuld berechnen!/);
+    await page.goBack({waitUntil:'networkidle'});
+    assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
+    const options=await page.locator('#nicMobileCalculatorSelect option:not([disabled])').evaluateAll(nodes=>nodes.map(node=>({key:node.value,label:node.textContent.trim()})));
+    assert.deepEqual(options.map(o=>o.key),['budget','own','rent','flip','finance','settlement'],'Exactly five calculators followed by settlement');
+    assert.equal(options[5].label,'Mieter-Abrechnung','Final option has the agreed wording');
+    await page.locator('#nicMobileCalculatorTrigger').click();
+     await page.locator('#nicMobileCalculatorOptions [data-value="settlement"]').click();
+    await page.waitForURL('**/fixflip-kalkulator/nebenkostenabrechnung/');
+    assert.equal(await page.locator('html').getAttribute('data-calculator'),'settlement','Settlement content route activated');
+    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Mieter-Abrechnung','Dropdown follows internal navigation');
+    await page.goBack({waitUntil:'networkidle'});
+    assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Back from settlement restores calculator');
+    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Budgetrechner','Dropdown follows browser back');
+    // Standalone information pages do not contain calculator forms; their
+    // selector must open the complete target document, not switch an empty shell.
+    await page.goto('http://localhost/fixflip-kalkulator/ueber-uns/',{waitUntil:'networkidle'});
+    assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Standalone about page has a visible picker');
+    await page.locator('#nicMobileCalculatorTrigger').click();
+     await page.locator('#nicMobileCalculatorOptions [data-value="finance"]').click();
+    await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
+    try{
+     await page.locator('#nicFinanceModule [data-finance-id="loan"]').waitFor({state:'visible',timeout:15000});
+     await page.waitForFunction(()=>window.NICCalculators?.active==='finance',null,{timeout:15000});
+    }catch(error){
+     const diagnostic=await page.evaluate(()=>({
+      route:location.pathname,page:document.documentElement.dataset.nicPage,
+      active:window.NICCalculators?.active,body:document.body.className,
+      financeHost:!!document.getElementById('nicFinanceModule'),
+      loanField:!!document.querySelector('#nicFinanceModule [data-finance-id="loan"]')
+     }));
+     throw new Error('Standalone picker must load the complete finance calculator: '+JSON.stringify(diagnostic)+'; '+error.message);
+    }
+    await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
+    const originalMenu=await page.locator('.deal-type-card').elementHandle();
+    await page.setViewportSize({width:844,height:390});
+    assert.equal(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),false,'Landscape does not show portrait selector');
+    assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Same calculator menu restored to main in landscape');
+    assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu node is reused rather than replaced');
+    assert(!(await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Landscape restores configured title');
+    await page.setViewportSize({width:390,height:900});
+    await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').waitFor({state:'visible',timeout:10000});
+    assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>.hero>.deal-type-card')),'Same menu returns into header in portrait');
+    for(const narrowWidth of [320,375,390,430]){
+     await page.setViewportSize({width:narrowWidth,height:900});
+     const dimensions=await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').evaluate(el=>{
+       const green=el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect();
+       const shell=el.getBoundingClientRect(),header=el.closest('.hero').getBoundingClientRect();
+       return {left:green.left-shell.left,right:shell.right-green.right,
+        greenRight:green.right,limit:shell.right,headerHeight:header.height,
+        scrollWidth:document.documentElement.scrollWidth,screenWidth:document.documentElement.clientWidth};
+      });
+      assert(Math.abs(dimensions.left-dimensions.right)<1,'Even white padding at '+narrowWidth+'px');
+      assert(dimensions.greenRight<=dimensions.limit+1,'Picker fits shell at '+narrowWidth+'px');
+      assert(dimensions.scrollWidth<=dimensions.screenWidth+1,'No horizontal overflow at '+narrowWidth+'px');
+      assert(dimensions.headerHeight>0,'Header height retained at '+narrowWidth+'px');
+    }
    }
    await page.goto('http://localhost/fixflip-kalkulator/nebenkostenabrechnung/',{waitUntil:'networkidle'});
    const disclosure=page.locator('[data-nic-explanation] summary');

@@ -627,35 +627,34 @@ if not any("@media (min-width:1001px)" in rule and
            for rule in rules):
  raise SystemExit("Desktop acquisition-cost width rule is missing")
 
-# Mobile purchase-cost fields: Notar + Grundbuch first, Makler beim Kauf
-# second; each field spans the full available width. Do not change desktop.
-# The rental finance layout uses a two-column display:contents grid and
-# explicit order 5/6, so we preserve that order and override only its span.
+# Consistent full-width mobile purchase fees on all calculator routes:
+# Notar + Grundbuch precedes Makler beim Kauf; each fills one complete row.
+# Preserve desktop and the existing IDs, values, validation and calculations.
 rules.append("""
 @media (max-width:700px), (max-width:1000px) and (max-height:600px) and (orientation:landscape){
- body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentNotary),
- body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentBroker),
- body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(#budgetNotaryPct),
- body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(#budgetBuyBrokerPct){
+ body:not(.nic-admin) :is(#ownFinanceCard,#flipFinanceCard) .field:has(:is(#notary,#buyBroker)),
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)),
+ body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct)){
   grid-column:1/-1!important;
   width:100%!important;max-width:100%!important;min-width:0!important;
   box-sizing:border-box!important;
  }
- body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker))>.input-wrap,
+ body:not(.nic-admin) :is(#ownFinanceCard,#flipFinanceCard) .field:has(:is(#notary,#buyBroker))>.input-wrap,
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker))>.input-wrap,
  body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct))>.input-wrap{
   width:100%!important;max-width:100%!important;min-width:0!important;
   box-sizing:border-box!important;
  }
- body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)) input,
+ body:not(.nic-admin) :is(#ownFinanceCard,#flipFinanceCard) .field:has(:is(#notary,#buyBroker)) input,
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)) input,
  body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct)) input{
   width:100%!important;min-width:0!important;box-sizing:border-box!important;
  }
 }
 """)
-if not any(" #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentNotary)" in rule and
-           " #rentFinanceCard .nic-finance-mobile-fields .field:has(#rentBroker)" in rule and
+if not any(":is(#notary,#buyBroker)" in rule and ":is(#rentNotary,#rentBroker)" in rule and
            "grid-column:1/-1!important" in rule for rule in rules):
- raise SystemExit("Mobile Notar / Makler one-row-each rule missing")
+ raise SystemExit("Mobile Notar / Makler full-width rule missing")
 
 (site/'calculator-shell.css').write_text('/* Authoritative shell cascade for all five calculators. */\n'+'\n'.join(rules)+'\nbody:not(.nic-embed) .deal-type-row{grid-auto-rows:1fr!important;align-items:stretch!important}\nbody:not(.nic-embed) .deal-type-row>.deal-type-option{height:100%!important;min-height:78px!important}\n')
 print('Central calculator-shell.css:',len(rules),'shared rules; removed competing declarations')

@@ -92,14 +92,43 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Homepage overflows horizontally');
   await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
+  await page.waitForFunction(()=>window.NICCalculators?.active==='budget'&&document.body.dataset.calculator==='budget');
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
+  if(width<=700){
+   try{await page.locator('#nicMobileCalculatorSelect').waitFor({state:'visible',timeout:10000});}
+   catch(error){
+    const diagnostic=await page.evaluate(()=>{
+     const menu=document.querySelector('.deal-type-card'),picker=document.getElementById('nicMobileCalculatorSelect');
+     return {route:location.pathname,active:window.NICCalculators?.active,htmlCalculator:document.documentElement.dataset.calculator,
+      bodyCalculator:document.body.dataset.calculator,bodyClasses:document.body.className,
+      menuParent:menu?.parentElement?.className,menuClass:menu?.className,menuHidden:menu?.hidden,
+      menuDisplay:menu?getComputedStyle(menu).display:null,pickerFound:!!picker,pickerDisplay:picker?getComputedStyle(picker).display:null,
+      compactDisplay:picker?.parentElement?getComputedStyle(picker.parentElement).display:null,media:matchMedia('(max-width:700px) and (orientation:portrait)').matches};
+    });
+    throw new Error('Portrait menu not visible after route initialization: '+JSON.stringify(diagnostic)+'; '+error.message);
+   }
+  }
+  assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one shared calculator menu exists on the calculator route');
+  if(width<=700){
+   const picker=page.locator('#nicMobileCalculatorSelect');
+   assert.deepEqual(await picker.locator('option:not([disabled])').evaluateAll(nodes=>nodes.map(node=>node.value)),['budget','own','rent','flip','finance','settlement'],'Mieter-Abrechnung is the final selectable mobile option');
+   const corners=await picker.evaluate(el=>{const style=getComputedStyle(el);return [style.borderTopLeftRadius,style.borderTopRightRadius,style.borderBottomRightRadius,style.borderBottomLeftRadius].map(parseFloat);});
+   assert(corners.every(value=>value>0),'All four dropdown corners inherit a positive layout radius');
+  }
   assert.deepEqual(errors,[], 'Page initialization must complete without JavaScript errors');
   const origin=await page.evaluate(()=>performance.timeOrigin);
   assert.equal(await page.locator('script[src*="calculator-finance"]').count(),0,'Finance must use the shared controller bundle');
   assert.equal(await page.evaluate(()=>typeof window.NICFinanceModule),'undefined','No second finance bootstrap');
   for(const key of ['finance','own','rent','flip','budget','finance']){
-   await page.locator(`.deal-type-option[data-calculator="${key}"]`).click();
+   if(width<=700){
+    const picker=page.locator('#nicMobileCalculatorSelect');
+    assert(await picker.isVisible(),'Portrait dropdown must be visible before changing calculator');
+    await picker.selectOption(key);
+   }else{
+    await page.locator(`.deal-type-option[data-calculator="${key}"]`).click();
+   }
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
+   if(width<=700)assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),key,'Portrait dropdown reflects active calculator');
    const stickyGap=await page.locator('.nic-actions-above-footer').evaluate(el=>({position:getComputedStyle(el).position,bottom:getComputedStyle(el).bottom}));
    assert.equal(stickyGap.position,'sticky','Calculator action row remains sticky');
    assert.equal(stickyGap.bottom,'5px','Sticky calculator action row stays five pixels above the viewport edge');
@@ -109,7 +138,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(key==='finance')await page.waitForFunction(()=>{const host=document.getElementById('nicFinanceModule');return !host.shadowRoot&&!host.querySelector('input[placeholder],textarea[placeholder]')});
 
    if(key==='own'){
-    assert.equal(await page.locator('#heroTitle').innerText(),'Kannst Du Dir Dein Eigenheim leisten?');
+    assert.equal(await page.locator('#heroTitle').innerText(),width<=700?'Jetzt Eigenheim & Eigennutzung berechnen!':'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');
     assert((await page.locator('#nicOwnIntro').textContent()).includes('Hausgeld'),'House and apartment running costs explained');
     assert.equal(await page.locator('#result #kpiEquity').isVisible(),false,'Project-specific KPI is hidden in Eigenheim');
@@ -139,7 +168,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     for(const grid of grids){assert(grid.rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,grid}));if(grid.rows.length>1)assert(grid.rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,grid}));}
    }
 
-   if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes('Finanzierungsrechner'));}
+   if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes(width<=700?'Jetzt Finanzierung & Restschuld berechnen!':'Finanzierungsrechner'));}
    if(key==='rent'){
     const term=page.locator('.nic-abc-term', {hasText:'Nettokaltmiete pro Monat'}).first();
     await term.waitFor({state:'visible',timeout:10000});
@@ -176,7 +205,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
      return {inMain:host.parentElement.matches('.app>main.section'),menu:{left:menu.left,right:menu.right},cards,grids,hasShadow:!!host.shadowRoot};
     });
     assert(geometry.inMain&&!geometry.hasShadow,'Finance must use the shared main DOM and frame');
-    assert(geometry.cards.length>=2&&geometry.cards.every(card=>Math.abs(card.left-geometry.menu.left)<2&&Math.abs(card.right-geometry.menu.right)<2),'Finance cards must align with the shared calculator frame');
+    assert(geometry.cards.length>=2,'Financing content must include separate cards');
+    if(width>700)assert(geometry.cards.every(card=>Math.abs(card.left-geometry.menu.left)<2&&Math.abs(card.right-geometry.menu.right)<2),'Finance cards must align with the shared calculator frame');
+    else assert(geometry.cards.every(card=>card.right>card.left&&card.left>=0&&card.right<=width+1),'Financing cards must stay within the portrait viewport');
     for(let i=1;i<geometry.cards.length;i++)assert(geometry.cards[i].top>=geometry.cards[i-1].bottom-1,'Finance content cards must not overlap');
     for(const grid of geometry.grids){for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++){const a=grid[i],b=grid[j];const overlap=a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;assert(!overlap,'Finance result boxes must not overlap');}}
    }
@@ -260,6 +291,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   // Menu/content links use the same loaded application as calculator tiles.
   const sharedOrigin=await page.evaluate(()=>performance.timeOrigin);
   const headerNode=await page.locator('.app>.hero').elementHandle();
+  let subpageHeaderHeight=null;
   for(const slug of ['immobilien-abc','preise','warum-immocheck']){
    const menu=page.locator('.nic-brand-bar .nic-menu-toggle');
    if(await menu.isVisible())await menu.click();
@@ -282,7 +314,12 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
    assert(await page.locator(slug==='nebenkostenabrechnung'?'[data-nic-explanation=settlement]':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
-   assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes header height');
+   if(width<=700){
+    assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on '+slug);
+    assert(h>standardHeader.height,'Subpage header includes selector absent on homepage: '+slug);
+    if(subpageHeaderHeight===null)subpageHeaderHeight=h;
+    else assert(Math.abs(h-subpageHeaderHeight)<=1,'Information subpages retain equal header height: '+slug);
+   }else assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes desktop header height');
   }
   await page.goBack();await page.waitForURL('http://localhost/preise/');
   assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.headerTitle);
@@ -308,7 +345,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const header=await page.locator('.app>.hero').evaluate(el=>({height:el.getBoundingClientRect().height,background:getComputedStyle(el).backgroundImage,font:getComputedStyle(el.querySelector('h1')).fontFamily,size:getComputedStyle(el.querySelector('h1')).fontSize,logo:document.querySelector('.brand-logo').getBoundingClientRect().width}));
     for(const key of ['background','font','size','logo'])assert.equal(header[key],standardHeader[key],'Standard header '+key+' differs on '+routeName);
-    assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
+    if(width<=700){
+     assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on direct '+routeName);
+     assert(header.height>standardHeader.height,'Direct subpage includes selector absent on homepage: '+routeName);
+     if(subpageHeaderHeight!==null)assert(Math.abs(header.height-subpageHeaderHeight)<=1,'Direct and same-document informational header heights must match: '+routeName);
+    }else assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
 
    }else {
     const key=({'ueber-uns':'about','kontakt':'contact'})[routeName];

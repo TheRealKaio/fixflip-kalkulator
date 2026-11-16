@@ -196,6 +196,26 @@ const assert=require('node:assert/strict');
        'Tablet acquisition costs align with Notar + Grundbuch on '+slug+': '+JSON.stringify(tabletWidths));
      await page.setViewportSize({width,height:900});
     }
+    if(width===390&&['eigennutzung','fix-flip'].includes(slug)){
+     const fees=await page.evaluate(slug=>{
+      const card=document.querySelector(slug==='eigennutzung'?'#ownFinanceCard':'#flipFinanceCard');
+      const notary=card?.querySelector('.field:has(#notary)');
+      const broker=card?.querySelector('.field:has(#buyBroker)');
+      if(!notary||!broker)return {missing:true,notary:!!notary,broker:!!broker,card:!!card,
+       labels:[...(card?.querySelectorAll('.field')||[])].map(el=>({label:el.querySelector('label')?.textContent?.trim(),id:el.querySelector('input,select')?.id})).filter(x=>/Notar|Makler/i.test(x.label||''))};
+      const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,width:r.width};};
+      const ancestor=[notary.parentElement,...(function*(){let n=notary.parentElement;while(n&&n!==card){n=n.parentElement;if(n)yield n;}})()]
+       .find(el=>el&&getComputedStyle(el).display.includes('grid')&&el.getBoundingClientRect().width>0);
+      return {notary:rect(notary),broker:rect(broker),grid:ancestor?rect(ancestor):null,
+       fields:[notary,broker].map(el=>getComputedStyle(el).gridColumnEnd)};
+     },slug);
+     assert(fees&&!fees.missing&&fees.grid&&fees.notary.width>0&&fees.broker.width>0,
+      'Purchase fee fields visible: '+slug+' '+JSON.stringify(fees));
+     assert(fees.notary.top<fees.broker.top&&fees.notary.bottom<=fees.broker.top+1,
+      'Notar then Makler on separate mobile rows: '+slug+' '+JSON.stringify(fees));
+     assert(fees.notary.width>=fees.grid.width*.95&&fees.broker.width>=fees.grid.width*.95,
+      'Notar and Makler span entire mobile content width: '+slug+' '+JSON.stringify(fees));
+    }
     if(width===390&&slug==='vermietung'){
      const fields=await page.evaluate(()=>{
       const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
@@ -302,7 +322,7 @@ const assert=require('node:assert/strict');
     });
     assert(Math.abs(fields.interest.top-fields.repayment.top)<1,'Zins and Tilgung share the first mobile row');
     assert(fields.financed.top>fields.interest.top&&fields.duration.top>fields.financed.top,'Finanzierungsdauer folgt den Finanzierungsannahmen');
-    assert(fields.notary.top>fields.duration.top&&Math.abs(fields.notary.top-fields.buyBroker.top)<1,'Notar und Makler folgen auf die Laufzeit: '+JSON.stringify(fields));
+    assert(fields.notary.top>fields.duration.top&&fields.buyBroker.top>fields.notary.top&&Math.abs(fields.notary.width-fields.financed.width)<2&&Math.abs(fields.buyBroker.width-fields.financed.width)<2,'Notar vor Makler, jeweils volle eigene Zeile nach Laufzeit: '+JSON.stringify(fields));
     assert(Math.abs(fields.total.left-fields.row.left)<1&&Math.abs(fields.option.right-fields.row.right)<1,'Kaufnebenkosten und Mitfinanzieren füllen gemeinsam die vollständige Zeile');
     assert.equal(await page.locator('#buffer').inputValue(),'','Renovation buffer starts blank');
     if(slug==='eigennutzung')assert.equal(await page.locator('#months').inputValue(),'120','Financing duration starts at 120 months');
@@ -390,6 +410,19 @@ const assert=require('node:assert/strict');
    assert.equal(await page.locator('.hero').evaluate(el=>parseFloat(getComputedStyle(el).borderTopRightRadius)),0,'Header top-right corner must be square');
    assert.equal(await page.locator('.nic-brand-bar').evaluate(el=>parseFloat(getComputedStyle(el).borderTopLeftRadius)),0,'White header top-left corner must be square');
    assert.equal(await page.locator('.nic-brand-bar').evaluate(el=>parseFloat(getComputedStyle(el).borderTopRightRadius)),0,'White header top-right corner must be square');
+   if(width===390&&slug==='budget'){
+    await page.evaluate(()=>window.scrollTo(0,420));
+    await page.waitForFunction(()=>window.scrollY>200);
+    const sticky=await page.locator('#nicBrandBar').evaluate(el=>{
+     const r=el.getBoundingClientRect(),css=getComputedStyle(el);
+     const hero=document.querySelector('.app>.hero')?.getBoundingClientRect();
+     return {top:r.top,bottom:r.bottom,position:css.position,heroTop:hero?.top};
+    });
+    assert.equal(sticky.position,'sticky','Brand navigation is sticky on mobile');
+    assert(Math.abs(sticky.top)<2,'Brand navigation stays at top when scrolled: '+JSON.stringify(sticky));
+    assert(sticky.heroTop<0,'Large hero scrolls normally below sticky brand bar: '+JSON.stringify(sticky));
+    await page.evaluate(()=>window.scrollTo(0,0));
+   }
    assert.equal(await page.locator('.footer-note').evaluate(el=>parseFloat(getComputedStyle(el).borderBottomLeftRadius)),0,'Footer bottom-left corner must be square');
    assert.equal(await page.locator('.footer-note').evaluate(el=>parseFloat(getComputedStyle(el).borderBottomRightRadius)),0,'Footer bottom-right corner must be square');
    const reject=page.getByRole('button',{name:'Ablehnen',exact:true});if(await reject.isVisible())await reject.click();
@@ -741,10 +774,10 @@ const assert=require('node:assert/strict');
   await page.waitForFunction(()=>window.scrollY>100);
   const scroll=await page.evaluate(()=>window.scrollY);
   const moved=await page.locator('.nic-brand-bar').evaluate(el=>el.getBoundingClientRect().top);
-  assert(Math.abs(moved-(top-scroll))<2,'Admin header scrolls upward with the page');
+  assert(Math.abs(moved)<2,'Admin brand bar remains sticky at viewport top: '+JSON.stringify({top,moved,scroll}));
   assert.equal(await page.locator('#nicAdminFrame').count(),0,'No independent admin browsing context exists');
  }
- console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and scrolling header on desktop, portrait and landscape');
+ console.log('PASS admin single-page scrolling: all tabs, nonsticky save bar and sticky brand bar on desktop, portrait and landscape');
  await page.setViewportSize({width:1440,height:900});
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
