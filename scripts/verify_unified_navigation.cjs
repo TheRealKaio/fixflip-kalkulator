@@ -153,6 +153,13 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     await popup.locator('.nic-abc-context-close').click();
     assert.equal(await page.locator('.nic-abc-context-dialog').count(),0,'Info closes without navigation');
     assert.deepEqual(await page.evaluate(()=>({url:location.pathname,origin:performance.timeOrigin,inputs:document.querySelector('#rentInterest')?.value})),before,'ABC info preserves route, document and calculator values');
+    const factor=page.locator('#rentFactorKpi .nic-abc-term');
+    await factor.waitFor({state:'visible'});
+    assert.equal(await page.locator('#rentFactorKpi .rent-kpi-info').isVisible(),false,'Original Kaufpreisfaktor badge is replaced by contextual title');
+    await factor.click();
+    const factorText=await popup.innerText();
+    assert(factorText.includes('Einfach gesagt')&&factorText.includes('Gut zu wissen'),'Complete Kaufpreisfaktor help is still available');
+    await popup.locator('.nic-abc-context-close').click();
     const spacing=await page.evaluate(()=>['rentCashflowKpi','rentFactorKpi'].map(id=>{const card=document.getElementById(id);const info=card?.querySelector('.rent-kpi-info'),badge=card?.querySelector('.rent-kpi-rating');return {infoBottom:info?.getBoundingClientRect().bottom,badgeTop:badge?.getBoundingClientRect().top};}));
     for(const pair of spacing)if(pair.badgeTop!=null)assert(pair.infoBottom!=null&&pair.badgeTop>=pair.infoBottom+4,'Traffic badge has visible spacing below its info icon');
    }
