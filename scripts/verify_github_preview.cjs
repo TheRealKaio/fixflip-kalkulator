@@ -51,12 +51,22 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       const a=button.getBoundingClientRect(),b=dropdown.getBoundingClientRect();
       const controls=el.querySelector('.nic-mobile-calculator-controls');
       const style=getComputedStyle(controls);
-      const corners=[button,dropdown].map(node=>{const css=getComputedStyle(node);return [css.borderTopLeftRadius,css.borderTopRightRadius,css.borderBottomRightRadius,css.borderBottomLeftRadius].map(parseFloat);});
-      return {gap:b.left-a.right,expectedGap:parseFloat(style.columnGap),aligned:Math.abs(a.top-b.top)<1,selectRight:b.right,containerRight:el.getBoundingClientRect().right,corners};
+      const radiusOf=node=>{const css=getComputedStyle(node);return [css.borderTopLeftRadius,css.borderTopRightRadius,css.borderBottomRightRadius,css.borderBottomLeftRadius].map(parseFloat);};
+      const shellStyle=getComputedStyle(el);
+      return {gap:b.left-a.right,expectedGap:parseFloat(style.columnGap),aligned:Math.abs(a.top-b.top)<1,selectRight:b.right,containerRight:el.getBoundingClientRect().right,
+       corners:[button,dropdown].map(radiusOf),outerCorners:radiusOf(el),outerOverflow:shellStyle.overflow,outerBackground:shellStyle.backgroundColor};
      });
      assert(Math.abs(metrics.gap-metrics.expectedGap)<1&&metrics.aligned,'Separate rounded selector fields align with configured gap: '+slug+' '+JSON.stringify(metrics));
      const expectedCorner=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-menu-radius')));
+     assert(expectedCorner>0,'Admin menu radius must be positive in the published layout: '+slug);
      assert(metrics.corners.every(side=>side.every(value=>Math.abs(value-expectedCorner)<0.1)),'Both selector fields must use the actual published layout corner radius: '+slug+' '+JSON.stringify(metrics));
+     assert(metrics.outerCorners.every(value=>Math.abs(value-expectedCorner)<0.1),'The white OUTER shell must have all four Admin Layout menu corners: '+slug+' '+JSON.stringify(metrics));
+     assert.equal(metrics.outerOverflow,'hidden','The outer rounded shell must actually clip its rectangular background: '+slug);
+     assert.equal(metrics.outerBackground,'rgb(255, 255, 255)','Rounded shell retains white background: '+slug);
+     if(!calculatorIds.includes(currentId)&&currentId!=='settlement'){
+      assert.equal((await page.locator('#nicMobileCalculatorSelect option[value=""]').textContent()).trim(),'Bitte wählen','Information-page picker has a short, nonduplicated prompt: '+slug);
+      assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'','No calculator is falsely preselected: '+slug);
+     }
      assert.equal(await page.locator('#nicMobileCalculatorSelect').evaluate(el=>getComputedStyle(el).appearance),'none','Custom arrow and visible rounded select shape: '+slug);
      assert(metrics.selectRight<=metrics.containerRight+1,'Selector does not overflow: '+slug);
      assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),0,'Original menu moved into header: '+slug);
