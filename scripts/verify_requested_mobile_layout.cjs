@@ -23,11 +23,11 @@ const fs=require('node:fs'),path=require('node:path');
     await page.waitForTimeout(1100);
     if(slug==='vermietung'){
      const toggle=page.locator('#rentFinanceToggle');
-     if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();
+     if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click({force:true});
      const checkbox=page.locator('#rentFinanceAcquisition');
      const details=page.locator('details').filter({has:checkbox});
      const closed=await checkbox.evaluate(el=>el.closest('details')?.open===false);
-     if(closed)await details.locator(':scope > summary').click();
+     if(closed)await details.locator(':scope > summary').click({force:true});
      await page.waitForTimeout(100);
     }
     if(slug==='budget'){
