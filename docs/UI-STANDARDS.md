@@ -405,3 +405,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 ### Darlehensbetrag: Euro im Eingabefeld
 - Finanzierungsrechner: „Darlehensbetrag“ ohne (€) im Label; € als hellgraue `.input-wrap .unit` rechts im Eingabefeld. Einheit nutzt `--nic-hint-font-size`, Beschriftung einschließlich Glossarlink nutzt `--nic-body-font-size` wie andere Feldbeschriftungen.
+
+## Content-Editor: längere HTML-Inhalte und FAQ
+- Content-HTML unterstützt bis zu 100.000 Zeichen, mit sichtbarem Zähler. Die Normalisierung kürzt längere Inhalte nicht still, sondern meldet eine Überschreitung.
+- Content-Vorschau und öffentliche Inhalte verwenden denselben Filter für section/article, Klassen, IDs, ARIA sowie native details/summary-FAQ. Unbekannte harmlose Hüllen entfernen keine Texte; ausführbare Inhalte und Ereignisattribute bleiben ausgeschlossen.
+- Eingebettetes CSS wird geparst und auf die jeweilige Contentbox begrenzt. Imports und URL-Ladevorgänge werden nicht übernommen. Rechtstexte behalten ihren getrennten Filter.
+- Statisches HTML erhält Texte und FAQ-Struktur; CSS-Quelltext erscheint nicht als sichtbarer Text. Content-CSS wird beim Anwenden der Einstellungen lokal ergänzt.
+- Keine automatische Übernahme von Beispieltext in veröffentlichte Inhalte; nur develop.

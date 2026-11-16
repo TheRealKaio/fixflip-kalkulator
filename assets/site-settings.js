@@ -43,6 +43,75 @@
     const walker=document.createTreeWalker(tpl.content,4);let node;while((node=walker.nextNode()))node.textContent=node.textContent.replace(/{{\s*company\.(\w+)\s*}}/g,(token,k)=>Object.hasOwn(s.company,k)?s.company[k]:token);
     return tpl.content;
   }
+
+  const CONTENT_HTML_LIMIT=100000;
+  let contentScope=0;
+  function contentText(value){
+    if(typeof value!=='string')return '';
+    if(value.length>CONTENT_HTML_LIMIT)throw new Error('HTML-Inhalt zu lang: maximal '+CONTENT_HTML_LIMIT+' Zeichen. Der Text wurde nicht gekürzt.');
+    return value;
+  }
+  function contentFragment(html,s){
+    const tpl=document.createElement('template');tpl.innerHTML=html;
+    const css=[...tpl.content.querySelectorAll('style')].map(el=>el.textContent);
+    tpl.content.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form,input,button,textarea,select,svg,math,template').forEach(el=>el.remove());
+    const allowed=new Set('SECTION ARTICLE HEADER FOOTER MAIN ASIDE DETAILS SUMMARY H1 H2 H3 H4 H5 H6 P BR STRONG B EM I U S UL OL LI A BLOCKQUOTE HR DIV SPAN TABLE CAPTION THEAD TBODY TFOOT TR TH TD'.split(' '));
+    for(const el of [...tpl.content.querySelectorAll('*')]){
+      if(!allowed.has(el.tagName)){el.replaceWith(...el.childNodes);continue;}
+      const attrs=Object.fromEntries([...el.attributes].map(a=>[a.name,a.value]));
+      for(const attr of [...el.attributes])el.removeAttribute(attr.name);
+      for(const key of ['class','id','title','lang','dir','aria-label','aria-labelledby','aria-describedby','role'])if(attrs[key])el.setAttribute(key,attrs[key]);
+      if(el.tagName==='DETAILS'&&Object.hasOwn(attrs,'open'))el.open=true;
+      if(['TH','TD'].includes(el.tagName))for(const key of ['colspan','rowspan'])if(/^[1-9]\d?$/.test(attrs[key]||''))el.setAttribute(key,attrs[key]);
+      if(el.tagName==='A'&&attrs.href){
+        const href=attrs.href.replace(/{{\s*company\.(\w+)\s*}}/g,(_,k)=>s.company[k]||'');
+        try{const url=new URL(href.startsWith('/')&&!href.startsWith('//')&&!href.startsWith(ROOT.pathname)?href.slice(1):href,ROOT);
+          if(['https:','http:','mailto:','tel:'].includes(url.protocol)){el.href=url.href;el.rel='noopener noreferrer';}
+        }catch(_){}
+      }
+    }
+    const walker=document.createTreeWalker(tpl.content,4);let node;
+    while((node=walker.nextNode()))node.textContent=node.textContent.replace(/{{\s*company\.(\w+)\s*}}/g,(token,k)=>Object.hasOwn(s.company,k)?s.company[k]:token);
+    if(css.length){
+      const wrapper=document.createElement('div');wrapper.className='nic-html-content';
+      const scope='nic-content-'+(++contentScope);wrapper.dataset.nicHtmlScope=scope;
+      const prefix='[data-nic-html-scope="'+scope+'"]';
+      function selectors(source){
+        const result=[];let begin=0,depth=0,quote='';
+        for(let i=0;i<source.length;i++){
+          const ch=source[i];if(ch==='\\'){i++;continue;}
+          if(quote){if(ch===quote)quote='';continue;}
+          if(ch==='"'||ch==="'"){quote=ch;continue;}
+          if(ch==='('||ch==='[')depth++;
+          if(ch===')'||ch===']')depth--;
+          if(ch===','&&!depth){result.push(source.slice(begin,i));begin=i+1;}
+        }
+        result.push(source.slice(begin));return result.map(x=>prefix+' '+x.trim()).join(',');
+      }
+      function rules(items){
+        let out='';
+        for(const rule of items){
+          if(rule.type===1){
+            let declarations='';
+            for(let i=0;i<rule.style.length;i++){
+              const property=rule.style[i],value=rule.style.getPropertyValue(property);
+              if(/url\s*\(|expression\s*\(|@import|\\|[<>]/i.test(value))continue;
+              declarations+=property+':'+value+(rule.style.getPropertyPriority(property)?' !important':'')+';';
+            }
+            out+=selectors(rule.selectorText)+'{'+declarations+'}';
+          }else if(rule.type===4||rule.type===12)out+=(rule.type===4?'@media ':'@supports ')+rule.conditionText+'{'+rules(rule.cssRules)+'}';
+        }
+        return out;
+      }
+      try{
+        const sheet=new CSSStyleSheet();sheet.replaceSync(css.join('\n'));
+        const style=document.createElement('style');style.textContent=rules(sheet.cssRules);wrapper.append(style);
+      }catch(error){console.warn('Content-CSS konnte nicht übernommen werden:',error.message);}
+      wrapper.append(tpl.content);tpl.content.append(wrapper);
+    }
+    return tpl.content;
+  }
+
   const imageAltDefaults={websiteLogo:'Neustart ImmoCheck – Immobilien-Kalkulatoren',favicon:'Haus-Symbol von Neustart ImmoCheck',appleTouchIcon:'Neustart ImmoCheck – Haus-Symbol',sharing:'Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden.'};
   const portals=[['instagram','Instagram'],['facebook','Facebook'],['youtube','YouTube'],['linkedin','LinkedIn'],['tiktok','TikTok'],['pinterest','Pinterest'],['x','X'],['threads','Threads'],['xing','XING'],['whatsapp','WhatsApp']];
   const pages=[['website','Webseite',''],['company','Unternehmen','unternehmen/'],['budget','Budget','budget/'],['own','Eigennutzung','eigennutzung/'],['rent','Vermietung','vermietung/'],['flip','Fix & Flip','fix-flip/'],['finance','Finanzierungsrechner','finanzierungsrechner/']];
@@ -60,7 +129,7 @@
   function normalize(raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1)throw new Error('Ungültiges Konfigurationsformat (Version 1 erforderlich).');
     const s={version:1,company:{},layout:{},social:{},content:{},favicon:validFavicon(raw.favicon),websiteLogo:validFavicon(raw.websiteLogo),appleTouchIcon:typeof raw.appleTouchIcon==='string' && raw.appleTouchIcon.length<=400000 && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(raw.appleTouchIcon)?raw.appleTouchIcon:'',meta:{immobilienABC:typeof raw.meta?.immobilienABC==='string'&&raw.meta.immobilienABC.length<=200000?raw.meta.immobilienABC:''},reporting:{},sharing:{text:text(raw.sharing?.text??'Immobilien verstehen. Sicherer entscheiden.',160),image:validFavicon(raw.sharing?.image)}};
-    for(const [key,defaults] of Object.entries(contentPageDefaults)){const value=(raw.content||raw.meta?.content)?.[key]||{};s.content[key]={title:text(value.title,240)||defaults.title,description:text(value.description,12000)||defaults.description,seoTitle:text(value.seoTitle,200)||defaults.seoTitle,metaDescription:text(value.metaDescription,500)||defaults.metaDescription,headerTitle:text(value.headerTitle??published?.content?.[key]?.headerTitle??defaults.headerTitle??'',70),headerDescription:text(value.headerDescription??published?.content?.[key]?.headerDescription??defaults.headerDescription??'',90),noindex:key==='login'?true:!!defaults.noindex};if(key==='settlement'){s.content[key].boxTitle=text(value.boxTitle,240)||defaults.boxTitle;if(value.description&&!value.boxTitle)s.content[key].description=value.description===legacySettlementDescription?defaults.description:value.description+defaults.description.replace(/^<p>[\s\S]*?<\/p>/,'');}}
+    for(const [key,defaults] of Object.entries(contentPageDefaults)){const value=(raw.content||raw.meta?.content)?.[key]||{};s.content[key]={title:text(value.title,240)||defaults.title,description:contentText(value.description)||defaults.description,seoTitle:text(value.seoTitle,200)||defaults.seoTitle,metaDescription:text(value.metaDescription,500)||defaults.metaDescription,headerTitle:text(value.headerTitle??published?.content?.[key]?.headerTitle??defaults.headerTitle??'',70),headerDescription:text(value.headerDescription??published?.content?.[key]?.headerDescription??defaults.headerDescription??'',90),noindex:key==='login'?true:!!defaults.noindex};if(key==='settlement'){s.content[key].boxTitle=text(value.boxTitle,240)||defaults.boxTitle;if(value.description&&!value.boxTitle)s.content[key].description=value.description===legacySettlementDescription?defaults.description:value.description+defaults.description.replace(/^<p>[\s\S]*?<\/p>/,'');}}
     companyFields.forEach(([k])=>s.company[k]=text(raw.company?.[k]));
     s.company.website=websiteUrl(raw.company?.website);
     for(const key of ['postalCode','city'])s.company[key]=s.company[key].replace(/\s+/g,' ');
@@ -270,7 +339,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,homeFields,contentPageDefaults,legalLabels,legalSource,legalIssues,legalFragment,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,useFallback,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,homeFields,contentPageDefaults,legalLabels,legalSource,legalIssues,legalFragment,contentFragment,CONTENT_HTML_LIMIT,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,useFallback,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}

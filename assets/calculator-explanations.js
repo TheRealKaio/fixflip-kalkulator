@@ -10,7 +10,7 @@ window.NICExplanations=(()=>{
   const holder=document.createElement('template');holder.innerHTML=explanationTemplates[key];
   const card=holder.content.firstElementChild;
   card.querySelector('h2').textContent=content.boxTitle||content.title;
-  const body=window.NICSettings.legalFragment(content.description,settings);
+  const body=window.NICSettings.contentFragment(content.description,settings);
   let intro=body.querySelector('p');
   if(intro)intro.remove();else{intro=document.createElement('p');intro.textContent=body.textContent;body.replaceChildren();}
   intro.classList.add('nic-explanation-intro');
