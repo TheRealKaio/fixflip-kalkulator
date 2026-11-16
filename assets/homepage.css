@@ -64,7 +64,7 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
   white-space:nowrap;cursor:pointer;
  }
  .nic-mobile-calculator-label span{font-size:1.3em;font-weight:500}
- #nicMobileCalculatorSelect{
+ .nic-mobile-calculator-select{
   flex:1 1 auto;width:0;min-width:0;min-height:44px;margin:0;
   padding:0 22px 0 10px;
   border:1px solid #d9e2dc;border-left:0;
