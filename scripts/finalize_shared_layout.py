@@ -632,24 +632,27 @@ if not any("@media (min-width:1001px)" in rule and
 # Preserve desktop and the existing IDs, values, validation and calculations.
 rules.append("""
 @media (max-width:700px), (max-width:1000px) and (max-height:600px) and (orientation:landscape){
- body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#notary,#broker,#rentNotary,#rentBroker)),
+ body:not(.nic-admin) :is(#ownFinanceCard,#flipFinanceCard) .field:has(:is(#notary,#broker)),
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)),
  body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct)){
   grid-column:1/-1!important;
   width:100%!important;max-width:100%!important;min-width:0!important;
   box-sizing:border-box!important;
  }
- body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#notary,#broker,#rentNotary,#rentBroker))>.input-wrap,
+ body:not(.nic-admin) :is(#ownFinanceCard,#flipFinanceCard) .field:has(:is(#notary,#broker))>.input-wrap,
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker))>.input-wrap,
  body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct))>.input-wrap{
   width:100%!important;max-width:100%!important;min-width:0!important;
   box-sizing:border-box!important;
  }
- body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#notary,#broker,#rentNotary,#rentBroker)) input,
+ body:not(.nic-admin) :is(#ownFinanceCard,#flipFinanceCard) .field:has(:is(#notary,#broker)) input,
+ body:not(.nic-admin) .nic-finance-mobile-fields .field:has(:is(#rentNotary,#rentBroker)) input,
  body:not(.nic-admin) #budgetAssumptionsBody .budget-grid.three>.field:has(:is(#budgetNotaryPct,#budgetBuyBrokerPct)) input{
   width:100%!important;min-width:0!important;box-sizing:border-box!important;
  }
 }
 """)
-if not any(":is(#notary,#broker,#rentNotary,#rentBroker)" in rule and
+if not any(":is(#notary,#broker)" in rule and ":is(#rentNotary,#rentBroker)" in rule and
            "grid-column:1/-1!important" in rule for rule in rules):
  raise SystemExit("Mobile Notar / Makler full-width rule missing")
 
