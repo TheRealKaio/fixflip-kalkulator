@@ -196,6 +196,24 @@ const assert=require('node:assert/strict');
        'Tablet acquisition costs align with Notar + Grundbuch on '+slug+': '+JSON.stringify(tabletWidths));
      await page.setViewportSize({width,height:900});
     }
+    if(width===390&&['eigennutzung','fix-flip'].includes(slug)){
+     const fees=await page.evaluate(slug=>{
+      const card=document.querySelector(slug==='eigennutzung'?'#ownFinanceCard':'#flipFinanceCard');
+      const notary=card?.querySelector('.field:has(#notary)');
+      const broker=card?.querySelector('.field:has(#broker)');
+      const grid=card?.querySelector('.nic-finance-mobile-fields');
+      if(!notary||!broker||!grid)return null;
+      const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,width:r.width};};
+      return {notary:rect(notary),broker:rect(broker),grid:rect(grid),
+       fields:[notary,broker].map(el=>getComputedStyle(el).gridColumnEnd)};
+     },slug);
+     assert(fees&&fees.notary.width>0&&fees.broker.width>0,
+      'Purchase fee fields visible: '+slug+' '+JSON.stringify(fees));
+     assert(fees.notary.top<fees.broker.top&&fees.notary.bottom<=fees.broker.top+1,
+      'Notar then Makler on separate mobile rows: '+slug+' '+JSON.stringify(fees));
+     assert(fees.notary.width>=fees.grid.width*.95&&fees.broker.width>=fees.grid.width*.95,
+      'Notar and Makler span entire mobile content width: '+slug+' '+JSON.stringify(fees));
+    }
     if(width===390&&slug==='vermietung'){
      const fields=await page.evaluate(()=>{
       const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
