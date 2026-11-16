@@ -11,6 +11,8 @@ labels = [
     ("Dein monatlich verfügbares Budget", "3. Dein monatlich verfügbares Budget"),
     ("Wieviel Haus kann ich mir leisten?", "4. Wieviel Haus kann ich mir leisten?"),
     ("Wo geht das Geld hin?", "5. Wo geht das Geld hin?"),
+    ("Monatliche Tilgung- und Restschuld", "5. Monatliche Tilgung- und Restschuld"),
+    ("Szenario - Was wäre wenn?", "6. Szenario - Was wäre wenn?"),
 ]
 for original, desired in labels:
     # Change only heading content; avoid copies in SEO text and PDF.
