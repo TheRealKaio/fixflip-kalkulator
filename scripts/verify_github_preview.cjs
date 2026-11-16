@@ -71,11 +71,15 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.match(await page.locator('#heroTitle').innerText(),/Jetzt Finanzierung & Restschuld berechnen!/);
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
+    const originalMenu=await page.locator('.deal-type-card').elementHandle();
     await page.setViewportSize({width:844,height:390});
     assert.equal(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),false,'Landscape does not show portrait selector');
+    assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Same calculator menu restored to main in landscape');
+    assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu node is reused rather than replaced');
     assert(!(await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Landscape restores configured title');
     await page.setViewportSize({width:390,height:900});
     assert(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),'Portrait selection restored on rotate');
+    assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>.hero>.deal-type-card')),'Same menu returns into header in portrait');
     for(const narrowWidth of [320,375,390,430]){
      await page.setViewportSize({width:narrowWidth,height:900});
      const dimensions=await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').evaluate(el=>{
