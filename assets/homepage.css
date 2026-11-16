@@ -14,7 +14,7 @@ body.nic-home-active #nic-home-intro.nic-home-intro{display:flex;flex-direction:
 #nic-home-intro .nic-home-planning>.nic-home-options{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 #nic-home-intro .nic-home-property>.nic-home-options{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 #nic-home-intro .nic-home-options>.deal-type-option{width:100%;text-decoration:none;grid-column:auto!important}
-#nic-home-intro .nic-home-copy{flex:1;padding:18px;border-radius:var(--nic-brand-radius,22px)}
+#nic-home-intro .nic-home-copy{flex:0 0 auto;padding:18px;border-radius:var(--nic-brand-radius,22px)}
 #nic-home-intro .nic-home-copy>h2{margin:0 0 16px}
 #nic-home-intro .nic-home-group>h2{margin:0 0 16px}
 #nic-home-intro .nic-eyebrow{margin:0 0 8px;color:var(--nic-green-bg,#075c55)}
