@@ -186,6 +186,11 @@ function initResponsiveCalculatorMenu(){
   option.textContent=item.id==='finance'?'Finanzierung & Restschuld':item.label;
   picker.append(option);
  }
+ // The Mieter-Abrechnung is an existing content route, not a sixth calculator.
+ const settlementOption=document.createElement('option');
+ settlementOption.value='settlement';
+ settlementOption.textContent='Mieter-Abrechnung';
+ picker.append(settlementOption);
  const compact=document.createElement('div');
  compact.className='nic-mobile-calculator-controls';
  compact.append(label,picker);
