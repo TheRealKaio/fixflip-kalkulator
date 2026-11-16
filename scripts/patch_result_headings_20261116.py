@@ -86,101 +86,46 @@ style = """
 """
 s=s.replace("</style>",style+"</style>",1)
 
-# The Fix & Flip decision is a dynamic traffic-light. Keep its calculations but
-# replace the decision presentation with a permanent neutral H2 on that route.
-# This also handles subsequent re-renders when amounts are changed.
-flip_script = r"""
-<script id="nic-neutral-flip-result-heading">
+# Result headings are owned by the active shared route, never by a verdict.
+result_script = r"""
+<script id="nic-numbered-result-headings">
 (function(){
-  'use strict';
-  function isFlip(){
-    return document.body.dataset.calculator === 'flip'
-      || /\/fix-flip\/?$/.test(location.pathname)
-      || (document.getElementById('flipSection') && !document.getElementById('flipSection').hidden
-          && getComputedStyle(document.getElementById('flipSection')).display!=='none');
+ 'use strict';
+ let queued=false;
+ function update(){
+  const key=window.NICCalculators?.active||document.documentElement.dataset.calculator||document.body.dataset.calculator;
+  const titles={own:'4. Ergebnis Eigennutzung',rent:'4. Ergebnis Vermietung',flip:'4. Ergebnis Fix und Flip'};
+  if(!titles[key])return;
+  const main=document.querySelector('.app>main.section')||document.querySelector('main');
+  if(!main)return;
+  const box=key==='rent'?main.querySelector('#rentDecision'):main.querySelector('.decision:not(.budget-financing-decision):not(#rentDecision)');
+  if(!box)return;
+  const heading=box.querySelector('h2');
+  if(!heading)return;
+  if(heading.textContent!==titles[key])heading.textContent=titles[key];
+  heading.style.setProperty('color','#111827','important');
+  heading.style.setProperty('text-align','left','important');
+  heading.style.setProperty('font-size','var(--nic-h2-font-size,25px)','important');
+  box.style.setProperty('display','block','important');
+  box.removeAttribute('aria-hidden');
+  for(const icon of box.querySelectorAll('.light'))icon.style.setProperty('display','none','important');
+  if(key==='own'){
+   for(const title of main.querySelectorAll('h2'))if(/^(?:2\.\s*)?Kaufpreis-Check$/.test(title.textContent.trim())&&title.textContent!=='2. Kaufpreis-Check')title.textContent='2. Kaufpreis-Check';
   }
-  function update(){
-    if(!isFlip()) return;
-    const decisions=[...document.querySelectorAll('.decision')];
-    const decision=decisions.find(el=>/Noch verhandeln oder prüfen|Ziel-Gewinn|Ziel-Marge|Deal prüfen|Gewinnziel/i.test(el.textContent||''))
-      || decisions.find(el=>el.parentElement && /Gewinn|Marge/.test(el.parentElement.textContent||''));
-    if(!decision) return;
-    if(!decision.previousElementSibling?.matches('[data-nic-flip-result-heading]')){
-      const title=document.createElement('h2');
-      title.dataset.nicFlipResultHeading='true';
-      title.textContent='4. Ergebnis Fix und Flip';
-      title.style.cssText='color:#111827;text-align:left;margin:0 0 12px;font-size:var(--nic-h2-font-size,25px);font-weight:700;';
-      decision.insertAdjacentElement('beforebegin',title);
-    }
-    decision.style.setProperty('display','none','important');
-    decision.setAttribute('aria-hidden','true');
-  }
-  let scheduled=false;
-  function schedule(){
-    if(scheduled) return;
-    scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;update();});
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{
-    update();
-    new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
-  },{once:true});
-  else {
-    update();
-    new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
-  }
+ }
+ function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;update();});}
+ function init(){
+  update();
+  new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
+  window.addEventListener('nic-calculator-changed',schedule);
+  window.addEventListener('nic-route-changed',schedule);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
 """
-if 'nic-neutral-flip-result-heading' not in s:
-    s = s.replace('</body>', flip_script + '</body>', 1)
-
-# Rental decision headlines are rendered dynamically (not static H2 markup).
-# Normalize the title whenever the result recalculates, retaining its explanation.
-rental_headline_script = r"""
-<script id="nic-rental-neutral-result-title">
-(function(){
-  'use strict';
-  const title='4. Ergebnis Vermietung';
-  const old=/^(?:Negativer|Positiver|Neutraler)\s+monatlicher\s+Cashflow$/i;
-  function normalize(){
-    if(!(/\/vermietung\/?$/.test(location.pathname)))return;
-    for(const box of document.querySelectorAll('.decision')){
-      const candidates=[...box.querySelectorAll('h2,h3,h4,strong,b,span,div')];
-      const el=candidates.find(n=>n.children.length===0 && old.test((n.textContent||'').trim()))
-        || candidates.find(n=>old.test((n.textContent||'').trim()));
-      if(!el)continue;
-      if(el.textContent.trim()!==title)el.textContent=title;
-      el.style.setProperty('color','#111827','important');
-      el.style.setProperty('text-align','left','important');
-      el.style.setProperty('font-size','var(--nic-h2-font-size,25px)','important');
-      el.style.setProperty('font-weight','700','important');
-      for(const icon of box.querySelectorAll('.light,[aria-hidden="true"]')){
-        icon.style.setProperty('display','none','important');
-      }
-      box.style.setProperty('background','transparent','important');
-      box.style.setProperty('border','0','important');
-      box.style.setProperty('box-shadow','none','important');
-      box.style.setProperty('text-align','left','important');
-    }
-  }
-  let queued=false;
-  function schedule(){
-    if(queued)return;
-    queued=true;
-    requestAnimationFrame(()=>{queued=false;normalize();});
-  }
-  function init(){
-    normalize();
-    new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
-})();
-</script>
-"""
-if 'nic-rental-neutral-result-title' not in s:
-    s=s.replace('</body>',rental_headline_script+'</body>',1)
+s=re.sub(r'<script id="nic-(?:neutral-flip-result-heading|rental-neutral-result-title|numbered-result-headings)">.*?</script>', '',s,flags=re.S)
+s=s.replace('</body>',result_script+'</body>',1)
 
 path.write_text(s,encoding="utf-8")
 print("Preview heading and input-alignment pass applied")
