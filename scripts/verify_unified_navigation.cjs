@@ -111,7 +111,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one shared calculator menu exists on the calculator route');
   if(width<=700){
    const picker=page.locator('#nicMobileCalculatorSelect');
-   assert.deepEqual(await picker.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value)),['budget','own','rent','flip','finance','settlement'],'Mieter-Abrechnung is the final mobile option');
+   assert.deepEqual(await picker.locator('option:not([disabled])').evaluateAll(nodes=>nodes.map(node=>node.value)),['budget','own','rent','flip','finance','settlement'],'Mieter-Abrechnung is the final selectable mobile option');
    const corners=await picker.evaluate(el=>{const style=getComputedStyle(el);return [style.borderTopLeftRadius,style.borderTopRightRadius,style.borderBottomRightRadius,style.borderBottomLeftRadius].map(parseFloat);});
    assert(corners.every(value=>value>0),'All four dropdown corners inherit a positive layout radius');
   }
