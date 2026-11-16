@@ -45,7 +45,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     if(portrait&&!isHomepage){
      assert(await chooser.isVisible(),'Portrait selector shown for '+slug);
      if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
-     else assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'','Information route must not misrepresent its active calculator: '+slug);
+     else assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Information route defaults to Budget: '+slug);
      const metrics=await chooser.evaluate(el=>{
       const button=el.querySelector('.nic-mobile-calculator-label'),dropdown=el.querySelector('.nic-mobile-calculator-select');
       const a=button.getBoundingClientRect(),b=dropdown.getBoundingClientRect();
@@ -61,11 +61,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      assert(expectedCorner>0,'Admin menu radius must be positive in the published layout: '+slug);
      assert(metrics.corners.every(side=>side.every(value=>Math.abs(value-expectedCorner)<0.1)),'Both selector fields must use the actual published layout corner radius: '+slug+' '+JSON.stringify(metrics));
      assert(metrics.outerCorners.every(value=>Math.abs(value-expectedCorner)<0.1),'The white OUTER shell must have all four Admin Layout menu corners: '+slug+' '+JSON.stringify(metrics));
+     assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'Dropdown has no placeholder: '+slug);
      assert.equal(metrics.outerOverflow,'hidden','The outer rounded shell must actually clip its rectangular background: '+slug);
      assert.equal(metrics.outerBackground,'rgb(255, 255, 255)','Rounded shell retains white background: '+slug);
      if(!calculatorIds.includes(currentId)&&currentId!=='settlement'){
-      assert.equal((await page.locator('#nicMobileCalculatorSelect option[value=""]').textContent()).trim(),'Bitte wählen','Information-page picker has a short, nonduplicated prompt: '+slug);
-      assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'','No calculator is falsely preselected: '+slug);
+      assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder entry: '+slug);
+      assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Budget is preselected on informational pages: '+slug);
      }
      assert.equal(await page.locator('#nicMobileCalculatorSelect').evaluate(el=>getComputedStyle(el).appearance),'none','Custom arrow and visible rounded select shape: '+slug);
      assert(metrics.selectRight<=metrics.containerRight+1,'Selector does not overflow: '+slug);
