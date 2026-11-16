@@ -220,6 +220,9 @@ function initResponsiveCalculatorMenu(){
  const trigger=document.createElement('button');
  trigger.type='button';trigger.id='nicMobileCalculatorTrigger';
  trigger.className='nic-mobile-calculator-trigger';
+ // Admin layout rules may apply a later !important button font size.
+ // Inline important keeps this control bound to the live Untertexte (px) variable.
+ trigger.style.setProperty('font-size','var(--nic-subtext-font-size,14px)','important');
  trigger.setAttribute('aria-label','Rechner auswählen');
  trigger.setAttribute('aria-expanded','false');
  trigger.setAttribute('aria-controls','nicMobileCalculatorOptions');
@@ -240,6 +243,7 @@ function initResponsiveCalculatorMenu(){
  for(const option of picker.options){
   const row=document.createElement('button');row.type='button';
   row.className='nic-mobile-calculator-option';row.dataset.value=option.value;
+  row.style.setProperty('font-size','var(--nic-subtext-font-size,14px)','important');
   row.setAttribute('role','option');
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');
