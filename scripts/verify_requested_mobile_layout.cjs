@@ -50,6 +50,22 @@ const fs=require('node:fs'),path=require('node:path');
      function assertInput(el,name){if(!el)throw Error('Missing input '+name)}
     }),ids);
     const [notary,broker]=sizes;
+    if(slug==='budget'&&notary.width===0&&broker.width===0){
+     // The Budget financing section starts collapsed. Its responsive grid
+     // styles are still computable without altering the calculator's state.
+     const configured=await page.evaluate(ids=>{
+      const inputs=ids.map(id=>document.getElementById(id));
+      const fields=inputs.map(el=>el.closest('.field'));
+      const body=document.querySelector('#budgetAssumptionsBody');
+      return {ordered:!!(fields[0].compareDocumentPosition(fields[1])&Node.DOCUMENT_POSITION_FOLLOWING),
+       inSection:fields.every(el=>body?.contains(el)),
+       spans:fields.map(el=>getComputedStyle(el).gridColumnEnd)};
+     },ids);
+     assert(configured.ordered&&configured.inSection&&configured.spans.every(x=>x==='-1'),
+      'Collapsed Budget purchase fields must retain correct full-width CSS and order: '+JSON.stringify(configured));
+     console.log('PASS collapsed budget full-width CSS and DOM order',width,JSON.stringify(configured));
+     continue;
+    }
     assert(notary.top<broker.top,slug+': Notar must be first '+JSON.stringify(sizes));
     assert(notary.bottom<=broker.top+1,slug+': fields must not share a line '+JSON.stringify(sizes));
     for(const x of sizes){
