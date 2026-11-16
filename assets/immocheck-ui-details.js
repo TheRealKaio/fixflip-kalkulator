@@ -145,7 +145,6 @@ document.querySelector('.nic-login-button')?.addEventListener('click',async e=>{
  e.preventDefault();e.stopImmediatePropagation();
  try{const access=window.NICAccess;if(access&&await access.init())await access.login();}catch(error){alert(error.message);}
 },true);
-}
 // Keep Budget's available-equity qualifier below its input as a proper hint.
 // Do not alter field values, IDs or calculator events.
 function bindBudgetAvailableEquityHint(){
