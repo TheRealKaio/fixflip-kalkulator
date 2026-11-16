@@ -134,5 +134,11 @@ flip_script = r"""
 """
 if 'nic-neutral-flip-result-heading' not in s:
     s = s.replace('</body>', flip_script + '</body>', 1)
+# Temporary diagnostic of the generated rental result to locate its actual DOM anchor.
+for phrase in ('function renderDecision(', 'Negativer monatlicher Cashflow', 'rentDecision'):
+    pos=s.find(phrase)
+    print("RENTAL_DIAG", phrase, "matches", s.count(phrase))
+    if pos>=0:
+        print("RENTAL_DIAG_SNIPPET",repr(s[max(0,pos-450):pos+1400]))
 path.write_text(s,encoding="utf-8")
 print("Preview heading and input-alignment pass applied")
