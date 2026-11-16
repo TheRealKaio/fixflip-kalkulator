@@ -15,7 +15,7 @@ labels = [
 for original, desired in labels:
     # Change only heading content; avoid copies in SEO text and PDF.
     pattern = r"(<h[1-4]\b[^>]*>\s*)" + re.escape(original) + r"(\s*</h[1-4]>)"
-    s, changed = re.subn(pattern, lambda m: m[1] + desired + m[2], s, count=1)
+    s, changed = re.subn(pattern, lambda m: m[1] + desired + m[2], s)
     if not changed:
         print("Heading not found in h1-h4:", original)
 
@@ -83,5 +83,54 @@ style = """
 }
 """
 s=s.replace("</style>",style+"</style>",1)
+
+# The Fix & Flip decision is a dynamic traffic-light. Keep its calculations but
+# replace the decision presentation with a permanent neutral H2 on that route.
+# This also handles subsequent re-renders when amounts are changed.
+flip_script = r"""
+<script id="nic-neutral-flip-result-heading">
+(function(){
+  'use strict';
+  function isFlip(){
+    return document.body.dataset.calculator === 'flip'
+      || /\\/fix-flip\\/?$/.test(location.pathname)
+      || (document.getElementById('flipSection') && !document.getElementById('flipSection').hidden
+          && getComputedStyle(document.getElementById('flipSection')).display!=='none');
+  }
+  function update(){
+    if(!isFlip()) return;
+    const decisions=[...document.querySelectorAll('.decision')];
+    const decision=decisions.find(el=>/Noch verhandeln oder prüfen|Ziel-Gewinn|Ziel-Marge|Deal prüfen|Gewinnziel/i.test(el.textContent||''))
+      || decisions.find(el=>el.parentElement && /Gewinn|Marge/.test(el.parentElement.textContent||''));
+    if(!decision) return;
+    if(!decision.previousElementSibling?.matches('[data-nic-flip-result-heading]')){
+      const title=document.createElement('h2');
+      title.dataset.nicFlipResultHeading='true';
+      title.textContent='4. Ergebnis Fix und Flip';
+      title.style.cssText='color:#111827;text-align:left;margin:0 0 12px;font-size:var(--nic-h2-font-size,25px);font-weight:700;';
+      decision.insertAdjacentElement('beforebegin',title);
+    }
+    decision.style.setProperty('display','none','important');
+    decision.setAttribute('aria-hidden','true');
+  }
+  let scheduled=false;
+  function schedule(){
+    if(scheduled) return;
+    scheduled=true;
+    requestAnimationFrame(()=>{scheduled=false;update();});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{
+    update();
+    new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
+  },{once:true});
+  else {
+    update();
+    new MutationObserver(schedule).observe(document.querySelector('main')||document.body,{subtree:true,childList:true,characterData:true});
+  }
+})();
+</script>
+"""
+if 'nic-neutral-flip-result-heading' not in s:
+    s = s.replace('</body>', flip_script + '</body>', 1)
 path.write_text(s,encoding="utf-8")
 print("Preview heading and input-alignment pass applied")
