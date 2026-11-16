@@ -58,7 +58,8 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
   height:auto!important;min-height:0!important;
   margin:0!important;padding:8px 12px 12px!important;
   background:#fff!important;border:0!important;box-shadow:none!important;
-  border-radius:0!important;overflow:visible!important;
+  /* The white outer shell must use the Admin > Layout menu radius too. */
+  border-radius:var(--nic-menu-radius,16px)!important;overflow:hidden!important;
  }
  .nic-portrait-calculator-menu>.deal-type-title,
  .nic-portrait-calculator-menu>.deal-type-row{display:none!important}
