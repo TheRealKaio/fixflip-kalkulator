@@ -191,13 +191,25 @@ function initResponsiveCalculatorMenu(){
  settlementOption.value='settlement';
  settlementOption.textContent='Mieter-Abrechnung';
  picker.append(settlementOption);
+ // Non-calculator pages need a neutral prompt, not a false active calculator.
+ const placeholder=document.createElement('option');
+ placeholder.value='';
+ placeholder.textContent='Rechner auswählen';
+ placeholder.disabled=true;
+ placeholder.hidden=true;
+ picker.prepend(placeholder);
  const compact=document.createElement('div');
  compact.className='nic-mobile-calculator-controls';
  compact.append(label,picker);
  menu.append(compact);
  function sync(){
-  const key=document.documentElement.dataset.calculator||active;
-  const compactMode=portraitQuery.matches&&Object.prototype.hasOwnProperty.call(portraitHeaderCopy,key)
+  const path=location.pathname.toLowerCase();
+  // The welcome page alone keeps its tile overview. Subpages, including
+  // information and rental settlement, share the same portrait navigation.
+  const isHome=path==='/'||path==='/index.html'||path==='/fixflip-kalkulator/'||path==='/fixflip-kalkulator/index.html';
+  const pageKey=document.documentElement.dataset.nicPage;
+  const key=active&&active!=='home'?active:pageKey&&pageKey!=='website'?pageKey:document.documentElement.dataset.calculator;
+  const compactMode=portraitQuery.matches&&!isHome
    &&!document.body.matches('.nic-admin-open,.nic-legal-open');
   if(compactMode){
    if(menu.parentElement!==header){
@@ -205,7 +217,11 @@ function initResponsiveCalculatorMenu(){
     else header.insertBefore(menu,header.querySelector(':scope > h1')||header.firstChild);
    }
    menu.classList.add('nic-portrait-calculator-menu');
-   if(picker.value!==key)picker.value=key;
+   if(key==='settlement'||calculators.some(item=>item.id===key)){
+    if(picker.value!==key)picker.value=key;
+   }else{
+    picker.value='';
+   }
   }else{
    menu.classList.remove('nic-portrait-calculator-menu');
    if(calculatorMenuAnchor?.parentNode&&menu.previousSibling!==calculatorMenuAnchor)calculatorMenuAnchor.after(menu);
