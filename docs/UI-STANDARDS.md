@@ -372,3 +372,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Historische Feldschlüssel und KPI-Titel werden aus dem tatsächlich generierten HTML zugeordnet; unbekannte Schlüssel verhindern ein stilles Entfernen der alten Information.
 - Die Kontextansicht ersetzt die Symbole auch bei Fix-&-Flip-Kennzahlen und bei den beiden Vermietungskennzahlen „Monatlicher Cashflow“ und „Kaufpreisfaktor“. Der Link ist der dezent punktiert unterstrichene Feld- bzw. Kennzahlentitel.
 - Automatische Tests stellen für ausgewählte Feld- und KPI-Typen sicher, dass kein Seitenwechsel erfolgt und die Originalabschnitte weiterhin abrufbar sind. Die initialen 120 ABC-Einträge bleiben erhalten, die ergänzten Begriffe werden alphabetisch eingeordnet.
+
+### Finanzierungsrechner: Anschlussfinanzierung (16.11.2026)
+
+- Nach der weißen Karte „2. Finanzierungsergebnis“ beginnt eine eigenständige weiße Contentkarte mit der H2 „3. Anschlussfinanzierung“.
+- Die Karte verwendet die bestehenden gemeinsamen Klassen und Abstände (`card`), ohne gesonderte Farben, Abmessungen oder mobile Layoutvarianten.
+- Zinsszenarien, Schieberegler, historische Zinsgrafik, Beschriftungen, Datenquelle und Berechnungslogik verbleiben unverändert in der neuen Karte.
