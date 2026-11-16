@@ -201,13 +201,14 @@ const assert=require('node:assert/strict');
       const card=document.querySelector(slug==='eigennutzung'?'#ownFinanceCard':'#flipFinanceCard');
       const notary=card?.querySelector('.field:has(#notary)');
       const broker=card?.querySelector('.field:has(#broker)');
-      const grid=card?.querySelector('.nic-finance-mobile-fields');
-      if(!notary||!broker||!grid)return null;
+      if(!notary||!broker)return {missing:true,notary:!!notary,broker:!!broker,card:!!card};
       const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,width:r.width};};
-      return {notary:rect(notary),broker:rect(broker),grid:rect(grid),
+      const ancestor=[notary.parentElement,...(function*(){let n=notary.parentElement;while(n&&n!==card){n=n.parentElement;if(n)yield n;}})()]
+       .find(el=>el&&getComputedStyle(el).display.includes('grid')&&el.getBoundingClientRect().width>0);
+      return {notary:rect(notary),broker:rect(broker),grid:ancestor?rect(ancestor):null,
        fields:[notary,broker].map(el=>getComputedStyle(el).gridColumnEnd)};
      },slug);
-     assert(fees&&fees.notary.width>0&&fees.broker.width>0,
+     assert(fees&&!fees.missing&&fees.grid&&fees.notary.width>0&&fees.broker.width>0,
       'Purchase fee fields visible: '+slug+' '+JSON.stringify(fees));
      assert(fees.notary.top<fees.broker.top&&fees.notary.bottom<=fees.broker.top+1,
       'Notar then Makler on separate mobile rows: '+slug+' '+JSON.stringify(fees));
