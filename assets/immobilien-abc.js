@@ -71,22 +71,121 @@ function render(panel){
  }).catch(()=>{count.textContent='';list.replaceChildren(element('p','nic-abc-empty','Die Begriffe konnten gerade nicht geladen werden. Bitte versuche es erneut.'));});
  search.addEventListener('input',draw);
 }
-function showHints(){
- if(document.documentElement.dataset.nicPage==='immobilien-abc')return;
- const main=document.querySelector('.app>main.section');if(!main)return;
- const aliases={'restschuld':'restschuld','sondertilgung':'sondertilgung','eigenkapital':'eigenkapital','zinssatz':'sollzins','sollzins':'sollzins','tilgung':'tilgung','kaufnebenkosten':'kaufnebenkosten','grunderwerbsteuer':'grunderwerbsteuer','kaufpreis':'kaufpreis','hausgeld':'hausgeld','cashflow':'cashflow','kaltmiete':'kaltmiete','warmmiete':'warmmiete','mietrendite':'bruttomietrendite','kaufpreisfaktor':'kaufpreisfaktor','zinsbindung':'zinsbindung','annuität':'annuitat','budget':'haushaltsuberschuss'};
- for(const label of main.querySelectorAll('label')){
-  if(label.closest('#nicContentView,#nicFinanceModule .nic-abc-tooltip')||label.querySelector('.nic-abc-help'))continue;
-  const text=normalize(label.textContent).trim();
-  const word=Object.keys(aliases).find(k=>text===normalize(k)||text.startsWith(normalize(k)+' ')||text.startsWith(normalize(k)+'('));
-  if(!word)continue;
-  const button=element('button','nic-abc-help','?');button.type='button';button.setAttribute('aria-label','Begriff '+word+' im Immobilien ABC erklären');
-  button.title='Im Immobilien ABC erklären';
-  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();const id=aliases[word];window.NICCalculatorNavigation?.select('immobilien-abc',true);history.replaceState(history.state,'','/immobilien-abc/?begriff='+encodeURIComponent(id));window.NICABC.render(document.getElementById('nicContentView'));});
-  label.append(' ',button);
- }
+/* Context help: retain calculator-specific content before hiding its old control. */
+const aliases={'restschuld':'restschuld','sondertilgung':'sondertilgung','eigenkapital':'eigenkapital','zinssatz':'sollzins','sollzins':'sollzins','tilgung':'tilgung','kaufnebenkosten':'kaufnebenkosten','grunderwerbsteuer':'grunderwerbsteuer','kaufpreis':'kaufpreis','hausgeld':'hausgeld','cashflow':'cashflow','kaltmiete':'kaltmiete','warmmiete':'warmmiete','mietrendite':'bruttomietrendite','kaufpreisfaktor':'kaufpreisfaktor','zinsbindung':'zinsbindung','annuität':'annuitat','budget':'haushaltsuberschuss'};
+let contextEntries=null,openTrigger=null,contextDialog=null;
+function contextClose(){
+ if(contextDialog){contextDialog.remove();contextDialog=null;}
+ const prior=openTrigger;openTrigger=null;
+ if(prior&&prior.isConnected)prior.focus({preventScroll:true});
 }
+function contextOpen(trigger,item,legacy){
+ contextClose();
+ openTrigger=trigger;
+ const wrap=element('div','nic-abc-context-backdrop');
+ const dialog=element('section','nic-abc-context-dialog');
+ dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label',item.term);
+ const head=element('div','nic-abc-context-head');
+ const heading=element('h2','',item.term);
+ const close=element('button','nic-abc-context-close','×');close.type='button';close.setAttribute('aria-label','Erklärung schließen');
+ close.addEventListener('click',contextClose);head.append(heading,close);dialog.append(head);
+ dialog.append(element('p','nic-abc-context-description',item.explanation));
+ if(legacy&&normalize(legacy)!==normalize(item.explanation)){
+  const section=element('section','nic-abc-context-additional');
+  section.append(element('h3','','Zum Rechner'),element('p','',legacy));dialog.append(section);
+ }
+ if(item.example?.trim()){
+  const examples=element('details','nic-abc-context-example');
+  examples.append(element('summary','','Praxisbeispiel anzeigen'),element('p','',item.example));dialog.append(examples);
+ }
+ wrap.append(dialog);
+ wrap.addEventListener('click',event=>{if(event.target===wrap)contextClose();});
+ document.body.append(wrap);contextDialog=wrap;close.focus({preventScroll:true});
+}
+document.addEventListener('keydown',event=>{
+ if(!contextDialog)return;
+ if(event.key==='Escape'){event.preventDefault();contextClose();}
+ if(event.key==='Tab'){
+  const controls=Array.from(contextDialog.querySelectorAll('button,summary,[tabindex="0"]'));
+  if(controls.length<2)return;
+  const first=controls[0],last=controls[controls.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+});
+function identifyLegacy(label){
+ const controls=[...label.querySelectorAll('.inline-info,.info-btn,.info-dot,.rent-info-dot')];
+ const control=controls.length===1?controls[0]:null;
+ if(!control)return null;
+ // Only consolidate content we can actually read. Do not discard script-owned
+ // calculation details from legacy sheets that are not present in the DOM.
+ const detail=(control.getAttribute('data-info')||control.getAttribute('data-tooltip')||'').trim();
+ return {control,detail};
+}
+function markTerm(label,item,legacy){
+ const walker=document.createTreeWalker(label,NodeFilter.SHOW_TEXT,{
+  acceptNode(node){
+   return node.parentElement?.closest('button, input, select, textarea, .nic-abc-term, .nic-abc-help, .inline-info, .info-btn, .info-dot, .rent-info-dot')
+    ?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;
+  }
+ });
+ const textNodes=[];while(walker.nextNode())textNodes.push(walker.currentNode);
+ for(const node of textNodes){
+  const raw=node.textContent||'',normalized=normalize(raw);
+  const word=normalize(item.term);
+  const pos=normalized.indexOf(word);
+  if(pos<0||!(!pos||!/[a-z0-9]/i.test(normalized[pos-1]))||(/[a-z0-9]/i.test(normalized[pos+word.length]||'')))continue;
+  // normalize can alter length for composed accents; only replace a direct
+  // substring when index and length agree, otherwise leave the original safe.
+  const original=raw.slice(pos,pos+item.term.length);
+  if(normalize(original)!==word)continue;
+  const button=element('button','nic-abc-term',original);
+  button.type='button';button.setAttribute('aria-label',original+' erklären');
+  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,legacy?.detail||'');});
+  const before=document.createTextNode(raw.slice(0,pos)),after=document.createTextNode(raw.slice(pos+original.length));
+  node.replaceWith(before,button,after);
+  // A previously visible help control can be removed only if its complete
+  // textual content has been carried over. Unknown legacy controls stay.
+  if(legacy?.detail){legacy.control.hidden=true;legacy.control.setAttribute('aria-hidden','true');}
+  return true;
+ }
+ return false;
+}
+let hintRunning=false;
+function showHints(){
+ if(hintRunning||document.documentElement.dataset.nicPage==='immobilien-abc')return;
+ const main=document.querySelector('.app>main.section');if(!main)return;
+ hintRunning=true;
+ fetchEntries().then(items=>{
+  if(!main.isConnected)return;
+  contextEntries=items;
+  const byId=new Map(items.map(x=>[x.id,x]));
+  for(const label of main.querySelectorAll('label')){
+   if(label.closest('#nicContentView')||label.querySelector('.nic-abc-term'))continue;
+   const full=normalize(label.textContent).trim();
+   const key=Object.keys(aliases).sort((a,b)=>b.length-a.length).find(k=>full===normalize(k)||full.startsWith(normalize(k)+' ')||full.startsWith(normalize(k)+'('));
+   const entry=key&&byId.get(aliases[key]);
+   if(!entry)continue;
+   // The old question-mark navigation is removed only once the term works.
+   label.querySelectorAll('.nic-abc-help').forEach(button=>button.remove());
+   markTerm(label,entry,identifyLegacy(label));
+  }
+ }).catch(error=>console.warn('Kontexthilfe konnte nicht geladen werden:',error)).finally(()=>{hintRunning=false;});
+}
+let hintQueued=false;
+function queueHints(){
+ if(hintQueued)return;hintQueued=true;
+ requestAnimationFrame(()=>{hintQueued=false;showHints();});
+}
+const observer=new MutationObserver(changes=>{
+ if(changes.some(change=>[...change.addedNodes].some(n=>n.nodeType===1&&!n.closest?.('.nic-abc-context-backdrop'))))queueHints();
+});
+document.addEventListener('DOMContentLoaded',()=>{
+ observer.observe(document.querySelector('.app>main.section')||document.body,{childList:true,subtree:true});
+ queueHints();
+});
+
 window.NICABC={render,showHints};
-window.addEventListener('nic-route-changed',()=>requestAnimationFrame(showHints));
-document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(showHints));
+window.addEventListener('nic-route-changed',()=>{contextClose();queueHints();});
+
 })();
