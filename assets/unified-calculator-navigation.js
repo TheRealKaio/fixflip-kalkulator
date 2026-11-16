@@ -205,7 +205,7 @@ function initResponsiveCalculatorMenu(){
  // Non-calculator pages need a neutral prompt, not a false active calculator.
  const placeholder=document.createElement('option');
  placeholder.value='';
- placeholder.textContent='Rechner auswählen';
+ placeholder.textContent='Bitte wählen';
  placeholder.disabled=true;
  placeholder.hidden=true;
  picker.prepend(placeholder);
