@@ -348,3 +348,12 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Der veröffentlichte Datenstand wird als JSON-Zeichenfolge unter `meta.immobilienABC` in den zentralen Website-Einstellungen gespeichert. Damit bleibt die bestehende Server-Schnittstelle kompatibel (sie akzeptiert die Metadaten ohne neue Tabellen und ohne neue Freigaberoute).
 - Der öffentliche Router zeigt gespeicherte Begriffe statt Ausgangsdatei, wenn solche Einstellungen verfügbar sind; andernfalls dient die Datei als Fallback.
 - Die Suchzeile nutzt unabhängig von vererbten Form-CSS-Regeln die gesamte verfügbare Breite der Inhaltskarte. Platzhalter: „Begriff suchen, z. B. Grundschuld …“.
+
+## Kontextbezogenes Immobilien ABC in den Rechnern (16. November 2026)
+
+- Fachbegriffe erhalten eine zarte, gepunktete Unterstreichung und öffnen eine Infobox im aktuellen Rechner, ohne Seitenwechsel und ohne Rücksetzen der Eingaben.
+- Die allgemeine Begriffsdefinition bleibt im Immobilien ABC zentral bearbeitbar. Erklärungen aus bisherigen Rechner-Infoboxen werden zusätzlich im selben Dialog ausgegeben; in Vermietung bleiben insbesondere die vollständigen Abschnitte „Einfach gesagt“ und „Gut zu wissen“ erhalten.
+- Als Sicherung wird beim Build vor der Integration eine maschinenlesbare Inventur der bisherigen Info-Schaltflächen erzeugt: `immobilien-abc-legacy-audit.json`. Die vollständigen mehrteiligen Vermietungserklärungen werden separat unter `immobilien-abc-context.json` konserviert.
+- Fehlende Begriffe aus den geprüften vollständigen Miet-Erklärungen werden ohne Überschreiben bestehender Einträge zur generierten ABC-Datenbasis ergänzt; die 120 Ausgangsbegriffe bleiben vollständig erhalten.
+- Bestehende Infoknöpfe werden nur dann ausgeblendet, wenn die erforderlichen Inhalte in der neuen Darstellung verfügbar sind. Noch nicht sicher migrierte Hinweise dürfen nicht verloren gehen.
+- Der Browser-Regressionstest überprüft die Erklärung, die zusätzlichen Abschnitte sowie unveränderte URL, Dokumentinstanz und Rechnerwerte nach dem Schließen.
