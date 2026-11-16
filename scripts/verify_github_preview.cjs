@@ -50,15 +50,19 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        const shell=el.getBoundingClientRect(),green=el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect();
        const css=getComputedStyle(el.querySelector('#nicMobileCalculatorTrigger'));
        return {left:green.left-shell.left,right:shell.right-green.right,font:css.fontSize,
-        expectedFont:getComputedStyle(document.documentElement).getPropertyValue('--nic-subtext-font-size').trim(),
+        expectedFont:(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-subtext-font-size'))-2)+'px',
         corners:['borderTopLeftRadius','borderTopRightRadius','borderBottomRightRadius','borderBottomLeftRadius'].map(k=>parseFloat(getComputedStyle(el)[k]))};
       });
       assert(Math.abs(metrics.left-metrics.right)<1,'Even white margins: '+slug+' '+JSON.stringify(metrics));
-      assert.equal(metrics.font,metrics.expectedFont,'Admin Untertexte px controls font: '+slug);
+      assert.equal(metrics.font,metrics.expectedFont,'Menu uses Admin Untertexte minus 2px: '+slug);
       const expectedCorner=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-menu-radius')));
       assert(metrics.corners.every(value=>Math.abs(value-expectedCorner)<.1),'Outer menu corners match Admin radius: '+slug);
       assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Custom green dropdown visible: '+slug);
       assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder: '+slug);
+      assert.equal(await chooser.locator('.nic-mobile-calculator-current>svg').count(),1,'Active calculator icon');
+      assert.equal(await chooser.locator('.nic-mobile-calculator-option').count(),6,'All six destinations');
+      assert.equal(await chooser.locator('.nic-mobile-calculator-option[data-value="rent"] svg').count(),1,'Vermietung icon retained');
+      assert(Math.abs(metrics.left-6)<1,'White padding halved to 6px');
       // The login page intentionally opens a modal that blocks background clicks.
       const loginDialog=page.locator('dialog.nic-auth-dialog[open]');
       if(await loginDialog.count()){
