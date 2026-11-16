@@ -76,9 +76,15 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  .nic-mobile-calculator-label span{font-size:1.3em;font-weight:500}
  .nic-mobile-calculator-select{
   flex:1 1 auto;width:0;min-width:0;min-height:44px;margin:0;
-  padding:0 22px 0 10px;border:1px solid #d9e2dc;
-  border-radius:var(--nic-menu-radius,16px);
-  background-color:#fff;color:var(--ink,#172033);
+  padding:0 30px 0 10px!important;border:1px solid #d9e2dc!important;
+  /* Published layout rules set select radii with !important; override locally. */
+  border-radius:var(--nic-menu-radius,16px)!important;
+  -webkit-appearance:none!important;appearance:none!important;
+  background-color:#fff!important;
+  background-image:linear-gradient(45deg,transparent 50%,#263b46 50%),linear-gradient(135deg,#263b46 50%,transparent 50%)!important;
+  background-position:calc(100% - 16px) center,calc(100% - 10px) center!important;
+  background-size:6px 6px!important;background-repeat:no-repeat!important;
+  color:var(--ink,#172033);
   font:400 var(--nic-subtext-font-size,14px)/1.2 var(--nic-body-font-family,inherit);
   text-overflow:ellipsis;white-space:nowrap;cursor:pointer;
  }
