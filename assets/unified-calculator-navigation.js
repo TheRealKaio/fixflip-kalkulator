@@ -258,7 +258,10 @@ function initResponsiveCalculatorMenu(){
  }
  compact.append(trigger,options);
  function renderSelection(){
-  trigger.querySelector('.nic-mobile-calculator-current-text').textContent='Bitte Rechner wählen';
+  const hasActive=active==='settlement'||calculators.some(item=>item.id===active);
+  trigger.querySelector('.nic-mobile-calculator-current-text').textContent=hasActive
+   ? picker.selectedOptions[0]?.textContent||'Bitte Rechner wählen'
+   : 'Bitte Rechner wählen';
   for(const row of rows){
    const selected=row.dataset.value===picker.value;
    row.classList.toggle('is-selected',selected);

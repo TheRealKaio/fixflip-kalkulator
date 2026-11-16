@@ -395,8 +395,10 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 ### Rechnerauswahl: neue Screenshot-Vorgabe (16.11.2026)
 - Mobil Portrait: ein durchgehender grüner Auslöser über die volle Breite, zentriert „Bitte Rechner wählen“, Pfeilsymbol rechts. Die bisherige linke Beschriftung entfällt.
-- Die Beschriftung bleibt auch auf Rechnerseiten „Bitte Rechner wählen“; das aktive Ziel wird in der geöffneten Liste hervorgehoben.
+- Auf Rechnerseiten und bei Mieterabrechnung zeigt das geschlossene Dropdown den aktiven Eintrag; auf sonstigen Inhaltsseiten steht „Bitte Rechner wählen“. Interne Navigation, direkte Aufrufe und Browser-Zurück/Vorwärts synchronisieren die Anzeige. Der aktive Eintrag bleibt in der Liste hervorgehoben.
 - Geöffnete weiße Liste über die volle Breite, mit allen sechs vorhandenen Einträgen und unveränderten Originalsymbolen einschließlich Vermietung.
 - Auslöser und Liste verwenden wieder direkt „Untertexte (px)“ (`--nic-subtext-font-size`, Standard 14 px), ohne 2-px-Abzug.
 - Weißer Innenabstand 6 px, Gesamtbreite plus 2 px; bestehende äußere Grafikabstände, Admin-Radien und Bedienfunktionen bleiben erhalten.
 - Diese neue Vorgabe ersetzt die älteren zweiteiligen Darstellungsregeln oben. Nur develop/GitHub-Entwicklungsvorschau.
+
+- Feldbeschriftungen und ihre Einheiten stehen gemeinsam linksbündig mit kleinem Abstand; Einheiten wie (€), p. a. und jährlich werden nicht zum rechten Feldrand geschoben.

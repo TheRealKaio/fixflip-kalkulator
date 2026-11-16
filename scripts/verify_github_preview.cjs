@@ -59,7 +59,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       assert(metrics.corners.every(value=>Math.abs(value-expectedCorner)<.1),'Outer menu corners match Admin radius: '+slug);
       assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Custom green dropdown visible: '+slug);
       assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder: '+slug);
-      assert.equal((await chooser.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Bitte Rechner wählen','Full-width prompt');
+      const expectedLabel=(calculatorIds.includes(currentId)||currentId==='settlement')
+       ? await page.locator('#nicMobileCalculatorSelect option:checked').textContent() : 'Bitte Rechner wählen';
+      assert.equal((await chooser.locator('.nic-mobile-calculator-current-text').textContent()).trim(),expectedLabel.trim(),'Dropdown displays active destination or prompt');
       assert.equal(await chooser.locator('.nic-mobile-calculator-option').count(),6,'All six destinations');
       assert.equal(await chooser.locator('.nic-mobile-calculator-option[data-value="rent"] svg').count(),1,'Vermietung icon retained');
       assert(Math.abs(metrics.left-6)<1,'White padding halved to 6px');
@@ -85,6 +87,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     }else{
      assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),false,'No compact selector on homepage/content/desktop: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
+    }
+    if(currentId==='finance'){
+     const labels=page.locator('#nicFinanceModule .field label');
+     assert(await labels.count()>0,'Finance labels present');
+     for(const label of await labels.all()){
+      assert.equal(await label.evaluate(el=>getComputedStyle(el).justifyContent),'flex-start','Finance caption and unit align left');
+     }
     }
     assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
@@ -120,8 +129,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      await page.locator('#nicMobileCalculatorOptions [data-value="settlement"]').click();
     await page.waitForURL('**/fixflip-kalkulator/nebenkostenabrechnung/');
     assert.equal(await page.locator('html').getAttribute('data-calculator'),'settlement','Settlement content route activated');
+    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Mieter-Abrechnung','Dropdown follows internal navigation');
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Back from settlement restores calculator');
+    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Budgetrechner','Dropdown follows browser back');
     // Standalone information pages do not contain calculator forms; their
     // selector must open the complete target document, not switch an empty shell.
     await page.goto('http://localhost/fixflip-kalkulator/ueber-uns/',{waitUntil:'networkidle'});
