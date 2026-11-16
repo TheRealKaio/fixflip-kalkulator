@@ -809,6 +809,23 @@ runs:
         python scripts/verify_immobilien_abc.py _site
         python scripts/test_clean_calculator_css.py
         python scripts/modularize_calculator_styles.py _site
+        # One shared, touch-only haptic handler across all rendered routes.
+        cp assets/mobile-button-haptics.js _site/mobile-button-haptics.js
+        python - <<'PY'
+        from pathlib import Path
+        pages = list(Path('_site').rglob('*.html'))
+        if not pages:
+            raise SystemExit('No pages available for mobile haptics')
+        for page in pages:
+            html = page.read_text(encoding='utf-8')
+            tag = '<script defer src="/mobile-button-haptics.js"></script>'
+            if tag not in html:
+                if '</head>' not in html:
+                    raise SystemExit(f'Missing head in {page}')
+                html = html.replace('</head>', tag + '</head>', 1)
+                page.write_text(html, encoding='utf-8')
+        print(f'Mobile haptics loaded on {len(pages)} HTML pages')
+        PY
         python scripts/fingerprint_assets.py _site
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_chart_typography.cjs
