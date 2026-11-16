@@ -62,13 +62,13 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  .nic-portrait-calculator-menu>.deal-type-title,
  .nic-portrait-calculator-menu>.deal-type-row{display:none!important}
  .nic-portrait-calculator-menu .nic-mobile-calculator-controls{
-  display:flex!important;align-items:stretch;gap:0;width:100%;min-width:0;
+  display:flex!important;align-items:stretch;gap:8px;width:100%;min-width:0;
  }
  .nic-mobile-calculator-label{
   display:flex;align-items:center;justify-content:center;gap:6px;
   flex:0 0 auto;min-height:44px;margin:0;padding:0 12px;
   border:1px solid var(--nic-green-bg,#075c55);
-  border-radius:var(--nic-brand-radius,12px) 0 0 var(--nic-brand-radius,12px);
+  border-radius:var(--nic-menu-radius,16px);
   background:var(--nic-green-bg,#075c55);color:#fff;
   font:700 var(--nic-subtext-font-size,14px)/1.2 var(--nic-body-font-family,inherit);
   white-space:nowrap;cursor:pointer;
@@ -76,8 +76,8 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
  .nic-mobile-calculator-label span{font-size:1.3em;font-weight:500}
  .nic-mobile-calculator-select{
   flex:1 1 auto;width:0;min-width:0;min-height:44px;margin:0;
-  padding:0 22px 0 10px;border:1px solid #d9e2dc;border-left:0;
-  border-radius:0 var(--nic-brand-radius,12px) var(--nic-brand-radius,12px) 0;
+  padding:0 22px 0 10px;border:1px solid #d9e2dc;
+  border-radius:var(--nic-menu-radius,16px);
   background-color:#fff;color:var(--ink,#172033);
   font:400 var(--nic-subtext-font-size,14px)/1.2 var(--nic-body-font-family,inherit);
   text-overflow:ellipsis;white-space:nowrap;cursor:pointer;
