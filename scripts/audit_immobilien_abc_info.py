@@ -69,8 +69,41 @@ for label in re.finditer(r"<label\b[^>]*>(.*?)</label>",source,re.S|re.I):
 },ensure_ascii=False,indent=2)+"\n")
 # For the public contextual info we preserve the original information as a
 # separate data source even if a glossary entry is edited or deleted.
+# Extract the original full four-part information object from the compiled
+# Fix & Flip calculator. Unlike a data-info attribute, it contains every
+# sentence shown in the original explanatory bottom sheet.
+begin=source.find("const info = {")
+if begin<0:
+    raise SystemExit("Missing legacy Fix & Flip information map")
+end=source.find("};",begin)
+if end<0:raise SystemExit("Unterminated legacy information map")
+part=source[begin:end]
+pattern=re.compile(r'([A-Za-z][A-Za-z0-9_]*):\\s*\\{\\s*title:\\s*"([^"]+)",\\s*body:\\s*"([^"]+)",\\s*plain:\\s*"([^"]+)",\\s*know:\\s*"([^"]+)"\\s*\\}',re.S)
+full=list(pattern.finditer(part))
+if len(full)!=20:
+    raise SystemExit(f"Expected 20 complete Fix & Flip information sheets; found {len(full)}")
+by_key={item["dataInfo"]:item["term"] for item in legacy if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*",item["dataInfo"])}
 context=list(rental.values())
 seen={entry["term"].casefold() for entry in context}
+for match in full:
+    key,title,body,simple,more=match.groups()
+    name=by_key.get(key)
+    if not name:
+        # KPI information is attached to the visible .name element rather
+        # than a field label. Never infer the term from the script key.
+        pat=r'<button\\b[^>]*data-info="'+re.escape(key)+r'"[^>]*>[^<]*</button>\\s*<div class="name"[^>]*>([^<]+)</div>'
+        label=re.search(pat,source,re.S)
+        if not label:raise SystemExit("Cannot match legacy KPI information: "+key)
+        name=trim(html.unescape(label.group(1)))
+    if not name:raise SystemExit("Blank legacy information title for "+key)
+    if name.casefold() in seen:raise SystemExit("Duplicate legacy information term: "+name)
+    category=("Immobilienkauf" if key=="acquisitionCosts" else
+              "Finanzierung" if key in ("interestRate","repaymentRate","financingRatio","financeAcquisitionCosts") else
+              "Rechner & Kennzahlen")
+    context.append({"term":name,"key":key,"body":body,"plain":simple,"know":more,
+                    "category":category,"source":"legacy-info-map"})
+    seen.add(name.casefold())
+# Preserve older inline tooltip text when no richer information sheet exists.
 for button in legacy:
     term=button["term"].strip()
     detail=button["dataInfo"].strip()
