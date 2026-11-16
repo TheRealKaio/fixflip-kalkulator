@@ -804,6 +804,7 @@ runs:
       shell: bash
       run: |
         python scripts/build_unified_navigation.py _site
+        python scripts/audit_immobilien_abc_info.py _site
         python scripts/add_immobilien_abc.py _site
         python scripts/verify_immobilien_abc.py _site
         python scripts/test_clean_calculator_css.py
