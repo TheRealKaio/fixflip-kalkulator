@@ -167,8 +167,9 @@ function showHints(){
    const entry=key&&byId.get(aliases[key]);
    if(!entry)continue;
    // The old question-mark navigation is removed only once the term works.
-   label.querySelectorAll('.nic-abc-help').forEach(button=>button.remove());
-   markTerm(label,entry,identifyLegacy(label));
+   if(markTerm(label,entry,identifyLegacy(label))){
+    label.querySelectorAll('.nic-abc-help').forEach(button=>button.remove());
+   }
   }
  }).catch(error=>console.warn('Kontexthilfe konnte nicht geladen werden:',error)).finally(()=>{hintRunning=false;});
 }
