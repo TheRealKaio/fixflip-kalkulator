@@ -255,13 +255,13 @@ const assert=require('node:assert/strict');
    assert.equal(await page.locator('.nic-tile-active').count(),1,'Exactly one active tile on every route');
    if(slug==='fix-flip'){
     await page.evaluate(()=>{
-     const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?');
+     const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>/^(?:5\. )?Wo geht das Geld hin\?$/.test(box.querySelector('h2')?.textContent.trim()||''));
      const key=section.dataset.nicContentKey;
      NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,[key]:{visible:true,guestAllowed:false}}});
     });
-    await page.waitForFunction(()=>[...document.querySelectorAll('[data-nic-content-key]')].some(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?'&&box.querySelector('.cost-row .nic-masked-value')));
+    await page.waitForFunction(()=>[...document.querySelectorAll('[data-nic-content-key]')].some(box=>/^(?:5\. )?Wo geht das Geld hin\?$/.test(box.querySelector('h2')?.textContent.trim()||'')&&box.querySelector('.cost-row .nic-masked-value')));
     const masked=await page.evaluate(()=>{
-     const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?');
+     const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>/^(?:5\. )?Wo geht das Geld hin\?$/.test(box.querySelector('h2')?.textContent.trim()||''));
      const style=getComputedStyle(section),box=section.getBoundingClientRect();
      const contentRight=box.right-parseFloat(style.borderRightWidth)-parseFloat(style.paddingRight);
      return [...section.querySelectorAll('.cost-row .nic-masked-value')].map(el=>({
@@ -275,7 +275,7 @@ const assert=require('node:assert/strict');
     await page.evaluate(()=>NICContentSections.apply(NICSettings.current));
     if(width===1440){
      await page.evaluate(()=>{
-      const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>box.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?');
+      const section=[...document.querySelectorAll('[data-nic-content-key]')].find(box=>/^(?:5\. )?Wo geht das Geld hin\?$/.test(box.querySelector('h2')?.textContent.trim()||''));
       const key=section.dataset.nicContentKey;
       NICContentSections.apply({...NICSettings.current,contentSections:{...NICSettings.current.contentSections,[key]:{visible:true,guestAllowed:true}}});
      });
@@ -468,7 +468,7 @@ const assert=require('node:assert/strict');
    // Cost chart labels, amounts and totals must follow the admin 'Untertexte (px)' size.
    if(['eigennutzung','fix-flip'].includes(slug)){
     const costTypography=await page.evaluate(()=>{
-     const chart=[...document.querySelectorAll('section,.card')].find(el=>el.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?'&&el.querySelector('.cost-row'));
+     const chart=[...document.querySelectorAll('section,.card')].find(el=>/^(?:5\. )?Wo geht das Geld hin\?$/.test(el.querySelector('h2')?.textContent.trim()||'')&&el.querySelector('.cost-row'));
      if(!chart)return null;
      const rows=[...chart.querySelectorAll('.cost-row')];
      const texts=rows.flatMap(row=>[...row.querySelectorAll('*')].filter(el=>el.children.length===0&&el.textContent.trim()&&getComputedStyle(el).display!=='none'));
@@ -597,7 +597,7 @@ const assert=require('node:assert/strict');
      return original;
     });
     const actual=await page.evaluate(()=>{
-     const card=[...document.querySelectorAll('section,.card')].find(el=>el.querySelector('h2')?.textContent.trim()==='Wo geht das Geld hin?'&&el.querySelector('.cost-row'));
+     const card=[...document.querySelectorAll('section,.card')].find(el=>/^(?:5\. )?Wo geht das Geld hin\?$/.test(el.querySelector('h2')?.textContent.trim()||'')&&el.querySelector('.cost-row'));
      const leafText=[...card.querySelectorAll('.cost-row *')].filter(el=>el.children.length===0&&el.textContent.trim()&&getComputedStyle(el).display!=='none');
      const total=[...card.querySelectorAll('*')].find(el=>el.children.length===0&&el.textContent.trim()==='Gesamt');
      return {textSizes:leafText.map(el=>getComputedStyle(el).fontSize),
