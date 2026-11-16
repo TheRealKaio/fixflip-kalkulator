@@ -10,7 +10,7 @@ class El {
 const root=new El(),hero=new El(),account=new El(),title=new El(),text=new El();
 const ids={nicAccountLink:account,heroTitle:title,heroText:text};const events={};
 const current={websiteLogo:'saved-logo'},S={ROOT:new URL('https://example.test/'),KEY:'settings',pages:[['budget','Budget','budget/']],current,init:async()=>current,apply(){},syncCalculatorMenu(active){this.lastActiveTile=active},applyLogo(value){this.lastLogo=value},portals:[]};
-const location={origin:'https://example.test',pathname:'/budget/',search:'',hash:'#admin-social',assign(href){this.assigned=href}};
+const location={origin:'https://example.test',pathname:'/budget/',search:'',hash:'#admin-social',assign(url){this.assigned=url;this.hash='';this.pathname=new URL(url).pathname;},assign(href){this.assigned=href}};
 const document={documentElement:{dataset:{nicPage:'budget',nicRelease:'8.339'},classList:{add(){},remove(){}}},body:root,title:'Budget',getElementById:id=>ids[id],querySelector:s=>s==='.app > .hero'?hero:null,querySelectorAll:()=>[],createElement:tag=>new El(tag)};
 const context={URL,console,fetch:async()=>{throw new Error('Native view fixture unavailable');},document,location,history:{pushState(_,__,url){location.hash=new URL(url,location.origin).hash},replaceState(_,__,url){location.hash=new URL(url,location.origin).hash}},NICSettings:S,addEventListener(k,f){(events[k]??=[]).push(f)}};context.window=context;
 vm.createContext(context);vm.runInContext(fs.readFileSync('assets/site-integration.js','utf8'),context);await new Promise(setImmediate);
