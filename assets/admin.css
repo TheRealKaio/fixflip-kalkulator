@@ -110,3 +110,8 @@ body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:
 .nic-abc-admin-field textarea{resize:vertical;min-height:100px}
 .nic-abc-admin-remove:focus-visible,.nic-abc-admin-add:focus-visible,.nic-abc-admin-field :focus-visible{outline:3px solid #2563eb;outline-offset:2px}
 @media(max-width:760px){.nic-abc-admin-fields{grid-template-columns:1fr}.nic-abc-admin-toolbar{flex-wrap:wrap}.nic-abc-admin-add{margin-left:auto}}
+
+/* SEO indexing: page title left and checkbox right, including mobile. */
+.nic-seo-index-row{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between;gap:16px;margin:12px 0;min-width:0;cursor:pointer}
+.nic-seo-index-row span{flex:1 1 auto;min-width:0;text-align:left;overflow-wrap:anywhere}
+.nic-seo-index-row input[type="checkbox"]{flex:0 0 20px!important;width:20px!important;height:20px!important;min-height:0!important;margin:0 0 0 auto!important;align-self:center}
