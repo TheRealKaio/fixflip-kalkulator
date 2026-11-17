@@ -43,7 +43,7 @@ function begin(){
  if(!pageLogged){pageLogged=true;track('page_view',calculator||(C.CALCULATORS.includes(section)?section:null));}
  if(calculator&&calculator!==lastCalculator){lastCalculator=calculator;snapshots[calculator]=fingerprint(calculator);track('calculator_use',calculator);}
 }
-function start(info){if(started)return;section=C.SECTIONS.includes(info.section)?info.section:'website';calculator=C.CALCULATORS.includes(info.calculator)?info.calculator:null;started=true;begin();addConsentControl();if(!readConsent())openConsent();}
+function start(info){if(started)return;section=C.SECTIONS.includes(info.section)?info.section:'website';calculator=info.calculator!=='settlement'&&C.CALCULATORS.includes(info.calculator)?info.calculator:null;started=true;begin();addConsentControl();if(!readConsent())openConsent();}
 function changeSection(key){if(!started)return;flush();if(!C.SECTIONS.includes(key))return;section=key;calculator=C.CALCULATORS.includes(key)?key:null;begin();}
 function setConsent(value){
  const next=value==='granted'?'granted':'denied';
