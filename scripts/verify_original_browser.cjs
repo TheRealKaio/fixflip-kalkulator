@@ -430,6 +430,7 @@ const assert=require('node:assert/strict');
    await page.locator('#nicAccountLink').click();
    await page.locator('#nicLoginTitle').waitFor({state:'visible'});
    await page.getByRole('button',{name:'Abbrechen',exact:true}).click();
+   assert.equal(await page.locator('#nicConsentSettings').count(),1,'Cookie settings control must remain available');
    for(const legal of ['impressum','agbs','datenschutz','haftungsausschluss']){
     const footerLegal=page.locator('#nicFooterLegal');if(await footerLegal.count()&&!await footerLegal.evaluate(el=>el.open))await footerLegal.locator('summary').click();
     await page.locator(`[data-legal-placeholder="${legal}"]`).click();
@@ -440,7 +441,6 @@ const assert=require('node:assert/strict');
     await page.waitForURL(url=>url.pathname==='/');
     if(new URL(beforeLegalBack).pathname!=='/')await page.goto(beforeLegalBack);
    }
-   assert.equal(await page.locator('#nicConsentSettings').count(),1,'Cookie settings control must remain available');
    if(slug==='finanzierungsrechner'){
     await page.evaluate(()=>{for(const [id,value] of Object.entries({loan:300000,interest:4,repay:2,extra:5,years:10})){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}});
     let expected=300000;const r=.04/12,f=Math.pow(1+r,12);
