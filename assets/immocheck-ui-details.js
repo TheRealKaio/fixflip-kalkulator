@@ -181,7 +181,7 @@ function bindFlipSaleReviewHint(){
 function alignPropertyFields(){
  document.querySelectorAll('.app main.section .field').forEach(field=>{
   const label=field.querySelector(':scope > label');
-  if(label&&/^(?:Wohnfläche|Preis pro m[²2]|Baujahr|Grundstück(?:sgröße)?)$/i.test(label.textContent.replace(/\s+/g,' ').trim()))field.classList.add('nic-property-aligned-field');
+  if(label&&/^(?:Wohnfläche|Baujahr|Grundstück(?:sgröße)?)$|^Preis pro m/i.test(label.textContent.replace(/\s+/g,' ').trim()))field.classList.add('nic-property-aligned-field');
  });
 }
 
