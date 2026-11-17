@@ -178,6 +178,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## Ergebnisboxen der Rechner
 
+- Der Kacheltitel für die monatliche Kreditrate in der Eigennutzung lautet „Monatliche Kreditrate“.
+
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
   ausbalanciert und bleiben bei höchstens vier Boxen pro Desktop-Zeile: Fix & Flip
   zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
