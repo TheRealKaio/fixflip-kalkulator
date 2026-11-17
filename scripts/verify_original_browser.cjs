@@ -435,7 +435,10 @@ const assert=require('node:assert/strict');
     await page.locator(`[data-legal-placeholder="${legal}"]`).click();
     await page.locator('#nicLegalPanel').waitFor({state:'visible'});
     assert((await page.locator('.nic-legal-card').innerText()).trim().length>0,'Legal content must exist on every route');
-    await page.getByRole('button',{name:'← Zu den Kalkulatoren',exact:true}).click();
+    const beforeLegalBack=page.url();
+    await page.getByRole('button',{name:'Zurück zur Startseite',exact:true}).click();
+    await page.waitForURL(url=>url.pathname==='/');
+    if(new URL(beforeLegalBack).pathname!=='/')await page.goto(beforeLegalBack);
    }
    assert.equal(await page.locator('#nicConsentSettings').count(),1,'Cookie settings control must remain available');
    if(slug==='finanzierungsrechner'){
