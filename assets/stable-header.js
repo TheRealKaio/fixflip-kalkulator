@@ -28,6 +28,10 @@ function measure(){
  const width=geometry(hero).width;if(width<=0)return;
  const probe=hero.cloneNode(true);probe.classList.remove('nic-fixed-header');
  probe.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+ // Portrait navigation lives inside the header. Cloned checked radios would
+ // join the live group on insertion and uncheck the actual calculator choice.
+ // Inert/aria-hidden do not isolate native radio groups.
+ probe.querySelectorAll('[name]').forEach(el=>el.removeAttribute('name'));
  probe.removeAttribute('id');probe.setAttribute('aria-hidden','true');probe.inert=true;
  Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',height:'auto',minHeight:'0',maxHeight:'none',display:'flow-root'});
  // Keep the same ancestor styles and inherited typography as the visible header.

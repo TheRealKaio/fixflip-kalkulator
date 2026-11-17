@@ -88,7 +88,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Nur die aktive Ansicht bestimmt `heroTitle` und `heroText`. Die alte
   Rechnerinitialisierung darf weder Startseiten- noch Informationstitel überschreiben.
 - Die Headerhöhe wird anhand aller Titel-/Beschreibungskombinationen für die
-  aktuelle Breite und Typografie reserviert. Beim internen Wechsel bleibt sie stabil.
+  aktuelle Breite gemessen. Unsichtbare Messkopien dürfen keine IDs oder Formularnamen
+  übernehmen: insbesondere Radiofelder dürfen nicht die aktive Rechnerauswahl verändern.
+  Sie wird für die aktuelle Breite und Typografie reserviert. Beim internen Wechsel bleibt sie stabil.
   Keine zweite Rücksetzlogik, die erst einen falschen Titel sichtbar schreibt.
 - Kein seitenspezifisches Nachbauen von Logo, Grafik, Schriftgrößen oder Abständen.
 - Startseite, alle fünf Kalkulatoren und alle Contentseiten (einschließlich Über uns,

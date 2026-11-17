@@ -79,6 +79,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   for(const key of ['budget','finance','own','rent','flip']){
    await page.locator('#nic-home-intro a[data-calculator="'+key+'"]').click();
    await page.waitForFunction(k=>document.body.dataset.calculator===k,key);
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   if(['budget','own','flip'].includes(key))assert.equal(await page.evaluate(()=>currentDealType()),key,'Homepage selection retains actual calculation mode after header measurement');
    assert.equal(await page.locator('#nic-home-intro').isVisible(),false);
    await page.goBack();
    await page.waitForFunction(()=>document.body.dataset.calculator==='home');
@@ -128,6 +130,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     await page.locator(`.deal-type-option[data-calculator="${key}"]`).click();
    }
    await page.waitForFunction(k=>document.querySelector('.nic-tile-active')?.dataset.calculator===k,key);
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   if(['budget','own','flip'].includes(key))assert.equal(await page.evaluate(()=>currentDealType()),key,'Menu selection retains actual calculation mode after header measurement');
    if(width<=700)assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),key,'Portrait dropdown reflects active calculator');
    const stickyGap=await page.locator('.nic-actions-above-footer').evaluate(el=>({position:getComputedStyle(el).position,bottom:getComputedStyle(el).bottom}));
    assert.equal(stickyGap.position,'sticky','Calculator action row remains sticky');
