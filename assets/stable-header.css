@@ -21,3 +21,18 @@ html:not(.nic-embed){overflow-y:scroll;scrollbar-gutter:stable}
     .hero.nic-responsive-header>h1{}
   }
 }
+
+/* iOS standalone/PWA: reserve the top system inset once, on the shared brand bar.
+   The hero already uses safe-area padding on pages without that bar. */
+:root{--nic-safe-top:env(safe-area-inset-top,0px)}
+.app > .nic-brand-bar{
+  padding-top:calc(12px + var(--nic-safe-top))!important;
+}
+.app:has(> .nic-brand-bar) > .hero.nic-responsive-header{
+  padding-top:16px;
+}
+@media(max-width:600px),(max-height:480px) and (max-width:950px){
+  .app:has(> .nic-brand-bar) > .hero.nic-responsive-header{
+    padding-top:14px;
+  }
+}
