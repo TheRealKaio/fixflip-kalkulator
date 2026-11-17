@@ -67,6 +67,13 @@ root=(site/'index.html').read_text()
 # The base keeps calculator assets and the service worker on the root scope.
 root=root.replace('<head>','<head>\n<base href="/">',1)
 root_calculators=root
+def indexed(key):
+    # Logins and administration must never be indexable.
+    if key in ('login','admin'):return False
+    defaults={'impressum':False,'agbs':False,'datenschutz':False,'haftungsausschluss':False,'widerruf':False,'avv':False,'cookie-hinweis':False}
+    value=config.get('seoIndexing',{}).get(key,defaults.get(key,True))
+    return value if isinstance(value,bool) else defaults.get(key,True)
+
 def metadata(key,path):
     c=config.get('content',{}).get(key,{})
     m=config.get('meta',{}).get(key,{})
@@ -75,7 +82,7 @@ def metadata(key,path):
     description=html.escape(str(c.get('metaDescription') or m.get('description') or fallback.get('description') or ''),quote=True)
     url=html.escape(base+path,quote=True)
     share_alt=html.escape(str(config.get('imageAlts',{}).get('sharing','Neustart ImmoCheck – Immobilien verstehen. Sicherer entscheiden.')),quote=True)
-    robots='<meta name="robots" content="noindex,follow">' if c.get('noindex') or key=='login' else ''
+    robots='<meta name="robots" content="'+('index,follow' if indexed(key) else 'noindex,follow')+'">'
     return f'<title>{title}</title>\n{robots}<meta name="description" content="{description}">\n<link rel="canonical" href="{url}">\n<meta property="og:title" content="{title}">\n<meta property="og:description" content="{description}">\n<meta property="og:url" content="{url}">\n<meta property="og:type" content="website">\n<meta property="og:site_name" content="Neustart ImmoCheck">\n<meta property="og:image" content="{share_url}">\n<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="{share_alt}">\n<meta name="twitter:image:alt" content="{share_alt}">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:image" content="{share_url}">\n<meta name="twitter:title" content="{title}">\n<meta name="twitter:description" content="{description}">'
 
 def customize(s,key,path):
@@ -218,9 +225,12 @@ for path,title in [('unternehmen/','Unternehmen & Kontakt'),('impressum/','Impre
     folder=site/path;folder.mkdir(exist_ok=True)
     s=public.replace('__TITLE__',title).replace('__CONTENT__',content)
     s=customize(s,'company',path)
-    if path=='impressum/':s=s.replace('</head>','<meta name="robots" content="noindex,follow"></head>',1)
+    if path=='impressum/':
+        s=re.sub(r'<meta name="robots" content="[^"]+">','<meta name="robots" content="'+('index,follow' if indexed('impressum') else 'noindex,follow')+'">',s,count=1)
     (folder/'index.html').write_text(s)
-urls=[base+p for p in pages.values()]+[base+p for k,p in content_routes.items() if k!='login']
+urls=[base+p for k,p in pages.items() if indexed(k)]+[base+p for k,p in content_routes.items() if indexed(k)]
+if indexed('impressum'):urls.append(base+'impressum/')
+(site/'robots.txt').write_text('User-agent: *\nDisallow: /api/\nDisallow: /admin/\nDisallow: /user-data/\nSitemap: '+base+'sitemap.xml\n')
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
 print('Settings metadata pages built: website, company, four calculators and six content pages')
 
