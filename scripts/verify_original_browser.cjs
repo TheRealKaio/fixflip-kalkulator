@@ -802,6 +802,9 @@ const assert=require('node:assert/strict');
  console.log('PASS native account portal: role-specific view, profile display and save through existing API');
  // Test the full-page destination separately so it cannot reset calculator test state.
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
+ await page.locator('.footer-note').waitFor({state:'visible'});
+ const legalDisclosure=page.locator('#nicFooterLegal');
+ if(await legalDisclosure.count()&&!await legalDisclosure.evaluate(el=>el.open))await legalDisclosure.locator('summary').click();
  await page.locator('[data-legal-placeholder="impressum"]').first().click();
  await page.locator('#nicLegalPanel').waitFor({state:'visible'});
  await page.getByRole('button',{name:'Zurück zur Startseite',exact:true}).click();
