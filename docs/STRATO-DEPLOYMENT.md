@@ -60,3 +60,10 @@ echtes PHP mit DOM-Filterung gegen feste Testeinstellungen aus.
 
 Eine unabhängige externe Überwachung im Minutenintervall ist noch nicht
 eingerichtet. Die Prüfungen während einer Veröffentlichung ersetzen sie nicht.
+
+## Wiederanlauf nach unterbrochener Vorschau
+
+- SSH-Keepalive und regelmäßige lesende SFTP-Zugriffe erhalten die Verbindung auch während langer öffentlicher HTTP-Prüfungen. Schreiboperationen werden bei Verbindungsfehlern nicht blind wiederholt.
+- Nach einem Abbruch vor der Aktivierung darf eine additive Vorschau-Regel nur anhand der unveränderten Sicherung genau dieses früheren Vorgangs entfernt werden. Die Sicherung muss als bekannter Release verifiziert sein; weitere Änderungen an den Regeln verhindern die automatische Wiederherstellung.
+- Vor und nach dieser Wiederherstellung wird der aktive öffentliche Release geprüft. Erst danach beginnt der nächste normale Release-Upload.
+- Am 17.11.2026 scheiterte Lauf `44045508547` vor der Aktivierung an einer getrennten SFTP-Verbindung. Der bisherige Release `b5d33d70d7d3951fa9fd9016f8fdd7ad478cb407-44033904079-1` blieb öffentlich mit HTTP 200 erreichbar. Der Folge-Release enthält zusätzlich die korrigierte Zurückfunktion.

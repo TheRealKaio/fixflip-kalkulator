@@ -100,7 +100,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Admin- und Nutzeransichten sowie Rechtsansichten behalten ihre bestehenden
   Zugangs- und Inhaltslogiken; kein zusätzlicher Header oder Footer wird erzeugt.
 
-- In den rechtlichen Ansichten zeigt die Zurück-Schaltfläche den Text „ZURÜCK“ mit linkem Pfeil und führt stets zur Startseite `/`, unabhängig von der zuvor geöffneten Rechnerseite.
+- In allen rechtlichen Ansichten zeigt die Zurück-Schaltfläche „ZURÜCK“ mit linkem Pfeil und führt zur unmittelbar vor dem Öffnen verwendeten Seite zurück. Rechner-Eingaben, URL einschließlich Abfrage/Anker und Scrollposition bleiben erhalten. Wechsel zwischen rechtlichen Hinweisen behalten dasselbe ursprüngliche Rücksprungziel. Nur bei direktem Aufruf ohne bekannte Ursprungsseite dient die Startseite als Rückfallziel.
 
 ## 3. Inhaltsseiten und Abstände
 

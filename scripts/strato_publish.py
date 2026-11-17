@@ -39,6 +39,7 @@ def connection():
             if not hmac.compare_digest(fingerprint(transport.get_remote_server_key()), expected):
                 raise CheckError('SFTP-Server-Fingerabdruck stimmt nicht ueberein. Kein Passwort gesendet.')
             transport.auth_password(username, password, fallback=False)
+            transport.set_keepalive(30)
             with paramiko.SFTPClient.from_transport(transport) as sftp:
                 sftp.get_channel().settimeout(30)
                 yield sftp

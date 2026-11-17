@@ -436,9 +436,15 @@ const assert=require('node:assert/strict');
     await page.locator(`[data-legal-placeholder="${legal}"]`).click();
     await page.locator('#nicLegalPanel').waitFor({state:'visible'});
     assert((await page.locator('.nic-legal-card').innerText()).trim().length>0,'Legal content must exist on every route');
-    assert.equal(await page.locator('#nicLegalPanel .nic-admin-back').getAttribute('aria-label'),'Zurück zur Startseite');
-    await page.evaluate(()=>{history.pushState(null,'',location.pathname+location.search);window.dispatchEvent(new Event('hashchange'));});
+    assert.equal(await page.locator('#nicLegalPanel .nic-admin-back').getAttribute('aria-label'),'Zurück zur vorherigen Seite');
+    const origin=await page.evaluate(()=>{window.nicLegalDocumentMarker='return-without-reload';return history.state.nicLegalReturn;});
+    const inputs=await page.locator('main input').evaluateAll(els=>els.map(el=>[el.id,el.value,el.checked]));
+    await page.locator('#nicLegalPanel .nic-admin-back').click();
     await page.locator('#nicLegalPanel').waitFor({state:'hidden'});
+    await page.waitForFunction(origin=>location.pathname+location.search+location.hash===origin.url&&Math.abs(window.scrollY-origin.y)<3,origin);
+    assert.equal(new URL(page.url()).pathname,'/'+slug+'/','Legal return keeps the original calculator');
+    assert.equal(await page.evaluate(()=>window.nicLegalDocumentMarker),'return-without-reload','Legal return must preserve the document');
+    assert.deepEqual(await page.locator('main input').evaluateAll(els=>els.map(el=>[el.id,el.value,el.checked])),inputs,'Legal return must preserve calculator inputs');
    }
    if(slug==='finanzierungsrechner'){
     await page.evaluate(()=>{for(const [id,value] of Object.entries({loan:300000,interest:4,repay:2,extra:5,years:10})){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}});
@@ -800,17 +806,17 @@ const assert=require('node:assert/strict');
  await profile.locator('#profileStatus').filter({hasText:'Deine Daten wurden gespeichert.'}).waitFor();
  assert.equal(await page.locator('#heroTitle').innerText(),'Deine Nutzerdaten');
  console.log('PASS native account portal: role-specific view, profile display and save through existing API');
- // Test the full-page destination separately so it cannot reset calculator test state.
+ // Returning from legal content preserves the current calculator document and inputs.
  await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
  await page.locator('.footer-note').waitFor({state:'visible'});
  const legalDisclosure=page.locator('#nicFooterLegal');
  if(await legalDisclosure.count()&&!await legalDisclosure.evaluate(el=>el.open))await legalDisclosure.locator('summary').click();
  await page.locator('[data-legal-placeholder="impressum"]').first().click();
  await page.locator('#nicLegalPanel').waitFor({state:'visible'});
- await page.getByRole('button',{name:'Zurück zur Startseite',exact:true}).click();
- await page.waitForURL(url=>url.pathname==='/');
- assert.equal(new URL(page.url()).pathname,'/','Legal back button navigates to the home page');
- console.log('PASS legal back button: ZURÜCK navigates to the home page');
+ await page.getByRole('button',{name:'Zurück zur vorherigen Seite',exact:true}).click();
+ await page.waitForURL(url=>url.pathname==='/budget/'&&!url.hash);
+ assert.equal(new URL(page.url()).pathname,'/budget/','Legal back button restores the original calculator');
+ console.log('PASS legal back button: ZURÜCK restores the original calculator');
 
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
