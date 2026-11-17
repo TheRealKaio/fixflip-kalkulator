@@ -34,7 +34,8 @@ function render(){
  if(active==='cookie-hinweis'){const button=node('button','Cookie-Einstellungen ändern',article);button.type='button';button.addEventListener('click',()=>window.NICAnalytics?.openConsent());}
 }
 function close(){
- if(!active)return;active=null;document.body.classList.remove('nic-legal-open');panel.hidden=true;title.innerHTML=snapshot.title;text.textContent=snapshot.text;document.title=snapshot.documentTitle;
+ if(!active)return;active=null;
+ const robots=document.head?.querySelector?.('meta[name="robots"]');if(robots&&snapshot?.robotsContent!==undefined)robots.content=snapshot.robotsContent;document.body.classList.remove('nic-legal-open');panel.hidden=true;title.innerHTML=snapshot.title;text.textContent=snapshot.text;document.title=snapshot.documentTitle;
  const origin=returnPoint;
  if(origin&&pageUrl()===origin.url){
   // Wait for the shared router/header to finish restoring the original view.
@@ -45,8 +46,10 @@ function close(){
 }
 function open(next){
  if(!next){const was=active;close();if(was)opener?.focus({preventScroll:true});return;}
- if(!active){snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title};returnPoint=history.state?.nicLegalReturn||null;}
+ if(!active){snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title,robotsContent:document.head?.querySelector?.('meta[name="robots"]')?.content||'index,follow'};returnPoint=history.state?.nicLegalReturn||null;}
  if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← ZURÜCK',panel);back.type='button';back.className='nic-admin-back';back.setAttribute('aria-label','Zurück zur vorherigen Seite');back.addEventListener('click',returnToOrigin);article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
+ const metaRobots=document.head?.querySelector?.('meta[name="robots"]')||document.head?.appendChild?.(Object.assign(document.createElement('meta'),{name:'robots'}));
+ if(metaRobots&&metaRobots.content!=='noindex,nofollow')metaRobots.content=S.current?.seoIndexing?.[next]===true?'index,follow':'noindex,follow';
  active=next;panel.hidden=false;document.body.classList.add('nic-legal-open');panel.setAttribute('aria-label',labels[next]);title.textContent=labels[next];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[next]+' | Neustart ImmoCheck';
  render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');

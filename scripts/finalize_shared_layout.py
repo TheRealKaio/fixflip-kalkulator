@@ -85,6 +85,16 @@ for p in site.glob('*.css'):
  p.write_text(split(p.read_text(),pattern)[0])
 for p in site.rglob('*.html'):
  s=p.read_text()
+ # iOS standalone mode needs viewport-fit=cover for reliable safe-area insets.
+ # Update the existing viewport declaration rather than emitting a duplicate tag.
+ viewport_meta=re.compile(r"""<meta\b(?=[^>]*\bname=["']viewport["'])[^>]*>""",re.I)
+ def ensure_viewport_fit(match):
+  tag=match.group(0)
+  if 'viewport-fit=' in tag.lower():return tag
+  return re.sub(r"""(\bcontent=["'])([^"']*)(["'])""",lambda m:m[1]+m[2].rstrip()+', viewport-fit=cover'+m[3],tag,count=1,flags=re.I)
+ s,count=viewport_meta.subn(ensure_viewport_fit,s,count=1)
+ if not count:
+  s=re.sub(r'<head\b[^>]*>',lambda m:m[0]+'<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">',s,count=1,flags=re.I)
  # Put the equity helper under its input after all older patches have finished
  # editing the original label markup.
  equity_hint_pattern=re.compile(

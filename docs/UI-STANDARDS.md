@@ -49,6 +49,12 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   zu Mobil prüfen: kein horizontaler Überlauf, kein abgeschnittener Header,
   erreichbare Dialoge und gleichbleibende Höhe bei internen Seitenwechseln.
 
+## iOS-PWA und Safe Area
+
+- Alle generierten HTML-Routen behalten genau ein Viewport-Meta-Tag mit `viewport-fit=cover`.
+- In installierten iPhone-Web-Apps liegt die gemeinsame Markenleiste mit dem oberen Innenabstand `env(safe-area-inset-top, 0px)` unterhalb der Statusleiste/Dynamic Island. Der Bildheader erhält diesen Abstand nur, wenn keine gemeinsame Markenleiste vorhanden ist; keine doppelte Safe-Area-Addition.
+- Änderungen gelten auch nach dem finalen CSS-Build für Startseite, Rechner, Info-, Rechts- und Portalansichten. Safari und installierte PWA im Hoch-/Querformat sowie die untere Aktionsleiste auf Abstand zum Home-Indikator prüfen.
+
 ## 2. Header und Navigation
 
 - Das Logo bleibt linksbündig in der weißen Markenleiste. Es wird ausschließlich
