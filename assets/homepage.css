@@ -257,3 +257,18 @@ html body:not(.nic-admin) .app #nicFinanceModule .field .input-wrap .unit{
  color:#94a3b8!important;font-size:var(--nic-hint-font-size,12px)!important;
  font-weight:400!important;pointer-events:none;
 }
+
+/* Property fields share a caption row, including glossary-linked captions. */
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field{
+ display:flex;flex-direction:column;align-self:stretch;min-width:0;
+}
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field>label{
+ flex:1 0 auto;display:flex;align-items:baseline;line-height:1.5!important;
+ min-block-size:calc(1.5em + 3px);margin-bottom:6px;
+}
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field>label .nic-abc-term{
+ min-height:0!important;min-width:0!important;vertical-align:baseline!important;
+}
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field>:is(.input-wrap,.metric-box){
+ flex:0 0 auto;margin-top:0!important;box-sizing:border-box;
+}

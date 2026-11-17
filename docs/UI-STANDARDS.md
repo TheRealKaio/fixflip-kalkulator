@@ -422,3 +422,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Nummerierte Rechnerüberschriften auf allen Einstiegswegen
 - Die bestehenden nummerierten Ergebnisüberschriften gelten auf direkten Rechner-URLs ebenso wie beim Einstieg über die Startseite und beim internen Wechsel. Der Build muss die Korrektur auf alle fünf Rechner anwenden, nicht nur index.html.
 - Neuberechnung darf die nummerierten neutralen Ergebnistitel nicht durch alte Ampel-Überschriften ersetzen. Mobil und Desktop sowie direkte Aufrufe, interne Navigation und Eingabeänderungen im finalen Build prüfen.
+
+## Objektdaten: gemeinsame Beschriftungszeile
+- Wohnfläche / Preis pro m² sowie Baujahr / Grundstück stehen je Rasterzeile mit gleicher Oberkante der Eingabe- und Ergebnisboxen. Glossar-Unterstreichungen dürfen die Feldhöhe nicht verschieben.
+- Zeilen richten sich über flexible, gemeinsame Beschriftungshöhen aus; Schriftgrößen, Umbruch, Einheiten und bestehendes responsives Raster bleiben erhalten.
