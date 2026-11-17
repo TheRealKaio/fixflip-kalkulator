@@ -93,7 +93,8 @@ for p in site.rglob('*.html'):
   if 'viewport-fit=' in tag.lower():return tag
   return re.sub(r"""(\bcontent=["'])([^"']*)(["'])""",lambda m:m[1]+m[2].rstrip()+', viewport-fit=cover'+m[3],tag,count=1,flags=re.I)
  s,count=viewport_meta.subn(ensure_viewport_fit,s,count=1)
- if not count:raise SystemExit('Missing viewport meta tag: '+str(p))
+ if not count:
+  s=re.sub(r'<head\b[^>]*>',lambda m:m[0]+'<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">',s,count=1,flags=re.I)
  # Put the equity helper under its input after all older patches have finished
  # editing the original label markup.
  equity_hint_pattern=re.compile(
