@@ -841,3 +841,4 @@ runs:
         python -m unittest discover -s scripts -p test_calculator_explanations.py
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_calculator_explanations.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_action_footer_gap.cjs
+        python scripts/verify_seo_safe_area.py _site
