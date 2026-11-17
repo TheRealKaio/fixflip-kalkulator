@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const EVENTS={page_view:'nic_page_view',calculator_use:'nic_calculator_use',calculate:'nic_calculate',pdf_download:'nic_pdf_download',pdf_share:'nic_pdf_share'};
-const CALCULATORS=['budget','own','rent','flip','finance'],SECTIONS=['website','company','budget','own','rent','flip'];
+const CALCULATORS=['budget','own','rent','flip','finance','settlement'],SECTIONS=['website','company','budget','own','rent','flip','settlement'];
 function dayKey(date=new Date()){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);return ['year','month','day'].map(k=>p.find(x=>x.type===k).value).join('-');}
 function empty(){return {version:1,startedAt:null,days:{}};}
 function blankTotals(){return {events:Object.fromEntries(Object.keys(EVENTS).map(k=>[k,0])),calculators:Object.fromEntries(CALCULATORS.map(k=>[k,Object.fromEntries(Object.keys(EVENTS).map(e=>[e,0]))])),devices:{},systems:{},sources:{}};}
@@ -13,7 +13,7 @@ function record(data,type,calculator,context,date=new Date()){
  const today=dayKey(date),out=data&&data.version===1&&data.days&&typeof data.days==='object'?data:empty();
  const cutoff=dayKey(new Date(date.getTime()-89*86400000));for(const key of Object.keys(out.days))if(key<cutoff||!/^\d{4}-\d{2}-\d{2}$/.test(key))delete out.days[key];
  let d=out.days[today];if(!d||!d.events||!d.calculators||!d.devices||!d.systems||!d.sources)d=out.days[today]=blankTotals();out.startedAt=out.startedAt||date.toISOString();increment(d.events,type);
- if(CALCULATORS.includes(calculator))increment(d.calculators[calculator],type);
+ if(CALCULATORS.includes(calculator)){if(!d.calculators[calculator])d.calculators[calculator]=Object.fromEntries(Object.keys(EVENTS).map(e=>[e,0]));increment(d.calculators[calculator],type);}
  if(type==='page_view'){increment(d.devices,context.device);increment(d.systems,context.os);increment(d.sources,context.source);}
  return out;
 }

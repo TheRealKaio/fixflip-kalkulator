@@ -4,7 +4,11 @@ const site=process.argv[2]||'_site',coreCode=fs.readFileSync(site+'/statistics-c
 function core(){const context={Intl,Date,URL};context.window=context;vm.createContext(context);vm.runInContext(coreCode,context);return context.NICStatsCore;}
 const C=core(),date=new Date('2026-10-23T09:00:00Z');let data=C.empty();
 for(const type of ['page_view','calculator_use','calculate','pdf_download','pdf_share'])data=C.record(data,type,'rent',{device:'Smartphone',os:'iOS / iPadOS',source:'google.com'},date);
-let s=C.summary(data,30,date);for(const type of Object.keys(C.EVENTS))assert.equal(s.events[type],1);assert.equal(s.calculators.rent.calculate,1);assert.equal(s.devices.Smartphone,1);assert.equal(s.systems['iOS / iPadOS'],1);assert.equal(s.sources['google.com'],1);
+assert(C.CALCULATORS.includes('settlement'));assert(C.SECTIONS.includes('settlement'));
+// Older local daily records do not have a settlement bucket: keep them intact.
+data=C.record(data,'page_view','settlement',{device:'Smartphone',os:'iOS / iPadOS',source:'google.com'},date);
+assert.equal(C.summary(data,30,date).calculators.settlement.page_view,1);
+let s=C.summary(data,30,date);for(const type of Object.keys(C.EVENTS))assert.equal(s.events[type],type==='page_view'?2:1);assert.equal(s.calculators.rent.calculate,1);assert.equal(s.devices.Smartphone,2);assert.equal(s.systems['iOS / iPadOS'],2);assert.equal(s.sources['google.com'],2);
 data=C.record(data,'calculate','own',{},new Date('2026-08-01T09:00:00Z'));assert.equal(C.summary(data,7,date).events.calculate,1);
 data=C.record(data,'page_view',null,{device:'Desktop',os:'Linux',source:'__proto__'},date);assert.equal(C.summary(data,7,date).sources.__proto__,1);assert.equal({}.polluted,undefined);assert.equal(C.source('https://google.com/search?q=private','https://example.org/?email=private'),'google.com');assert.equal(C.source('','https://example.org/?utm_source=newsletter'),'newsletter');assert.equal(C.source('','https://example.org/?utm_source=private@email.com'),'Direkt / unbekannt');assert.equal(C.detectDevice({userAgent:'Mozilla/5.0 (iPhone)',maxTouchPoints:5}).device,'Smartphone');assert.equal(C.detectDevice({userAgent:'Mozilla/5.0 (Macintosh)',platform:'MacIntel',maxTouchPoints:5}).os,'iOS / iPadOS');assert.equal(C.dayKey(new Date('2026-10-23T22:30:00Z')),'2026-10-24');
 function collector(){
@@ -12,6 +16,16 @@ function collector(){
  const ctx={Intl,Date,URL,Event,console,clearTimeout,setTimeout,location:{href:'https://example.org/vermietung/?private=123',reload(){}},navigator:{userAgent:'Linux',platform:'Linux'},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)},document:{referrer:'https://google.com/search?q=private',visibilityState:'visible',addEventListener:(name,fn)=>docHandlers[name]=fn,querySelector:()=>null,getElementById:id=>id==='rentSection'?root:id==='rentPurchase'?{value:controls[0].value}:null,createElement:()=>({}),head:{append:s=>added.push(s)}},addEventListener:(k,f)=>handlers[k]=f,dispatchEvent(){}};
  ctx.window=ctx;ctx.NICSettings={ROOT:new URL('https://example.org/'),current:{meta:{website:{googleTag:'G-ROOT1234'},rent:{googleTag:'G-RENT1234'},own:{googleTag:''}}},pages:[['website','Website',''],['rent','Rent','vermietung/'],['own','Own','eigennutzung/']],pageMeta:()=>({title:'Rent'})};vm.createContext(ctx);vm.runInContext(coreCode,ctx);vm.runInContext(fs.readFileSync(site+'/statistics.js','utf8'),ctx);return {ctx,values,handlers,added,controls,docHandlers};
 }
+// A consented settlement visit is a page view, not a completed calculation.
+const settlementTest=collector();
+settlementTest.values.set('nic_statistics_consent_v1',JSON.stringify({status:'granted',at:Date.now()}));
+settlementTest.ctx.NICAnalytics.start({section:'settlement',calculator:null});
+const settlementDay=JSON.parse(settlementTest.values.get('nic_statistics_v1')).days[C.dayKey()];
+assert.equal(settlementDay.calculators.settlement.page_view,1);
+assert.equal(settlementDay.events.calculator_use,0);
+const settlementEvent=settlementTest.ctx.dataLayer.filter(x=>x[0]==='event'&&x[1]==='nic_page_view')[0];
+assert(settlementEvent[2].page_location.endsWith('/nebenkostenabrechnung/'));
+
 let test=collector(),A=test.ctx.NICAnalytics;test.values.set(A.CONSENT,JSON.stringify({status:'denied',at:Date.now()}));A.start({section:'rent',calculator:'rent'});assert.equal(test.added.length,0);assert.equal(test.values.has(A.STORAGE),false);assert.equal(A.track('pdf_share','rent'),false);
 test.values.set(A.CONSENT,JSON.stringify({status:'granted',at:Date.now()}));test.handlers.storage({key:A.CONSENT});assert.equal(test.added.length,1);assert(test.added[0].src.includes('G-RENT1234'));A.changeSection('rent');assert.equal(JSON.parse(test.values.get(A.STORAGE)).days[C.dayKey()].events.calculator_use,1);
 const target={matches:()=>false,closest:()=>({})};test.controls[0].value='196000';test.docHandlers.input({isTrusted:true,target});test.controls[0].value='197000';test.docHandlers.input({isTrusted:true,target});A.flush();assert.equal(JSON.parse(test.values.get(A.STORAGE)).days[C.dayKey()].events.calculate,1);test.docHandlers.input({isTrusted:false,target});A.flush();assert.equal(JSON.parse(test.values.get(A.STORAGE)).days[C.dayKey()].events.calculate,1);
