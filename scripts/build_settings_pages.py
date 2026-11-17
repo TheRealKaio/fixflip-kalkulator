@@ -230,7 +230,7 @@ for path,title in [('unternehmen/','Unternehmen & Kontakt'),('impressum/','Impre
     (folder/'index.html').write_text(s)
 urls=[base+p for k,p in pages.items() if indexed(k)]+[base+p for k,p in content_routes.items() if indexed(k)]
 if indexed('impressum'):urls.append(base+'impressum/')
-(site/'robots.txt').write_text('User-agent: *\nDisallow: /api/\nDisallow: /admin/\nDisallow: /user-data/\nSitemap: '+base+'sitemap.xml\n')
+(site/'robots.txt').write_text('User-agent: *\nDisallow: /api/\nDisallow: /admin/\nDisallow: /admin.html\nDisallow: /user-data/\nDisallow: /user-data.html\nSitemap: '+base+'sitemap.xml\n')
 (site/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>'+html.escape(u)+'</loc></url>' for u in urls)+'</urlset>')
 print('Settings metadata pages built: website, company, four calculators and six content pages')
 
