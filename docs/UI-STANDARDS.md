@@ -100,6 +100,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Admin- und Nutzeransichten sowie Rechtsansichten behalten ihre bestehenden
   Zugangs- und Inhaltslogiken; kein zusätzlicher Header oder Footer wird erzeugt.
 
+- In den rechtlichen Ansichten zeigt die Zurück-Schaltfläche den Text „ZURÜCK“ mit linkem Pfeil und führt stets zur Startseite `/`, unabhängig von der zuvor geöffneten Rechnerseite.
+
 ## 3. Inhaltsseiten und Abstände
 
 - Mieterabrechnung, Preise und Warum ImmoCheck? zeigen ihre H1 im Bildheader;
