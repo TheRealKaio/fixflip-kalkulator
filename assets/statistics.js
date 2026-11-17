@@ -18,7 +18,7 @@ function googleTag(key){
   window.gtag('js',new Date());const script=document.createElement('script');script.id='nic-google-tag';script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id);document.head.append(script);
  }
  window['ga-disable-'+id]=false;
- if(!configured.has(id)){const path=S.pages.find(p=>p[0]===key)?.[2]||'';window.gtag('config',id,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,page_location:new URL(path,S.ROOT).href,page_referrer:cleanReferrer(),...campaign()});configured.add(id);}
+ if(!configured.has(id)){const path=S.pages.find(p=>p[0]===key)?.[2]||(key==='settlement'?'nebenkostenabrechnung/':'');window.gtag('config',id,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,page_location:new URL(path,S.ROOT).href,page_referrer:cleanReferrer(),...campaign()});configured.add(id);}
  return id;
 }
 function cleanReferrer(){try{return new URL(document.referrer).origin+'/';}catch(_){return '';}}
@@ -27,7 +27,7 @@ function track(type,which=calculator,options={}){
  const calc=C.CALCULATORS.includes(which)?which:null,key=calc||section;
  try{const data=C.record(readData(),type,calc,environment);localStorage.setItem(STORAGE,JSON.stringify(data));window.dispatchEvent(new Event('nic:statistics-updated'));}catch(_){/* Statistics must never interrupt a calculation or PDF. */}
  try{window.NICAccess?.recordStatistics({event:type,section:C.SECTIONS.includes(section)?section:(calc==='finance'?'flip':key),calculator:calc,device:environment.device,system:environment.os,source:environment.source})?.catch(()=>{});}catch(_){/* Global statistics are optional and must not interrupt calculator actions. */}
- try{const id=googleTag(key);if(id){const path=S.pages.find(p=>p[0]===key)?.[2]||'';window.gtag('event',C.EVENTS[type],{send_to:id,page_location:new URL(path,S.ROOT).href,page_title:S.pageMeta(S.current,key).title,page_referrer:cleanReferrer(),calculator_id:calc||'none',method:['save','share_fallback','web_share'].includes(options.method)?options.method:undefined});}}catch(_){/* Tag blockers do not affect calculator behavior. */}
+ try{const id=googleTag(key);if(id){const path=S.pages.find(p=>p[0]===key)?.[2]||(key==='settlement'?'nebenkostenabrechnung/':'');window.gtag('event',C.EVENTS[type],{send_to:id,page_location:new URL(path,S.ROOT).href,page_title:S.pageMeta(S.current,key).title,page_referrer:cleanReferrer(),calculator_id:calc||'none',method:['save','share_fallback','web_share'].includes(options.method)?options.method:undefined});}}catch(_){/* Tag blockers do not affect calculator behavior. */}
  return true;
 }
 function rootFor(key){return key==='finance'?(document.querySelector('.app main')||document.body):document.getElementById(key==='rent'?'rentSection':key==='budget'?'budgetSection':'dealCalculatorContent');}
