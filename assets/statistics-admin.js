@@ -2,7 +2,7 @@
 'use strict';
 const C=window.NICStatsCore,$=id=>document.getElementById(id),STORAGE='nic_statistics_v1';
 if(!C||!$('statsSource'))return;
-const labels={budget:'Budget',own:'Eigennutzung',rent:'Vermietung',flip:'Fix & Flip',finance:'Finanzierungsrechner'};
+const labels={budget:'Budget',own:'Eigennutzung',rent:'Vermietung',flip:'Fix & Flip',finance:'Finanzierungsrechner',settlement:'Mieterabrechnung'};
 const metrics=[['page_view','Seitenaufrufe'],['calculator_use','Rechner-Nutzungen'],['calculate','Kalkulationen'],['pdf_download','PDF-Downloads'],['pdf_share','PDF geteilt']];
 let token='',expires=0,requestSerial=0,identityPromise=null,authorizedClient='';
 function counter(n){return n==null?'—':new Intl.NumberFormat('de-DE').format(n);}
@@ -18,7 +18,7 @@ function render(data,notice,countries=null){
  $('statsNotice').textContent=notice;$('statsMetrics').replaceChildren();
  for(const [key,label] of metrics){const card=document.createElement('div');card.className='stats-metric';const name=document.createElement('span');name.textContent=label;const value=document.createElement('strong');value.textContent=counter(data?.events[key]);card.append(name,value);$('statsMetrics').append(card);}
  $('statsCalculatorRows').replaceChildren();
- for(const key of C.CALCULATORS){const row=document.createElement('tr'),name=document.createElement('th');name.scope='row';name.textContent=labels[key];row.append(name);for(const metric of ['calculator_use','calculate','pdf_download','pdf_share']){const cell=document.createElement('td');cell.textContent=counter(data?.calculators[key][metric]);row.append(cell);}$('statsCalculatorRows').append(row);}
+ for(const key of C.CALCULATORS){const row=document.createElement('tr'),name=document.createElement('th');name.scope='row';name.textContent=labels[key];row.append(name);for(const metric of ['page_view','calculator_use','calculate','pdf_download','pdf_share']){const cell=document.createElement('td');cell.textContent=key==='settlement'&&metric!=='page_view'?'—':counter(data?.calculators?.[key]?.[metric]??0);row.append(cell);}$('statsCalculatorRows').append(row);}
  drawDimension('statsDevices',data?.devices,data?'Noch keine erfassten Aufrufe.':'Keine verbundenen Daten.');drawDimension('statsSystems',data?.systems,data?'Noch keine erfassten Aufrufe.':'Keine verbundenen Daten.');drawDimension('statsSources',data?.sources,data?'Noch keine erfassten Aufrufe.':'Keine verbundenen Daten.');drawDimension('statsCountries',countries,source()==='local'?'Länder sind in der lokalen Vorschau nicht ermittelbar. Verbinde Google Analytics für eine Länder-Auswertung.':'Noch keine Länder-Daten verfügbar.');
 }
 function local(){let data=C.empty();try{const s=JSON.parse(localStorage.getItem(STORAGE));if(s?.version===1&&s.days)data=s;}catch(_){}const since=data.startedAt?' Erfassung seit '+new Date(data.startedAt).toLocaleDateString('de-DE')+'.':'';render(C.summary(data,Number($('statsDays').value)),'Lokale Vorschau · nur dieser Browser nach Statistik-Zustimmung. Keine Gesamtbesucherzahlen.'+since);}
@@ -39,7 +39,7 @@ async function googleData(serial){
  const [overview,calculators,devices,systems,countries,sources]=results.map(r=>r.value),data=C.blankTotals();
  const reverse=Object.fromEntries(Object.entries(C.EVENTS).map(([k,v])=>[v,k]));
  rows(overview).forEach(r=>{const event=reverse[r.dimensions[0]];if(event)data.events[event]+=r.count;});
- const paths={'budget':'budget','eigennutzung':'own','vermietung':'rent','fix-flip':'flip','finanzierungsrechner':'finance'};
+ const paths={'budget':'budget','eigennutzung':'own','vermietung':'rent','fix-flip':'flip','finanzierungsrechner':'finance','nebenkostenabrechnung':'settlement'};
  rows(calculators).forEach(r=>{const key=paths[r.dimensions[0].replace(/^\/+|\/+$/g,'')],event=reverse[r.dimensions[1]];if(key&&event)data.calculators[key][event]+=r.count;});
  for(const [key,result] of [['devices',devices],['systems',systems],['sources',sources]])rows(result).forEach(r=>Object.defineProperty(data[key],r.dimensions[0],{value:r.count,enumerable:true,configurable:true}));
  const countryValues={};rows(countries).forEach(r=>Object.defineProperty(countryValues,r.dimensions[0],{value:r.count,enumerable:true,configurable:true}));
