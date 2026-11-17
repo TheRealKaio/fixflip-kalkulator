@@ -178,6 +178,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 ## Ergebnisboxen der Rechner
 
+- Der Kacheltitel für die monatliche Kreditrate in der Eigennutzung lautet „Monatliche Kreditrate“.
+
 - Ergebnisraster werden je Rechner anhand der Zahl sichtbarer Kacheln
   ausbalanciert und bleiben bei höchstens vier Boxen pro Desktop-Zeile: Fix & Flip
   zeigt acht Standard-KPIs als 4 + 4; mit aktiver Marktdifferenz als 3 + 3 + 3.
@@ -428,3 +430,15 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Objektdaten: gemeinsame Beschriftungszeile
 - Wohnfläche / Preis pro m² sowie Baujahr / Grundstück stehen je Rasterzeile mit gleicher Oberkante der Eingabe- und Ergebnisboxen. Glossar-Unterstreichungen dürfen die Feldhöhe nicht verschieben.
 - Zeilen richten sich über flexible, gemeinsame Beschriftungshöhen aus; Schriftgrößen, Umbruch, Einheiten und bestehendes responsives Raster bleiben erhalten.
+
+## Kacheltitel und kontextbezogene Hilfebegriffe (17.11.2026)
+
+- Alle Ergebnis-Kacheltitel der fünf Rechner verwenden Admin → Layout → Untertexte (px), einschließlich Budget- und Kennzahlenbeschriftungen. Änderungen der Einstellung wirken gemeinsam auf diese Titel.
+- Anklickbare Fachbegriffe übernehmen Schriftfamilie, Schriftgröße, Schriftstärke, Zeilenhöhe, Farbe, Buchstabenabstand und Groß-/Kleinschreibung des ursprünglichen Textes. Die Hilfefunktion darf keine globale Button-Typografie einschleusen; die gepunktete Unterstreichung und Bedienbarkeit bleiben erhalten.
+- Die geöffneten Hilfedialoge und ergänzenden Hinweistexte behalten ihre bisherigen Typografie-Zuordnungen.
+
+## Hypothekenzinsdiagramm im Mobil-Hochformat (17.11.2026)
+
+- Unter 701 px im Hochformat erhält die Zinsgrafik eine neu berechnete SVG-Zeichenfläche mit mindestens 240 px Bildschirmhöhe. Größere Admin-Schriften können mehr Höhe benötigen. Querformat und Desktop behalten das vorhandene Seitenverhältnis.
+- Achsenbeschriftungen bleiben an Admin → Layout → Untertexte gebunden. Prozentwerte, Kurve und Jahreszahlen erhalten getrennte Randflächen; die Grafik wird nicht verzerrt gestreckt.
+- Jahreszahlen werden mit einem gleichmäßigen Jahresintervall angezeigt. Erstes und letztes Jahr bleiben erhalten; bei Platzmangel wird das Intervall insgesamt vergrößert, statt einzelne Jahre unregelmäßig zu entfernen.

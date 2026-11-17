@@ -6,6 +6,14 @@ import sys
 path = Path(sys.argv[1] if len(sys.argv) > 1 else "_site/index.html")
 s = path.read_text(encoding="utf-8")
 
+# Shorten only the own-use result tile label, preserving PDF wording and formulas.
+s, credit_labels = re.subn(
+    r'(<div class="name">)Monatliche Kreditrate \(Zins \+ Tilgung\)(</div>\s*<div class="value" id="ownKpiMonthlyCredit")',
+    r'\1Monatliche Kreditrate\2', s,
+)
+if credit_labels != 1:
+    raise SystemExit("Expected exactly one own-use monthly credit tile title")
+
 # Replace the visible labels without touching their financial formulas.
 labels = [
     ("Dein monatlich verfügbares Budget", "3. Dein monatlich verfügbares Budget"),

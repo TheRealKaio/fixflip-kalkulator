@@ -64,14 +64,20 @@ $('interestVal').textContent=pct(interest);$('repayVal').textContent=pct(repay);
 const w=560,h=210,l=60,r=12,t=18,b=35,y=x=>t+(1-x/Math.max(loan,1))*(h-t-b);const path=arr.map((v,i)=>(i?'L':'M')+(l+i/years*(w-l-r)).toFixed(2)+' '+y(v).toFixed(2)).join(' ');$('repayChart').innerHTML=grid(w,h,l,r,t,b)+line(path,'#0d9488',3)+'<text x="'+l+'" y="'+(h-Math.max(11,chartLabelUnits($('repayChart'))*.3))+'">Start</text><text x="548" y="'+(h-Math.max(11,chartLabelUnits($('repayChart'))*.3))+'" text-anchor="end">Jahr '+years+'</text><circle cx="548" cy="'+y(balance)+'" r="4" fill="#0d9488"/>';drawRates();try{localStorage.setItem(F,JSON.stringify(values()))}catch(e){}
 }
 function chartLabelUnits(svg){return (Number.parseFloat(getComputedStyle(svg).getPropertyValue('--nic-subtext-font-size'))||14)*560/(svg.clientWidth||560);}
-function drawRates(){const svg=$('rateChart'),w=560,h=245,font=chartLabelUnits(svg),l=Math.max(76,font*4+8),r=Math.max(24,font*1.4),t=Math.max(19,font*.8),b=Math.max(34,font*1.4);if(!series.length){svg.innerHTML='<text x="20" y="110">Keine veröffentlichten Monatswerte geladen.</text>';return;}
+function drawRates(){const svg=$('rateChart'),w=560,width=svg.clientWidth||w,font=chartLabelUnits(svg),scale=w/width;
+// Rebuild the coordinate space on narrow portrait screens; keep glyphs at the Admin size.
+const portrait=window.matchMedia('(max-width:700px) and (orientation:portrait)').matches;
+const h=portrait?Math.max(245,Math.max(240,font/scale*11.5)*scale):245;
+svg.setAttribute('viewBox','0 0 '+w+' '+h);
+svg.dataset.nicYearLayout='uniform';
+const l=Math.max(76,font*4+8),r=Math.max(24,font*1.6),t=Math.max(19,font*.9),b=Math.max(34,font*2.4),axisGap=Math.max(8,12*scale);if(!series.length){svg.innerHTML='<text x="20" y="110">Keine veröffentlichten Monatswerte geladen.</text>';return;}
 const all=series.flatMap(x=>[x.five,x.ten]).filter(Number.isFinite);all.push(num('interest'));let low=Math.max(0,Math.floor(Math.min(...all)*2)/2-.5),high=Math.ceil(Math.max(...all)*2)/2+.5;if(high-low<2)high=low+2;
 const X=i=>l+i/(series.length-1||1)*(w-l-r),Y=v=>h-b-(v-low)/(high-low)*(h-t-b);let markup=grid(w,h,l,r,t,b);
-for(let i=0;i<=4;i++){let v=low+(high-low)*(4-i)/4;markup+='<text x="'+(l-8)+'" y="'+(t+(h-t-b)*i/4+font*.3)+'" text-anchor="end">'+pct(v,1)+'</text>';}
+for(let i=0;i<=4;i++){let v=low+(high-low)*(4-i)/4;markup+='<text x="'+(l-axisGap)+'" y="'+(t+(h-t-b)*i/4+font*.3)+'" text-anchor="end">'+pct(v,1)+'</text>';}
 function path(key){let p='';series.forEach((e,i)=>{if(Number.isFinite(e[key]))p+=(p?'L':'M')+X(i).toFixed(2)+' '+Y(e[key]).toFixed(2)+' ';});return p;}
 markup+=line(path('five'),'#0d9488',2.5)+line(path('ten'),'#6366f1',2.5);const v=num('interest');markup+=line('M'+l+' '+Y(v)+' L'+(w-r)+' '+Y(v),'#ea580c',2.8,true);
 const pick=Math.max(0,Math.min(series.length-1,num('monthPick')));const row=series[pick];for(const [key,c] of [['five','#0d9488'],['ten','#6366f1']])if(Number.isFinite(row[key]))markup+='<circle cx="'+X(pick)+'" cy="'+Y(row[key])+'" r="5" fill="'+c+'" stroke="white" stroke-width="2"/>';
-for(let i=0;i<series.length;i+=12){markup+='<text x="'+X(i)+'" y="'+(h-Math.max(8,font*.3))+'" text-anchor="middle">'+series[i].month.slice(0,4)+'</text>';}
+for(let i=0;i<series.length;i+=12){markup+='<text x="'+X(i)+'" y="'+(h-font*.45)+'" text-anchor="middle">'+series[i].month.slice(0,4)+'</text>';}
 svg.innerHTML=markup;$('pointDetail').textContent=row.month.slice(5,7)+'.'+row.month.slice(0,4)+' · 1–5 Jahre: '+(Number.isFinite(row.five)?pct(row.five):'–')+' · 5–10 Jahre: '+(Number.isFinite(row.ten)?pct(row.ten):'–');}
 function splitCsv(line){const out=[];let value='',quoted=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'){if(quoted&&line[i+1]==='"'){value+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){out.push(value);value='';}else value+=c;}out.push(value);return out;}
 async function readSeries(code){const api='https://api.statistiken.bundesbank.de/rest/data/BBIM1/M.DE.B.A2C.'+code+'.R.A.2250.EUR.N?format=sdmx_csv&detail=dataonly&startPeriod='+(new Date().getFullYear()-11)+'-01';
