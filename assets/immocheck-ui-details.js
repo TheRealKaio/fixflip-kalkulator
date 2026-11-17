@@ -58,10 +58,26 @@ function refreshChartLabels(){
   const width=svg.clientWidth,box=svg.viewBox.baseVal;
   if(!width||!box.width)return;
   svg.style.setProperty('--nic-chart-text-scale',String(box.width/width));
-  const state=chartObservers.get(svg),key=width+':'+getComputedStyle(svg).getPropertyValue('--nic-subtext-font-size');
+  const state=chartObservers.get(svg),key=width+':'+window.matchMedia('(max-width:700px) and (orientation:portrait)').matches+':'+getComputedStyle(svg).getPropertyValue('--nic-subtext-font-size');
   if(state.key!==key&&typeof svg.nicRedraw==='function'){state.key=key;svg.nicRedraw();}
   const years=[...svg.querySelectorAll('text')].filter(text=>/^\d{4}$/.test(text.textContent.trim()));
   years.forEach(text=>text.style.removeProperty('display'));
+  if(svg.dataset.nicYearLayout==='uniform'&&years.length>1){
+   // Choose a regular annual interval that fits every label, including both endpoints.
+   // Centered endpoints have their own reserved margin in drawRates.
+   years.forEach(text=>text.setAttribute('text-anchor','middle'));
+   const gap=8*box.width/width,last=years.length-1;
+   let selected=[years[0],years[last]];
+   for(let step=1;step<=last;step++){
+    if(last%step)continue;
+    const candidate=years.filter((_,index)=>index%step===0);
+    if(candidate.every((text,index)=>!index||candidate[index-1].getBBox().x+candidate[index-1].getBBox().width+gap<=text.getBBox().x)){
+     selected=candidate;break;
+    }
+   }
+   years.forEach(text=>{if(!selected.includes(text))text.style.display='none';});
+   return;
+  }
   years.at(-1)?.setAttribute('text-anchor','end');
   // Preserve the first/last year, skipping intermediate ticks when space is tight.
   const gap=8*box.width/width,visible=[];

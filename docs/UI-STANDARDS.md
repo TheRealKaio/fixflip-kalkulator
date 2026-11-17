@@ -436,3 +436,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Alle Ergebnis-Kacheltitel der fünf Rechner verwenden Admin → Layout → Untertexte (px), einschließlich Budget- und Kennzahlenbeschriftungen. Änderungen der Einstellung wirken gemeinsam auf diese Titel.
 - Anklickbare Fachbegriffe übernehmen Schriftfamilie, Schriftgröße, Schriftstärke, Zeilenhöhe, Farbe, Buchstabenabstand und Groß-/Kleinschreibung des ursprünglichen Textes. Die Hilfefunktion darf keine globale Button-Typografie einschleusen; die gepunktete Unterstreichung und Bedienbarkeit bleiben erhalten.
 - Die geöffneten Hilfedialoge und ergänzenden Hinweistexte behalten ihre bisherigen Typografie-Zuordnungen.
+
+## Hypothekenzinsdiagramm im Mobil-Hochformat (17.11.2026)
+
+- Unter 701 px im Hochformat erhält die Zinsgrafik eine neu berechnete SVG-Zeichenfläche mit mindestens 240 px Bildschirmhöhe. Größere Admin-Schriften können mehr Höhe benötigen. Querformat und Desktop behalten das vorhandene Seitenverhältnis.
+- Achsenbeschriftungen bleiben an Admin → Layout → Untertexte gebunden. Prozentwerte, Kurve und Jahreszahlen erhalten getrennte Randflächen; die Grafik wird nicht verzerrt gestreckt.
+- Jahreszahlen werden mit einem gleichmäßigen Jahresintervall angezeigt. Erstes und letztes Jahr bleiben erhalten; bei Platzmangel wird das Intervall insgesamt vergrößert, statt einzelne Jahre unregelmäßig zu entfernen.
