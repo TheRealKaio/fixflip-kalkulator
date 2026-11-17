@@ -87,11 +87,11 @@ for p in site.rglob('*.html'):
  s=p.read_text()
  # iOS standalone mode needs viewport-fit=cover for reliable safe-area insets.
  # Update the existing viewport declaration rather than emitting a duplicate tag.
- viewport_meta=re.compile(r'<meta\\b(?=[^>]*\\bname=["\\\']viewport["\\\'])[^>]*>',re.I)
+ viewport_meta=re.compile(r'<meta\b(?=[^>]*\bname=["\\']viewport["\\'])[^>]*>',re.I)
  def ensure_viewport_fit(match):
   tag=match.group(0)
   if 'viewport-fit=' in tag.lower():return tag
-  return re.sub(r'(\\bcontent=["\\\'])([^"\\\']*)(["\\\'])',lambda m:m[1]+m[2].rstrip()+', viewport-fit=cover'+m[3],tag,count=1,flags=re.I)
+  return re.sub(r'(\bcontent=["\\'])([^"\\']*)(["\\'])',lambda m:m[1]+m[2].rstrip()+', viewport-fit=cover'+m[3],tag,count=1,flags=re.I)
  s,count=viewport_meta.subn(ensure_viewport_fit,s,count=1)
  if not count:raise SystemExit('Missing viewport meta tag: '+str(p))
  # Put the equity helper under its input after all older patches have finished
