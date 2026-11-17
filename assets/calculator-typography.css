@@ -29,6 +29,7 @@ html body:not(.nic-admin) :is(
   .nic-brand-description,.nic-brand-description *,
   .deal-type-option small,
   .kpi .name,.kpi .name > span,.kpi .value,.metric-box .metric-value,
+  .budget-result-card .name,.metric-box .metric-label,.rent-kpi-name,
   .info-box,.info-box :where(*),.info-card p,.tip-box p,
   .budget-summary-row,.budget-summary-row :where(*),
   .budget-expense-name,.budget-expense-title,
@@ -57,8 +58,7 @@ html body:not(.nic-admin) :is(
   .info-text,.info-text :where(*),.tip,.tip :where(*),
   .source,.source :where(*),.status,.status :where(*),
   .legend,.legend :where(*),.rent-note,.rent-note :where(*),
-  .rent-maintenance-status,.metric-label,
-  .budget-result-card .name,
+  .rent-maintenance-status,
   .budget-rate-slider-head,.budget-rate-slider-head :where(*),
   .budget-rate-slider-note,.budget-rate-slider-warning,
   .budget-rate-guidance,.budget-rate-guidance :where(*)
@@ -172,4 +172,13 @@ html body .app > :is(.nic-brand-bar,.hero,main) {
 html body:not(.nic-admin) .app :is(.nic-budget-free-equity-hint,.nic-flip-sale-review-hint){
  font-size:var(--nic-hint-font-size,12px)!important;
  line-height:1.5;
+}
+
+/* Context help is a text link: preserve the typography of its original label,
+   including headings, hints and KPI titles, despite global button rules. */
+html body:not(.nic-admin) .app button.nic-abc-term {
+  font: inherit !important;
+  color: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: inherit !important;
 }

@@ -428,3 +428,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Objektdaten: gemeinsame Beschriftungszeile
 - Wohnfläche / Preis pro m² sowie Baujahr / Grundstück stehen je Rasterzeile mit gleicher Oberkante der Eingabe- und Ergebnisboxen. Glossar-Unterstreichungen dürfen die Feldhöhe nicht verschieben.
 - Zeilen richten sich über flexible, gemeinsame Beschriftungshöhen aus; Schriftgrößen, Umbruch, Einheiten und bestehendes responsives Raster bleiben erhalten.
+
+## Kacheltitel und kontextbezogene Hilfebegriffe (17.11.2026)
+
+- Alle Ergebnis-Kacheltitel der fünf Rechner verwenden Admin → Layout → Untertexte (px), einschließlich Budget- und Kennzahlenbeschriftungen. Änderungen der Einstellung wirken gemeinsam auf diese Titel.
+- Anklickbare Fachbegriffe übernehmen Schriftfamilie, Schriftgröße, Schriftstärke, Zeilenhöhe, Farbe, Buchstabenabstand und Groß-/Kleinschreibung des ursprünglichen Textes. Die Hilfefunktion darf keine globale Button-Typografie einschleusen; die gepunktete Unterstreichung und Bedienbarkeit bleiben erhalten.
+- Die geöffneten Hilfedialoge und ergänzenden Hinweistexte behalten ihre bisherigen Typografie-Zuordnungen.
