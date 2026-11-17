@@ -436,10 +436,9 @@ const assert=require('node:assert/strict');
     await page.locator(`[data-legal-placeholder="${legal}"]`).click();
     await page.locator('#nicLegalPanel').waitFor({state:'visible'});
     assert((await page.locator('.nic-legal-card').innerText()).trim().length>0,'Legal content must exist on every route');
-    const beforeLegalBack=page.url();
-    await page.getByRole('button',{name:'Zurück zur Startseite',exact:true}).click();
-    await page.waitForURL(url=>url.pathname==='/');
-    if(new URL(beforeLegalBack).pathname!=='/')await page.goto(beforeLegalBack);
+    assert.equal(await page.locator('#nicLegalPanel .nic-admin-back').getAttribute('aria-label'),'Zurück zur Startseite');
+    await page.evaluate(()=>{history.pushState(null,'',location.pathname+location.search);window.dispatchEvent(new Event('hashchange'));});
+    await page.locator('#nicLegalPanel').waitFor({state:'hidden'});
    }
    if(slug==='finanzierungsrechner'){
     await page.evaluate(()=>{for(const [id,value] of Object.entries({loan:300000,interest:4,repay:2,extra:5,years:10})){const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));}});
@@ -801,6 +800,14 @@ const assert=require('node:assert/strict');
  await profile.locator('#profileStatus').filter({hasText:'Deine Daten wurden gespeichert.'}).waitFor();
  assert.equal(await page.locator('#heroTitle').innerText(),'Deine Nutzerdaten');
  console.log('PASS native account portal: role-specific view, profile display and save through existing API');
+ // Test the full-page destination separately so it cannot reset calculator test state.
+ await page.goto('http://127.0.0.1:8766/budget/',{waitUntil:'domcontentloaded'});
+ await page.locator('[data-legal-placeholder="impressum"]').first().click();
+ await page.locator('#nicLegalPanel').waitFor({state:'visible'});
+ await page.getByRole('button',{name:'Zurück zur Startseite',exact:true}).click();
+ await page.waitForURL(url=>url.pathname==='/');
+ assert.equal(new URL(page.url()).pathname,'/','Legal back button navigates to the home page');
+ console.log('PASS legal back button: ZURÜCK navigates to the home page');
 
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
