@@ -127,8 +127,12 @@ for pattern in [r'<title>.*?</title>',r'<link rel="canonical"[^>]*>',r'<meta (?:
 base=base.replace('!["budget","own","flip"].includes(document.documentElement.dataset.nicPage)', '!["budget","own","flip","finance"].includes(document.documentElement.dataset.nicPage)')
 (site/'finanzierungsrechner/index.html').write_text(base)
 print('Unified five-calculator document and financing module built')
+# The unified controller owns route startup and remembered selections. Remove
+# the earlier build stage's inline bootstrap from the final application.
+legacy_start='<script>'+Path('assets/calculator-start.js').read_text()+'</script>'
 for page in site.rglob('*.html'):
  s=page.read_text()
+ s=s.replace(legacy_start,'')
  if 'nic-published-settings' in s and re.search(r'class="[^"]*\bapp\b',s) and 'initial-layout.js' not in s:
   s=s.replace('<head>','<head><script src="/initial-layout.js"></script>',1)
  s=re.sub(r'<script\b[^>]*src="[^"]*calculator-finance(?:\.[a-f0-9]{16})?\.js"[^>]*>\s*</script>','',s)

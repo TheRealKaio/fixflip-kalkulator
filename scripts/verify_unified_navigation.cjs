@@ -49,6 +49,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   const homeHeading=await page.locator('#heroTitle').innerText();
   assert((await page.evaluate(()=>window.homeHeaderWrites)).every(title=>title===homeHeading),'Calculator startup must never overwrite the homepage heading');
   assert.equal(await page.evaluate(()=>NICCalculators.active),'home','Homepage uses the shared route controller');
+  assert.equal(await page.locator('script:not([src])').evaluateAll(nodes=>nodes.some(node=>node.textContent.includes('Explicit calculator URLs keep their'))),false,'Superseded calculator startup is removed from the final page');
   assert.equal(await page.locator('#nic-home-intro').evaluate(el=>el.parentElement.matches('.app>main.section')),true,'Homepage uses the shared content container');
   assert.equal(new URL(page.url()).pathname,'/','Bare domain must stay on the homepage');
   assert.equal(await page.locator('#nic-home-intro .nic-home-group').count(),3);
