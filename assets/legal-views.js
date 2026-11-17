@@ -49,7 +49,7 @@ function open(next){
  if(!active){snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title,robotsContent:document.head?.querySelector?.('meta[name="robots"]')?.content||'index,follow'};returnPoint=history.state?.nicLegalReturn||null;}
  if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← ZURÜCK',panel);back.type='button';back.className='nic-admin-back';back.setAttribute('aria-label','Zurück zur vorherigen Seite');back.addEventListener('click',returnToOrigin);article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
  const metaRobots=document.head?.querySelector?.('meta[name="robots"]')||document.head?.appendChild?.(Object.assign(document.createElement('meta'),{name:'robots'}));
- if(metaRobots)metaRobots.content=S.current?.seoIndexing?.[next]===true?'index,follow':'noindex,follow';
+ if(metaRobots&&metaRobots.content!=='noindex,nofollow')metaRobots.content=S.current?.seoIndexing?.[next]===true?'index,follow':'noindex,follow';
  active=next;panel.hidden=false;document.body.classList.add('nic-legal-open');panel.setAttribute('aria-label',labels[next]);title.textContent=labels[next];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[next]+' | Neustart ImmoCheck';
  render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');
