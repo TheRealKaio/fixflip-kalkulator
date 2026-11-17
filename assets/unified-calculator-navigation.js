@@ -52,7 +52,7 @@ function showContent(key,refresh=false){
  }
  const settings=window.NICSettings.current,c=settings.content[key];
  const signature=JSON.stringify([key,c.description,settings.company]);
- if(panel.dataset.signature!==signature){panel.replaceChildren(window.NICSettings.legalFragment(c.description,settings));panel.dataset.signature=signature;}
+ if(panel.dataset.signature!==signature){panel.replaceChildren(window.NICSettings.contentFragment(c.description,settings));panel.dataset.signature=signature;}
  active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;
  if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();
 }
@@ -362,7 +362,7 @@ function initWelcome(){
  const signature=JSON.stringify([content.title,content.description,settings.company]);
  if(intro.dataset.contentSignature!==signature){
   intro.querySelector('[data-home-title]').textContent=content.title;
-  intro.querySelector('[data-home-description]').replaceChildren(window.NICSettings.legalFragment(content.description,settings));
+  intro.querySelector('[data-home-description]').replaceChildren(window.NICSettings.contentFragment(content.description,settings));
   intro.dataset.contentSignature=signature;
  }
 

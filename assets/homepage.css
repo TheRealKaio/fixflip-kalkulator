@@ -97,7 +97,7 @@ body.nic-content-active .app>.nic-actions-above-footer{display:none!important}
   display:flex;flex-direction:column;
  }
  body:not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app>main.section>.nic-explanation-card{
-  order:90;
+  order:-1;
  }
 }
 
@@ -256,4 +256,19 @@ html body:not(.nic-admin) .app #nicFinanceModule .field .input-wrap .unit{
  position:absolute;right:14px;top:50%;transform:translateY(-50%);
  color:#94a3b8!important;font-size:var(--nic-hint-font-size,12px)!important;
  font-weight:400!important;pointer-events:none;
+}
+
+/* Property fields share a caption row, including glossary-linked captions. */
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field{
+ display:flex;flex-direction:column;align-self:stretch;min-width:0;
+}
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field>label{
+ flex:1 0 auto;display:flex;align-items:baseline;line-height:1.5!important;
+ min-block-size:calc(1.5em + 3px);margin-bottom:6px;
+}
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field>label .nic-abc-term{
+ min-height:0!important;min-width:0!important;vertical-align:baseline!important;
+}
+html body:not(.nic-admin) .app main.section .nic-property-aligned-field>:is(.input-wrap,.metric-box){
+ flex:0 0 auto;margin-top:0!important;box-sizing:border-box;
 }

@@ -48,7 +48,9 @@ function buildContent(){
   }
   const title=field(card,'content-'+key+'-title','Seitentitel / Überschrift','text');title.maxLength=240;title.value=defaults.title;
   if(key==='settlement')field(card,'content-'+key+'-boxTitle','Überschrift der Contentbox','text').maxLength=240;
-  const description=field(card,'content-'+key+'-description','Inhalt der Box (HTML möglich)','textarea','Der erste Absatz ist die Einleitung und bleibt mobil sichtbar. Weitere Absätze und Zwischenüberschriften werden mit weiterlesen geöffnet.');description.maxLength=12000;description.value=defaults.description;description.parentElement.classList.add('wide');
+  const description=field(card,'content-'+key+'-description','Inhalt der Box (HTML möglich)','textarea','Der erste Absatz ist die Einleitung und bleibt mobil sichtbar. Weitere Absätze und Zwischenüberschriften werden mit weiterlesen geöffnet.');description.maxLength=S.CONTENT_HTML_LIMIT;description.value=defaults.description;description.parentElement.classList.add('wide');description.rows=18;description.spellcheck=false;
+  const contentCounter=document.createElement('span');contentCounter.className='counter';contentCounter.dataset.contentCounter=key;description.parentElement.append(contentCounter);
+  description.addEventListener('input',()=>{contentCounter.textContent=description.value.length+' / '+S.CONTENT_HTML_LIMIT+' Zeichen';});
   const seoTitle=field(card,'content-'+key+'-seoTitle','SEO-Titel','text','Empfohlen: kurz, eindeutig und passend zum Suchinhalt.');seoTitle.maxLength=200;seoTitle.value=defaults.seoTitle;
   const meta=field(card,'content-'+key+'-metaDescription','SEO- und GEO-Beschreibung','textarea','Beschreibe klar Zielgruppe, Leistung und Nutzen. Suchmaschinen und KI-Suchsysteme können eigene Textausschnitte bilden.');meta.maxLength=500;meta.value=defaults.metaDescription;meta.parentElement.classList.add('wide');
   const preview=document.createElement('div');preview.className='search-preview';preview.id='content-'+key+'-search-preview';const searchTitle=document.createElement('strong');searchTitle.id='content-'+key+'-search-title';const searchText=document.createElement('p');searchText.id='content-'+key+'-search-description';preview.append(searchTitle,searchText);card.append(preview);
@@ -57,9 +59,10 @@ function buildContent(){
  }
 }
 function updateContentPreview(s){for(const [key] of Object.entries(S.contentPageDefaults)){
+ const count=document.querySelector('[data-content-counter="'+key+'"]');if(count)count.textContent=$('content-'+key+'-description').value.length+' / '+S.CONTENT_HTML_LIMIT+' Zeichen';
  $('content-'+key+'-search-title').textContent=s.content[key].seoTitle;
  $('content-'+key+'-search-description').textContent=s.content[key].metaDescription;
- $('content-'+key+'-body-preview').replaceChildren(S.legalFragment(s.content[key].description,s));
+ $('content-'+key+'-body-preview').replaceChildren(S.contentFragment(s.content[key].description,s));
 }}
 function build(){
  buildContent();

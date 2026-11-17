@@ -15,7 +15,7 @@ class SafeContent(HTMLParser):
     def handle_starttag(self,tag,attrs):
         if tag in {'script','style','iframe','object'}:self.blocked+=1;return
         if self.blocked or tag not in self.allowed:return
-        attr=''
+        attr=''.join(' '+k+'="'+html.escape(v or '',quote=True)+'"' for k,v in attrs if k in {'class','id','title','aria-label','aria-labelledby','aria-describedby'} or (tag=='details' and k=='open'))
         if tag=='a':
             href=dict(attrs).get('href','') or ''
             if (href.startswith('/') and not href.startswith('//') and '\\' not in href) or urlparse(href).scheme in {'https','http','mailto','tel'}:attr=' href="'+html.escape(href,quote=True)+'" rel="noopener noreferrer"'

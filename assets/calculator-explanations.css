@@ -35,3 +35,20 @@ body.nic-content-active:not(.nic-legal-open):not(.nic-admin-open) .app>main.sect
  .nic-explanation-details>summary::-webkit-details-marker{display:none}
  .nic-explanation-details>summary:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 }
+
+/* Five calculators: compact teaser first, only in mobile portrait. */
+@media(max-width:700px) and (orientation:portrait){
+ .app>main.section>.nic-explanation-card:not([data-nic-explanation="settlement"]){
+  order:-1!important;min-block-size:0!important;
+ }
+ .nic-explanation-card:not([data-nic-explanation="settlement"]):has(>.nic-explanation-details:not([open]))>h2{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;line-height:1.3!important;min-block-size:2.6em;
+ }
+ .nic-explanation-card:not([data-nic-explanation="settlement"]):has(>.nic-explanation-details:not([open]))>.nic-explanation-intro{
+  display:none!important;
+ }
+ .nic-explanation-card:not([data-nic-explanation="settlement"])>.nic-explanation-details{
+  margin-top:0;
+ }
+}

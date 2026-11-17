@@ -31,6 +31,8 @@ jobs:
           python scripts/prepare_github_preview.py --live-layout
       - name: Verify preview navigation and backend isolation
         run: NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_github_preview.cjs
+      - name: Verify long Admin content HTML and FAQ
+        run: NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_content_html.cjs
       - name: Name verified preview artifact
         id: preview_artifact
         run: echo "name=github-pages-${{ github.run_id }}-${{ github.run_attempt }}" >> "$GITHUB_OUTPUT"

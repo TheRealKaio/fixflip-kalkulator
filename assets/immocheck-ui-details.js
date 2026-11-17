@@ -177,7 +177,16 @@ function bindFlipSaleReviewHint(){
   el.classList.add('nic-flip-sale-review-hint');
  });
 }
+
+function alignPropertyFields(){
+ document.querySelectorAll('.app main.section .field').forEach(field=>{
+  const label=field.querySelector(':scope > label');
+  if(label&&/^(?:Wohnfläche|Baujahr|Grundstück(?:sgröße)?)$|^Preis pro m/i.test(label.textContent.replace(/\s+/g,' ').trim()))field.classList.add('nic-property-aligned-field');
+ });
+}
+
+alignPropertyFields();
 bindBudgetAvailableEquityHint();
 bindFlipSaleReviewHint();
-new MutationObserver(()=>{bindBudgetAvailableEquityHint();bindFlipSaleReviewHint();}).observe(document.body,{childList:true,subtree:true});
+new MutationObserver(()=>{alignPropertyFields();bindBudgetAvailableEquityHint();bindFlipSaleReviewHint();}).observe(document.body,{childList:true,subtree:true});
 })();

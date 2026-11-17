@@ -25,26 +25,32 @@ content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'
 content_nav=[('settlement','Mieterabrechnung'),('prices','Preise'),('why','Warum ImmoCheck?')]
 
 class ContentSanitizer(HTMLParser):
-    allowed={'p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h2','h3','h4'}
+    allowed={'section','article','header','footer','main','aside','details','summary','p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h1','h2','h3','h4','h5','h6','table','caption','thead','tbody','tfoot','tr','th','td'}
     void={'br','hr'}
+    blocked_tags={'script','style','iframe','object','embed','svg','math','template'}
     def __init__(self):
-        super().__init__(convert_charrefs=True);self.out=[]
+        super().__init__(convert_charrefs=True);self.out=[];self.blocked=0
     def handle_starttag(self,tag,attrs):
-        if tag not in self.allowed:return
-        if tag=='a':
-            href=next((v for k,v in attrs if k=='href'), '') or ''
-            href=href.strip()
-            if '{{company.email}}' in href: href='mailto:{{company.email}}'
-            if re.match(r'^(https?://|mailto:|tel:)',href):
-                self.out.append('<a href="'+html.escape(href,quote=True)+'" rel="noopener noreferrer">');return
-        self.out.append('<'+tag+'>')
+        if tag in self.blocked_tags:self.blocked+=1;return
+        if self.blocked or tag not in self.allowed:return
+        safe=[]
+        for key,value in attrs:
+            if key in {'class','id','title','lang','dir','aria-label','aria-labelledby','aria-describedby','role'} and value:safe.append((key,value))
+            elif tag=='details' and key=='open':safe.append(('open',''))
+            elif tag in {'td','th'} and key in {'colspan','rowspan'} and re.fullmatch(r'[1-9]\d?',value or ''):safe.append((key,value))
+            elif tag=='a' and key=='href':
+                href=(value or '').strip()
+                if '{{company.email}}' in href:href='mailto:{{company.email}}'
+                if re.match(r'^(https?://|mailto:|tel:|/(?!/))',href) and '\\' not in href:safe.extend([('href',href),('rel','noopener noreferrer')])
+        self.out.append('<'+tag+''.join(' '+k+'="'+html.escape(v,quote=True)+'"' for k,v in safe)+'>')
     def handle_endtag(self,tag):
-        if tag in self.allowed and tag not in self.void:self.out.append('</'+tag+'>')
-    def handle_data(self,data):self.out.append(html.escape(data))
+        if tag in self.blocked_tags:self.blocked=max(0,self.blocked-1);return
+        if not self.blocked and tag in self.allowed and tag not in self.void:self.out.append('</'+tag+'>')
+    def handle_data(self,data):
+        if not self.blocked:self.out.append(html.escape(data))
     def fragment(self,value):
         self.feed(str(value or ''));result=''.join(self.out)
-        for key,value in config.get('company',{}).items():
-            result=result.replace('{{company.'+key+'}}',html.escape(str(value or '')))
+        for key,value in config.get('company',{}).items():result=result.replace('{{company.'+key+'}}',html.escape(str(value or '')))
         return result
 # Publish a real PNG so Safari can fetch the icon before JavaScript runs.
 apple=config.get('appleTouchIcon','')

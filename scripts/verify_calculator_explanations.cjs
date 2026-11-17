@@ -48,9 +48,15 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     if(width===390){
      assert.equal(await details.evaluate(e=>e.open),false,'Mobile starts collapsed');
      assert.equal(await summary.innerText(),'weiterlesen');assert.equal(await rest.isVisible(),false);
+     if(key!=='settlement'){
+      assert.equal(await card.locator('.nic-explanation-intro').isVisible(),false,'Portrait teaser hides intro');
+      const teaser=await card.evaluate(e=>{const h=e.querySelector('h2'),style=getComputedStyle(h);const siblings=[...e.parentElement.children].filter(x=>x!==e&&x.getBoundingClientRect().height&&getComputedStyle(x).display!=='none');return {height:h.getBoundingClientRect().height,line:parseFloat(style.lineHeight),clamp:style.webkitLineClamp,first:siblings.every(x=>e.getBoundingClientRect().top<=x.getBoundingClientRect().top)};});
+      assert.equal(teaser.clamp,'2');assert(teaser.height<=teaser.line*2+1,'Only two title lines');assert(teaser.first,'Teaser is visually before calculator inputs');
+     }
      const corner=await card.evaluate(e=>{const a=e.getBoundingClientRect(),b=e.querySelector('summary').getBoundingClientRect();return {right:a.right-b.right,bottom:a.bottom-b.bottom};});
      assert(corner.right>=0&&corner.right<30&&corner.bottom>=0&&corner.bottom<30,'Read more at bottom right');
      await summary.click();assert.equal(await details.evaluate(e=>e.open),true);assert(await rest.isVisible());
+     assert(await card.locator('.nic-explanation-intro').isVisible(),'Opening reveals complete introduction');
      assert(await card.evaluate(e=>e.getBoundingClientRect().height)>geometry.height,'Open box grows naturally');
      await summary.click();assert.equal(await details.evaluate(e=>e.open),false);
      await summary.focus();await page.keyboard.press('Enter');assert.equal(await details.evaluate(e=>e.open),true,'Keyboard opens explanation');

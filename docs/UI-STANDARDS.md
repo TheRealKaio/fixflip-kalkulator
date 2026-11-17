@@ -405,3 +405,24 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 ### Darlehensbetrag: Euro im Eingabefeld
 - Finanzierungsrechner: „Darlehensbetrag“ ohne (€) im Label; € als hellgraue `.input-wrap .unit` rechts im Eingabefeld. Einheit nutzt `--nic-hint-font-size`, Beschriftung einschließlich Glossarlink nutzt `--nic-body-font-size` wie andere Feldbeschriftungen.
+
+## Content-Editor: längere HTML-Inhalte und FAQ
+- Content-HTML unterstützt bis zu 100.000 Zeichen, mit sichtbarem Zähler. Die Normalisierung kürzt längere Inhalte nicht still, sondern meldet eine Überschreitung.
+- Content-Vorschau und öffentliche Inhalte verwenden denselben Filter für section/article, Klassen, IDs, ARIA sowie native details/summary-FAQ. Unbekannte harmlose Hüllen entfernen keine Texte; ausführbare Inhalte und Ereignisattribute bleiben ausgeschlossen.
+- Eingebettetes CSS wird geparst und auf die jeweilige Contentbox begrenzt. Imports und URL-Ladevorgänge werden nicht übernommen. Rechtstexte behalten ihren getrennten Filter.
+- Statisches HTML erhält Texte und FAQ-Struktur; CSS-Quelltext erscheint nicht als sichtbarer Text. Content-CSS wird beim Anwenden der Einstellungen lokal ergänzt.
+- Keine automatische Übernahme von Beispieltext in veröffentlichte Inhalte; nur develop.
+
+## Fünf Rechner: kompakte Contentbox im mobilen Hochformat
+- Bis 700 px im Hochformat steht die Contentbox von Budget, Eigenheim, Vermietung, Fix & Flip und Finanzierung wieder zuerst unter dem Bildheader, vor den Rechnereingaben.
+- Zunächst geschlossen: nur die ersten maximal zwei Titelzeilen plus „weiterlesen“. Der Einleitungsabsatz bleibt geschlossen unsichtbar; keine vom langen Text abgeleitete Mindesthöhe.
+- „weiterlesen“ zeigt den vollständigen Titel, Einleitung und restlichen Text. Erneutes Schließen sowie Tastaturbedienung bleiben erhalten; beim Rechnerwechsel beginnt die Box geschlossen.
+- Mieterabrechnung, Mobil-Querformat, Tablet/Desktop behalten ihre bisherige Darstellung. Alle Texte bleiben im DOM vorhanden und über dieselben Adminfelder bearbeitbar.
+
+## Nummerierte Rechnerüberschriften auf allen Einstiegswegen
+- Die bestehenden nummerierten Ergebnisüberschriften gelten auf direkten Rechner-URLs ebenso wie beim Einstieg über die Startseite und beim internen Wechsel. Der Build muss die Korrektur auf alle fünf Rechner anwenden, nicht nur index.html.
+- Neuberechnung darf die nummerierten neutralen Ergebnistitel nicht durch alte Ampel-Überschriften ersetzen. Mobil und Desktop sowie direkte Aufrufe, interne Navigation und Eingabeänderungen im finalen Build prüfen.
+
+## Objektdaten: gemeinsame Beschriftungszeile
+- Wohnfläche / Preis pro m² sowie Baujahr / Grundstück stehen je Rasterzeile mit gleicher Oberkante der Eingabe- und Ergebnisboxen. Glossar-Unterstreichungen dürfen die Feldhöhe nicht verschieben.
+- Zeilen richten sich über flexible, gemeinsame Beschriftungshöhen aus; Schriftgrößen, Umbruch, Einheiten und bestehendes responsives Raster bleiben erhalten.

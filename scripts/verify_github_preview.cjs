@@ -103,6 +103,16 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       assert.equal(await label.evaluate(el=>getComputedStyle(el).justifyContent),'flex-start','Finance caption and unit align left');
      }
     }
+    if(['own','flip'].includes(currentId)){
+     const alignment=await page.locator('.nic-property-aligned-field').evaluateAll(fields=>fields.filter(el=>el.getBoundingClientRect().height).map(el=>{
+      const label=el.querySelector(':scope > label'),control=el.querySelector(':scope > .input-wrap,:scope > .metric-box');
+      return {label:label?.textContent.trim(),row:el.getBoundingClientRect().top,top:control?.getBoundingClientRect().top};
+     }));
+     assert(alignment.length>=4,'All four property fields found: '+JSON.stringify(alignment));
+     for(let i=0;i<alignment.length;i++)for(let j=i+1;j<alignment.length;j++)if(Math.abs(alignment[i].row-alignment[j].row)<1){
+      assert(Math.abs(alignment[i].top-alignment[j].top)<1,'Property inputs align: '+JSON.stringify([alignment[i],alignment[j]]));
+     }
+    }
     assert.equal(await page.locator('.nic-logo-link').getAttribute('href'),'http://localhost/fixflip-kalkulator/','Logo stays in preview');
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')&&!new URL(u).pathname.startsWith('/fixflip-kalkulator/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
