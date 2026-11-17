@@ -4,7 +4,13 @@ const S=window.NICSettings;if(!S)return;
 const labels=S.legalLabels||{impressum:'Impressum',datenschutz:'Datenschutz',agbs:'AGBs',haftungsausschluss:'Haftungsausschluss'};
 const hero=document.querySelector('.app > .hero'),title=document.getElementById('heroTitle'),text=document.getElementById('heroText');
 if(!hero||!title){if(/\/impressum\/?$/.test(location.pathname))location.replace(new URL('#impressum',S.ROOT).href);return;}
-let active=null,panel=null,article=null,snapshot=null,opener=null;
+let active=null,panel=null,article=null,snapshot=null,opener=null,returnPoint=null;
+const pageUrl=()=>location.pathname+location.search+location.hash;
+function returnToOrigin(){
+ if(history.state?.nicLegalReturn){history.back();return;}
+ // A directly opened legal link has no previous in-app page to restore.
+ window.location.assign(S.ROOT.href);
+}
 const key=()=>{const k=location.hash.slice(1);return Object.hasOwn(labels,k)&&(!['widerruf','avv'].includes(k)||!!S.current?.legal?.[k])?k:null;};
 function node(tag,value,parent){const el=document.createElement(tag);if(value!==undefined)el.textContent=value;if(parent)parent.append(el);return el;}
 function operator(){const s=S.current;if(!s)return;const box=node('section',undefined,article);box.className='nic-legal-operator';node('h2',active==='datenschutz'?'Verantwortlicher':'Anbieter',box);const wanted=['Anbieter','Vertreten durch','Anschrift','Kontakt'];const parts=S.imprint(s).filter(x=>wanted.includes(x.label));if(!parts.length){node('p','Die Betreiberangaben wurden noch nicht veröffentlicht.',box);return;}for(const item of parts){const p=node('p',item.value,box);p.dataset.companyGroup=item.label;}}
@@ -27,11 +33,20 @@ function render(){
  }
  if(active==='cookie-hinweis'){const button=node('button','Cookie-Einstellungen ändern',article);button.type='button';button.addEventListener('click',()=>window.NICAnalytics?.openConsent());}
 }
-function close(){if(!active)return;active=null;document.body.classList.remove('nic-legal-open');panel.hidden=true;title.innerHTML=snapshot.title;text.textContent=snapshot.text;document.title=snapshot.documentTitle;}
+function close(){
+ if(!active)return;active=null;document.body.classList.remove('nic-legal-open');panel.hidden=true;title.innerHTML=snapshot.title;text.textContent=snapshot.text;document.title=snapshot.documentTitle;
+ const origin=returnPoint;
+ if(origin&&pageUrl()===origin.url){
+  // Wait for the shared router/header to finish restoring the original view.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   if(!active&&pageUrl()===origin.url){opener?.focus({preventScroll:true});window.scrollTo(origin.x,origin.y);}
+  }));
+ }
+}
 function open(next){
- if(!next){const was=active;close();if(was)opener?.focus();return;}
- if(!active)snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title};
- if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← ZURÜCK',panel);back.type='button';back.className='nic-admin-back';back.setAttribute('aria-label','Zurück zur Startseite');back.addEventListener('click',()=>{window.location.assign(new URL('/',S.ROOT).href);});article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
+ if(!next){const was=active;close();if(was)opener?.focus({preventScroll:true});return;}
+ if(!active){snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title};returnPoint=history.state?.nicLegalReturn||null;}
+ if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← ZURÜCK',panel);back.type='button';back.className='nic-admin-back';back.setAttribute('aria-label','Zurück zur vorherigen Seite');back.addEventListener('click',returnToOrigin);article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
  active=next;panel.hidden=false;document.body.classList.add('nic-legal-open');panel.setAttribute('aria-label',labels[next]);title.textContent=labels[next];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[next]+' | Neustart ImmoCheck';
  render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');
@@ -47,7 +62,13 @@ window.addEventListener('click',e=>{
  if(el.id==='nicAccountLink'){close();return;}
  const next=el.dataset.legalPlaceholder||el.dataset.nicLegal||(el.id==='legalDisclaimerSheetCta'?'haftungsausschluss':null);if(!Object.hasOwn(labels,next))return;
  e.preventDefault();e.stopImmediatePropagation();opener=el;
- if(location.hash!=='#'+next)history.pushState(null,'',location.pathname+location.search+'#'+next);
+ if(location.hash!=='#'+next){
+  const origin=active?returnPoint:!key()?{url:pageUrl(),x:window.scrollX||0,y:window.scrollY||0}:null;
+  const state={...history.state,nicLegalReturn:origin};
+  // Switching between legal notices keeps the same original return destination.
+  if(active)history.replaceState(state,'',location.pathname+location.search+'#'+next);
+  else history.pushState(state,'',location.pathname+location.search+'#'+next);
+ }
  // Notify the existing admin router before displaying the legal content.
  window.dispatchEvent(new Event('hashchange'));title.setAttribute('tabindex','-1');title.focus({preventScroll:true});
 },true);
