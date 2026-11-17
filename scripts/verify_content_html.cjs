@@ -26,6 +26,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000}).catch(async error=>{throw new Error('Admin setup: '+JSON.stringify({url:page.url(),errors,body:await page.locator('body').getAttribute('class')})+' '+error.message);});
    if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
    await page.evaluate(()=>window.NICAdminUI.select('content'));
+   assert.equal(await page.locator('#nicAdminContent [role=tab]').count(),8);
+   assert.equal(await page.locator('#nicAdminContent .admin-page[open]').count(),0);
+   const own=page.locator('[data-admin-page="own"]');
+   await own.locator('summary').click();
+   const title=own.getByLabel('Meta-Titel',{exact:true});
+   assert.equal(await title.count(),1);
+   await title.fill('Eigenheim Test');
+   await own.getByRole('checkbox',{name:'Von Suchmaschinen ausschließen'}).check();
+   assert(await own.locator('.admin-page-noindex').isVisible());
+   await own.locator('summary').click();
+   await page.locator('[data-admin-page="why"] > summary').click();
    const editor=page.locator('[id$="content-why-description"]');
    await editor.waitFor({state:'visible'});
    assert.equal(await editor.getAttribute('maxlength'),'100000');
@@ -41,6 +52,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    const content=page.locator('#nicContentView');
    await content.locator('section.imc-content').waitFor({state:'visible'});
    assert.equal(await page.evaluate(()=>window.NICSettings.current.content.why.description),source,'Save/reload is lossless');
+   assert.equal(await page.evaluate(()=>window.NICSettings.current.content.own.seoTitle),'Eigenheim Test');
+   assert.equal(await page.evaluate(()=>window.NICSettings.current.seoIndexing.own),false);
    assert.equal(await content.locator('details.imc-faq-item').count(),10);
    assert(await content.locator('.imc-faq-note').isVisible(),'End sentinel visible after >12k characters');
    const first=content.locator('details.imc-faq-item').first();
