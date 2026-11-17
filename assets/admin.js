@@ -6,7 +6,7 @@ function markDirty(){dirty=true;$('saveState').textContent='Ungespeicherte Ände
 function field(parent,id,label,type='text',hint=''){
  const div=document.createElement('div');div.className='admin-field';const lab=document.createElement('label');lab.htmlFor=id;lab.textContent=label;div.append(lab);
  const input=document.createElement(type==='textarea'?'textarea':'input');input.id=id;input.name=id;if(type!=='textarea')input.type=type;input.maxLength=2000;input.placeholder='';div.append(input);
- if(hint){const small=document.createElement('span');small.className='helper';small.textContent=hint;div.append(small);}parent.append(div);return input;
+ if(hint){const small=document.createElement('span');small.className='helper';small.id=id+'-hint';input.setAttribute('aria-describedby',small.id);small.textContent=hint;div.append(small);}parent.append(div);return input;
 }
 let activeLegal='impressum',legalDefaults={},legalStored={};
 function disclaimerHTML(){try{const card=window.parent.document.querySelector('#legalDisclaimerPage .legal-page-card');if(card)return [...card.children].filter(x=>x.tagName!=='H1').map(x=>x.outerHTML).join('\n');}catch(_){}return '';}
@@ -33,10 +33,96 @@ function fillLegal(s){
  }
 }
 function updateLegal(s){for(const key of Object.keys(S.legalLabels)){const source=$('legal-'+key).value;$('legal-preview-'+key).replaceChildren(S.legalFragment(source,s));$('legal-issues-'+key).textContent=S.legalIssues(source,s).join(' · ');$('legal-card-'+key).querySelectorAll('[data-company-placeholder]').forEach(row=>row.querySelector('.legal-placeholder-value').textContent=s.company[row.dataset.companyPlaceholder]||'Noch nicht hinterlegt');}}
+const calculatorPages = ['budget', 'own', 'rent', 'flip', 'finance'];
+const pageLabels = {
+ budget:'Budget', own:'Eigenheim', rent:'Vermietung', flip:'Fix & Flip', finance:'Finanzierung',
+ settlement:'Mieterabrechnung', website:'Startseite', prices:'Preise', why:'Warum ImmoCheck?',
+ about:'Über uns', contact:'Kontakt', login:'Anmelden', company:'Unternehmen (Direktlink)',
+ impressum:'Impressum', agbs:'AGB', datenschutz:'Datenschutz', haftungsausschluss:'Haftungsausschluss',
+ widerruf:'Widerruf', avv:'AVV', 'cookie-hinweis':'Cookie-Hinweis'
+};
 function buildContent(){
- for(const [key,defaults] of Object.entries(S.contentPageDefaults)){
-  const card=document.createElement('section');card.className='form-card content-editor-card';card.dataset.contentPage=key;
-  const heading=document.createElement('h3');heading.textContent=key==='welcome'?'Startseite · Einführung':({'settlement':'Mieterabrechnung','prices':'Preise','why':'Warum ImmoCheck','about':'Über uns · Footer','contact':'Kontakt','login':'Anmelden','budget':'Budget · Contentbox','own':'Eigenheim · Contentbox','rent':'Vermietung · Contentbox','flip':'Fix & Flip · Contentbox','finance':'Finanzierung · Contentbox'}[key]||key);card.append(heading);
+ const groups = [
+  ['Rechner', calculatorPages],
+  ['Mieterabrechnung', ['settlement']],
+  ['Inhaltsseiten', ['website','prices','why','about','contact','login','company']],
+  ['Rechtliche Seiten', Object.keys(S.seoRouteDefaults).filter(key =>
+   !calculatorPages.includes(key) && !['admin','settlement','website','prices','why','about','contact','login','company'].includes(key))]
+ ];
+ for(const [label,keys] of groups){
+  const group=document.createElement('section');
+  group.className='admin-page-group';
+  const heading=document.createElement('h3');
+  heading.textContent=label;
+  group.append(heading);
+  for(const key of keys)buildPage(group,key);
+  $('contentEditors').append(group);
+ }
+}
+function buildPage(group,route){
+ const key=route==='website'?'welcome':route;
+ const defaults=S.contentPageDefaults[key];
+ const legacyMeta=S.pages.find(([page])=>page===route);
+ const page=document.createElement('details');
+ page.className='form-card admin-page';
+ page.dataset.adminPage=route;
+ const summary=document.createElement('summary');
+ const title=document.createElement('span');
+ title.textContent=pageLabels[route]||route;
+ const badge=document.createElement('span');
+ badge.className='helper admin-page-noindex';
+ badge.textContent='Noindex';
+ badge.hidden=true;
+ title.append(badge);
+ summary.append(title);
+ page.append(summary);
+ if(defaults)buildPageContent(page,key,defaults);
+
+ const meta=document.createElement('fieldset');
+ const legend=document.createElement('legend');
+ legend.textContent='Metadaten';
+ meta.append(legend);
+ if(legacyMeta || defaults){
+  const prefix=legacyMeta&&!calculatorPages.includes(route)?'meta-'+route:'content-'+key;
+  const useMetaKeys=prefix.startsWith('meta-');
+  field(meta,prefix+(useMetaKeys?'-title':'-seoTitle'),'Meta-Titel','text',
+   'Titel für das Suchergebnis. Rund 60 Zeichen sind ein Richtwert.').maxLength=200;
+  field(meta,prefix+(useMetaKeys?'-description':'-metaDescription'),'Meta-Beschreibung','textarea',
+   'Kurze Zusammenfassung für das Suchergebnis. Rund 155 Zeichen sind ein Richtwert.').maxLength=500;
+  const preview=document.createElement('div'), searchTitle=document.createElement('strong'), searchText=document.createElement('p');
+  preview.className='search-preview';
+  searchTitle.id='search-'+route+'-title';
+  searchText.id='search-'+route+'-description';
+  preview.append(searchTitle,searchText);
+  meta.append(preview);
+ }
+
+ const row=document.createElement('label'), input=document.createElement('input'), caption=document.createElement('span');
+ row.className='admin-page-index';
+ input.type='checkbox';
+ input.id='seo-index-'+route;
+ input.checked=!S.seoRouteDefaults[route];
+ input.disabled=route==='login';
+ caption.textContent='Von Suchmaschinen ausschließen';
+ const hint=document.createElement('p');
+ hint.className='helper';
+ hint.id=input.id+'-hint';
+ hint.textContent=input.disabled?'Für diese Seite ist Noindex dauerhaft gesetzt.':
+  'Mit diesem Haken erhält die Seite die Anweisung „Noindex“. Die Änderung wird mit der nächsten Veröffentlichung im HTML und in der Sitemap wirksam.';
+ input.setAttribute('aria-describedby',hint.id);
+ row.append(caption,input);
+ meta.append(row,hint);
+ page.append(meta);
+ if(route==='website')buildWebsiteFields(page);
+ group.append(page);
+}
+function buildPageContent(page,key,defaults){
+ const card=document.createElement('fieldset');
+ card.className='content-editor-card';
+ card.dataset.contentPage=key;
+ const legend=document.createElement('legend');
+ legend.textContent='Inhalt';
+ card.append(legend);
   for(const [name,label,limit,type] of [['headerTitle','Headergrafik – Titel',70,'text'],['headerDescription','Headergrafik – Kurzbeschreibung',90,'textarea']]){
    const input=field(card,'content-'+key+'-'+name,label,type,'Wird ausschließlich im Header angezeigt. Leer lassen = keine Ausgabe.');
    input.maxLength=limit;input.value=defaults[name]||'';
@@ -46,24 +132,50 @@ function buildContent(){
    counter.textContent=input.value.length+' / '+limit+' Zeichen';
    if(type==='textarea')input.parentElement.classList.add('wide');
   }
-  const title=field(card,'content-'+key+'-title','Seitentitel / Überschrift','text');title.maxLength=240;title.value=defaults.title;
+  const title=field(card,'content-'+key+'-title','Überschrift auf der Seite','text','Überschrift im Inhaltsbereich der Seite.');title.maxLength=240;title.value=defaults.title;
   if(key==='settlement')field(card,'content-'+key+'-boxTitle','Überschrift der Contentbox','text').maxLength=240;
-  const description=field(card,'content-'+key+'-description','Inhalt der Box (HTML möglich)','textarea','Der erste Absatz ist die Einleitung und bleibt mobil sichtbar. Weitere Absätze und Zwischenüberschriften werden mit weiterlesen geöffnet.');description.maxLength=S.CONTENT_HTML_LIMIT;description.value=defaults.description;description.parentElement.classList.add('wide');description.rows=18;description.spellcheck=false;
+  const description=field(card,'content-'+key+'-description','Inhalt der Box (HTML möglich)','textarea','Text für den Inhaltsbereich. Du kannst HTML-Absätze, Listen und Links verwenden.');description.maxLength=S.CONTENT_HTML_LIMIT;description.value=defaults.description;description.parentElement.classList.add('wide');description.rows=18;description.spellcheck=false;
   const contentCounter=document.createElement('span');contentCounter.className='counter';contentCounter.dataset.contentCounter=key;description.parentElement.append(contentCounter);
   description.addEventListener('input',()=>{contentCounter.textContent=description.value.length+' / '+S.CONTENT_HTML_LIMIT+' Zeichen';});
-  const seoTitle=field(card,'content-'+key+'-seoTitle','SEO-Titel','text','Empfohlen: kurz, eindeutig und passend zum Suchinhalt.');seoTitle.maxLength=200;seoTitle.value=defaults.seoTitle;
-  const meta=field(card,'content-'+key+'-metaDescription','SEO- und GEO-Beschreibung','textarea','Beschreibe klar Zielgruppe, Leistung und Nutzen. Suchmaschinen und KI-Suchsysteme können eigene Textausschnitte bilden.');meta.maxLength=500;meta.value=defaults.metaDescription;meta.parentElement.classList.add('wide');
-  const preview=document.createElement('div');preview.className='search-preview';preview.id='content-'+key+'-search-preview';const searchTitle=document.createElement('strong');searchTitle.id='content-'+key+'-search-title';const searchText=document.createElement('p');searchText.id='content-'+key+'-search-description';preview.append(searchTitle,searchText);card.append(preview);
-  const bodyPreview=document.createElement('div');bodyPreview.className='legal-html-preview';bodyPreview.id='content-'+key+'-body-preview';card.append(document.createElement('hr'),Object.assign(document.createElement('strong'),{textContent:'Textvorschau'}),bodyPreview);
-  $('contentEditors').append(card);
+  const bodyPreview=document.createElement('div');
+  bodyPreview.className='legal-html-preview';
+  bodyPreview.id='content-'+key+'-body-preview';
+  card.append(Object.assign(document.createElement('strong'),{textContent:'Textvorschau'}),bodyPreview);
+  page.append(card);
+}
+function buildWebsiteFields(page){
+ const grid=document.createElement('fieldset');
+ const legend=document.createElement('legend');
+ legend.textContent='Startseiten-Kacheln und Google-Tag';
+ grid.append(legend);
+ for(const [name,config] of Object.entries(S.homeFields)){
+  if(name==='homeTitle'||name==='homeDescription')continue;
+  field(grid,'meta-website-'+name,config.label).maxLength=config.max;
+ }
+ const tag=field(grid,'meta-website-googleTag','Google-Tag-ID','text',
+  'Optional. Für eine gemeinsame Gesamtauswertung denselben GA4-Datenstream verwenden.');
+ tag.pattern='(G|GT)-[A-Za-z0-9]{4,30}';
+ tag.maxLength=40;
+ tag.placeholder='G-XXXXXXXXXX';
+ tag.title='Google-Tag-ID mit G- oder GT- eintragen, keinen Script-Code.';
+ page.append(grid);
+}
+function updateContentPreview(s){
+ for(const key of Object.keys(S.contentPageDefaults)){
+  document.querySelector('[data-content-counter="'+key+'"]').textContent=
+   $('content-'+key+'-description').value.length+' / '+S.CONTENT_HTML_LIMIT+' Zeichen';
+  $('content-'+key+'-body-preview').replaceChildren(S.contentFragment(s.content[key].description,s));
+ }
+ for(const route of Object.keys(S.seoRouteDefaults)){
+  const index=$('seo-index-'+route);
+  if(!index)continue;
+  index.closest('details').querySelector('.admin-page-noindex').hidden=!index.checked;
+  if(!$('search-'+route+'-title'))continue;
+  const meta=S.pageMeta(s,route);
+  $('search-'+route+'-title').textContent=meta.title;
+  $('search-'+route+'-description').textContent=meta.description;
  }
 }
-function updateContentPreview(s){for(const [key] of Object.entries(S.contentPageDefaults)){
- const count=document.querySelector('[data-content-counter="'+key+'"]');if(count)count.textContent=$('content-'+key+'-description').value.length+' / '+S.CONTENT_HTML_LIMIT+' Zeichen';
- $('content-'+key+'-search-title').textContent=s.content[key].seoTitle;
- $('content-'+key+'-search-description').textContent=s.content[key].metaDescription;
- $('content-'+key+'-body-preview').replaceChildren(S.contentFragment(s.content[key].description,s));
-}}
 function build(){
  buildContent();
  buildLegal();
@@ -84,32 +196,26 @@ function build(){
   const input=field($('colorFields'),'layout-'+k,title,'text');input.pattern=k.endsWith('Text')?'(AUTO|#[0-9A-Fa-f]{6})':'#[0-9A-Fa-f]{6}';input.maxLength=7;input.placeholder=k.endsWith('Text')?'AUTO oder #FFFFFF':'#000000';input.title='HEX-Code mit # und sechs Zeichen, z. B. #0F172A';const wrap=document.createElement('div');wrap.className='color-control';input.replaceWith(wrap);const picker=document.createElement('input');picker.type='color';picker.id='color-'+k;picker.setAttribute('aria-label',title+' auswählen');wrap.append(picker,input);picker.addEventListener('input',()=>{input.value=picker.value.toUpperCase();updatePreview();markDirty();});input.addEventListener('input',()=>{if(/^#[0-9a-f]{6}$/i.test(input.value))picker.value=input.value;});
  }
  S.portals.forEach(([k,label])=>{const input=field($('socialFields'),'social-'+k,label,'url','Vollständige Profiladresse mit https://');input.placeholder='https://';input.pattern='https?://.+';input.title='Bitte eine vollständige Adresse mit https:// oder http:// eintragen.';input.maxLength=2000;});
- const seoCard=document.createElement('section');seoCard.className='form-card';
- const seoHeading=document.createElement('h3');seoHeading.textContent='Suchmaschinen-Indexierung je Seite';seoCard.append(seoHeading);
- const seoHelp=document.createElement('p');seoHelp.className='helper';seoHelp.textContent='Aktiviert = index,follow; deaktiviert = noindex,follow. Anmelden und Admin bleiben dauerhaft ausgeschlossen. Rechtstexte bleiben unabhängig davon öffentlich erreichbar. Änderungen werden erst mit der nächsten Veröffentlichung im HTML und der Sitemap wirksam.';seoCard.append(seoHelp);
- const seoNames={website:'Startseite',company:'Unternehmen',budget:'Budget',own:'Eigenheim & Eigennutzung',rent:'Vermietung',flip:'Fix & Flip',finance:'Finanzierung',settlement:'Mieterabrechnung',prices:'Preise',why:'Warum ImmoCheck',about:'Über uns',contact:'Kontakt',login:'Anmelden',impressum:'Impressum',agbs:'AGB',datenschutz:'Datenschutz',haftungsausschluss:'Haftungsausschluss',widerruf:'Widerruf',avv:'AVV','cookie-hinweis':'Cookie-Hinweis',admin:'Admin'};
- const seoList=document.createElement('div');seoList.className='nic-seo-index-list';seoCard.append(seoList);
- for(const [key,defaultEnabled] of Object.entries(S.seoRouteDefaults)){const row=document.createElement('label');row.className='admin-field nic-seo-index-row';const input=document.createElement('input');input.type='checkbox';input.id='seo-index-'+key;input.checked=defaultEnabled;input.style.width='auto';input.style.minHeight='0';input.style.height='20px';input.style.flex='0 0 20px';if(key==='admin'||key==='login')input.disabled=true;const caption=document.createElement('span');caption.textContent=(seoNames[key]||key)+(input.disabled?' (immer noindex)':'');row.append(caption,input);seoList.append(row);}
- $('metaFields').append(seoCard);
- S.pages.forEach(([k,label,path])=>{
-  const card=document.createElement('div');card.className='form-card';const h=document.createElement('h3');h.textContent=label;const a=document.createElement('a');a.className='meta-address';a.href=new URL(path,S.ROOT);a.target='_blank';a.rel='noopener';a.textContent=new URL(path,S.ROOT).href;card.append(h,a);const grid=document.createElement('div');grid.className='field-grid';card.append(grid);
-  for(const [key,title,max,recommend] of [['title','Meta-Titel',200,'ca. 50–60 Zeichen'],['description','Meta-Description',500,'ca. 140–160 Zeichen']]){const x=field(grid,'meta-'+k+'-'+key,title,key==='description'?'textarea':'text');x.maxLength=max;x.parentElement.classList.add('wide');const counter=document.createElement('span');counter.className='counter';counter.id=x.id+'-count';counter.dataset.recommend=recommend;x.parentElement.append(counter);}
-  if(k==='website'){
-   for(const [name,config] of Object.entries(S.homeFields)){if(name==='homeTitle'||name==='homeDescription')continue;const input=field(grid,'meta-website-'+name,config.label,name==='homeDescription'?'textarea':'text');input.maxLength=config.max;input.parentElement.classList.add('wide');}
-
-  const tag=field(grid,'meta-'+k+'-googleTag','Google-Tag-ID','text','Optional: G-… oder GT-… . Leer übernimmt den Tag der Webseite. Für eine gemeinsame Gesamtauswertung möglichst denselben GA4-Datenstream verwenden.');tag.pattern='(G|GT)-[A-Za-z0-9]{4,30}';tag.maxLength=40;tag.placeholder='G-XXXXXXXXXX';tag.title='Google-Tag-ID mit G- oder GT- eintragen, keinen Script-Code.';tag.parentElement.classList.add('wide');
-  }
-  const preview=document.createElement('div');preview.className='search-preview';const title=document.createElement('strong');title.id='search-'+k+'-title';const desc=document.createElement('p');desc.id='search-'+k+'-description';preview.append(title,desc);card.append(preview);$('metaFields').append(card);
- });
 }
 async function buildContentSectionControls(){const response=await fetch(new URL('/content-sections.json',S.ROOT),{cache:'no-store'});if(!response.ok)throw new Error('Die Liste der H2-Boxen konnte nicht geladen werden.');contentSectionCatalog=await response.json();const root=$('contentSectionControls');root.replaceChildren();const header=document.createElement('div');header.className='content-section-header';header.innerHTML='<strong>Inhalte</strong><strong>Anzeigen</strong><strong>Nur<br>Nutzer</strong>';root.append(header);let group='';for(const item of contentSectionCatalog){if(item.calculator!==group){group=item.calculator;const title=document.createElement('h5');title.className='content-section-group';title.textContent=item.calculatorLabel;root.append(title);}const row=document.createElement('div');row.className='content-section-row';row.dataset.contentKey=item.key;const label=document.createElement('span');label.lang='de';label.textContent=item.title.replace('Haushaltsinformationen','Haushalts\u00adinfor\u00adma\u00adtionen');const visible=document.createElement('input');visible.type='checkbox';visible.id='content-visible-'+item.key;visible.setAttribute('aria-label',item.title+': anzeigen');visible.checked=true;const guest=document.createElement('input');guest.type='checkbox';guest.id='content-guest-'+item.key;guest.setAttribute('aria-label',item.title+': nur für Nutzer');guest.checked=false;row.append(label,visible,guest);root.append(row);}}
 function collect(){
  const raw=JSON.parse(JSON.stringify(importedBase||S.current||{version:1}));
- raw.version=1;raw.seoIndexing={...(raw.seoIndexing||{})};for(const key of Object.keys(S.seoRouteDefaults))raw.seoIndexing[key]=(key==='admin'||key==='login')?false:$('seo-index-'+key).checked;raw.company={...(raw.company||{})};raw.layout={...(raw.layout||{})};raw.social={...(raw.social||{})};raw.meta={...(raw.meta||{})};raw.content={...(raw.content||{})};
+ raw.version=1;raw.seoIndexing={...(raw.seoIndexing||{})};for(const key of Object.keys(S.seoRouteDefaults))raw.seoIndexing[key]=(key==='admin'||key==='login')?false:!$('seo-index-'+key).checked;raw.company={...(raw.company||{})};raw.layout={...(raw.layout||{})};raw.social={...(raw.social||{})};raw.meta={...(raw.meta||{})};raw.content={...(raw.content||{})};
  raw.favicon=favicon;raw.appleTouchIcon=appleTouchIcon;raw.websiteLogo=websiteLogo;
  S.companyFields.forEach(([k])=>raw.company[k]=$('company-'+k).value);Object.keys(S.layoutDefaults).forEach(k=>raw.layout[k]=$('layout-'+k).value);S.portals.forEach(([k])=>raw.social[k]=$('social-'+k).value);
- S.pages.forEach(([k])=>raw.meta[k]={...(raw.meta[k]||{}),title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:k==='website'?$('meta-website-googleTag').value:(raw.meta[k]?.googleTag||'')});
- Object.keys(S.contentPageDefaults).forEach(k=>raw.content[k]={...(raw.content[k]||{}),headerTitle:$('content-'+k+'-headerTitle').value,headerDescription:$('content-'+k+'-headerDescription').value,title:$('content-'+k+'-title').value,description:$('content-'+k+'-description').value,seoTitle:$('content-'+k+'-seoTitle').value,metaDescription:$('content-'+k+'-metaDescription').value,...(k==='settlement'?{boxTitle:$('content-'+k+'-boxTitle').value}:{})});
+ S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>raw.meta[k]={...(raw.meta[k]||{}),title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:k==='website'?$('meta-website-googleTag').value:(raw.meta[k]?.googleTag||'')});
+ Object.keys(S.contentPageDefaults).forEach(k=>raw.content[k]={...(raw.content[k]||{}),headerTitle:$('content-'+k+'-headerTitle').value,headerDescription:$('content-'+k+'-headerDescription').value,title:$('content-'+k+'-title').value,description:$('content-'+k+'-description').value,...(k==='settlement'?{boxTitle:$('content-'+k+'-boxTitle').value}:{})});
+ for(const key of Object.keys(S.contentPageDefaults)){
+  if(key==='welcome')continue;
+  for(const [setting,legacy] of [['seoTitle','title'],['metaDescription','description']]){
+   const input=$('content-'+key+'-'+setting);
+   if(!calculatorPages.includes(key)||input.value!==input.dataset.savedValue){
+    raw.content[key][setting]=input.value;
+    if(calculatorPages.includes(key)&&!input.value.trim())raw.meta[key][legacy]='';
+   }
+  }
+ }
+
  for(const name of Object.keys(S.homeFields)){const el=$('meta-website-'+name);if(el)raw.meta.website[name]=el.value;}
  raw.imageAlts={...(raw.imageAlts||{})};Object.keys(S.imageAltDefaults).forEach(k=>raw.imageAlts[k]=$('alt-'+k).value);raw.sharing={...(raw.sharing||{}),text:$('sharingText').value,image:sharingImage};
  raw.access={...(raw.access||{})};for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])raw.access[key]=$('access-'+key).checked;
@@ -118,7 +224,14 @@ function collect(){
  raw.meta.immobilienABC=window.NICABCAdmin.serialize();
  return S.normalize(raw);
 }
-function fill(s){for(const key of Object.keys(S.seoRouteDefaults))$('seo-index-'+key).checked=s.seoIndexing[key];for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description','seoTitle','metaDescription',...(k==='settlement'?['boxTitle']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const name of Object.keys(S.homeFields)){const el=$('meta-website-'+name);if(el)el.value=s.meta.website[name];}$('meta-website-googleTag').value=s.meta.website.googleTag||'';$('statsPropertyId').value=s.reporting.propertyId;$('statsClientId').value=s.reporting.clientId;sharingImage=s.sharing.image;$('sharingText').value=s.sharing.text;$('sharingFile').value='';websiteLogo=s.websiteLogo||'';$('websiteLogoPreview').src=websiteLogo||'neustart-immocheck-logo.svg';$('websiteLogoFile').value='';notifyLogo();appleTouchIcon=s.appleTouchIcon||'';$('appleTouchIconPreview').src=appleTouchIcon||'apple-touch-icon.png';$('appleTouchIconFile').value='';favicon=s.favicon;$('faviconPreview').src=favicon||'icon.svg';$('faviconFile').value='';updatePreview();}
+function fill(s){for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
+ if(key==='welcome')continue;
+ for(const [setting,legacy] of [['seoTitle','title'],['metaDescription','description']]){
+  const input=$('content-'+key+'-'+setting);
+  input.value=s.content[key][setting]||s.meta[key]?.[legacy]||'';
+  input.dataset.savedValue=input.value;
+ }
+}for(const name of Object.keys(S.homeFields)){const el=$('meta-website-'+name);if(el)el.value=s.meta.website[name];}$('meta-website-googleTag').value=s.meta.website.googleTag||'';$('statsPropertyId').value=s.reporting.propertyId;$('statsClientId').value=s.reporting.clientId;sharingImage=s.sharing.image;$('sharingText').value=s.sharing.text;$('sharingFile').value='';websiteLogo=s.websiteLogo||'';$('websiteLogoPreview').src=websiteLogo||'neustart-immocheck-logo.svg';$('websiteLogoFile').value='';notifyLogo();appleTouchIcon=s.appleTouchIcon||'';$('appleTouchIconPreview').src=appleTouchIcon||'apple-touch-icon.png';$('appleTouchIconFile').value='';favicon=s.favicon;$('faviconPreview').src=favicon||'icon.svg';$('faviconFile').value='';updatePreview();}
 function luminance(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);}
 function contrastColor(bg,choice){if(choice!=='AUTO')return choice;return luminance(bg)>.179?'#000000':'#FFFFFF';}
 function updatePreview(){
@@ -126,7 +239,7 @@ function updatePreview(){
       const s=collect();updateLegal(s);updateContentPreview(s);for(const k of ['websiteLogo','favicon','appleTouchIcon'])$(k+'Preview').alt=s.imageAlts[k];$('sharingPreview').setAttribute('aria-label',s.imageAlts.sharing);notifyLogo();const l=s.layout,preview=$('layoutPreview');preview.style.fontFamily=S.fonts[l.font];preview.style.fontSize=l.bodySize+'px';for(const [key,label] of [['subtextSize','Untertext unter einer Überschrift'],['hintSize','Hinweis in einem Feld oder einer Box']]){let el=$('preview-'+key);if(!el){el=document.createElement('p');el.id='preview-'+key;el.textContent=label;preview.append(el);}el.style.fontSize=l[key]+'px';}preview.style.background=l.background;preview.style.color=l.text;preview.style.borderRadius=l.cornerRadius+'px';['h1','h2','h3','h4'].forEach(k=>preview.querySelector(k).style.fontSize=l[k]+'px');$('previewButton').style.background=l.greenBackground;$('previewButton').style.color=contrastColor(l.greenBackground,l.greenText);$('previewButton').style.borderRadius=Math.round(l.cornerRadius*10/22)+'px';
  const vals=[luminance(l.greenBackground),luminance(contrastColor(l.greenBackground,l.greenText))],ratio=(Math.max(...vals)+.05)/(Math.min(...vals)+.05);$('contrastNotice').textContent='Grüne Buttons – Kontrast: '+ratio.toFixed(1).replace('.',',')+':1'+(ratio<4.5?' · Für gut lesbaren kleinen Text sind mindestens 4,5:1 empfehlenswert.':' · Gut lesbarer Kontrast.');$('contrastNotice').classList.toggle('low-contrast',ratio<4.5);
  const root=$('imprintPreview');root.replaceChildren();S.imprint(s).forEach(({label,value})=>{const h=document.createElement('h4');h.textContent=label;const p=document.createElement('p');p.textContent=value;root.append(h,p);});
- S.pages.forEach(([k])=>{const meta=S.pageMeta(s,k);for(const p of ['title','description']){$('search-'+k+'-'+p).textContent=meta[p];const counter=$('meta-'+k+'-'+p+'-count');counter.textContent=$('meta-'+k+'-'+p).value.length+' Zeichen · Richtwert '+counter.dataset.recommend;}});
+
 }
 function validForm(){try{window.NICABCAdmin.validate();}catch(err){selectTab('immobilien-abc');status(err.message,true);return false;}const invalid=Array.from(form.querySelectorAll('input,textarea,select')).find(el=>!el.checkValidity());if(invalid){const section=invalid.closest('[role=tabpanel]');if(section)selectTab(section.id.replace('panel-',''));const details=invalid.closest('details');if(details)details.open=true;invalid.reportValidity();invalid.focus();return false;}return true;}
 let adminMenuButton=null;
@@ -144,7 +257,7 @@ function syncAdminMenu(key){
  setAdminMenuOpen(false);
  if(wasOpen)adminMenuButton.focus();
 }
-function selectTab(key){document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]').forEach(t=>{const active=t.id==='tab-'+key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;$(t.getAttribute('aria-controls')).hidden=!active;});if($('statsReset'))$('statsReset').hidden=key!=='stats'||$('statsSource').value!=='database'||!window.NICAccess?.enabled;syncAdminMenu(key);history.replaceState(null,'',(document.getElementById('nicAdminContent')?'#admin-':'#')+key);}
+function selectTab(key){if(key==='meta')key='content';document.querySelectorAll('#nicAdminContent [role=tab],body.nic-admin [role=tab]').forEach(t=>{const active=t.id==='tab-'+key;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;$(t.getAttribute('aria-controls')).hidden=!active;});if($('statsReset'))$('statsReset').hidden=key!=='stats'||$('statsSource').value!=='database'||!window.NICAccess?.enabled;syncAdminMenu(key);history.replaceState(null,'',(document.getElementById('nicAdminContent')?'#admin-':'#')+key);}
 form.noValidate=true;
 const adminNav=document.querySelector('#nicAdminContent .admin-tabs,body.nic-admin .admin-tabs');
 if(adminNav){

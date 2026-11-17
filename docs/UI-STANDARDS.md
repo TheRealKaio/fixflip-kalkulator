@@ -227,7 +227,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   H2, einleitendem Absatz und zwei ergänzenden H3-/Textabschnitten. Keine Kopie
   der Überschrift oder Beschreibung aus dem Grafikheader. Deutschlandbezug und
   passende interne Links verwenden, keine unbelegten Leistungsversprechen.
-- Alle sechs Boxen sind unter Admin → Content bearbeitbar. `description` enthält den vollständigen Text als HTML; der erste Absatz bildet die mobile Einleitung. Bei Mieterabrechnung bleibt der Bildheader-Titel getrennt von `boxTitle`. Neue/angepasste Inhalte ersetzen die Anzeige und werden bei der Höhenmessung berücksichtigt.
+- Alle sechs Boxen sind unter Admin → Seiten & Metadaten bearbeitbar. `description` enthält den vollständigen Text als HTML; der erste Absatz bildet die mobile Einleitung. Bei Mieterabrechnung bleibt der Bildheader-Titel getrennt von `boxTitle`. Neue/angepasste Inhalte ersetzen die Anzeige und werden bei der Höhenmessung berücksichtigt.
 - Die bestehende Server-Schnittstelle speichert die normalisierten Contentdaten kompatibel unter `meta.content`; `content` und `meta.content` referenzieren im Frontend dieselben Daten. Beim Laden werden beide Formate unterstützt. Keine zweite redaktionelle Quelle und keine Änderung an Datenbank, Zugangsdaten oder Serverinstallation.
 - Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
   Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
@@ -361,7 +361,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 ## Immobilien ABC: redaktionelle Verwaltung (15. November 2026)
 
-- Neuer Admin-Menüpunkt „Immobilien ABC“ unmittelbar nach „Content“, in derselben nativen Admin-Navigation auf Desktop und Mobil.
+- Neuer Admin-Menüpunkt „Immobilien ABC“ unmittelbar nach „Seiten & Metadaten“, in derselben nativen Admin-Navigation auf Desktop und Mobil.
 - 120 Ausgangsbegriffe aus `assets/immobilien-abc.json` werden erstmals geladen. Jeder Datensatz besitzt Titel, Themengebiet, Erklärung und optionales Praxisbeispiel.
 - Die Liste im Editor und die öffentliche Ausgabe werden alphabetisch nach Titel sortiert; neue Begriffe werden nach dem Bearbeiten einsortiert.
 - „Hinzufügen“ erzeugt einen bearbeitbaren Datensatz; jedes Element hat rechts ein rotes X zum Löschen mit Bestätigungsdialog. Speichern und Zurücksetzen verwenden die bestehenden Admin-Aktionen.
@@ -450,3 +450,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Unter 701 px im Hochformat erhält die Zinsgrafik eine neu berechnete SVG-Zeichenfläche mit mindestens 240 px Bildschirmhöhe. Größere Admin-Schriften können mehr Höhe benötigen. Querformat und Desktop behalten das vorhandene Seitenverhältnis.
 - Achsenbeschriftungen bleiben an Admin → Layout → Untertexte gebunden. Prozentwerte, Kurve und Jahreszahlen erhalten getrennte Randflächen; die Grafik wird nicht verzerrt gestreckt.
 - Jahreszahlen werden mit einem gleichmäßigen Jahresintervall angezeigt. Erstes und letztes Jahr bleiben erhalten; bei Platzmangel wird das Intervall insgesamt vergrößert, statt einzelne Jahre unregelmäßig zu entfernen.
+
+## Admin: Seiten & Metadaten
+
+- Rechner, Mieterabrechnung, Inhaltsseiten und rechtliche Seiten sind gruppiert. Jeder Seiteneintrag ist standardmäßig geschlossen und zeigt rechts ein Plus zum Öffnen.
+- Pro Seite stehen Inhalt und Metadaten zusammen. Richtwerte für Meta-Titel und Meta-Beschreibung erscheinen als kurze Hinweise. Noindex steht mit der Checkbox rechts neben der Beschriftung.
+- Rechner zeigen je ein Feld für Meta-Titel und Meta-Beschreibung. Gespeicherte Werte aus älteren Konfigurationen bleiben als Fallback lesbar.
