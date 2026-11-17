@@ -177,7 +177,8 @@
     setMeta('meta[name="description"]',{name:'description'},m.description);
     const routeKey=key==='company'&&/\/impressum\//.test(location.pathname)?'impressum':key;
     const blocked=routeKey==='admin'||routeKey==='login'||s.seoIndexing?.[routeKey]===false;
-    setMeta('meta[name="robots"]',{name:'robots'},blocked?'noindex,follow':'index,follow');
+    // An explicit noindex,nofollow on the HTML page (especially GitHub preview) is a hard crawl lock.
+    if(!document.head.querySelector('meta[name="robots"][content="noindex,nofollow"]'))setMeta('meta[name="robots"]',{name:'robots'},blocked?'noindex,follow':'index,follow');
     setMeta('meta[property="og:title"]',{property:'og:title'},m.title);
     setMeta('meta[property="og:description"]',{property:'og:description'},m.description);
     setMeta('meta[name="twitter:title"]',{name:'twitter:title'},m.title);
