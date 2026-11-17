@@ -337,7 +337,7 @@ function nic_run(): void {
     }
     if ($route==='statistics-event' && $method==='POST') {
         $event=$input['event']??'';$section=$input['section']??'';$calculator=$input['calculator']??'';
-        $events=['page_view','calculator_use','calculate','pdf_download','pdf_share'];$sections=['website','company','budget','own','rent','flip'];$calculators=['budget','own','rent','flip','finance'];
+        $events=['page_view','calculator_use','calculate','pdf_download','pdf_share'];$sections=['website','company','budget','own','rent','flip','settlement'];$calculators=['budget','own','rent','flip','finance','settlement'];
         if(!is_string($event)||!in_array($event,$events,true)||!is_string($section)||!in_array($section,$sections,true))nic_fail('Ungültiges Statistikereignis.');
         if($calculator!==null&&$calculator!==''&&(!is_string($calculator)||!in_array($calculator,$calculators,true)))nic_fail('Ungültiger Kalkulator.');
         $calculator=is_string($calculator)?$calculator:'';
@@ -352,7 +352,7 @@ function nic_run(): void {
         nic_statistics_table($db);$days=(int)($_GET['days']??30);if(!in_array($days,[7,30,90],true))nic_fail('Ungültiger Statistikzeitraum.');
         $today=new DateTimeImmutable('today',new DateTimeZone('Europe/Berlin'));$from=$today->modify('-'.($days-1).' days')->format('Y-m-d');
         $rows=nic_query($db,'SELECT event_name,calculator,device,operating_system,source,SUM(hits) AS hits FROM nic_statistics_daily WHERE stat_date>=? AND stat_date<=? GROUP BY event_name,calculator,device,operating_system,source',[$from,$today->format('Y-m-d')])->fetchAll(PDO::FETCH_ASSOC);
-        $events=['page_view'=>0,'calculator_use'=>0,'calculate'=>0,'pdf_download'=>0,'pdf_share'=>0];$calculators=[];foreach(['budget','own','rent','flip','finance'] as $key)$calculators[$key]=['calculator_use'=>0,'calculate'=>0,'pdf_download'=>0,'pdf_share'=>0];$breakdowns=['devices'=>[],'systems'=>[],'sources'=>[]];
+        $events=['page_view'=>0,'calculator_use'=>0,'calculate'=>0,'pdf_download'=>0,'pdf_share'=>0];$calculators=[];foreach(['budget','own','rent','flip','finance','settlement'] as $key)$calculators[$key]=['page_view'=>0,'calculator_use'=>0,'calculate'=>0,'pdf_download'=>0,'pdf_share'=>0];$breakdowns=['devices'=>[],'systems'=>[],'sources'=>[]];
         foreach($rows as $row){$event=$row['event_name'];$count=(int)$row['hits'];if(array_key_exists($event,$events))$events[$event]+=$count;$key=$row['calculator'];if(isset($calculators[$key][$event]))$calculators[$key][$event]+=$count;if($event==='page_view'){foreach(['device'=>'devices','operating_system'=>'systems','source'=>'sources'] as $field=>$target){$value=$row[$field];if($value!=='')$breakdowns[$target][$value]=($breakdowns[$target][$value]??0)+$count;}}}
         nic_reply(['events'=>$events,'calculators'=>$calculators,'devices'=>$breakdowns['devices'],'systems'=>$breakdowns['systems'],'sources'=>$breakdowns['sources'],'from'=>$from,'through'=>$today->format('Y-m-d')]);
     }
