@@ -31,7 +31,7 @@ function close(){if(!active)return;active=null;document.body.classList.remove('n
 function open(next){
  if(!next){const was=active;close();if(was)opener?.focus();return;}
  if(!active)snapshot={title:title.innerHTML,text:text.textContent,documentTitle:document.title};
- if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← Zu den Kalkulatoren',panel);back.type='button';back.className='nic-admin-back';back.addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);open(null);});article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
+ if(!panel){panel=node('section');panel.id='nicLegalPanel';const back=node('button','← ZURÜCK',panel);back.type='button';back.className='nic-admin-back';back.setAttribute('aria-label','Zurück zur Startseite');back.addEventListener('click',()=>{window.location.assign(new URL('/',S.ROOT).href);});article=node('article',undefined,panel);article.className='nic-legal-card';hero.after(panel);}
  active=next;panel.hidden=false;document.body.classList.add('nic-legal-open');panel.setAttribute('aria-label',labels[next]);title.textContent=labels[next];text.textContent='Rechtliche Informationen zu Neustart ImmoCheck';document.title=labels[next]+' | Neustart ImmoCheck';
  render();
  document.getElementById('sheetBackdrop')?.classList.remove('show');document.getElementById('legalDisclaimerPage')?.classList.remove('show');
