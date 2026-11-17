@@ -44,7 +44,7 @@ function begin(){
  if(calculator&&calculator!==lastCalculator){lastCalculator=calculator;snapshots[calculator]=fingerprint(calculator);track('calculator_use',calculator);}
 }
 function start(info){if(started)return;section=C.SECTIONS.includes(info.section)?info.section:'website';calculator=info.calculator!=='settlement'&&C.CALCULATORS.includes(info.calculator)?info.calculator:null;started=true;begin();addConsentControl();if(!readConsent())openConsent();}
-function changeSection(key){if(!started)return;flush();if(!C.SECTIONS.includes(key))return;section=key;calculator=C.CALCULATORS.includes(key)?key:null;begin();}
+function changeSection(key){if(!started)return;flush();if(!C.SECTIONS.includes(key))return;section=key;calculator=key!=='settlement'&&C.CALCULATORS.includes(key)?key:null;begin();}
 function setConsent(value){
  const next=value==='granted'?'granted':'denied';
  try{localStorage.setItem(CONSENT,JSON.stringify({status:next,at:Date.now()}));}catch(_){document.getElementById('nicConsentStatus').textContent='Die Auswahl konnte nicht gespeichert werden. Es wird keine Statistik erfasst.';return;}
