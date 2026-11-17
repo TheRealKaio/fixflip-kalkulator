@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import time
 from collections import Counter
 from html.parser import HTMLParser
 from urllib.parse import quote
@@ -181,6 +182,52 @@ def verify_release(ips, manifest, preview_token=None, request=origin_request, so
     print(('Geschuetzte Vorschau' if preview_token else 'Oeffentlicher Release') + ': HTML, Filterung, JS, CSS und JSON erfolgreich geprueft.', flush=True)
 
 
+def keep_sftp_alive(sftp, path, request, clock=time.monotonic):
+    """Exercise the SFTP channel during long HTTP checks, without retrying writes."""
+    last = clock()
+    def checked_request(*args, **kwargs):
+        nonlocal last
+        response = request(*args, **kwargs)
+        now = clock()
+        if now - last >= 30:
+            sftp.lstat(path)
+            last = now
+        return response
+    return checked_request
+
+
+def restore_interrupted_preview(sftp, root, rules, token, ips, request):
+    """Recover only an exact additive preview left by a verified prior operation."""
+    try:
+        known_release(sftp, root, rules)
+        return rules
+    except CheckError as failure:
+        # The last additive allow-rule identifies the failed operation's backup.
+        tail = re.search(rb'(?m)^RewriteRule \^([^\r\n]+)\$ - \[L\]\nRewriteRule \^ - \[R=404,END\]\n$', rules)
+        if tail is None:
+            raise failure
+        name = re.sub(rb'\\(.)', rb'\1', tail[1]).decode('ascii')
+        match = re.fullmatch(r'nic-release-([a-f0-9]{40})-([1-9][0-9]*)-([1-9][0-9]*)\.php', name)
+        if match is None:
+            raise failure
+        previous_token = match[2] + '-' + match[3]
+        backup = read_regular(sftp, root + '/' + STORE + '/.backups/' + previous_token + '.htaccess', 200000)
+        current = known_release(sftp, root, backup)
+        allow = ('RewriteRule ^' + re.escape(name) + '$ - [L]\n').encode()
+        expected = backup.replace(b'RewriteRule ^ - [R=404,END]\n', allow + b'RewriteRule ^ - [R=404,END]\n')
+        if rules != expected:
+            raise CheckError('Unterbrochene Vorschau stimmt nicht exakt mit ihrem gesicherten Rueckweg ueberein.')
+        check_live(ips, current, request)
+        live = root + '/.htaccess'
+        root_backup(sftp, root, rules, token + '9')
+        if read_regular(sftp, live, 200000) != rules:
+            raise CheckError('Root-Regeln waehrend Wiederherstellung extern geaendert.')
+        atomic_replace(sftp, live, backup, token + '8')
+        check_live(ips, current, request)
+        print('Unterbrochene Vorschau entfernt; exakt gesicherter aktiver Release oeffentlich bestaetigt.', flush=True)
+        return backup
+
+
 def publish(sftp, root, files, release, token, ips, request=origin_request, stage_release=stage):
     validate_root(root)
     validate_release(release)
@@ -188,7 +235,9 @@ def publish(sftp, root, files, release, token, ips, request=origin_request, stag
     inspect_target(sftp, root)
     live = root + '/.htaccess'
     original = read_regular(sftp, live, 200000)
+    request = keep_sftp_alive(sftp, live, request)
     check_live(ips, request=request)  # Stop before any mutation if the public site is already broken.
+    original = restore_interrupted_preview(sftp, root, original, token, ips, request)
     current = known_release(sftp, root, original)
     check_live(ips, current if b'# NIC-ATOMIC-RELEASE: v3\n' in original else None, request)
     print('Bekannter Rueckweg und laufende Website geprueft.', flush=True)

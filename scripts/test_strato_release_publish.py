@@ -1,9 +1,10 @@
 """Atomic publication: interrupted preview/switch never replaces live page files."""
 import hashlib
 import json
+import re
 from pathlib import Path
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qs, urlsplit
 
 import test_strato_publish as fixtures
@@ -11,7 +12,7 @@ from test_strato_publish import NEW
 from test_strato_stage import ROOT, RELEASE, STORE
 from strato_stage import collect_files
 from strato_activate import managed_header
-from strato_release_publish import publish, check_source, known_release, release_rules, release_assets, check_raw_text
+from strato_release_publish import publish, check_source, known_release, release_rules, release_assets, check_raw_text, keep_sftp_alive, restore_interrupted_preview, router_name
 from strato_sftp_check import CheckError
 
 
@@ -70,6 +71,39 @@ class AtomicTests(unittest.TestCase):
                 self.assertEqual(self.sftp.files[ROOT + '/.htaccess'], self.original[ROOT + '/.htaccess'])
                 self.assertEqual(self.sftp.files[ROOT + '/index.html'], self.original[ROOT + '/index.html'])
                 self.assert_private_unchanged()
+
+    def test_sftp_channel_is_exercised_during_long_http_checks(self):
+        sftp, request = Mock(), Mock(return_value='response')
+        clock = Mock(side_effect=[0, 10, 35, 50, 70])
+        checked = keep_sftp_alive(sftp, ROOT + '/.htaccess', request, clock)
+        for _ in range(4):
+            self.assertEqual(checked('host', 'ip', '/', method='GET'), 'response')
+        self.assertEqual(sftp.lstat.call_count, 2)
+        self.assertEqual(request.call_count, 4)
+
+    def test_exact_interrupted_preview_recovers_its_verified_backup(self):
+        self.change()
+        self.atomic()
+        live = ROOT + '/.htaccess'
+        original = self.sftp.files[live]
+        interrupted = 'c' * 40 + '-789-1'
+        allow = ('RewriteRule ^' + re.escape(router_name(interrupted)) + '$ - [L]\n').encode()
+        preview = original.replace(b'RewriteRule ^ - [R=404,END]\n', allow + b'RewriteRule ^ - [R=404,END]\n')
+        self.sftp.files[STORE + '/.backups/789-1.htaccess'] = original
+        self.sftp.files[live] = preview
+        with patch('strato_release_publish.check_live') as check:
+            restored = restore_interrupted_preview(self.sftp, ROOT, preview, '987-1', ['ip'], Mock())
+        self.assertEqual(restored, original)
+        self.assertEqual(self.sftp.files[live], original)
+        self.assertEqual(self.sftp.files[STORE + '/.backups/987-19.htaccess'], preview)
+        self.assertEqual(check.call_count, 2)
+        self.assert_private_unchanged()
+        # An unrelated edit must never be silently removed by recovery.
+        changed = preview.replace(b'Options -Indexes', b'Options +Indexes')
+        self.sftp.files[live] = changed
+        with self.assertRaisesRegex(CheckError, 'nicht exakt'):
+            restore_interrupted_preview(self.sftp, ROOT, changed, '988-1', [], Mock())
+        self.assertEqual(self.sftp.files[live], changed)
 
     def test_filtered_html_uses_verified_source_and_successful_filter_marker(self):
         manifest = {'release': NEW, 'files': {'index.html': {'sha256': 'a' * 64}}}
