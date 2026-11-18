@@ -5,7 +5,12 @@ const ROOT=new URL('.',document.currentScript.src);
 let entriesPromise=null;
 const fetchEntries=async()=>{
  // Wait for the public STRATO settings before falling back to the bundled ABC.
- if(window.NICSettings&&!window.NICSettings.ready)await window.NICSettings.init();
+ if(window.NICSettings&&!window.NICSettings.ready){
+  // A failed settings request must not prevent all field-help links from rendering.
+  // Cloud settings remain authoritative whenever initialization succeeds.
+  try{await window.NICSettings.init();}
+  catch(error){console.warn('ABC-Einstellungen vorerst nicht verfügbar; nutze den gebündelten Fallback:',error);}
+ }
  const saved=window.NICSettings?.current?.meta?.immobilienABC;
  if(saved){
   try{
