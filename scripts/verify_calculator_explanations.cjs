@@ -96,8 +96,10 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    await page.goto('http://localhost/#admin-content',{waitUntil:'networkidle'});
    await page.locator('#settingsForm').waitFor({state:'visible'});
    for(const key of Object.keys(routes))assert.equal(await page.locator('#content-'+key+'-description').count(),1,'Admin editor for '+key);
+   await page.locator('[data-admin-page="settlement"] > summary').click();
    await page.locator('#content-settlement-boxTitle').fill('Meine Mieterabrechnung');
    await page.locator('#content-settlement-description').fill('<p>Meine eigene Einleitung</p><h3>Meine Details</h3><p>Weitere Informationen <a href="/vermietung/">Vermietung</a></p><script>window.explanationInjected=true</script>');
+   await page.locator('[data-admin-page="budget"] > summary').click();
    await page.locator('#content-budget-title').fill('Mein Budgettext');
    await page.locator('#saveSettings').click();
    await page.waitForFunction(()=>NICSettings.current.content.settlement.boxTitle==='Meine Mieterabrechnung');
