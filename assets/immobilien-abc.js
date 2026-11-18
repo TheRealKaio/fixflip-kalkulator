@@ -3,7 +3,9 @@
 'use strict';
 const ROOT=new URL('.',document.currentScript.src);
 let entriesPromise=null;
-const fetchEntries=()=>{
+const fetchEntries=async()=>{
+ // Wait for the public STRATO settings before falling back to the bundled ABC.
+ if(window.NICSettings&&!window.NICSettings.ready)await window.NICSettings.init();
  const saved=window.NICSettings?.current?.meta?.immobilienABC;
  if(saved){
   try{
@@ -160,7 +162,15 @@ function markTerm(label,item,legacy,rich){
   if(normalize(original)!==word)continue;
   const button=element('button','nic-abc-term',original);
   button.type='button';button.setAttribute('aria-label',original+' erklären');
-  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);});
+  button.addEventListener('click',async event=>{
+   event.preventDefault();event.stopPropagation();
+   // Resolve the term on each opening, rather than keeping a stale editor-era object.
+   try{
+    const rows=await fetchEntries();
+    const latest=rows.find(row=>row.id===item.id)||item;
+    if(button.isConnected)contextOpen(button,latest,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);
+   }catch(error){console.warn('Aktuelle ABC-Erklärung nicht verfügbar:',error);if(button.isConnected)contextOpen(button,item,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);}
+  });
   const before=document.createTextNode(raw.slice(0,pos)),after=document.createTextNode(raw.slice(pos+original.length));
   node.replaceWith(before,button,after);
   // A previously visible help control can be removed only if its complete
