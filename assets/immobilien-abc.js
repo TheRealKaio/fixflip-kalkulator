@@ -3,7 +3,9 @@
 'use strict';
 const ROOT=new URL('.',document.currentScript.src);
 let entriesPromise=null;
-const fetchEntries=()=>{
+const fetchEntries=async()=>{
+ // Wait for the public STRATO settings before falling back to the bundled ABC.
+ if(window.NICSettings&&!window.NICSettings.ready)await window.NICSettings.init();
  const saved=window.NICSettings?.current?.meta?.immobilienABC;
  if(saved){
   try{
@@ -141,6 +143,20 @@ function identifyLegacy(label){
  const detail=(control.getAttribute('data-info')||control.getAttribute('data-tooltip')||'').trim();
  return {control,detail,isReference:/^[A-Za-z][A-Za-z0-9_]*$/.test(detail)};
 }
+// Match glossary terms anywhere in a label, never inside another word.
+function findTermMatch(raw,term){
+ const target=normalize(term);
+ if(!target)return null;
+ const isWord=char=>/[\p{L}\p{N}]/u.test(char||'');
+ for(let start=0;start<raw.length;start++){
+  if(start>0&&isWord(raw[start-1]))continue;
+  const candidate=raw.slice(start,start+term.length);
+  if(normalize(candidate)!==target)continue;
+  if(isWord(raw[start+candidate.length]))continue;
+  return {start,length:candidate.length};
+ }
+ return null;
+}
 function markTerm(label,item,legacy,rich){
  const walker=document.createTreeWalker(label,NodeFilter.SHOW_TEXT,{
   acceptNode(node){
@@ -150,17 +166,22 @@ function markTerm(label,item,legacy,rich){
  });
  const textNodes=[];while(walker.nextNode())textNodes.push(walker.currentNode);
  for(const node of textNodes){
-  const raw=node.textContent||'',normalized=normalize(raw);
-  const word=normalize(item.term);
-  const pos=normalized.indexOf(word);
-  if(pos<0||!(!pos||!/[a-z0-9]/i.test(normalized[pos-1]))||(/[a-z0-9]/i.test(normalized[pos+word.length]||'')))continue;
-  // normalize can alter length for composed accents; only replace a direct
-  // substring when index and length agree, otherwise leave the original safe.
-  const original=raw.slice(pos,pos+item.term.length);
-  if(normalize(original)!==word)continue;
+  const raw=node.textContent||'';
+  const match=findTermMatch(raw,item.term);
+  if(!match)continue;
+  const pos=match.start;
+  const original=raw.slice(pos,pos+match.length);
   const button=element('button','nic-abc-term',original);
   button.type='button';button.setAttribute('aria-label',original+' erklären');
-  button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();contextOpen(button,item,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);});
+  button.addEventListener('click',async event=>{
+   event.preventDefault();event.stopPropagation();
+   // Resolve the term on each opening, rather than keeping a stale editor-era object.
+   try{
+    const rows=await fetchEntries();
+    const latest=rows.find(row=>row.id===item.id)||item;
+    if(button.isConnected)contextOpen(button,latest,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);
+   }catch(error){console.warn('Aktuelle ABC-Erklärung nicht verfügbar:',error);if(button.isConnected)contextOpen(button,item,rich?'':(legacy?.isReference?'':legacy?.detail||''),rich);}
+  });
   const before=document.createTextNode(raw.slice(0,pos)),after=document.createTextNode(raw.slice(pos+original.length));
   node.replaceWith(before,button,after);
   // A previously visible help control can be removed only if its complete
@@ -196,9 +217,9 @@ function showHints(){
    clone.querySelectorAll('button,.nic-abc-help,.info-btn,.info-dot').forEach(x=>x.remove());
    const full=normalize(clone.textContent).trim();
    const key=Object.keys(aliases).sort((a,b)=>b.length-a.length).find(k=>full===normalize(k)||full.startsWith(normalize(k)+' ')||full.startsWith(normalize(k)+'('));
-   const entry=(key&&byId.get(aliases[key]))||terms.find(x=>{
-    const term=normalize(x.term);return full===term||full.startsWith(term+' ')||full.startsWith(term+'(');
-   });
+   const aliased=key&&byId.get(aliases[key]);
+   const entry=(aliased&&findTermMatch(full,aliased.term)&&aliased)
+    ||terms.find(x=>findTermMatch(full,x.term));
    if(!entry)continue;
    const rich=byContext.get(normalize(entry.term))||byContext.get(full);
    // A source key takes precedence over a similarly named generic term.
