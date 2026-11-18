@@ -173,10 +173,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
     const originalMenu=await page.locator('.deal-type-card').elementHandle();
     await page.setViewportSize({width:844,height:390});
+    await page.locator('.app>main.section>.deal-type-card').waitFor({state:'attached'});
     assert.equal(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),false,'Landscape does not show portrait selector');
     assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Same calculator menu restored to main in landscape');
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu node is reused rather than replaced');
-    assert(!(await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Landscape restores configured title');
+    await page.waitForFunction(()=>!document.getElementById('heroTitle').innerText.startsWith('Jetzt '));
     await page.setViewportSize({width:390,height:900});
     await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').waitFor({state:'visible',timeout:10000});
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>.hero>.deal-type-card')),'Same menu returns into header in portrait');

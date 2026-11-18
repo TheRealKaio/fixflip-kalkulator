@@ -111,8 +111,16 @@ body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:
 .nic-abc-admin-remove:focus-visible,.nic-abc-admin-add:focus-visible,.nic-abc-admin-field :focus-visible{outline:3px solid #2563eb;outline-offset:2px}
 @media(max-width:760px){.nic-abc-admin-fields{grid-template-columns:1fr}.nic-abc-admin-toolbar{flex-wrap:wrap}.nic-abc-admin-add{margin-left:auto}}
 
-/* Shared label column sized by the longest page name; all checkboxes aligned. */
-.nic-seo-index-list{display:grid;grid-template-columns:minmax(0,max-content) 20px;column-gap:16px;row-gap:12px;max-width:100%;margin:12px 0}
-.nic-seo-index-row{display:grid!important;grid-template-columns:subgrid!important;grid-column:1/-1;align-items:center!important;gap:inherit!important;margin:0!important;min-width:0;cursor:pointer}
-.nic-seo-index-row span{min-width:0;text-align:left;overflow-wrap:anywhere}
-.nic-seo-index-row input[type="checkbox"]{width:20px!important;height:20px!important;min-height:0!important;min-width:20px!important;margin:0!important;align-self:center}
+/* Seiten & Metadaten */
+.admin-page-group{margin-block:0 24px}
+.admin-page-group>h3{margin-block:0 10px}
+.admin-page{padding:0;min-width:0}
+.admin-page>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;min-height:48px;cursor:pointer;font-weight:700;list-style:none}
+.admin-page>summary::-webkit-details-marker{display:none}
+.admin-page>summary::after{content:"+";font-size:1.3em;line-height:1;flex:none}
+.admin-page[open]>summary::after{content:"−"}
+.admin-page>fieldset{border:0;padding:0 16px 16px;margin:12px 0 0;min-width:0}
+.admin-page legend{font-weight:700;padding:0}
+.admin-page-noindex{margin-inline-start:10px;font-weight:400}
+.admin-page-index{display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:12px;cursor:pointer}
+.admin-page-index input[type="checkbox"]{width:20px;height:20px;min-height:0;margin:0}
