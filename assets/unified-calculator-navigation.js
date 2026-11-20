@@ -194,9 +194,13 @@ function initResponsiveCalculatorMenu(){
   console.error('Calculator menu initialization failed: missing menu or header', {menu:!!menu,header:!!header});
   return;
  }
- // This is an existing content route, not a new calculator.
+ // The six-tile bar must never include legacy links into Immobilien ABC.
  const row=menu.querySelector('.deal-type-row');
- if(row&&!row.querySelector('[data-calculator="settlement"]')){
+ for(const oldLink of menu.querySelectorAll('.deal-type-row a[href*="immobilien-abc"],.deal-type-row [data-href*="immobilien-abc"]'))oldLink.remove();
+ // Settlement is an existing content route, not a sixth calculation engine.
+ // Avoid resurrecting a tile intentionally switched off on both devices.
+ if(row&&!row.querySelector('[data-calculator="settlement"]')&&
+    (navigationAllowed('settlement','mobile','calculator')||navigationAllowed('settlement','desktop','calculator'))){
   const tile=document.createElement('a');tile.className='deal-type-option';
   tile.dataset.calculator='settlement';tile.href='/nebenkostenabrechnung/';
   tile.innerHTML='<svg class="nic-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span><strong>Nebenkosten abrechnen</strong><small>Betriebskosten erfassen und abrechnen</small></span>';
@@ -397,7 +401,7 @@ function initResponsiveCalculatorMenu(){
   }
   for(const item of rows){item.hidden=!navigationAllowed(item.dataset.value,screen,'calculator');}
   for(const option of picker.options){option.disabled=!navigationAllowed(option.value,screen,'calculator');}
-  const showDropdown=navigationAllowed('dropdown',screen,dropdownSection);
+  const showDropdown=navigationAllowed('dropdown',screen,dropdownSection)&&!document.body.matches('.nic-admin-open,.nic-legal-open');
   compact.hidden=!showDropdown;
   dropdownShell.hidden=menu.classList.contains('nic-portrait-calculator-menu')||!showDropdown;
   if(menu.classList.contains('nic-portrait-calculator-menu'))menu.hidden=!showDropdown;
