@@ -504,3 +504,11 @@ html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-opt
   min-height:96px!important;
  }
 }
+
+
+/* Admin visibility must beat every legacy tile display rule. A disabled
+   calculator option is never visible, even before the navigation JS runs. */
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option[hidden],
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option[data-nic-nav-obsolete="true"]{
+ display:none!important;
+}
