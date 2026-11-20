@@ -21,6 +21,10 @@ style.textContent=`
 .nic-finance-percent-field{grid-column:1 / -1!important;width:100%;min-width:0}
 .nic-finance-percent-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;border:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
 .nic-finance-percent-control{display:block;width:100%;min-width:0;padding:4px 0 7px}
+.nic-finance-percent-control{position:relative}
+.nic-finance-percent-control::before{content:"";position:absolute;top:17px;left:var(--nic-finance-snap-position,83.33%);height:16px;border-left:2px solid var(--ink,#172033);opacity:.5;pointer-events:none;z-index:1}
+.nic-finance-percent-control.nic-finance-at-100::before{opacity:1;border-left-width:3px}
+
 .nic-finance-percent-range{display:block;width:100%!important;min-width:0;height:36px;accent-color:var(--nic-accent,#2463e6);cursor:pointer;touch-action:pan-y}
 .nic-finance-percent-labels{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:var(--nic-subtext-font-size,14px);font-variant-numeric:tabular-nums}
 .nic-finance-percent-labels output{font-weight:800;color:var(--ink,#172033)}
@@ -115,23 +119,43 @@ function install(id,equityId){
  oldWrap.insertAdjacentElement('afterend',wrapper);
  oldWrap.classList.add('nic-finance-percent-native');
  field.classList.add('nic-finance-percent-field');
- let manual=Boolean(parseNumber(equity.value)>0);
+
+ // The owner/flip calculator shares DOM input IDs but keeps separate saved states.
+ const mode=()=>id==='rentLtv'?'rent':(activeMode()==='flip'?'flip':'own');
+ const manualKey=()=> 'nic_finance_equity_manual_v2_'+mode();
+ const flags=new Map();
+ const isManual=()=>{
+  const key=manualKey();
+  if(!flags.has(key)){
+   const saved=localStorage.getItem(key);
+   // Existing installations may predate the explicit user-input flag.
+   flags.set(key,saved===null ? parseNumber(equity.value)>0 : saved==='1');
+  }
+  return flags.get(key);
+ };
+ const setManual=(state)=>{
+  const key=manualKey();
+  flags.set(key,state);
+  localStorage.setItem(key,state?'1':'0');
+ };
  let updating=false;
- equity.addEventListener('beforeinput',()=>{if(!updating)manual=true;},true);
- equity.addEventListener('input',event=>{if(!updating&&event.isTrusted)manual=true;},true);
+ const changedFinance=()=>{
+  original.dispatchEvent(new Event('input',{bubbles:true}));
+ };
  const refresh=()=>{
   const share=Math.max(0,parseNumber(original.value));
   const c=costs(id);
   const necessary=c.base>0?100*c.total/c.base:100;
   const maximum=Math.max(120,Math.ceil(Math.max(share,necessary)/20)*20);
-  slider.max=String(Math.min(500,maximum));
-  slider.value=String(Math.min(share,Number(slider.max)));
+  slider.max=String(maximum);
+  slider.value=String(Math.min(share,maximum));
+  wrapper.style.setProperty('--nic-finance-snap-position',(100/maximum*100)+'%');
   out.textContent=format(share)+' %';
-  high.textContent=format(Number(slider.max))+' %';
+  high.textContent=format(maximum)+' %';
   slider.setAttribute('aria-valuetext',out.textContent);
  };
  const syncAutoEquity=()=>{
-  if(manual)return;
+  if(isManual())return;
   const c=costs(id);
   if(!(c.total>=0&&c.base>0))return;
   const share=Math.max(0,parseNumber(original.value));
@@ -143,28 +167,72 @@ function install(id,equityId){
    equity.dispatchEvent(new Event('input',{bubbles:true}));
   }finally{updating=false;}
  };
+ const syncManualPercentage=()=>{
+  if(!isManual())return;
+  const c=costs(id);
+  if(!(c.base>0&&c.total>0))return;
+  // Fixed user equity determines the effective debt, not a second deduction
+  // from the already reduced financing percentage.
+  const borrowed=Math.max(0,c.total-Math.max(0,parseNumber(equity.value)));
+  const percentage=Math.round(borrowed/c.base*10000)/100;
+  if(Math.abs(parseNumber(original.value)-percentage)<0.005){refresh();return;}
+  original.value=percentage.toFixed(2);
+  changedFinance();
+  refresh();
+ };
+ const userEquity=event=>{
+  if(updating||!event.isTrusted)return;
+  setManual(true);
+  queueMicrotask(syncManualPercentage);
+ };
+ equity.addEventListener('input',userEquity,true);
+ equity.addEventListener('change',userEquity,true);
  const changedBySlider=()=>{
-  original.value=Number(slider.value).toFixed(2);
-  // Reuse the native field listeners; do not create a second loan calculation.
-  syncAutoEquity();
-  original.dispatchEvent(new Event('input',{bubbles:true}));
+  let next=Number(slider.value);
+  // Magnetic detent at 100%; a deliberate drag past the 1% zone still works.
+  if(Math.abs(next-100)<=1){
+   next=100;
+   slider.value='100';
+   if(!wrapper.classList.contains('nic-finance-at-100') && navigator.vibrate)
+    try{navigator.vibrate(8);}catch(_error){}
+   wrapper.classList.add('nic-finance-at-100');
+  }else wrapper.classList.remove('nic-finance-at-100');
+  original.value=next.toFixed(2);
+  if(!isManual())syncAutoEquity();
+  changedFinance();
   refresh();
  };
  slider.addEventListener('input',changedBySlider);
  slider.addEventListener('change',()=>original.dispatchEvent(new Event('change',{bubbles:true})));
  original.addEventListener('input',refresh);
- const observed=['purchase','financeAcquisition','notary','buyBroker','state','buffer','rentPurchase','rentRenovation','rentNotary','rentBroker','rentState','rentFinanceAcquisition'];
+ const observed=id==='rentLtv'
+  ? ['rentPurchase','rentRenovation','rentNotary','rentBroker','rentState','rentFinanceAcquisition']
+  : ['purchase','financeAcquisition','notary','buyBroker','state','buffer'];
+ const synchronize=()=>{
+  if(isManual())syncManualPercentage();
+  else{refresh();syncAutoEquity();}
+ };
  for(const sourceId of observed){
-  const onChange=()=>queueMicrotask(()=>{refresh();syncAutoEquity();});
+  const onChange=()=>queueMicrotask(synchronize);
   byId(sourceId)?.addEventListener('change',onChange);
   byId(sourceId)?.addEventListener('input',onChange);
  }
  const acquisitionOutput=id==='rentLtv'?'rentAcquisitionDisplay':'acquisitionCostsTotal';
  if(byId(acquisitionOutput)){
-  const watcher=new MutationObserver(()=>queueMicrotask(()=>{refresh();syncAutoEquity();}));
+  const watcher=new MutationObserver(()=>queueMicrotask(synchronize));
   watcher.observe(byId(acquisitionOutput),{subtree:true,childList:true,characterData:true});
  }
- controllers.set(id,{refresh});
+ // A confirmed calculator reset restores automatic equity generation.
+ byId('recalc')?.addEventListener('click',()=>{
+  setTimeout(()=>{
+   if(parseNumber(equity.value)===0 && Math.abs(parseNumber(original.value)-100)<0.01){
+    setManual(false);
+    refresh();
+   }
+  },0);
+ },true);
+
+ controllers.set(id,{refresh,isManual,synchronize});
  refresh();
 }
 function setup(){
@@ -175,4 +243,5 @@ function setup(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 window.addEventListener('nic-calculator-changed',setup);
 window.addEventListener('nic-route-changed',setup);
+window.NICFinancingPercent={managed:id=>controllers.has(id),sync:()=>{for(const x of controllers.values())x.synchronize();}};
 })();
