@@ -187,6 +187,14 @@ function initResponsiveCalculatorMenu(){
   tile.innerHTML='<svg class="nic-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span><strong>Nebenkosten abrechnen</strong><small>Betriebskosten erfassen und abrechnen</small></span>';
   row.append(tile);
  }
+ // Preserve each tile's original calculator destination; never link tiles to the ABC.
+ const canonicalTileRoutes={budget:'/budget/',own:'/eigennutzung/',rent:'/vermietung/',flip:'/fix-flip/',finance:'/finanzierungsrechner/',settlement:'/nebenkostenabrechnung/'};
+ for(const tile of menu.querySelectorAll('.deal-type-row > .deal-type-option')){
+  const key=tile.dataset.calculator;
+  if(!canonicalTileRoutes[key])continue;
+  if(tile.tagName==='A')tile.setAttribute('href',canonicalTileRoutes[key]);
+  if(tile.hasAttribute('data-href'))tile.dataset.href=canonicalTileRoutes[key];
+ }
  // Align the original shared calculator tiles with the central menu label.
  for(const tile of menu.querySelectorAll('.deal-type-option')){
   if(tile.dataset.calculator==='budget'||tile.dataset.href==='/budget/'){
