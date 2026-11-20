@@ -364,8 +364,9 @@ body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
 }
 .app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option.is-selected .nic-mobile-calculator-check{display:inline}
 /* Remaining tiles claim the entire freed row width, both on homepage and calculator pages. */
-#nic-home-intro .nic-home-groups{
- grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))!important
+/* Keep the approved 1:2 homepage grouping until a whole group disappears. */
+#nic-home-intro .nic-home-groups:has(>.nic-home-group[hidden]){
+ grid-template-columns:minmax(0,1fr)!important
 }
 #nic-home-intro .nic-home-planning>.nic-home-options,
 #nic-home-intro .nic-home-property>.nic-home-options{
