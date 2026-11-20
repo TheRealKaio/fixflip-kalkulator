@@ -162,7 +162,7 @@ function findTermMatch(raw,term){
  }
  return null;
 }
-function markTerm(label,item,legacy,rich){
+function markTerm(label,item,legacy,rich,displayTerm=item.term){
  const walker=document.createTreeWalker(label,NodeFilter.SHOW_TEXT,{
   acceptNode(node){
    return node.parentElement?.closest('button, input, select, textarea, .nic-abc-term, .nic-abc-help, .inline-info, .info-btn, .info-dot, .rent-info-dot')
@@ -172,7 +172,7 @@ function markTerm(label,item,legacy,rich){
  const textNodes=[];while(walker.nextNode())textNodes.push(walker.currentNode);
  for(const node of textNodes){
   const raw=node.textContent||'';
-  const match=findTermMatch(raw,item.term);
+  const match=findTermMatch(raw,displayTerm);
   if(!match)continue;
   const pos=match.start;
   const original=raw.slice(pos,pos+match.length);
@@ -239,7 +239,16 @@ function showHints(){
    const control=card.querySelector(':scope > button.info-btn[data-info], :scope > .name button.rent-info-dot[data-info]');
    const name=card.querySelector(':scope > .name');
    const heading=name?.querySelector(':scope > span')||name;
-   if(!control||!heading||heading.querySelector('.nic-abc-term'))continue;
+   if(!heading||heading.querySelector('.nic-abc-term'))continue;
+   // The rental KPI uses a descriptive label; the ABC entry is named
+   // "Eigenkapitalrendite". Link them without adding another help control.
+   const rentalEquityLabel='Rendite auf dein Eigenkapital';
+   if(card.closest('#rentSection')&&normalize(heading.textContent.trim())===normalize(rentalEquityLabel)){
+    const equityEntry=byId.get('eigenkapitalrendite');
+    if(equityEntry)markTerm(heading,equityEntry,null,null,rentalEquityLabel);
+    continue;
+   }
+   if(!control)continue;
    const info=byContextKey.get(control.dataset.info)||byContext.get(normalize(heading.textContent.trim()));
    const entry=info&&byName.get(normalize(info.term));
    if(!entry)continue;
