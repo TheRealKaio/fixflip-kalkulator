@@ -807,6 +807,23 @@ runs:
       shell: bash
       run: |
         python scripts/build_unified_navigation.py _site
+        # Keep the original percent input as the single calculation source.
+        # The shared range control is a UI adapter, not another financing model.
+        cp assets/financing-percent-slider.js _site/financing-percent-slider.js
+        node --check _site/financing-percent-slider.js
+        python - <<'PY'
+        from pathlib import Path
+        tag='<script defer src="/financing-percent-slider.js"></script>'
+        pages=[p for p in Path('_site').rglob('*.html') if '_checks' not in p.parts]
+        for page in pages:
+            source=page.read_text(encoding='utf-8')
+            if tag not in source:
+                if '</head>' not in source:
+                    raise SystemExit('Missing head: '+str(page))
+                source=source.replace('</head>',tag+'</head>',1)
+                page.write_text(source,encoding='utf-8')
+        print('Financing slider loaded on',len(pages),'routes')
+        PY
         python scripts/audit_immobilien_abc_info.py _site
         python scripts/add_immobilien_abc.py _site
         python scripts/verify_immobilien_abc.py _site
