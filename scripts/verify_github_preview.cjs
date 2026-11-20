@@ -85,12 +85,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      assert.equal(await chooser.locator('.deal-type-row').isVisible(),false,'Old cards hidden within same mobile menu');
      if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
     }else{
-     const desktop=width>=701;
-     assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),desktop,'Desktop dropdown is visible on first load; homepage portrait remains unchanged: '+slug);
-     if(desktop){
-      assert.equal(await page.locator('.app>.hero>.nic-desktop-calculator-controls').count(),1,'One shared desktop selector in image header: '+slug);
-      assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Desktop trigger visible immediately: '+slug);
-     }
+     assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),true,'Shared dropdown visible on homepage and desktop: '+slug);
+     const globalShell=page.locator('.app>.hero>.nic-global-dropdown-shell');
+     assert(await globalShell.isVisible(),'Shared white dropdown panel centered above heading: '+slug);
+     assert(await globalShell.locator('#nicMobileCalculatorTrigger').isVisible(),'Same mobile dropdown trigger used for desktop and homepage: '+slug);
+     const positioning=await page.evaluate(()=>{
+      const shell=document.querySelector('.app>.hero>.nic-global-dropdown-shell').getBoundingClientRect();
+      const title=document.getElementById('heroTitle').getBoundingClientRect();
+      return {center:shell.left+shell.width/2,heroCenter:(document.querySelector('.app>.hero').getBoundingClientRect().left+document.querySelector('.app>.hero').getBoundingClientRect().right)/2,bottom:shell.bottom,top:title.top};
+     });
+     assert(Math.abs(positioning.center-positioning.heroCenter)<2,'Dropdown centered: '+slug);
+     assert(positioning.bottom<=positioning.top+2,'Dropdown has its own line above heading: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
     }
     if(currentId==='finance'){
