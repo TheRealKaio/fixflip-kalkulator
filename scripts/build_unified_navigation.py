@@ -165,7 +165,6 @@ for page in site.rglob('*.html'):
   items=[pair for pair in headers if any(pair)]
   return match[1]+json.dumps(items,ensure_ascii=False).replace('<','\\u003c')+match[3]
  s=re.sub(r'(<script type="application/json" id="nic-header-variants">)(.*?)(</script>)',variants,s,flags=re.S)
- if page==site/'finanzierungsrechner/index.html':
  if 'homepage.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/homepage.css"></head>',1)
  key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck'),('about','ueber-uns'),('contact','kontakt'),('login','anmelden')] if page==site/slug/'index.html'),'budget'))
  header_key='welcome' if key=='home' else key
