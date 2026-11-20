@@ -287,6 +287,8 @@ body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
 #nic-home-intro .nic-home-group[hidden],#nic-home-intro .deal-type-option[hidden]{display:none!important}
 
 /* Unified dropdown: centered white panel on a dedicated line above the hero heading. */
+.app>.hero:has(>.nic-global-dropdown-shell:not([hidden])){overflow:visible!important}
+
 .app>.hero>.nic-global-dropdown-shell{
  box-sizing:border-box;position:relative;z-index:35;display:flex!important;
  justify-content:center;align-items:center;clear:both;
