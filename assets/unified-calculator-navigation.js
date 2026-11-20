@@ -353,7 +353,7 @@ function initResponsiveCalculatorMenu(){
   }
  }
  function setOpen(open,focus=false){
-  const show=!!open&&!compact.hidden&&(menu.classList.contains('nic-portrait-calculator-menu')||compact.classList.contains('nic-desktop-calculator-controls'));
+  const show=!!open&&!compact.hidden&&compact.classList.contains('nic-desktop-calculator-controls');
   options.hidden=!show;trigger.setAttribute('aria-expanded',String(show));
   if(show&&focus)(rows.find(row=>!row.hidden&&row.dataset.value===picker.value)||rows.find(row=>!row.hidden))?.focus();
  }
@@ -439,13 +439,8 @@ function initResponsiveCalculatorMenu(){
   for(const option of picker.options)option.disabled=false;
   const showDropdown=navigationAllowed('dropdown',screen,dropdownSection)&&!document.body.matches('.nic-admin-open,.nic-legal-open');
   compact.hidden=!showDropdown;
-  dropdownShell.hidden=menu.classList.contains('nic-portrait-calculator-menu')||!showDropdown;
-  const isPortraitMenu=menu.classList.contains('nic-portrait-calculator-menu');
-  const hasVisibleTiles=Array.from(menu.querySelectorAll('.deal-type-row > .deal-type-option')).some(tile=>!tile.hidden);
-  // If the mobile dropdown is off, keep the separately enabled six-button bar usable.
-  menu.classList.toggle('nic-portrait-tiles-only',isPortraitMenu&&!showDropdown&&hasVisibleTiles);
-  if(isPortraitMenu)menu.hidden=!showDropdown&&!hasVisibleTiles;
-  else if(!isHome){
+  dropdownShell.hidden=!showDropdown;
+  if(!isHome){
    // The admin controls each calculator tile independently. A single disabled
    // tile must never hide its parent six-tile bar. Only hide that bar when all
    // six calculator-navigation entries are explicitly disabled.
