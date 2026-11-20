@@ -26,7 +26,23 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const range=page.locator('#'+input).locator('xpath=following-sibling::*[contains(@class,"nic-finance-percent-control")]//input[@type="range"]');
     // Parent may be an input-wrap; locate the shared field rather than assuming sibling order.
     const slider=page.locator('#'+input).locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]').locator('.nic-finance-percent-range');
-    await slider.waitFor({state:'visible',timeout:20000});
+    if(!(await slider.isVisible())){
+      const ancestors=await slider.evaluate(el=>{
+       const result=[];for(let n=el;n&&result.length<16;n=n.parentElement){
+        const style=getComputedStyle(n);
+        if(style.display==='none'||style.visibility==='hidden'||n.hasAttribute('hidden'))
+         result.push({id:n.id,cls:n.className,display:style.display,visibility:style.visibility,hidden:n.hidden});
+       }return result;
+      });
+      console.log('Financing slider visibility diagnosis',route,JSON.stringify(ancestors));
+      const toggle=page.locator('#rentFinanceToggle');
+      if(route==='vermietung' && await toggle.isVisible() && await toggle.getAttribute('aria-expanded')==='false')
+       await toggle.click();
+      const ownDetails=page.locator('#ownFinanceCard details.advanced');
+      if(route==='eigennutzung' && await ownDetails.count())
+       await ownDetails.evaluate(el=>el.open=true);
+    }
+    await slider.waitFor({state:'visible',timeout:4000});
     assert.equal(await page.locator('#'+input).count(),1,'Original percent field is retained once');
     assert(Number(await slider.getAttribute('max'))>=120,'Slider supports 120 percent');
     assert.equal(await slider.evaluate(el=>Math.round(el.getBoundingClientRect().width)),
