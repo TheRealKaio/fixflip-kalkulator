@@ -70,7 +70,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       });
       assert(Math.abs(layout.interest.w-layout.repayment.w)<3,'Interest and repayment use equal halves');
       assert(Math.abs(layout.interest.y-layout.repayment.y)<3,'Interest and repayment have one baseline');
-      assert(Math.abs(layout.feeTop[0]-layout.feeTop[1])<3,'Notary and broker inputs align');
+      assert(Math.abs(layout.feeTop[0]-layout.feeTop[1])<0.51,'Notary and broker inputs align to the same pixel');
       assert(Math.abs(layout.captionCenter-layout.checkCenter)<6,'Checkbox sits centered under caption');
     }
     const purchaseId=route==='vermietung'?'rentPurchase':'purchase';
