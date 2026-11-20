@@ -6,7 +6,6 @@ explanation_templates=templates(json.loads((Path(sys.argv[1] if len(sys.argv)>1 
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 finance=(site/'finanzierungsrechner/index.html').read_text()
 source=Path('assets/financing.html').read_text()
-finance_header=[re.search(r'<h1\b[^>]*>(.*?)</h1>',finance,re.S)[1], html.unescape(re.sub('<[^>]+>','',re.search(r'<p\b[^>]*id="heroText"[^>]*>(.*?)</p>',finance,re.S)[1]))]
 
 body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main>',finance,re.S)
 if not body:raise SystemExit('Finance content missing')
@@ -62,7 +61,7 @@ finance_result_grid_css += '@media(max-width:700px),(hover:none){#nicFinanceModu
 finance_result_grid_css += '#nicFinanceModule .refinance-slider .rangehead{justify-content:flex-start!important;text-align:left!important;gap:.5em!important}#nicFinanceModule .refinance-slider .rangehead>*{flex:0 0 auto;font-size:var(--nic-subtext-font-size,14px)!important;line-height:1.5!important}';
 finance_result_grid_css += '#nicFinanceModule .finance-result-grid>.kpi{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:.35em!important}#nicFinanceModule .finance-result-grid>.kpi>span,#nicFinanceModule .finance-result-grid>.kpi>strong{display:block!important;width:100%;margin:0!important}';
 financeMarkup=namespace_finance_ids(markup+actions);
-factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
+factory='function createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
 calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
