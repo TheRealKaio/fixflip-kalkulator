@@ -391,29 +391,18 @@ function initResponsiveCalculatorMenu(){
   const isHome=document.body.classList.contains('nic-home-active')||location.pathname==='/'||location.pathname==='/index.html'||location.pathname==='/fixflip-kalkulator/';
   const pageKey=document.documentElement.dataset.nicPage;
   const key=active&&active!=='home'?active:pageKey&&pageKey!=='website'?pageKey:document.documentElement.dataset.calculator;
-  const hiddenView=document.body.matches('.nic-admin-open,.nic-legal-open');
-  const portraitCalculator=portraitQuery.matches&&!isHome&&!hiddenView;
+  // Keep the six calculator tiles in the content area on every screen.
+  // Only the independent dropdown belongs inside the header, including portrait.
   if(key==='settlement'||calculators.some(item=>item.id===key))picker.value=key;
   else picker.value='budget';
-  if(portraitCalculator){
-   if(menu.parentElement!==header){
-    if(brand)brand.after(menu);
-    else header.insertBefore(menu,header.querySelector(':scope > h1')||header.firstChild);
-   }
-   if(compact.parentElement!==menu)menu.append(compact);
-   compact.classList.remove('nic-desktop-calculator-controls');
-   menu.classList.add('nic-portrait-calculator-menu');
-   dropdownShell.hidden=true;
-  }else{
-   setOpen(false);
-   menu.classList.remove('nic-portrait-calculator-menu');
-   menu.hidden=false;
-   if(calculatorMenuAnchor?.parentNode&&menu.previousSibling!==calculatorMenuAnchor)calculatorMenuAnchor.after(menu);
-   if(compact.parentElement!==dropdownShell)dropdownShell.append(compact);
-   compact.classList.add('nic-desktop-calculator-controls');
-   dropdownShell.hidden=false;
-   if(dropdownShell.parentElement!==header)positionGlobalDropdown();
-  }
+  setOpen(false);
+  menu.classList.remove('nic-portrait-calculator-menu','nic-portrait-tiles-only');
+  menu.hidden=false;
+  if(calculatorMenuAnchor?.parentNode&&menu.previousSibling!==calculatorMenuAnchor)calculatorMenuAnchor.after(menu);
+  if(compact.parentElement!==dropdownShell)dropdownShell.append(compact);
+  compact.classList.add('nic-desktop-calculator-controls');
+  dropdownShell.hidden=false;
+  if(dropdownShell.parentElement!==header)positionGlobalDropdown();
   refreshNavigationVisibility();
   window.NICHeader?.refresh();
  }
