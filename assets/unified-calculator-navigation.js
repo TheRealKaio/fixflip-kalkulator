@@ -12,14 +12,6 @@ function setPage(key){
  document.documentElement.dataset.nicPage=key==='home'?'website':key;
  window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
 }
-const portraitHeaderCopy={
- budget:['Jetzt Budget berechnen!','Wie viel Immobilie kann ich mir leisten?'],
- own:['Jetzt Eigenheim & Eigennutzung berechnen!','Immobilie kaufen und selbst nutzen'],
- rent:['Jetzt Vermietung berechnen!','Mietwohnung als Kapitalanlage prüfen'],
- flip:['Jetzt Fix und Flip berechnen!','Kauf, Sanierung und Verkauf prüfen'],
- finance:['Jetzt Finanzierung & Restschuld berechnen!','Ermittle Rate, Zinsen und Restschuld']
-};
-const portraitQuery=window.matchMedia('(max-width:700px) and (orientation:portrait)');
 const navigationMobileQuery=window.matchMedia('(max-width:700px)');
 const navigationKeys=['budget','own','rent','flip','finance','settlement'];
 function navigationAllowed(key,screen,section='calculator'){
@@ -43,8 +35,7 @@ function applyHeader(key){
  const values=window.NICSettings?.current?.content?.[name];
  if(!values)return;
  const title=document.getElementById('heroTitle'),description=document.getElementById('heroText');
- const mobile=portraitQuery.matches?portraitHeaderCopy[key]:null;
- for(const [element,text] of [[title,mobile?mobile[0]:values.headerTitle],[description,mobile?mobile[1]:values.headerDescription]]){
+ for(const [element,text] of [[title,values.headerTitle],[description,values.headerDescription]]){
   if(!element)continue;
   const value=typeof text==='string'?text:'';
   if(element.textContent!==value)element.textContent=value;
@@ -52,10 +43,6 @@ function applyHeader(key){
  }
  window.NICHeader?.refresh();
 }
-portraitQuery.addEventListener('change',()=>{
- const key=document.documentElement.dataset.calculator;
- if(key&&portraitHeaderCopy[key])applyHeader(key);
-});
 window.NICHeaderContent={apply:applyHeader};
 function showContent(key,refresh=false){
  const main=document.querySelector('.app>main.section');if(!main)return;
@@ -116,10 +103,6 @@ function select(key,push=false){
   // legacy four-calculator handler leaves its calculation state undefined.
   if(key!=='finance')window.dispatchEvent(new CustomEvent('nic-select-calculator',{detail:key}));
  }finally{bypass=false;}
- if(key==='finance'){
-  document.getElementById('heroTitle').innerHTML=financeHeader[0];
-  document.getElementById('heroText').textContent=financeHeader[1];
- }
  applyHeader(key);
  window.NICHeader?.refresh();
  active=key;
