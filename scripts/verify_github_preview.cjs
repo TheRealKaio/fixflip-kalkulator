@@ -127,6 +127,38 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const localLinks=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.href).filter(u=>u.startsWith(location.origin)));
     assert(localLinks.every(u=>new URL(u).pathname.startsWith('/fixflip-kalkulator/')&&!new URL(u).pathname.startsWith('/fixflip-kalkulator/fixflip-kalkulator/')),'Links remain inside preview: '+slug);
    }
+   // The homepage and six-tile calculator bar have distinct saved visibility rules.
+   const screen=width===390?'mobile':'desktop';
+   await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
+   await page.evaluate(screen=>{
+    const settings=JSON.parse(JSON.stringify(window.NICSettings.current));
+    settings.navigationVisibility.home[screen].budget=false;
+    settings.navigationVisibility.calculator[screen].budget=true;
+    settings.navigationVisibility.dropdownHome[screen].dropdown=false;
+    settings.navigationVisibility.dropdownOther[screen].dropdown=true;
+    window.NICSettings.apply(settings);
+   },screen);
+   assert.equal(await page.locator('#nic-home-intro [data-calculator="budget"]').evaluate(el=>el.hidden),true,'Homepage tile independently hidden: '+screen);
+   assert.equal(await page.locator('.nic-global-dropdown-shell').isVisible(),false,'Homepage dropdown independently hidden: '+screen);
+   const remaining=await page.locator('#nic-home-intro .nic-home-planning .nic-home-options').evaluate(row=>{
+    const tile=row.querySelector('.deal-type-option:not([hidden])');
+    return {row:row.getBoundingClientRect().width,tile:tile?.getBoundingClientRect().width};
+   });
+   assert(remaining.tile>=remaining.row-2,'Remaining homepage tile fills freed width: '+screen);
+   await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
+   await page.evaluate(screen=>{
+    const settings=JSON.parse(JSON.stringify(window.NICSettings.current));
+    settings.navigationVisibility.home[screen].budget=false;
+    settings.navigationVisibility.calculator[screen].budget=true;
+    settings.navigationVisibility.calculator[screen].flip=false;
+    settings.navigationVisibility.dropdownHome[screen].dropdown=false;
+    settings.navigationVisibility.dropdownOther[screen].dropdown=true;
+    window.NICSettings.apply(settings);
+   },screen);
+   assert.equal(await page.locator('.deal-type-card .deal-type-option[data-calculator="budget"]').evaluate(el=>el.hidden),false,'Calculator budget tile independent of homepage: '+screen);
+   assert.equal(await page.locator('.deal-type-card .deal-type-option[data-calculator="flip"]').evaluate(el=>el.hidden),true,'Calculator flip hidden independently: '+screen);
+   assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Other-pages dropdown remains enabled: '+screen);
+   assert.equal(await page.locator('.deal-type-card a[href*="immobilien-abc"]').count(),0,'Six-tile bar never links to Immobilien ABC: '+screen);
    // A direct admin URL must remain in the same application with the shared hero.
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
    await page.waitForFunction(()=>location.pathname==='/fixflip-kalkulator/'&&location.hash.startsWith('#admin'),null,{timeout:10000}).catch(async error=>{
