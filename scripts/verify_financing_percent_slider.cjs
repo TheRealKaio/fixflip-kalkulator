@@ -21,6 +21,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    });
    for(const [route,input,equity] of [['vermietung','rentLtv','rentEquity'],['eigennutzung','ltv','ownEquityInput']]){
     await page.goto('http://localhost/'+route+'/',{waitUntil:'domcontentloaded'});
+    const key=route==='vermietung'?'rent':'own';
+    await page.waitForFunction(k=>document.body.dataset.calculator===k && window.NICCalculators?.active===k,key,{timeout:25000});
     const range=page.locator('#'+input).locator('xpath=following-sibling::*[contains(@class,"nic-finance-percent-control")]//input[@type="range"]');
     // Parent may be an input-wrap; locate the shared field rather than assuming sibling order.
     const slider=page.locator('#'+input).locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]').locator('.nic-finance-percent-range');
