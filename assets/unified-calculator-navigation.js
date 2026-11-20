@@ -408,7 +408,10 @@ function initResponsiveCalculatorMenu(){
   const showDropdown=navigationAllowed('dropdown',screen,dropdownSection)&&!document.body.matches('.nic-admin-open,.nic-legal-open');
   compact.hidden=!showDropdown;
   dropdownShell.hidden=menu.classList.contains('nic-portrait-calculator-menu')||!showDropdown;
-  if(menu.classList.contains('nic-portrait-calculator-menu'))menu.hidden=!showDropdown;
+  const isPortraitMenu=menu.classList.contains('nic-portrait-calculator-menu');
+  const hasVisibleTiles=Array.from(menu.querySelectorAll('.deal-type-row > .deal-type-option')).some(tile=>!tile.hidden);
+  if(isPortraitMenu)menu.hidden=!showDropdown;
+  else if(!isHome)menu.hidden=!hasVisibleTiles;
   if(!navigationAllowed(picker.value,screen,'calculator')){
    const first=Array.from(picker.options).find(option=>!option.disabled);
    if(first)picker.value=first.value;
