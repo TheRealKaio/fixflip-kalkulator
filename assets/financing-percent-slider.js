@@ -212,16 +212,29 @@ function install(id,equityId){
   if(isManual())syncManualPercentage();
   else{refresh();syncAutoEquity();}
  };
+ // Output widgets also refresh after LTV-only changes. Those must not
+ // re-derive the LTV from fixed equity unless PURCHASE COSTS actually changed.
+ let lastCosts=null;
+ const onCostChange=()=>{
+  const c=costs(id);
+  const current=Math.round(c.total*100)+'/'+Math.round(c.base*100);
+  if(current===lastCosts)return;
+  lastCosts=current;
+  synchronize();
+ };
  for(const sourceId of observed){
-  const onChange=()=>queueMicrotask(synchronize);
+  const onChange=()=>queueMicrotask(onCostChange);
   byId(sourceId)?.addEventListener('change',onChange);
   byId(sourceId)?.addEventListener('input',onChange);
  }
  const acquisitionOutput=id==='rentLtv'?'rentAcquisitionDisplay':'acquisitionCostsTotal';
  if(byId(acquisitionOutput)){
-  const watcher=new MutationObserver(()=>queueMicrotask(synchronize));
+  const watcher=new MutationObserver(()=>queueMicrotask(onCostChange));
   watcher.observe(byId(acquisitionOutput),{subtree:true,childList:true,characterData:true});
  }
+ const initial=costs(id);
+ lastCosts=Math.round(initial.total*100)+'/'+Math.round(initial.base*100);
+
  // A confirmed calculator reset restores automatic equity generation.
  byId('recalc')?.addEventListener('click',()=>{
   setTimeout(()=>{
