@@ -36,3 +36,13 @@ html:not(.nic-embed){overflow-y:scroll;scrollbar-gutter:stable}
     padding-top:14px;
   }
 }
+
+/* On mobile portrait the hero is a compact introduction, not a viewport-high
+   image panel. Override legacy minimum heights while preserving content growth. */
+@media(max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .app > .hero.nic-responsive-header.nic-fixed-header{
+  height:auto!important;
+  min-height:var(--nic-header-content-height,0px)!important;
+  max-height:none!important;
+ }
+}
