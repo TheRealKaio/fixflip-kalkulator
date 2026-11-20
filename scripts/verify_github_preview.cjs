@@ -161,6 +161,23 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await page.locator('#nicMobileCalculatorOptions [data-value="flip"]').evaluate(el=>el.hidden),false,'Dropdown keeps Flip available despite hidden calculator bar tile: '+screen);
    assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Other-pages dropdown remains enabled: '+screen);
    assert.equal(await page.locator('.deal-type-card a[href*="immobilien-abc"]').count(),0,'Six-tile bar never links to Immobilien ABC: '+screen);
+   assert.equal(await page.locator('#nicMobileCalculatorSelect option[value="own"]').textContent(),'Eigenheim','Dropdown own option renamed: '+screen);
+   // Hiding all menu buttons must not disable any calculator or its underlying
+   // radio controls. The calculator route and forms remain usable from a direct URL.
+   const beforeControls=await page.locator('.deal-type-card input').count();
+   await page.evaluate(screen=>{
+    const config=JSON.parse(JSON.stringify(window.NICSettings.current));
+    for(const section of ['home','calculator'])
+     for(const key of ['budget','own','rent','flip','finance','settlement'])
+      config.navigationVisibility[section][screen][key]=false;
+    window.NICSettings.apply(config);
+    window.NICCalculatorNavigation.select('own',true);
+   },screen);
+   await page.waitForFunction(()=>window.NICCalculators?.active==='own');
+   assert.equal(await page.locator('.deal-type-card input').count(),beforeControls,'Menu visibility cannot remove working calculator controls: '+screen);
+   assert.equal(await page.locator('html').getAttribute('data-calculator'),'own','Hidden Eigenheim menu still opens its calculator: '+screen);
+   assert(await page.locator('.app>main.section').isVisible(),'Hidden menus do not remove calculator pages: '+screen);
+
    // A direct admin URL must remain in the same application with the shared hero.
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
    await page.waitForFunction(()=>location.pathname==='/fixflip-kalkulator/'&&location.hash.startsWith('#admin'),null,{timeout:10000}).catch(async error=>{
