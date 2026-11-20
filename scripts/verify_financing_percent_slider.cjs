@@ -93,7 +93,34 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       assert(after>before,'Changing notary costs updates automatically calculated equity');
       assert.equal(await page.locator('#'+input).inputValue(),ratio,'Changing notary does not move financing percentage');
     }
+    // Once edited by the user, equity is fixed and determines the slider.
     await page.locator('#'+equity).fill('17500');
+    if(route==='vermietung'){
+      const check=await page.evaluate(()=>{
+       const m=window.rentalCalculation();
+       return {equity:Number(document.getElementById('rentEquity').value),percentage:Number(document.getElementById('rentLtv').value),
+        expected:Math.round(Math.max(0,m.totalInvestment-17500)/m.financingBase*10000)/100,
+        loan:m.loan,expectedLoan:m.financingBase*(Number(document.getElementById('rentLtv').value)/100)};
+      });
+      assert(Math.abs(check.percentage-check.expected)<0.01,'Manually fixed equity determines the financing slider');
+      assert(Math.abs(check.loan-check.expectedLoan)<0.02,'Rental loan does not deduct equity a second time');
+      const previous=check.percentage;
+      await page.locator('#rentBroker').fill('6.00');
+      await page.waitForTimeout(150);
+      assert.equal(parse(await page.locator('#'+equity).inputValue()),17500,'Broker edit must preserve fixed equity');
+      assert.notEqual(Number(await page.locator('#rentLtv').inputValue()),previous,'Broker edit moves slider for fixed equity');
+      const updated=await page.evaluate(()=>{
+       const m=window.rentalCalculation();return {loan:m.loan,expected:m.financingBase*(Number(document.getElementById('rentLtv').value)/100)};
+      });
+      assert(Math.abs(updated.loan-updated.expected)<0.02,'Loan remains percentage-based after broker change');
+    }
+    await page.evaluate(({id})=>{
+      const slider=document.getElementById(id).closest('.field').querySelector('input[type="range"]');
+      slider.value='99.6';slider.dispatchEvent(new Event('input',{bubbles:true}));
+    },{id:input});
+    assert.equal(Number(await page.locator('#'+input).inputValue()),100,'Slider magnetically snaps to exactly 100 percent');
+    assert.equal(parse(await page.locator('#'+equity).inputValue()),17500,'100 percent snap never overwrites fixed manual equity');
+
     await page.evaluate(({id})=>{
      const slider=document.getElementById(id).closest('.field').querySelector('input[type="range"]');
      slider.value='80';slider.dispatchEvent(new Event('input',{bubbles:true}));
@@ -108,6 +135,6 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.deepEqual(errors,[],'No uncaught browser errors');
    await page.close();
   }
-  console.log('Financing sliders: rental and owner, 0–120 percent, manual equity, desktop/mobile passed');
+  console.log('Financing sliders: rental and owner, 0–120 percent, fixed equity, 100% detent, desktop/mobile passed');
  }finally{await browser.close();}
 })().catch(err=>{console.error(err);process.exitCode=1;});
