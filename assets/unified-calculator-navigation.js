@@ -219,7 +219,10 @@ function initResponsiveCalculatorMenu(){
   let key=tile.dataset.calculator;
   if(!canonicalTileRoutes[key])key=keyByPath[path];
   if(!canonicalTileRoutes[key]||heading==='sanierung'||seenTiles.has(key)){
-   tile.remove();
+   // Legacy labels may contain checked calculator radio inputs. Never delete
+   // them when cleaning an obsolete visual navigation entry.
+   if(tile.querySelector('input')){tile.hidden=true;tile.dataset.nicNavObsolete='true';}
+   else tile.remove();
    continue;
   }
   seenTiles.add(key);
@@ -232,6 +235,11 @@ function initResponsiveCalculatorMenu(){
   if(tile.dataset.calculator==='budget'||tile.dataset.href==='/budget/'){
    const heading=tile.querySelector('strong');
    if(heading?.textContent.trim()==='Budget')heading.textContent='Budgetrechner';
+  }
+  // Rename only visible navigation captions, never calculator routes or page titles.
+  if(tile.dataset.calculator==='own'||tile.dataset.href==='/eigennutzung/'){
+   const heading=tile.querySelector('strong');
+   if(heading)heading.textContent='Eigenheim';
   }
  }
  if(document.getElementById('nicMobileCalculatorSelect'))return;
@@ -401,6 +409,7 @@ function initResponsiveCalculatorMenu(){
   const dropdownSection=isHome?'dropdownHome':'dropdownOther';
   for(const tile of menu.querySelectorAll('.deal-type-row > .deal-type-option')){
    const key=tile.dataset.calculator;
+   if(tile.dataset.nicNavObsolete==='true')continue;
    if(navigationKeys.includes(key))tile.hidden=!navigationAllowed(key,screen,'calculator');
   }
   // Dropdown destinations are independent from the separately controlled tile bar.
