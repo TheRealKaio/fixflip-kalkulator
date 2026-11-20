@@ -272,3 +272,46 @@ html body:not(.nic-admin) .app main.section .nic-property-aligned-field>label .n
 html body:not(.nic-admin) .app main.section .nic-property-aligned-field>:is(.input-wrap,.metric-box){
  flex:0 0 auto;margin-top:0!important;box-sizing:border-box;
 }
+
+
+/* Server-configured navigation visibility. Hidden controls never flash on resize. */
+.deal-type-option[hidden],.nic-mobile-calculator-option[hidden],
+.nic-mobile-calculator-controls[hidden]{display:none!important}
+.nic-navigation-admin-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(70px,1fr) minmax(100px,1fr);align-items:center;gap:12px;padding:9px 6px;border-bottom:1px solid #e2e9e5}
+.nic-navigation-admin-row>input{justify-self:center;width:20px;height:20px;accent-color:#075c55}
+.nic-navigation-admin-head{font-size:14px}
+/* Desktop/landscape: use the existing mobile component, not a second controller. */
+@media(min-width:701px), (max-width:700px) and (orientation:landscape){
+ .app>.hero{position:relative}
+ .app>.hero>.nic-desktop-calculator-controls{
+  display:block!important;position:absolute;right:18px;top:18px;z-index:50;
+  width:min(300px,34%);min-width:220px;
+ }
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-label,
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-select{
+  position:absolute!important;width:1px!important;height:1px!important;
+  overflow:hidden!important;clip-path:inset(50%)!important;opacity:0!important;
+  pointer-events:none!important;
+ }
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-trigger{
+  display:flex!important;width:100%!important;min-height:44px!important;
+  border:0!important;padding:0 12px!important;align-items:center!important;
+  background:var(--nic-green-bg,#075c55)!important;color:#fff!important;
+  border-radius:var(--nic-menu-radius,16px)!important;cursor:pointer!important;
+  font-family:var(--nic-body-font-family,inherit)!important;
+  font-size:var(--nic-subtext-font-size,14px)!important;
+ }
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-options{
+  position:absolute!important;top:calc(100% + 5px);right:0;left:0;z-index:60;
+  overflow-y:auto;max-height:min(60vh,360px);background:#fff;
+  border:1px solid #d9e2dc;border-radius:var(--nic-menu-radius,16px);
+  box-shadow:0 12px 26px #0002;
+ }
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-option{
+  display:flex;align-items:center;gap:10px;width:100%;min-height:42px;
+  padding:8px 12px;background:#fff;color:#172033;border:0;text-align:left;cursor:pointer;
+ }
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-option svg{width:22px;height:22px;flex:none}
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-current{display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px}
+ .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-options[hidden]{display:none!important}
+}
