@@ -23,6 +23,17 @@ const portraitQuery=window.matchMedia('(max-width:700px) and (orientation:portra
 const navigationMobileQuery=window.matchMedia('(max-width:700px)');
 const navigationKeys=['budget','own','rent','flip','finance','settlement','dropdown'];
 function navigationAllowed(key,screen){return window.NICSettings?.current?.navigationVisibility?.[screen]?.[key]!==false;}
+function updateHomepageNavigationVisibility(){
+ const intro=document.getElementById('nic-home-intro');
+ if(!intro)return;
+ const screen=navigationMobileQuery.matches?'mobile':'desktop';
+ for(const tile of intro.querySelectorAll('.nic-home-options > .deal-type-option')){
+  const key=tile.dataset.calculator||(tile.hasAttribute('data-home-settlement')?'settlement':'');
+  if(navigationKeys.includes(key))tile.hidden=!navigationAllowed(key,screen);
+ }
+ const settlement=intro.querySelector('.nic-home-settlement');
+ if(settlement)settlement.hidden=!intro.querySelector('[data-home-settlement]:not([hidden])');
+}
 function applyHeader(key){
  const name=key==='home'||key==='website'?'welcome':key;
  const values=window.NICSettings?.current?.content?.[name];
@@ -368,6 +379,7 @@ function initResponsiveCalculatorMenu(){
    if(first)picker.value=first.value;
   }
   renderSelection();
+  updateHomepageNavigationVisibility();
   if(!showDropdown)setOpen(false);
  }
  window.NICNavigationVisibility={refresh:sync};
@@ -398,9 +410,11 @@ function initWelcome(){
  }
  if(intro.parentElement!==main)main.prepend(intro);
  const settlement=intro.querySelector('[data-home-settlement]');
- settlement.querySelector('strong').textContent=home.settlementButtonTitle;
- settlement.querySelector('small').textContent=home.settlementButtonText;
- if(home.settlementButtonUrl){settlement.href=home.settlementButtonUrl;settlement.removeAttribute('aria-disabled');}else{settlement.removeAttribute('href');settlement.setAttribute('aria-disabled','true');}
+ if(settlement){
+  settlement.querySelector('strong').textContent=home.settlementButtonTitle;
+  settlement.querySelector('small').textContent=home.settlementButtonText;
+  if(home.settlementButtonUrl){settlement.href=home.settlementButtonUrl;settlement.removeAttribute('aria-disabled');}else{settlement.removeAttribute('href');settlement.setAttribute('aria-disabled','true');}
+ }
  const content=window.NICSettings.current.content.welcome;
  const signature=JSON.stringify([content.title,content.description,settings.company]);
  if(intro.dataset.contentSignature!==signature){
@@ -430,6 +444,7 @@ function initWelcome(){
  document.documentElement.dataset.calculator='home';document.body.dataset.calculator='home';
  // The real calculator menu becomes visible again when a calculator opens.
  if(menu){menu.hidden=false;menu.removeAttribute('aria-hidden');}
+ updateHomepageNavigationVisibility();
 }
 document.addEventListener('click',event=>{const button=event.target.closest('[data-nic-show-calculators]');if(!button)return;const menu=document.querySelector('.deal-type-card');if(menu){menu.hidden=false;menu.removeAttribute('aria-hidden');menu.scrollIntoView({behavior:'smooth',block:'start'});}});
 window.addEventListener('nic-settings-updated',()=>{if(document.body.classList.contains('nic-home-active'))initWelcome();});
