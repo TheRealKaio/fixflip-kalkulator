@@ -475,9 +475,11 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 - Die sechs Kacheln sind Budgetrechner, Eigenheim & Eigennutzung, Vermietung, Fix und Flip, Finanzierung & Restschuld und Nebenkosten abrechnen. Die letzte Kachel führt auf die bestehende Inhaltsroute `/nebenkostenabrechnung/`, sie ist kein sechster Rechner.
 - Keine dieser Kacheln führt zum Immobilien ABC.
-- Admin → Layout bietet eine eigene weiße Karte unmittelbar vor der Projektdokumentation mit 14 Checkboxen: je sechs Kacheln und ein Rechner-Dropdown, getrennt für Mobil (bis 700 px) und Desktop/Rest (ab 701 px).
+- Admin → Layout bietet eine eigene weiße Karte unmittelbar vor der Projektdokumentation mit 28 Checkboxen in vier Gruppen: sechs Startseiten-Kacheln, sechs Rechnerseiten-Kacheln, ein Dropdown auf der Startseite, ein Dropdown auf allen anderen Seiten – jede Gruppe getrennt für Mobil (bis 700 px) und Desktop/Rest (ab 701 px).
 - Sichtbarkeit ist keine Zugriffsberechtigung: direkte Rechner-/Content-URLs bleiben nutzbar.
-- Das Dropdown verwendet in Hochformat-Mobil und Desktop dieselben Auswahloptionen und denselben Controller. Es wird auf breiteren Ansichten rechts im Grafikheader angezeigt.
-- Die Einstellungen werden als `navigationVisibility.mobile` und `navigationVisibility.desktop` im zentralen Einstellungsobjekt gespeichert. Beim ersten Laden verhindert der PHP-Content-Gate ein Aufblitzen bereits bekannter deaktivierter statischer Kacheln.
+- Das Dropdown verwendet auf allen Seiten denselben Controller, dieselben sechs Ziele und das mobile Gestaltungsmuster (weißer Rahmen, grüner Schalter, Symbolzeilen). Es steht in einer eigenen, mittigen Zeile über dem Seitentitel und hält die Bezeichnungen einzeilig.
+- Die Einstellungen werden als `navigationVisibility.{home,calculator,dropdownHome,dropdownOther}.{mobile,desktop}` im zentralen Einstellungsobjekt gespeichert. Ältere `mobile`/`desktop`-Konfigurationen werden rückwärtskompatibel eingelesen. Beim ersten Laden verhindert der PHP-Content-Gate ein Aufblitzen bereits bekannter deaktivierter statischer Kacheln.
 - Vollständig deaktivierte statische Kacheln entfernt der PHP-Gate aus der HTML-Antwort. Ansichtsspezifische Freigaben werden wegen der beim ersten HTTP-Request nicht verlässlich bekannten Bildschirmbreite zusätzlich vor der Darstellung per CSS und nach der Initialisierung im gemeinsamen JS-Controller durchgesetzt; dies ersetzt keine serverseitige Berechtigungssperre.
 - Änderungen bleiben zunächst auf `develop`. Vor einem Live-Release sind Vorschau, mobile/desktop Browserprüfungen, Server-Konfiguration, HTML-Auslieferung und alle vorhandenen Build-Checks abzunehmen.
+
+- Ausgeblendete Kacheln geben ihre Breite an die verbleibenden frei. Leere Startseiten-Gruppen werden versteckt. Veraltete `Sanierung`/Immobilien-ABC-Verknüpfungen dürfen nie in der sechsfachen Rechnerleiste stehen.
