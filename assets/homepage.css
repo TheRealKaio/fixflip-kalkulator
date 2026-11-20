@@ -382,3 +382,105 @@ body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
   outline:2px solid #c28e16!important;outline-offset:2px!important
  }
 }
+
+/* Unified dropdown: centered white panel on a dedicated line above the hero heading. */
+.app>.hero>.nic-global-dropdown-shell{
+ box-sizing:border-box;position:relative;z-index:35;display:flex!important;
+ justify-content:center;align-items:center;clear:both;
+ width:100%;max-width:100%;margin:12px auto 10px;padding:0;
+}
+.app>.hero>.nic-global-dropdown-shell[hidden]{display:none!important}
+.app>.hero>.nic-global-dropdown-shell>.nic-mobile-calculator-controls{
+ box-sizing:border-box;position:relative;display:block!important;
+ width:min(100%,430px);max-width:100%;margin:0 auto;padding:6px!important;
+ background:#fff!important;border:0;border-radius:var(--nic-menu-radius,16px)!important;
+ box-shadow:none;
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-label,
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-select{
+ position:absolute!important;width:1px!important;height:1px!important;
+ min-height:0!important;padding:0!important;margin:0!important;
+ border:0!important;opacity:0!important;overflow:hidden!important;
+ clip-path:inset(50%)!important;pointer-events:none!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-trigger{
+ box-sizing:border-box;display:flex!important;align-items:center!important;
+ width:100%!important;min-height:44px!important;padding:0!important;margin:0!important;
+ background:var(--nic-green-bg,#075c55)!important;color:#fff!important;
+ border:0!important;border-radius:var(--nic-menu-radius,16px)!important;
+ cursor:pointer!important;font-family:var(--nic-body-font-family,inherit)!important;
+ font-size:var(--nic-subtext-font-size,14px)!important;font-weight:600!important;
+ line-height:1.25!important;text-transform:none!important;letter-spacing:normal!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-current{
+ box-sizing:border-box;position:relative;display:flex!important;
+ align-items:center;justify-content:center;gap:10px;min-width:0;width:100%;
+ margin:0!important;padding:14px 32px!important;background:transparent!important;
+ font:inherit!important;font-weight:700!important;color:#fff!important;
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-current-text{
+ flex:0 1 auto;min-width:0;text-align:center;white-space:nowrap!important;
+ overflow:hidden;text-overflow:ellipsis
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-chevron{
+ position:absolute;right:13px;top:50%;margin-top:-3px;width:8px;height:8px;
+ border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+ font-size:0!important;transform:translateY(-2px) rotate(45deg)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-trigger[aria-expanded="true"] .nic-mobile-calculator-chevron{
+ transform:translateY(2px) rotate(225deg)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-options{
+ box-sizing:border-box;position:absolute;z-index:120;top:calc(100% + 5px);
+ left:0;right:0;width:100%;max-height:min(60vh,430px);overflow-y:auto;
+ padding:6px!important;background:#fff!important;border:1px solid #e1e6e2!important;
+ border-radius:var(--nic-menu-radius,16px)!important;box-shadow:0 12px 24px #0c2b2630!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-options[hidden],
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option[hidden]{display:none!important}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option{
+ box-sizing:border-box;display:flex!important;align-items:center;gap:12px;width:100%!important;
+ min-height:48px!important;margin:0!important;padding:12px 10px!important;
+ background:transparent!important;color:var(--ink,#263b3a)!important;
+ border:0!important;border-radius:calc(var(--nic-menu-radius,16px) * .7)!important;
+ font-family:var(--nic-body-font-family,inherit)!important;font-size:var(--nic-subtext-font-size,14px)!important;
+ font-weight:600!important;line-height:1.25!important;white-space:nowrap!important;
+ text-align:left!important;text-transform:none!important;cursor:pointer!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option svg{
+ flex:none;width:24px;height:24px;color:var(--nic-green-bg,#075c55)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option-text{
+ flex:1 1 auto;white-space:nowrap!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-check{
+ display:none;flex:none;color:var(--nic-green-bg,#075c55)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option.is-selected{
+ background:#e1f1e9!important;color:var(--nic-green-bg,#075c55)!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option.is-selected .nic-mobile-calculator-check{display:inline}
+/* Remaining tiles claim the entire freed row width, both on homepage and calculator pages. */
+#nic-home-intro .nic-home-groups{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))!important
+}
+#nic-home-intro .nic-home-planning>.nic-home-options,
+#nic-home-intro .nic-home-property>.nic-home-options{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))!important
+}
+.deal-type-card:not(.nic-portrait-calculator-menu)>.deal-type-row{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))!important;
+ gap:8px!important
+}
+@media(max-width:700px){
+ .deal-type-card:not(.nic-portrait-calculator-menu)>.deal-type-row{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important
+ }
+}
+/* The hidden attribute always wins over old responsive display!important declarations. */
+#nic-home-intro .nic-home-group[hidden],
+#nic-home-intro .nic-home-options>.deal-type-option[hidden],
+.deal-type-card .deal-type-option[hidden],
+.app>.hero>.nic-global-dropdown-shell[hidden],
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-controls[hidden],
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option[hidden]{display:none!important}
