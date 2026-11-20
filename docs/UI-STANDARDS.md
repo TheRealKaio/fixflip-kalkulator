@@ -183,6 +183,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Der Hinweis „geändert (bitte prüfen)“ beim Fix-und-Flip-Verkaufspreis und der Eigenkapital-Hinweis nutzen die zentrale Schriftgröße `--nic-hint-font-size` aus Admin → Layout → Hinweistexte (px); bestehende Farben und Funktionslogiken bleiben unverändert.
 
 - Auf Mobilgeräten stehen „Notar + Grundbuch“ und „Makler beim Kauf“ in den Kaufnebenkosten-Eingaben jeweils auf einer eigenen Zeile über die volle verfügbare Breite, in dieser Reihenfolge. Desktop-Spalten und bestehende Eingaben/Berechnungen bleiben erhalten.
+- In der Vermietungs-Finanzierungsbox teilen sich Zins p.a. und Tilgung p.a. auf Tablet/Desktop die verfügbare Zeilenbreite gleichmäßig (je 50 % abzüglich Abstand). Der Finanzierungsregler steht darunter in einer eigenen vollen Zeile; Notar + Grundbuch und Makler haben dieselbe Eingabeoberkante. Die Beschriftung „Mitfinanzieren“ ist zentriert über der Checkbox positioniert. Mobile bleibt gemäß den bestehenden Vollbreiten-Regeln.
+- Änderungen an Notar- oder Maklerwerten verändern den manuell gewählten Finanzierungsprozentsatz nicht. Bei automatischem Eigenkapital wird der Bedarf aus den aktuellen Kosten erneut bestimmt; manuell eingetragenes Eigenkapital bleibt erhalten.
 
 ## Ergebnisboxen der Rechner
 
