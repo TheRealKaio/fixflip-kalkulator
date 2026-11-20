@@ -118,7 +118,7 @@ function nic_auth_settings(PDO $db): array {
 }
 function nic_clean_settings(mixed $raw): array {
     if (!is_array($raw) || ($raw['version'] ?? null) !== 1) nic_fail('Ungültige Einstellungen.');
-    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections'];
+    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility'];
     $s = array_intersect_key($raw, array_flip($keys));
     foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
     $s['access'] = $s['access'] ?? [];
@@ -139,6 +139,21 @@ function nic_clean_settings(mixed $raw): array {
         $sections[$key] = array_intersect_key($rule, array_flip(['visible','guestAllowed']));
     }
     $s['contentSections'] = $sections;
+    $visibility = $s['navigationVisibility'] ?? [];
+    if (!is_array($visibility)) nic_fail('Ungültige Menü-Einstellungen.');
+    $allowedMenuKeys = ['budget','own','rent','flip','finance','settlement','dropdown'];
+    $cleanVisibility = [];
+    foreach (['mobile','desktop'] as $screen) {
+        $values = $visibility[$screen] ?? [];
+        if (!is_array($values)) nic_fail('Ungültige Menü-Einstellungen.');
+        $cleanVisibility[$screen] = [];
+        foreach ($allowedMenuKeys as $key) {
+            $value = $values[$key] ?? true;
+            if (!is_bool($value)) nic_fail('Ungültige Menü-Einstellung.');
+            $cleanVisibility[$screen][$key] = $value;
+        }
+    }
+    $s['navigationVisibility'] = $cleanVisibility;
     // Inputs are public website settings, never server configuration or account data.
     $check = function (mixed $v, int $depth = 0) use (&$check): void {
         if ($depth > 5) nic_fail('Einstellungen zu tief verschachtelt.');
