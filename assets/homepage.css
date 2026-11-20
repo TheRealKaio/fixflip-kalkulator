@@ -338,3 +338,6 @@ body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;
  }
 }
+
+/* Preserve server/client hidden state even against legacy card display rules. */
+#nic-home-intro .nic-home-group[hidden],#nic-home-intro .deal-type-option[hidden]{display:none!important}
