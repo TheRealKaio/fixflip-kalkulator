@@ -319,6 +319,15 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
   konkrete Immobilie. Der Einführungstext ist auf der direkten Route im HTML
   vorhanden und bei internen Wechseln nur im Modus Eigennutzung sichtbar.
 
+## Finanzierung: Prozent-Schieberegler und automatisches Eigenkapital (Development)
+
+- Eigennutzung, Fix & Flip und Vermietung verwenden für das bestehende Finanzierungs-Prozentfeld einen Schieberegler, ohne dessen Berechnungs-ID oder die Darlehens-/Zinsformeln zu ersetzen.
+- Der Regler besitzt auf Mobil und Desktop eine eigene Rasterzeile über die volle verfügbare Breite.
+- Die Skala umfasst mindestens 0–120 %, und bereits vorhandene höhere Werte müssen angezeigt und erhalten werden. Eingaben bleiben mit zwei Dezimalstellen kompatibel.
+- Ohne manuelle Eigenkapitaleingabe folgt das bestehende Eurofeld automatisch dem aus Finanzierungsquote und Projektkosten hergeleiteten Eigenkapitalbedarf. Veränderungen von Kaufpreis und Nebenkosten aktualisieren den automatischen Vorschlag.
+- Hat der Nutzer Eigenkapital selbst eingegeben, überschreibt das Verschieben des Prozentreglers diesen Betrag nicht. Die weiterhin vorhandenen Formeln verwenden das normale Eigenkapitalfeld.
+- Vor Übernahme nach main muss der Browser-Test beide relevanten Layoutbreiten, 0 % / 120 % und manuelle Eingaben prüfen. Keine automatische STRATO-Veröffentlichung auf develop.
+
 ## Eingabefelder: Beispieltexte
 
 - Keine grauen Platzhalter in Rechnereingaben; Ausnahme ist die Karte
