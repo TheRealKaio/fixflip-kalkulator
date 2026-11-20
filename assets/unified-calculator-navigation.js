@@ -410,7 +410,9 @@ function initResponsiveCalculatorMenu(){
   dropdownShell.hidden=menu.classList.contains('nic-portrait-calculator-menu')||!showDropdown;
   const isPortraitMenu=menu.classList.contains('nic-portrait-calculator-menu');
   const hasVisibleTiles=Array.from(menu.querySelectorAll('.deal-type-row > .deal-type-option')).some(tile=>!tile.hidden);
-  if(isPortraitMenu)menu.hidden=!showDropdown;
+  // If the mobile dropdown is off, keep the separately enabled six-button bar usable.
+  menu.classList.toggle('nic-portrait-tiles-only',isPortraitMenu&&!showDropdown&&hasVisibleTiles);
+  if(isPortraitMenu)menu.hidden=!showDropdown&&!hasVisibleTiles;
   else if(!isHome)menu.hidden=!hasVisibleTiles;
   if(!navigationAllowed(picker.value,screen,'calculator')){
    const first=Array.from(picker.options).find(option=>!option.disabled);
