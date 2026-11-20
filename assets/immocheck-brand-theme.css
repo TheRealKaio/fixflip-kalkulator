@@ -926,24 +926,3 @@ html body.nic-admin-open:not(.nic-embed) .app > .nic-brand-bar#nicBrandBar{
 /* Keep keyboard and anchor targets reachable below the sticky chrome. */
 html body:not(.nic-embed){scroll-padding-top:var(--nic-brand-bar-height,90px)}
 
-/* Six-tile navigation: align icon, heading and description across every card.
-   Fixed title track prevents shorter headings from pulling their subtext upward.
-   On phones keep the established icon-and-title inline presentation. */
-@media(min-width:701px){
-  body:not(.nic-embed) .deal-type-row > .deal-type-option{
-    grid-template-rows:35px 3.6em minmax(0,auto)!important;
-    align-content:start!important;
-    align-items:start!important;
-  }
-  body:not(.nic-embed) .deal-type-row > .deal-type-option > .nic-menu-icon{
-    align-self:start!important;
-    margin:0!important;
-  }
-  body:not(.nic-embed) .deal-type-row > .deal-type-option strong{
-    align-self:start!important;
-  }
-  body:not(.nic-embed) .deal-type-row > .deal-type-option small{
-    align-self:start!important;
-    margin:0!important;
-  }
-}
