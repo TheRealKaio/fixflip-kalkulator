@@ -37,9 +37,13 @@ def templates(config=None):
         first=re.search(r'<p>.*?</p>',body,re.S)
         intro=first[0] if first else '<p>'+html.escape(re.sub('<[^>]*>','',body))+'</p>'
         rest=body[:first.start()]+body[first.end():] if first else ''
+        # Keep the heading that introduces paragraph two in the visible teaser.
+        second=re.search(r'<p(?:\s[^>]*)?>.*?</p>',rest,re.S)
+        teaser=rest[:second.end()] if second else ''
+        rest=rest[second.end():] if second else rest
         intro=intro.replace('<p>','<p class="nic-explanation-intro">',1)
         title=html.escape(card.get('boxTitle') or card.get('title') or defaults[key]['title'])
         result[key]=(f'<section id="{ident}" class="nic-explanation-card" data-nic-explanation="{key}" aria-labelledby="{ident}Title">'
-                     f'<h2 id="{ident}Title">{title}</h2>{intro}'
-                     f'<details class="nic-explanation-details" open><summary>weiterlesen</summary><div class="nic-explanation-rest">{rest}</div></details></section>')
+                     f'<h2 id="{ident}Title">{title}</h2>{intro}<div class="nic-explanation-teaser">{teaser}</div>'
+                     f'<details class="nic-explanation-details"><summary>weiterlesen</summary><div class="nic-explanation-rest">{rest}</div></details></section>')
     return result
