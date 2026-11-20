@@ -254,7 +254,6 @@ function initResponsiveCalculatorMenu(){
    heading.dataset.nicTwoLine='true';
   }
  }
- formatCalculatorTiles();
  // Align the original shared calculator tiles with the central menu label.
  for(const tile of menu.querySelectorAll('.deal-type-option')){
   if(tile.dataset.calculator==='budget'||tile.dataset.href==='/budget/'){
@@ -267,6 +266,7 @@ function initResponsiveCalculatorMenu(){
    if(heading)heading.textContent='Eigenheim';
   }
  }
+ formatCalculatorTiles();
  if(document.getElementById('nicMobileCalculatorSelect'))return;
  calculatorMenuAnchor=document.createComment('Original calculator menu position');
  menu.after(calculatorMenuAnchor);
