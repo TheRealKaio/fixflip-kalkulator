@@ -223,6 +223,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await bar.locator('[data-calculator="'+key+'"]').evaluate(e=>e.hidden),false,'Admin retained '+key+' after reload: '+screen);
    }
    assert.equal(await page.locator('.deal-type-card').evaluate(e=>e.hidden),false,'One disabled checkbox cannot hide parent bar: '+screen);
+   if(screen==='desktop'){
+    assert(await page.locator('.app>main.section>.deal-type-card').isVisible(),'Actual six-button bar remains visible after Admin checkbox: '+screen);
+    assert.equal(await bar.locator('.deal-type-option:visible').count(),5,'Exactly five calculator buttons are visibly rendered after Admin checkbox: '+screen);
+    assert.equal(await bar.locator('[data-calculator="flip"]').isVisible(),false,'Only disabled Flip is visually hidden: '+screen);
+   }
    assert.equal(await page.locator('#nicMobileCalculatorSelect option[value="flip"]').isEnabled(),true,'Dropdown independent from tile checkbox: '+screen);
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
    await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
