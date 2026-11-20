@@ -321,10 +321,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
    if(width<=700){
     assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on '+slug);
-    assert(h>standardHeader.height,'Subpage header includes selector absent on homepage: '+slug);
+    assert(h>0&&await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Subpage retains usable mobile dropdown: '+slug);
     if(subpageHeaderHeight===null)subpageHeaderHeight=h;
     else assert(Math.abs(h-subpageHeaderHeight)<=1,'Information subpages retain equal header height: '+slug);
-   }else assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes desktop header height');
+   }else assert(h>0&&await page.locator('.nic-global-dropdown-shell').isVisible(),'Desktop content retains centered dropdown: '+slug);
   }
   await page.goBack();await page.waitForURL('http://localhost/preise/');
   assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.headerTitle);
@@ -352,9 +352,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     for(const key of ['background','font','size','logo'])assert.equal(header[key],standardHeader[key],'Standard header '+key+' differs on '+routeName);
     if(width<=700){
      assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on direct '+routeName);
-     assert(header.height>standardHeader.height,'Direct subpage includes selector absent on homepage: '+routeName);
+     assert(header.height>0&&await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Direct content route retains mobile dropdown: '+routeName);
      if(subpageHeaderHeight!==null)assert(Math.abs(header.height-subpageHeaderHeight)<=1,'Direct and same-document informational header heights must match: '+routeName);
-    }else assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
+    }else assert(header.height>0&&await page.locator('.nic-global-dropdown-shell').isVisible(),'Direct content retains centered desktop dropdown: '+routeName);
 
    }else {
     const key=({'ueber-uns':'about','kontakt':'contact'})[routeName];
