@@ -482,6 +482,8 @@ runs:
         python scripts/patch_reno_buffer_spacing_v8402.py _site/index.html
         python scripts/patch_own_heading_v8323.py _site/index.html
         python scripts/patch_rental_equity_shortfall_v8324.py _site/index.html
+        # The percentage-based loan already includes the financing allocation.
+        python scripts/patch_finance_equity_consistency_20261120.py _site/index.html
         python scripts/patch_admin_settings_v8325.py _site/index.html
         python scripts/patch_statistics_v8326.py _site/index.html
         python scripts/patch_cookie_notice_v8327.py _site/index.html
