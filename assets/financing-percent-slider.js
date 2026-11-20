@@ -71,7 +71,7 @@ function install(id,equityId){
   const share=Math.max(0,parseNumber(original.value));
   const c=costs(id);
   const necessary=c.base>0?100*c.total/c.base:100;
-  const maximum=Math.max(100,Math.ceil(Math.max(share,necessary)/20)*20);
+  const maximum=Math.max(120,Math.ceil(Math.max(share,necessary)/20)*20);
   slider.max=String(Math.min(500,maximum));
   slider.value=String(Math.min(share,Number(slider.max)));
   out.textContent=format(share)+' %';
