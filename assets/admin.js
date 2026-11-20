@@ -345,7 +345,9 @@ async function persistAccessChanges(){
  }
 }
 form.addEventListener('change',e=>{
- if(e.target.matches?.('[id^="content-visible-"],[id^="content-guest-"]')){
+ // Each menu checkbox must save and apply on its own, just like content access.
+ // No additional Save click is required to hide one calculator navigation tile.
+ if(e.target.matches?.('[id^="content-visible-"],[id^="content-guest-"],[id^="nic-navigation-"]')){
   markDirty();
   persistAccessChanges();
  }
