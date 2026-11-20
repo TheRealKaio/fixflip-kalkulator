@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
-  for(const width of [390,1440]){
+  for(const width of [390,900,1440]){
    const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
@@ -53,6 +53,26 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await slider.evaluate(el=>Math.round(el.getBoundingClientRect().width)),
                  await slider.evaluate(el=>Math.round(el.closest('.field').getBoundingClientRect().width)),
                  'Slider spans its field');
+    if(route==='vermietung' && width>700){
+      const layout=await page.evaluate(()=>{
+        const rent=document.getElementById('rentFinanceCard');
+        const rates=[document.getElementById('rentInterest'),document.getElementById('rentRepayment')];
+        const field=el=>el.closest('.field').getBoundingClientRect();
+        const [interest,repayment]=rates.map(field);
+        const fees=[document.getElementById('rentNotary'),document.getElementById('rentBroker')].map(el=>el.getBoundingClientRect());
+        const option=rent.querySelector('.finance-acq-option');
+        const caption=option.querySelector('.finance-check-label').getBoundingClientRect();
+        const check=option.querySelector('#rentFinanceAcquisition').getBoundingClientRect();
+        return {interest:{x:interest.x,y:interest.y,w:interest.width},
+          repayment:{x:repayment.x,y:repayment.y,w:repayment.width},
+          feeTop:fees.map(x=>x.top),
+          captionCenter:caption.x+caption.width/2,checkCenter:check.x+check.width/2};
+      });
+      assert(Math.abs(layout.interest.w-layout.repayment.w)<3,'Interest and repayment use equal halves');
+      assert(Math.abs(layout.interest.y-layout.repayment.y)<3,'Interest and repayment have one baseline');
+      assert(Math.abs(layout.feeTop[0]-layout.feeTop[1])<3,'Notary and broker inputs align');
+      assert(Math.abs(layout.captionCenter-layout.checkCenter)<6,'Checkbox sits centered under caption');
+    }
     const purchaseId=route==='vermietung'?'rentPurchase':'purchase';
     await page.locator('#'+purchaseId).fill('300000');
     await page.evaluate(({id})=>{
@@ -64,6 +84,15 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const required=await page.locator('#'+equity).inputValue();
     const parse=v=>Number(v.replace(/\./g,'').replace(',','.'))||0;
     assert(parse(required)>=300000,'Zero percent financing must auto-fill at least the purchase price');
+    if(route==='vermietung'){
+      const before=parse(await page.locator('#'+equity).inputValue());
+      const ratio=await page.locator('#'+input).inputValue();
+      await page.locator('#rentNotary').fill('3');
+      await page.waitForTimeout(120);
+      const after=parse(await page.locator('#'+equity).inputValue());
+      assert(after>before,'Changing notary costs updates automatically calculated equity');
+      assert.equal(await page.locator('#'+input).inputValue(),ratio,'Changing notary does not move financing percentage');
+    }
     await page.locator('#'+equity).fill('17500');
     await page.evaluate(({id})=>{
      const slider=document.getElementById(id).closest('.field').querySelector('input[type="range"]');
