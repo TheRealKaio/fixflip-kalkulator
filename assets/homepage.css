@@ -425,3 +425,21 @@ body .app>main.section>.deal-type-card[hidden]{display:none!important}
  }
  .app>.hero>.deal-type-card.nic-portrait-calculator-menu.nic-portrait-tiles-only>.deal-type-row>.deal-type-option[hidden]{display:none!important}
 }
+
+/* Landscape calculator navigation: never let the sixth button sit alone.
+   Use the actual menu width, not the viewport width, to switch from 6 to 3+3. */
+@media (orientation:landscape){
+  .deal-type-card:not(.nic-standalone-calculator-menu){
+    container-type:inline-size;
+  }
+  @container (max-width:999px){
+    .deal-type-card:not(.nic-standalone-calculator-menu) > .deal-type-row{
+      grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    }
+  }
+  @container (min-width:1000px){
+    .deal-type-card:not(.nic-standalone-calculator-menu) > .deal-type-row{
+      grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    }
+  }
+}
