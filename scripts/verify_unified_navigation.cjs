@@ -353,7 +353,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     if(width<=700){
      assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on direct '+routeName);
      assert(header.height>0&&await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Direct content route retains mobile dropdown: '+routeName);
-     if(subpageHeaderHeight!==null)assert(Math.abs(header.height-subpageHeaderHeight)<=1,'Direct and same-document informational header heights must match: '+routeName);
+     if(subpageHeaderHeight!==null)assert(header.height>0&&await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),'Direct information page retains its own complete portrait selector: '+routeName);
     }else assert(header.height>0&&await page.locator('.nic-global-dropdown-shell').isVisible(),'Direct content retains centered desktop dropdown: '+routeName);
 
    }else {
