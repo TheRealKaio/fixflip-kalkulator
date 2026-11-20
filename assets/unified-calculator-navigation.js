@@ -449,7 +449,13 @@ function initResponsiveCalculatorMenu(){
   // If the mobile dropdown is off, keep the separately enabled six-button bar usable.
   menu.classList.toggle('nic-portrait-tiles-only',isPortraitMenu&&!showDropdown&&hasVisibleTiles);
   if(isPortraitMenu)menu.hidden=!showDropdown&&!hasVisibleTiles;
-  else if(!isHome)menu.hidden=!hasVisibleTiles;
+  else if(!isHome){
+   // The admin controls each calculator tile independently. A single disabled
+   // tile must never hide its parent six-tile bar. Only hide that bar when all
+   // six calculator-navigation entries are explicitly disabled.
+   const anyEnabled=navigationKeys.some(key=>navigationAllowed(key,screen,'calculator'));
+   menu.hidden=!anyEnabled;
+  }
   renderSelection();
   updateHomepageNavigationVisibility();
   if(!showDropdown)setOpen(false);
