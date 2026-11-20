@@ -30,7 +30,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await slider.evaluate(el=>Math.round(el.getBoundingClientRect().width)),
                  await slider.evaluate(el=>Math.round(el.closest('.field').getBoundingClientRect().width)),
                  'Slider spans its field');
-    await page.locator('#'+equity).fill('0');
+    const purchaseId=route==='vermietung'?'rentPurchase':'purchase';
+    await page.locator('#'+purchaseId).fill('300000');
     await page.evaluate(({id})=>{
      const el=document.querySelector('#'+id+'~.nic-finance-percent-control input');
      const slider=el||document.getElementById(id).closest('.field').querySelector('input[type="range"]');
@@ -39,7 +40,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.waitForTimeout(100);
     const required=await page.locator('#'+equity).inputValue();
     const parse=v=>Number(v.replace(/\./g,'').replace(',','.'))||0;
-    assert(parse(required)>=0,'Zero percent financing writes nonnegative equity');
+    assert(parse(required)>=300000,'Zero percent financing must auto-fill at least the purchase price');
     await page.locator('#'+equity).fill('17500');
     await page.evaluate(({id})=>{
      const slider=document.getElementById(id).closest('.field').querySelector('input[type="range"]');
