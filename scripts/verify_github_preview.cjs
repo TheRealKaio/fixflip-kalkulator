@@ -238,7 +238,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.locator('#nic-navigation-calculator-'+screen+'-flip').check();
    await page.waitForFunction(s=>window.NICSettings.current.navigationVisibility.calculator[s].flip===true,screen);
    await page.locator('#saveState').getByText('Lokal gespeichert').waitFor({timeout:20000});
-   await page.locator('.nic-admin-back').click();
+   // Use the real button handler without Playwright's moving-element stability wait.
+   await page.locator('.nic-admin-back').evaluate(button=>button.click());
    await page.waitForURL('http://localhost/fixflip-kalkulator/');
    await page.locator('.app > main.section').waitFor({state:'visible',timeout:15000});
    await page.waitForFunction(()=>document.documentElement.dataset.nicPage==='website',null,{timeout:15000});
