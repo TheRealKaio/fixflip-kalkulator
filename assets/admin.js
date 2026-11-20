@@ -199,31 +199,34 @@ function build(){
 }
 async function buildContentSectionControls(){const response=await fetch(new URL('/content-sections.json',S.ROOT),{cache:'no-store'});if(!response.ok)throw new Error('Die Liste der H2-Boxen konnte nicht geladen werden.');contentSectionCatalog=await response.json();const root=$('contentSectionControls');root.replaceChildren();const header=document.createElement('div');header.className='content-section-header';header.innerHTML='<strong>Inhalte</strong><strong>Anzeigen</strong><strong>Nur<br>Nutzer</strong>';root.append(header);let group='';for(const item of contentSectionCatalog){if(item.calculator!==group){group=item.calculator;const title=document.createElement('h5');title.className='content-section-group';title.textContent=item.calculatorLabel;root.append(title);}const row=document.createElement('div');row.className='content-section-row';row.dataset.contentKey=item.key;const label=document.createElement('span');label.lang='de';label.textContent=item.title.replace('Haushaltsinformationen','Haushalts\u00adinfor\u00adma\u00adtionen');const visible=document.createElement('input');visible.type='checkbox';visible.id='content-visible-'+item.key;visible.setAttribute('aria-label',item.title+': anzeigen');visible.checked=true;const guest=document.createElement('input');guest.type='checkbox';guest.id='content-guest-'+item.key;guest.setAttribute('aria-label',item.title+': nur für Nutzer');guest.checked=false;row.append(label,visible,guest);root.append(row);}}
 const navigationLabels={budget:'Budgetrechner',own:'Eigenheim & Eigennutzung',rent:'Vermietung',flip:'Fix und Flip',finance:'Finanzierung & Restschuld',settlement:'Nebenkosten abrechnen',dropdown:'Rechner-Dropdown'};
+const navigationSectionTitles={home:'Buttonleiste auf der Startseite',calculator:'Sechsfach-Buttonleiste auf Rechnerseiten',dropdownHome:'Dropdown auf der Startseite',dropdownOther:'Dropdown auf allen anderen Seiten'};
 function buildNavigationControls(){
- const root=$('nicNavigationVisibilityFields');
- if(!root)return;
- root.classList.add('nic-navigation-admin-fields');
- const header=document.createElement('div');header.className='nic-navigation-admin-row nic-navigation-admin-head';
- for(const value of ['Menüelement','Mobil','Desktop / Rest']){
-  const cell=document.createElement('strong');cell.textContent=value;header.append(cell);
- }
- root.append(header);
- for(const key of S.navigationItems){
-  const row=document.createElement('div');row.className='nic-navigation-admin-row';
-  const label=document.createElement('span');label.textContent=navigationLabels[key];row.append(label);
-  for(const screen of ['mobile','desktop']){
-   const box=document.createElement('input');box.type='checkbox';box.id='nic-navigation-'+screen+'-'+key;
-   box.setAttribute('aria-label',navigationLabels[key]+' auf '+(screen==='mobile'?'Mobil':'Desktop / Rest')+' anzeigen');
-   box.checked=true;row.append(box);
+ const root=$('nicNavigationVisibilityFields');if(!root)return;
+ root.classList.add('nic-navigation-admin-fields');root.replaceChildren();
+ for(const section of S.navigationSections){
+  const title=document.createElement('h4');title.className='nic-navigation-admin-group';title.textContent=navigationSectionTitles[section];root.append(title);
+  const header=document.createElement('div');header.className='nic-navigation-admin-row nic-navigation-admin-head';
+  for(const label of ['Menüelement','Mobil','Desktop / Rest']){
+   const cell=document.createElement('strong');cell.textContent=label;header.append(cell);
   }
-  root.append(row);
+  root.append(header);
+  for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems){
+   const row=document.createElement('div');row.className='nic-navigation-admin-row';
+   const name=document.createElement('span');name.textContent=navigationLabels[key];row.append(name);
+   for(const screen of ['mobile','desktop']){
+    const box=document.createElement('input');box.type='checkbox';box.id='nic-navigation-'+section+'-'+screen+'-'+key;
+    box.setAttribute('aria-label',navigationSectionTitles[section]+' · '+navigationLabels[key]+' · '+(screen==='mobile'?'Mobil':'Desktop / Rest'));
+    box.checked=true;row.append(box);
+   }
+   root.append(row);
+  }
  }
 }
 function collect(){
  const raw=JSON.parse(JSON.stringify(importedBase||S.current||{version:1}));
  raw.version=1;raw.seoIndexing={...(raw.seoIndexing||{})};for(const key of Object.keys(S.seoRouteDefaults))raw.seoIndexing[key]=(key==='admin'||key==='login')?false:!$('seo-index-'+key).checked;raw.company={...(raw.company||{})};raw.layout={...(raw.layout||{})};raw.social={...(raw.social||{})};raw.meta={...(raw.meta||{})};raw.content={...(raw.content||{})};
  raw.favicon=favicon;raw.appleTouchIcon=appleTouchIcon;raw.websiteLogo=websiteLogo;
- raw.navigationVisibility={mobile:{},desktop:{}};for(const screen of ['mobile','desktop'])for(const key of S.navigationItems)raw.navigationVisibility[screen][key]=$('nic-navigation-'+screen+'-'+key).checked;
+ raw.navigationVisibility={};for(const section of S.navigationSections){raw.navigationVisibility[section]={};for(const screen of ['mobile','desktop']){raw.navigationVisibility[section][screen]={};for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)raw.navigationVisibility[section][screen][key]=$('nic-navigation-'+section+'-'+screen+'-'+key).checked;}}
  S.companyFields.forEach(([k])=>raw.company[k]=$('company-'+k).value);Object.keys(S.layoutDefaults).forEach(k=>raw.layout[k]=$('layout-'+k).value);S.portals.forEach(([k])=>raw.social[k]=$('social-'+k).value);
  S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>raw.meta[k]={...(raw.meta[k]||{}),title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:k==='website'?$('meta-website-googleTag').value:(raw.meta[k]?.googleTag||'')});
  Object.keys(S.contentPageDefaults).forEach(k=>raw.content[k]={...(raw.content[k]||{}),headerTitle:$('content-'+k+'-headerTitle').value,headerDescription:$('content-'+k+'-headerDescription').value,title:$('content-'+k+'-title').value,description:$('content-'+k+'-description').value,...(k==='settlement'?{boxTitle:$('content-'+k+'-boxTitle').value}:{})});
@@ -246,7 +249,7 @@ function collect(){
  raw.meta.immobilienABC=window.NICABCAdmin.serialize();
  return S.normalize(raw);
 }
-function fill(s){for(const screen of ['mobile','desktop'])for(const key of S.navigationItems)$('nic-navigation-'+screen+'-'+key).checked=s.navigationVisibility[screen][key];for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
+function fill(s){for(const section of S.navigationSections)for(const screen of ['mobile','desktop'])for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)$('nic-navigation-'+section+'-'+screen+'-'+key).checked=s.navigationVisibility[section][screen][key];for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
  if(key==='welcome')continue;
  for(const [setting,legacy] of [['seoTitle','title'],['metaDescription','description']]){
   const input=$('content-'+key+'-'+setting);
