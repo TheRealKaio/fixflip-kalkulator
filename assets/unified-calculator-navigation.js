@@ -230,6 +230,31 @@ function initResponsiveCalculatorMenu(){
   tile.dataset.href=canonicalTileRoutes[key];
   if(tile.tagName==='A')tile.setAttribute('href',canonicalTileRoutes[key]);
  }
+ // Only the six-button calculator bar gets short, deliberately two-line titles.
+ // Homepage tiles and the shared dropdown retain their original labels and subtexts.
+ const calculatorTileTitles={
+  budget:['Dein Budget','berechnen'],
+  own:['Eigenheim','berechnen'],
+  rent:['Vermietung als','Kapitalanlage'],
+  flip:['Fix und Flip','Projekt'],
+  finance:['Finanzierung &','Restschuld'],
+  settlement:['Nebenkosten','abrechnen']
+ };
+ function formatCalculatorTiles(){
+  for(const tile of menu.querySelectorAll('.deal-type-row > .deal-type-option')){
+   const lines=calculatorTileTitles[tile.dataset.calculator];
+   const heading=tile.querySelector('strong');
+   if(!lines||!heading||heading.dataset.nicTwoLine==='true')continue;
+   heading.replaceChildren(...lines.map(line=>{
+    const span=document.createElement('span');
+    span.className='nic-calculator-title-line';
+    span.textContent=line;
+    return span;
+   }));
+   heading.dataset.nicTwoLine='true';
+  }
+ }
+ formatCalculatorTiles();
  // Align the original shared calculator tiles with the central menu label.
  for(const tile of menu.querySelectorAll('.deal-type-option')){
   if(tile.dataset.calculator==='budget'||tile.dataset.href==='/budget/'){
@@ -404,6 +429,7 @@ function initResponsiveCalculatorMenu(){
  });
  function refreshNavigationVisibility(){
   ensureSettlementTile();
+  formatCalculatorTiles();
   const screen=navigationMobileQuery.matches?'mobile':'desktop';
   const isHome=document.body.classList.contains('nic-home-active')||location.pathname==='/'||location.pathname==='/index.html'||location.pathname==='/fixflip-kalkulator/';
   const dropdownSection=isHome?'dropdownHome':'dropdownOther';
