@@ -229,6 +229,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    // and missed the admin event/save path altogether.
    await page.locator('.admin-menu-toggle').click();
    await page.locator('#tab-layout').click();
+   const checkboxSizes=await page.locator('#nicNavigationVisibilityFields input[type="checkbox"]').evaluateAll(nodes=>nodes.map(el=>{
+    const box=el.getBoundingClientRect(),style=getComputedStyle(el);
+    return {id:el.id,w:box.width,h:box.height,cssW:parseFloat(style.width),cssH:parseFloat(style.height)};
+   }));
+   assert.equal(checkboxSizes.length,28,'All 28 independent navigation checkboxes present: '+screen);
+   assert(checkboxSizes.every(box=>box.cssW===20&&box.cssH===20),'Admin checkbox CSS size remains 20x20: '+screen+' '+JSON.stringify(checkboxSizes));
+   assert(checkboxSizes.every(box=>box.w<=21&&box.h<=21),'Admin checkboxes never enlarge to button size: '+screen+' '+JSON.stringify(checkboxSizes));
    const visibilityBox=page.locator('#nic-navigation-calculator-'+screen+'-flip');
    assert.equal(await visibilityBox.isChecked(),true,'Calculator flip initially enabled in Admin: '+screen);
    await visibilityBox.uncheck();
