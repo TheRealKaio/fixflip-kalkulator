@@ -141,16 +141,21 @@ function nic_clean_settings(mixed $raw): array {
     $s['contentSections'] = $sections;
     $visibility = $s['navigationVisibility'] ?? [];
     if (!is_array($visibility)) nic_fail('Ungültige Menü-Einstellungen.');
-    $allowedMenuKeys = ['budget','own','rent','flip','finance','settlement','dropdown'];
+    $allowedMenuKeys = ['budget','own','rent','flip','finance','settlement'];
     $cleanVisibility = [];
-    foreach (['mobile','desktop'] as $screen) {
-        $values = $visibility[$screen] ?? [];
+    foreach (['home','calculator','dropdownHome','dropdownOther'] as $section) {
+        $values = $visibility[$section] ?? [];
         if (!is_array($values)) nic_fail('Ungültige Menü-Einstellungen.');
-        $cleanVisibility[$screen] = [];
-        foreach ($allowedMenuKeys as $key) {
-            $value = $values[$key] ?? true;
-            if (!is_bool($value)) nic_fail('Ungültige Menü-Einstellung.');
-            $cleanVisibility[$screen][$key] = $value;
+        $cleanVisibility[$section] = [];
+        foreach (['mobile','desktop'] as $screen) {
+            $screenValues = $values[$screen] ?? ($visibility[$screen] ?? []);
+            if (!is_array($screenValues)) nic_fail('Ungültige Menü-Einstellungen.');
+            $cleanVisibility[$section][$screen] = [];
+            foreach (str_starts_with($section, 'dropdown') ? ['dropdown'] : $allowedMenuKeys as $key) {
+                $value = $screenValues[$key] ?? true;
+                if (!is_bool($value)) nic_fail('Ungültige Menü-Einstellung.');
+                $cleanVisibility[$section][$screen][$key] = $value;
+            }
         }
     }
     $s['navigationVisibility'] = $cleanVisibility;
