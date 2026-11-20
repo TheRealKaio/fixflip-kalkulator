@@ -6,7 +6,7 @@ const data=document.getElementById('nic-header-variants');
 if(!hero||!data)return;
 const variants=JSON.parse(data.textContent);
 hero.classList.add('nic-responsive-header');
-let queued=false,lastWidth=0,lastSignature='',largestForLayout=0,renderScale=1;
+let queued=false,lastWidth=0,renderScale=1;
 // DOM rectangles include CSS zoom; CSS dimensions and padding do not.
 // Convert once into layout units before sizing the hidden probe or live header.
 function effectiveScale(el){
@@ -27,13 +27,17 @@ function measure(){
  renderScale=effectiveScale(hero);
  const width=geometry(hero).width;if(width<=0)return;
  const probe=hero.cloneNode(true);probe.classList.remove('nic-fixed-header');
+ // The probe must measure CONTENT height, not inherit the previously reserved
+ // height from the real header. Otherwise route changes cause a feedback loop.
+ probe.style.setProperty('--nic-header-content-height','0px');
  probe.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
  // Portrait navigation lives inside the header. Cloned checked radios would
  // join the live group on insertion and uncheck the actual calculator choice.
  // Inert/aria-hidden do not isolate native radio groups.
  probe.querySelectorAll('[name]').forEach(el=>el.removeAttribute('name'));
  probe.removeAttribute('id');probe.setAttribute('aria-hidden','true');probe.inert=true;
- Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',height:'auto',minHeight:'0',maxHeight:'none',display:'flow-root'});
+ Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',display:'flow-root'});
+ for(const [property,value] of [['height','auto'],['min-height','0px'],['max-height','none']])probe.style.setProperty(property,value,'important');
  // Keep the same ancestor styles and inherited typography as the visible header.
  hero.parentElement.append(probe);
  try{
