@@ -201,4 +201,6 @@ for page in site.rglob('*.html'):
  if page.parent.name=='nebenkostenabrechnung':s=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>','',s,flags=re.S)
  if 'calculator-explanations.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/calculator-explanations.css"></head>',1)
  if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
+ # Rename navigation-only labels in prerendered HTML; leave SEO headlines and paths intact.
+ s=s.replace('>Eigenheim &amp; Eigennutzung<','>Eigenheim<').replace('>Eigenheim & Eigennutzung<','>Eigenheim<')
  page.write_text(s)
