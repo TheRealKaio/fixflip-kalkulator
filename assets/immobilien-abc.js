@@ -214,7 +214,9 @@ function showHints(){
   const byContextKey=new Map(contexts.filter(x=>x.key).map(x=>[x.key,x]));
   const terms=[...items].sort((a,b)=>b.term.length-a.term.length);
   for(const label of main.querySelectorAll('label')){
-   if(label.closest('#nicContentView')||label.querySelector('.nic-abc-term'))continue;
+   // Navigation tiles are destinations, never glossary labels. In particular, the
+   // word Sanierung in Fix & Flip must not steal the click from its calculator.
+   if(label.closest('#nicContentView,.deal-type-card,.deal-type-option,#nic-home-intro,[data-nic-site-nav],.nic-mobile-calculator-controls')||label.querySelector('.nic-abc-term'))continue;
    const legacy=identifyLegacy(label);
    // Some legacy labels contain an inline help icon: only the visible field
    // name is considered a glossary match, not the icon text.
