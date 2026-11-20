@@ -20,6 +20,9 @@ const portraitHeaderCopy={
  finance:['Jetzt Finanzierung & Restschuld berechnen!','Ermittle Rate, Zinsen und Restschuld']
 };
 const portraitQuery=window.matchMedia('(max-width:700px) and (orientation:portrait)');
+const navigationMobileQuery=window.matchMedia('(max-width:700px)');
+const navigationKeys=['budget','own','rent','flip','finance','settlement','dropdown'];
+function navigationAllowed(key,screen){return window.NICSettings?.current?.navigationVisibility?.[screen]?.[key]!==false;}
 function applyHeader(key){
  const name=key==='home'||key==='website'?'welcome':key;
  const values=window.NICSettings?.current?.content?.[name];
@@ -126,7 +129,7 @@ document.addEventListener('click',event=>{
  const tile=event.target.closest('.deal-type-row > .deal-type-option');
  if(tile){
   const key=tile.dataset.calculator||routes[new URL(tile.dataset.href||tile.href||location.href,location.href).pathname.toLowerCase()];
-  if(!key)return;
+  if(!key||tile.hidden)return;
   event.preventDefault();event.stopImmediatePropagation();select(key,true);return;
  }
  if(active==='finance'){
@@ -176,6 +179,14 @@ function initResponsiveCalculatorMenu(){
   console.error('Calculator menu initialization failed: missing menu or header', {menu:!!menu,header:!!header});
   return;
  }
+ // This is an existing content route, not a new calculator.
+ const row=menu.querySelector('.deal-type-row');
+ if(row&&!row.querySelector('[data-calculator="settlement"]')){
+  const tile=document.createElement('a');tile.className='deal-type-option';
+  tile.dataset.calculator='settlement';tile.href='/nebenkostenabrechnung/';
+  tile.innerHTML='<svg class="nic-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span><strong>Nebenkosten abrechnen</strong><small>Betriebskosten erfassen und abrechnen</small></span>';
+  row.append(tile);
+ }
  // Align the original shared calculator tiles with the central menu label.
  for(const tile of menu.querySelectorAll('.deal-type-option')){
   if(tile.dataset.calculator==='budget'||tile.dataset.href==='/budget/'){
@@ -209,7 +220,7 @@ function initResponsiveCalculatorMenu(){
  // The Mieter-Abrechnung is an existing content route, not a sixth calculator.
  const settlementOption=document.createElement('option');
  settlementOption.value='settlement';
- settlementOption.textContent='Mieter-Abrechnung';
+ settlementOption.textContent='Nebenkosten abrechnen';
  picker.append(settlementOption);
  // 'Budget' is the default visible entry on information pages.
  const compact=document.createElement('div');
@@ -269,7 +280,7 @@ function initResponsiveCalculatorMenu(){
   }
  }
  function setOpen(open,focus=false){
-  const show=!!open&&menu.classList.contains('nic-portrait-calculator-menu');
+  const show=!!open&&(menu.classList.contains('nic-portrait-calculator-menu')||compact.classList.contains('nic-desktop-calculator-controls'));
   options.hidden=!show;trigger.setAttribute('aria-expanded',String(show));
   if(show&&focus)(rows.find(row=>row.dataset.value===picker.value)||rows[0])?.focus();
  }
@@ -298,13 +309,16 @@ function initResponsiveCalculatorMenu(){
   const isHome=path==='/'||path==='/index.html'||path==='/fixflip-kalkulator/'||path==='/fixflip-kalkulator/index.html';
   const pageKey=document.documentElement.dataset.nicPage;
   const key=active&&active!=='home'?active:pageKey&&pageKey!=='website'?pageKey:document.documentElement.dataset.calculator;
-  const compactMode=portraitQuery.matches&&!isHome
-   &&!document.body.matches('.nic-admin-open,.nic-legal-open');
+  const isHiddenView=document.body.matches('.nic-admin-open,.nic-legal-open');
+  const compactMode=portraitQuery.matches&&!isHome&&!isHiddenView;
+  const desktopMode=!portraitQuery.matches&&!isHiddenView;
   if(compactMode){
    if(menu.parentElement!==header){
     if(brand)brand.after(menu);
     else header.insertBefore(menu,header.querySelector(':scope > h1')||header.firstChild);
    }
+   if(compact.parentElement!==menu)menu.append(compact);
+   compact.classList.remove('nic-desktop-calculator-controls');
    menu.classList.add('nic-portrait-calculator-menu');
    if(key==='settlement'||calculators.some(item=>item.id===key)){
     if(picker.value!==key)picker.value=key;
@@ -316,7 +330,10 @@ function initResponsiveCalculatorMenu(){
    setOpen(false);
    menu.classList.remove('nic-portrait-calculator-menu');
    if(calculatorMenuAnchor?.parentNode&&menu.previousSibling!==calculatorMenuAnchor)calculatorMenuAnchor.after(menu);
+   if(desktopMode){if(compact.parentElement!==header)header.append(compact);compact.classList.add('nic-desktop-calculator-controls');}
+   else {if(compact.parentElement!==menu)menu.append(compact);compact.classList.remove('nic-desktop-calculator-controls');}
   }
+  refreshNavigationVisibility();
   window.NICHeader?.refresh();
  }
  picker.addEventListener('change',()=>{
@@ -329,6 +346,28 @@ function initResponsiveCalculatorMenu(){
    if(route)location.assign(route);
   }else select(picker.value,true);
  });
+ function refreshNavigationVisibility(){
+  const screen=navigationMobileQuery.matches?'mobile':'desktop';
+  for(const tile of menu.querySelectorAll('.deal-type-row > .deal-type-option')){
+   const key=tile.dataset.calculator;
+   if(navigationKeys.includes(key))tile.hidden=!navigationAllowed(key,screen);
+  }
+  for(const item of rows){item.hidden=!navigationAllowed(item.dataset.value,screen);}
+  for(const option of picker.options){option.disabled=!navigationAllowed(option.value,screen);}
+  const showDropdown=navigationAllowed('dropdown',screen);
+  if(compactMode)compact.hidden=!showDropdown;
+  else if(desktopMode)compact.hidden=!showDropdown;
+  else compact.hidden=true;
+  // A hidden selected item must not create a phantom navigation target.
+  if(!navigationAllowed(picker.value,screen)){
+   const first=Array.from(picker.options).find(option=>!option.disabled);
+   if(first)picker.value=first.value;
+  }
+  renderSelection();
+  if(!showDropdown)setOpen(false);
+ }
+ window.NICNavigationVisibility={refresh:sync};
+ navigationMobileQuery.addEventListener('change',sync);
  window.addEventListener('nic-calculator-changed',sync);
  window.addEventListener('nic-route-changed',sync);
  portraitQuery.addEventListener('change',sync);
