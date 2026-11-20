@@ -6,7 +6,9 @@ finance=site/'finanzierungsrechner'/'index.html'
 source=re.search(r'<script type="application/json" id="nic-header-variants">([^<]*)</script>',original)
 if not source:raise SystemExit('Original responsive-header variants not found')
 variants=json.loads(source.group(1))
-finance_variant=['Fi&shy;nan&shy;zie&shy;rungs&shy;rech&shy;ner','Plane deine Immobilienfinanzierung und berechne, wie Tilgung und Sondertilgungen die Restschuld deines Darlehens beeinflussen.']
+config=json.loads((site/'site-settings.json').read_text())
+finance_content=config.get('content',{}).get('finance',{})
+finance_variant=[str(finance_content.get('headerTitle','')),str(finance_content.get('headerDescription',''))]
 if finance_variant not in variants:variants.append(finance_variant)
 target='<script type="application/json" id="nic-header-variants">[]</script>'
 html=finance.read_text(encoding='utf-8')
@@ -21,7 +23,6 @@ shared=re.sub(r'(<p\b[^>]*>).*?(</p>)',lambda m:m[1]+finance_variant[1]+m[2],sha
 shared=shared.replace('href="admin.html"','href="/#admin"')
 html,count=re.subn(r'<header class="hero"[^>]*>.*?</header>',lambda m:shared,html,count=1,flags=re.S)
 if count!=1:raise SystemExit('Finance header markup missing')
-config=json.loads((site/'site-settings.json').read_text())
 meta=config.get('meta',{}).get('finance',{})
 title=markup.escape(meta.get('title') or 'Finanzierungsrechner | Neustart ImmoCheck',quote=True)
 description=markup.escape(meta.get('description') or '',quote=True)
