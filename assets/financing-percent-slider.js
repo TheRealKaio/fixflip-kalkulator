@@ -25,6 +25,49 @@ style.textContent=`
 .nic-finance-percent-labels{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:var(--nic-subtext-font-size,14px);font-variant-numeric:tabular-nums}
 .nic-finance-percent-labels output{font-weight:800;color:var(--ink,#172033)}
 @media(max-width:700px){.nic-finance-percent-control{grid-column:1 / -1!important}.nic-finance-percent-labels{flex-wrap:wrap}}
+/* Rental financing: two equal rate columns on tablet/desktop.
+   The finance percentage slider keeps its own full-width row. */
+@media(min-width:701px){
+ #rentFinanceCard .finance-rate-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:start!important;column-gap:12px!important;row-gap:14px!important;
+ }
+ #rentFinanceCard .finance-rate-grid>.field{
+  width:100%!important;min-width:0!important;max-width:none!important;
+ }
+ #rentFinanceCard .finance-rate-grid>.field.nic-finance-percent-field{
+  grid-column:1/-1!important;
+ }
+}
+/* Identical top baseline and label heights for purchase-fee fields. */
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker){
+ align-items:start!important;
+}
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker)>.field{
+ display:flex!important;flex-direction:column!important;align-self:stretch!important;
+ min-width:0!important;margin-top:0!important;padding-top:0!important;
+}
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker)>.field>label{
+ display:flex!important;align-items:center!important;min-height:24px!important;
+ margin:0 0 5px!important;line-height:1.3!important;
+}
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker)>.field>.input-wrap{
+ margin-top:0!important;width:100%!important;
+}
+/* Caption centered over the actual checkbox, including its help icon. */
+#rentFinanceCard .finance-acq-option{
+ display:flex!important;flex-direction:column!important;align-items:center!important;
+ justify-content:flex-end!important;text-align:center!important;min-width:0!important;
+}
+#rentFinanceCard .finance-acq-option>.finance-check-label{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:5px!important;text-align:center!important;width:100%!important;
+}
+#rentFinanceCard .finance-acq-option>.finance-check-box{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;margin-inline:auto!important;
+}
+
 `;
 (document.head||document.documentElement).appendChild(style);
 function costs(id){
