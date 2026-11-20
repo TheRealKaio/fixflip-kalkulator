@@ -74,5 +74,15 @@ const registry=JSON.parse(read('assets/calculators.json'));
 assert.equal(registry.calculators.find(item=>item.id==='own').label,'Eigenheim','Dropdown must say Eigenheim');
 assert(read('assets/homepage.html').includes('<strong>Eigenheim</strong>'),'Homepage tile must say Eigenheim');
 assert(read('scripts/build_unified_navigation.py').includes(">Eigenheim<"),'Static calculator tiles must use Eigenheim on first load');
+const titleScript=nav.match(/const calculatorTileTitles=\{([\s\S]*?)\n \};/);
+assert(titleScript,'Separate two-line calculator title map is required');
+for(const key of ['budget','own','rent','flip','finance','settlement']){
+ assert(new RegExp(key+':\\[').test(titleScript[1]),'Missing compact label: '+key);
+}
+assert(nav.includes('formatCalculatorTiles();'),'Calculator titles must be formatted at initialisation and refresh');
+assert(css.includes('Calculator pages only: compact equal-height six-tile bar'),'Compact card CSS must be scoped');
+assert(css.includes('.deal-type-card > .deal-type-row > .deal-type-option small'),'Calculator descriptions must be hidden');
+assert(!css.includes('#nic-home-intro .nic-home-options > .deal-type-option small'),'Homepage descriptions must be preserved');
+assert(read('assets/homepage.html').includes('<small>'),'Homepage descriptions must remain present');
 assert.ok(gate.includes("=== 'sanierung'"));
 console.log('Navigation visibility regression PASS: 28 controls, 4 groups, legacy migration, Sanierung cleanup, fluid tiles, shared dropdown.');
