@@ -233,15 +233,14 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Die bestehende Server-Schnittstelle speichert die normalisierten Contentdaten kompatibel unter `meta.content`; `content` und `meta.content` referenzieren im Frontend dieselben Daten. Beim Laden werden beide Formate unterstützt. Keine zweite redaktionelle Quelle und keine Änderung an Datenbank, Zugangsdaten oder Serverinstallation.
 - Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
   Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
+- Auf Desktop, Tablet und Mobil sind zunächst genau die ersten beiden Absätze
+  einschließlich der Überschrift des zweiten Abschnitts sichtbar. Rechts unten
+  steht `weiterlesen`. Ein natives `details`/`summary` öffnet den
+  verbleibenden Text; `weniger anzeigen` schließt ihn wieder. Beim Wechsel
+  zu einem anderen Werkzeug beginnt die Box erneut eingeklappt.
 - Bei gleicher Fensterbreite und Typografie haben alle Boxen dieselbe minimale
-  Höhe: vollständiger Text auf Desktop, eingeklappte Fassung mobil. Die größte
-  benötigte Höhe wird ohne Abschneiden aus allen sechs Texten ermittelt; die
-  Desktop-Skalierung wird dabei berücksichtigt.
-- Mobil (bis 760 px bzw. gemeinsame schmale Querformatansicht) zunächst nur
-  Titel und erster Absatz; rechts unten steht `weiterlesen`. Ein natives
-  `details`/`summary` öffnet die beiden restlichen Abschnitte. Danach kann über
-  `weniger anzeigen` geschlossen werden. Beim neuen Seitenaufruf bzw. Wechsel
-  zu einem anderen Werkzeug beginnt die mobile Box wieder eingeklappt.
+  Höhe in eingeklapptem Zustand; die Messung berücksichtigt die Desktop-Skalierung.
+  Beim Aufklappen wächst der Text natürlich ohne Abschneiden.
 - Der vollständige Text steht bereits im HTML der direkten Route, auch mobil.
   Öffnen erfordert keinen Netzwerkabruf; Tastaturbedienung bleibt möglich.
 
