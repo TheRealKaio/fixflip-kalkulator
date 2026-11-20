@@ -209,6 +209,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    // End-to-end: change the REAL admin checkbox, let its save finish, then
    // reload another calculator URL. Previous tests changed settings directly in JS
    // and missed the admin event/save path altogether.
+   await page.locator('.admin-menu-toggle').click();
    await page.locator('#tab-layout').click();
    const visibilityBox=page.locator('#nic-navigation-calculator-'+screen+'-flip');
    assert.equal(await visibilityBox.isChecked(),true,'Calculator flip initially enabled in Admin: '+screen);
@@ -231,6 +232,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await page.locator('#nicMobileCalculatorSelect option[value="flip"]').isEnabled(),true,'Dropdown independent from tile checkbox: '+screen);
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
    await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
+   await page.locator('.admin-menu-toggle').click();
    await page.locator('#tab-layout').click();
    assert.equal(await page.locator('#nic-navigation-calculator-'+screen+'-flip').isChecked(),false,'Checkbox remains disabled after reload: '+screen);
    await page.locator('#nic-navigation-calculator-'+screen+'-flip').check();
