@@ -124,3 +124,10 @@ body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:
 .admin-page-noindex{margin-inline-start:10px;font-weight:400}
 .admin-page-index{display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:12px;cursor:pointer}
 .admin-page-index input[type="checkbox"]{width:20px;height:20px;min-height:0;margin:0}
+
+/* Separate mobile and desktop menu visibility settings. */
+#nicNavigationVisibilityFields{display:block}
+.nic-navigation-admin-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(70px,1fr) minmax(100px,1fr);align-items:center;gap:12px;padding:9px 6px;border-bottom:1px solid #e2e9e5}
+.nic-navigation-admin-row>input{justify-self:center;width:20px;height:20px;accent-color:#075c55}
+.nic-navigation-admin-head{font-size:14px}
+@media(max-width:480px){.nic-navigation-admin-row{grid-template-columns:minmax(0,1.8fr) 54px 80px;gap:5px;font-size:12px}}
