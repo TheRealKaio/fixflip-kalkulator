@@ -56,12 +56,8 @@ function measure(){
   // Include the actual rendered text, so inherited styles or late font changes
   // cannot make the live subtitle exceed the measured clone.
   const box=geometry(hero),heroStyle=getComputedStyle(hero);
-  const headingStyle=getComputedStyle(hero.querySelector('h1')),descriptionStyle=getComputedStyle(hero.querySelector('p'));
-  const top=hero.querySelector('.hero-top');
-  const signature=[width,heroStyle.padding,headingStyle.font,headingStyle.letterSpacing,descriptionStyle.font,descriptionStyle.letterSpacing,(top?geometry(top).height:0)].join('|');
   const contentBottom=Math.max(...Array.from(hero.children).map(el=>geometry(el).bottom));
   maximum=Math.max(maximum,contentBottom-box.top+parseFloat(heroStyle.paddingBottom||0)+parseFloat(heroStyle.borderBottomWidth||0));
-  if(signature!==lastSignature){largestForLayout=0;lastSignature=signature;}
   largestForLayout=Math.max(largestForLayout,maximum);
   const value=Math.ceil(largestForLayout+1)+'px';
   if(hero.style.getPropertyValue('--nic-header-content-height')!==value)hero.style.setProperty('--nic-header-content-height',value);
