@@ -105,7 +105,9 @@ NIC_RAW_PATTERN;
             $section = $homeAncestors->length ? 'home' : 'calculator';
             $heading = $xpath->query('.//strong', $option)?->item(0)?->textContent ?? '';
             if ($section === 'calculator' && strtolower(trim($heading)) === 'sanierung') {
-                $option->parentNode?->removeChild($option);
+                // Old tiles can contain the calculator's live radio control.
+                // Never remove these DOM nodes: only suppress their visual wrapper.
+                $option->setAttribute('data-nic-nav-obsolete', 'true');
                 continue;
             }
             $key = $option->getAttribute('data-calculator');
@@ -119,16 +121,17 @@ NIC_RAW_PATTERN;
             $legacyDesktop = $navVisibility['desktop'] ?? [];
             $mobile = ($navVisibility[$section]['mobile'][$key] ?? $legacy[$key] ?? true) !== false;
             $desktop = ($navVisibility[$section]['desktop'][$key] ?? $legacyDesktop[$key] ?? true) !== false;
-            if (!$mobile && !$desktop) {
-                $option->parentNode?->removeChild($option);
-            } else {
-                $option->setAttribute('data-nic-nav-key', $key);
-                $option->setAttribute('data-nic-nav-context', $section);
-                if (!$mobile) $hideOnMobile[$section][] = $key;
-                if (!$desktop) $hideOnDesktop[$section][] = $key;
-            }
+            // Preserve calculator controls even if both menu visibility switches
+            // are off. Removing a label with its input removes a working calculator.
+            // The server emits pre-paint viewport CSS instead of deleting a tile.
+            $option->setAttribute('data-nic-nav-key', $key);
+            $option->setAttribute('data-nic-nav-context', $section);
+            if (!$mobile) $hideOnMobile[$section][] = $key;
+            if (!$desktop) $hideOnDesktop[$section][] = $key;
         }
-        $criticalNavCss = [];
+        $criticalNavCss = [
+            '[data-nic-nav-obsolete="true"]{display:none!important}',
+        ];
         foreach ($hideOnMobile as $section => $keys) {
             foreach (array_unique($keys) as $key) $criticalNavCss[] = '@media(max-width:700px){[data-nic-nav-context="' . $section . '"][data-nic-nav-key="' . $key . '"]{display:none!important}}';
         }
