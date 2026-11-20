@@ -403,8 +403,9 @@ function initResponsiveCalculatorMenu(){
    const key=tile.dataset.calculator;
    if(navigationKeys.includes(key))tile.hidden=!navigationAllowed(key,screen,'calculator');
   }
-  for(const item of rows){item.hidden=!navigationAllowed(item.dataset.value,screen,'calculator');}
-  for(const option of picker.options){option.disabled=!navigationAllowed(option.value,screen,'calculator');}
+  // Dropdown destinations are independent from the separately controlled tile bar.
+  for(const item of rows)item.hidden=false;
+  for(const option of picker.options)option.disabled=false;
   const showDropdown=navigationAllowed('dropdown',screen,dropdownSection)&&!document.body.matches('.nic-admin-open,.nic-legal-open');
   compact.hidden=!showDropdown;
   dropdownShell.hidden=menu.classList.contains('nic-portrait-calculator-menu')||!showDropdown;
@@ -414,10 +415,6 @@ function initResponsiveCalculatorMenu(){
   menu.classList.toggle('nic-portrait-tiles-only',isPortraitMenu&&!showDropdown&&hasVisibleTiles);
   if(isPortraitMenu)menu.hidden=!showDropdown&&!hasVisibleTiles;
   else if(!isHome)menu.hidden=!hasVisibleTiles;
-  if(!navigationAllowed(picker.value,screen,'calculator')){
-   const first=Array.from(picker.options).find(option=>!option.disabled);
-   if(first)picker.value=first.value;
-  }
   renderSelection();
   updateHomepageNavigationVisibility();
   if(!showDropdown)setOpen(false);
