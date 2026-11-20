@@ -58,34 +58,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      }
     }
     if(portrait&&!isHomepage){
-     assert(await chooser.isVisible(),'Portrait selector shown for '+slug);
+     assert.equal(await page.locator('.app>.hero>.deal-type-card').count(),0,'No calculator tiles inside portrait hero: '+slug);
+     assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Calculator tiles remain below introduction: '+slug);
+     assert(await page.locator('.app>.hero>.nic-global-dropdown-shell #nicMobileCalculatorTrigger').isVisible(),'Only dropdown remains in portrait header: '+slug);
      if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
-     else assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Information route defaults to Budget: '+slug);
-     const metrics=await chooser.evaluate(el=>{
-       const shell=el.getBoundingClientRect(),green=el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect();
-       const css=getComputedStyle(el.querySelector('#nicMobileCalculatorTrigger'));
-       return {left:green.left-shell.left,right:shell.right-green.right,font:css.fontSize,
-        expectedFont:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-subtext-font-size'))+'px',
-        corners:['borderTopLeftRadius','borderTopRightRadius','borderBottomRightRadius','borderBottomLeftRadius'].map(k=>parseFloat(getComputedStyle(el)[k]))};
-      });
-      assert(Math.abs(metrics.left-metrics.right)<1,'Even white margins: '+slug+' '+JSON.stringify(metrics));
-      assert.equal(metrics.font,metrics.expectedFont,'Menu uses Admin Untertexte directly: '+slug);
-      const expectedCorner=await page.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-menu-radius')));
-      assert(metrics.corners.every(value=>Math.abs(value-expectedCorner)<.1),'Outer menu corners match Admin radius: '+slug);
-      assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Custom green dropdown visible: '+slug);
-      assert.equal(await page.locator('#nicMobileCalculatorSelect option[value=""]').count(),0,'No placeholder: '+slug);
-      const expectedLabel=(calculatorIds.includes(currentId)||currentId==='settlement')
-       ? await page.locator('#nicMobileCalculatorSelect option:checked').textContent() : 'Bitte Rechner wählen';
-      assert.equal((await chooser.locator('.nic-mobile-calculator-current-text').textContent()).trim(),expectedLabel.trim(),'Dropdown displays active destination or prompt');
-      assert.equal(await chooser.locator('.nic-mobile-calculator-option').count(),6,'All six destinations');
-      assert.equal(await chooser.locator('.nic-mobile-calculator-option[data-value="rent"] svg').count(),1,'Vermietung icon retained');
-      assert(Math.abs(metrics.left-6)<1,'White padding halved to 6px');
-      // The login page intentionally opens a modal that blocks background clicks.
-      const loginDialog=page.locator('dialog.nic-auth-dialog[open]');
-      if(await loginDialog.count()){
-       assert.equal(slug,'anmelden/','Only login route should have a modal: '+slug);
-       assert(await loginDialog.isVisible(),'Login modal is visible');
-      }else{
+     if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
+    }else{
        await page.locator('#nicMobileCalculatorTrigger').click();
        assert(await page.locator('#nicMobileCalculatorOptions').isVisible(),'Dropdown opens: '+slug);
        const bounds=await chooser.evaluate(el=>({trigger:el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect().width,list:el.querySelector('#nicMobileCalculatorOptions').getBoundingClientRect().width}));
@@ -317,19 +295,20 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu node is reused rather than replaced');
     await page.waitForFunction(()=>!document.getElementById('heroTitle').innerText.startsWith('Jetzt '));
     await page.setViewportSize({width:390,height:900});
-    await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').waitFor({state:'visible',timeout:10000});
-    assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>.hero>.deal-type-card')),'Same menu returns into header in portrait');
+    await page.locator('.app>.hero>.nic-global-dropdown-shell #nicMobileCalculatorTrigger').waitFor({state:'visible',timeout:10000});
+    assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu stays in content area in portrait');
     for(const narrowWidth of [320,375,390,430]){
      await page.setViewportSize({width:narrowWidth,height:900});
-     const dimensions=await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').evaluate(el=>{
+     const dimensions=await page.locator('.app>.hero>.nic-global-dropdown-shell').evaluate(el=>{
        const green=el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect();
        const shell=el.getBoundingClientRect(),header=el.closest('.hero').getBoundingClientRect();
-       return {left:green.left-shell.left,right:shell.right-green.right,
-        greenRight:green.right,limit:shell.right,headerHeight:header.height,
+       const menu=document.querySelector('.app>main.section>.deal-type-card');
+       return {greenRight:green.right,limit:shell.right,headerHeight:header.height,
+        menuBelowHero:menu.getBoundingClientRect().top>=header.bottom-2,
         scrollWidth:document.documentElement.scrollWidth,screenWidth:document.documentElement.clientWidth};
       });
-      assert(Math.abs(dimensions.left-dimensions.right)<1,'Even white padding at '+narrowWidth+'px');
-      assert(dimensions.greenRight<=dimensions.limit+1,'Picker fits shell at '+narrowWidth+'px');
+      assert(dimensions.greenRight<=dimensions.limit+1,'Dropdown fits header at '+narrowWidth+'px');
+      assert(dimensions.menuBelowHero,'Six calculator tiles below hero at '+narrowWidth+'px');
       assert(dimensions.scrollWidth<=dimensions.screenWidth+1,'No horizontal overflow at '+narrowWidth+'px');
       assert(dimensions.headerHeight>0,'Header height retained at '+narrowWidth+'px');
     }
