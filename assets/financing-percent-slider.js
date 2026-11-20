@@ -35,6 +35,15 @@ function costs(id){
  // These outputs are already calculated by the existing own/flip model.
  // No second loan/debt/interest formula is introduced here.
  if(id==='ltv'){
+  // Owner-use exposes these same financing totals in its existing model.
+  // Reuse them when available, rather than recalculate ancillary costs.
+  if(typeof window.model==='function' && activeMode()==='own'){
+   try{
+    const m=window.model();
+    if(Number.isFinite(m.initialOwnUseCosts)&&Number.isFinite(m.financingBase))
+     return {total:Math.max(0,m.initialOwnUseCosts),base:Math.max(0,m.financingBase)};
+   }catch(_error){/* Fall back to the displayed project fields. */}
+  }
   const purchase=Math.max(0,value('purchase'));
   const acquisition=Math.max(0,euroText('acquisitionCostsTotal'));
   const extra=Math.max(0,value('renovationTotal')) || Math.max(0,value('renoTotal'));
