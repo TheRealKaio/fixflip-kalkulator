@@ -92,10 +92,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      const positioning=await page.evaluate(()=>{
       const shell=document.querySelector('.app>.hero>.nic-global-dropdown-shell').getBoundingClientRect();
       const title=document.getElementById('heroTitle').getBoundingClientRect();
-      return {center:shell.left+shell.width/2,heroCenter:(document.querySelector('.app>.hero').getBoundingClientRect().left+document.querySelector('.app>.hero').getBoundingClientRect().right)/2,bottom:shell.bottom,top:title.top};
+      return {center:shell.left+shell.width/2,heroCenter:(document.querySelector('.app>.hero').getBoundingClientRect().left+document.querySelector('.app>.hero').getBoundingClientRect().right)/2,bottom:shell.bottom,top:title.top,titleVisible:title.height>0,documentOrder:!!(document.querySelector('.app>.hero>.nic-global-dropdown-shell').compareDocumentPosition(document.getElementById('heroTitle')) & Node.DOCUMENT_POSITION_FOLLOWING)};
      });
      assert(Math.abs(positioning.center-positioning.heroCenter)<2,'Dropdown centered: '+slug);
-     assert(positioning.bottom<=positioning.top+2,'Dropdown has its own line above heading: '+slug);
+     assert(positioning.documentOrder,'Dropdown precedes heading in DOM: '+slug);
+     if(positioning.titleVisible)assert(positioning.bottom<=positioning.top+2,'Dropdown has its own line above visible heading: '+slug);
      assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
     }
     if(currentId==='finance'){
