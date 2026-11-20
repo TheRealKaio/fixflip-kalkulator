@@ -85,7 +85,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      assert.equal(await chooser.locator('.deal-type-row').isVisible(),false,'Old cards hidden within same mobile menu');
      if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
     }else{
-     assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),false,'No compact selector on homepage/content/desktop: '+slug);
+     const desktop=width>=701;
+     assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),desktop,'Desktop dropdown is visible on first load; homepage portrait remains unchanged: '+slug);
+     if(desktop){
+      assert.equal(await page.locator('.app>.hero>.nic-desktop-calculator-controls').count(),1,'One shared desktop selector in image header: '+slug);
+      assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Desktop trigger visible immediately: '+slug);
+     }
      assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
     }
     if(currentId==='finance'){
@@ -142,12 +147,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
     const options=await page.locator('#nicMobileCalculatorSelect option:not([disabled])').evaluateAll(nodes=>nodes.map(node=>({key:node.value,label:node.textContent.trim()})));
     assert.deepEqual(options.map(o=>o.key),['budget','own','rent','flip','finance','settlement'],'Exactly five calculators followed by settlement');
-    assert.equal(options[5].label,'Mieter-Abrechnung','Final option has the agreed wording');
+    assert.equal(options[5].label,'Nebenkosten abrechnen','Final option has the agreed wording');
     await page.locator('#nicMobileCalculatorTrigger').click();
      await page.locator('#nicMobileCalculatorOptions [data-value="settlement"]').click();
     await page.waitForURL('**/fixflip-kalkulator/nebenkostenabrechnung/');
     assert.equal(await page.locator('html').getAttribute('data-calculator'),'settlement','Settlement content route activated');
-    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Mieter-Abrechnung','Dropdown follows internal navigation');
+    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Nebenkosten abrechnen','Dropdown follows internal navigation');
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Back from settlement restores calculator');
     assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Budgetrechner','Dropdown follows browser back');
