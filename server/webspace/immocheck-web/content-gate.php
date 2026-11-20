@@ -104,7 +104,7 @@ NIC_RAW_PATTERN;
             if ($homeAncestors === false) nic_gate_fail();
             $section = $homeAncestors->length ? 'home' : 'calculator';
             $heading = $xpath->query('.//strong', $option)?->item(0)?->textContent ?? '';
-            if ($section === 'calculator' && mb_strtolower(trim($heading), 'UTF-8') === 'sanierung') {
+            if ($section === 'calculator' && strtolower(trim($heading)) === 'sanierung') {
                 $option->parentNode?->removeChild($option);
                 continue;
             }
