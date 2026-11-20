@@ -324,6 +324,7 @@ async function persistAccessChanges(){
    });
    if(mismatch)throw Error('Server hat die Box „'+mismatch.title+'“ nicht übernommen.');
    if(JSON.stringify(actual.content)!==JSON.stringify(requested.content))throw Error('Server hat die Content-Texte nicht vollständig übernommen.');
+   if(JSON.stringify(actual.navigationVisibility)!==JSON.stringify(requested.navigationVisibility))throw Error('Server hat die Menü-Sichtbarkeit nicht vollständig gespeichert.');
     if(actual.meta.immobilienABC!==requested.meta.immobilienABC)throw Error('Der Server hat das Immobilien ABC nicht vollständig gespeichert.');
    // Do not reset checkboxes while further changes are waiting.
    if(!accessSaveRequested){
