@@ -31,9 +31,8 @@ function measure(){
  // height from the real header. Otherwise route changes cause a feedback loop.
  probe.style.setProperty('--nic-header-content-height','0px');
  probe.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
- // Portrait navigation lives inside the header. Cloned checked radios would
- // join the live group on insertion and uncheck the actual calculator choice.
- // Inert/aria-hidden do not isolate native radio groups.
+ // Isolate any cloned form controls from the live page's radio groups.
+ // Inert/aria-hidden alone do not isolate native radio groups.
  probe.querySelectorAll('[name]').forEach(el=>el.removeAttribute('name'));
  probe.removeAttribute('id');probe.setAttribute('aria-hidden','true');probe.inert=true;
  Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',display:'flow-root'});
@@ -58,8 +57,8 @@ function measure(){
   const box=geometry(hero),heroStyle=getComputedStyle(hero);
   const contentBottom=Math.max(...Array.from(hero.children).map(el=>geometry(el).bottom));
   maximum=Math.max(maximum,contentBottom-box.top+parseFloat(heroStyle.paddingBottom||0)+parseFloat(heroStyle.borderBottomWidth||0));
-  largestForLayout=Math.max(largestForLayout,maximum);
-  const value=Math.ceil(largestForLayout+1)+'px';
+  // Recompute from actual content on each route; never preserve an oversized old value.
+  const value=Math.ceil(maximum+1)+'px';
   if(hero.style.getPropertyValue('--nic-header-content-height')!==value)hero.style.setProperty('--nic-header-content-height',value);
   if(!hero.classList.contains('nic-fixed-header'))hero.classList.add('nic-fixed-header');
   lastWidth=width;
