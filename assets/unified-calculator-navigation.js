@@ -312,6 +312,8 @@ function initResponsiveCalculatorMenu(){
   const isHiddenView=document.body.matches('.nic-admin-open,.nic-legal-open');
   const compactMode=portraitQuery.matches&&!isHome&&!isHiddenView;
   const desktopMode=!portraitQuery.matches&&!isHiddenView;
+  if(key==='settlement'||calculators.some(item=>item.id===key))picker.value=key;
+  else picker.value='budget';
   if(compactMode){
    if(menu.parentElement!==header){
     if(brand)brand.after(menu);
@@ -320,11 +322,6 @@ function initResponsiveCalculatorMenu(){
    if(compact.parentElement!==menu)menu.append(compact);
    compact.classList.remove('nic-desktop-calculator-controls');
    menu.classList.add('nic-portrait-calculator-menu');
-   if(key==='settlement'||calculators.some(item=>item.id===key)){
-    if(picker.value!==key)picker.value=key;
-   }else{
-    picker.value='budget';
-   }
    renderSelection();
   }else{
    setOpen(false);
