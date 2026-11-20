@@ -76,7 +76,9 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
      assert.equal(await details.evaluate(e=>e.open),false,'Desktop read-more collapses again');
     }
    }
-   assert(Math.max(...heights)-Math.min(...heights)<=1,'Equal card heights at '+width+': '+heights.join(','));
+   // Desktop cards share a measured minimum height. Mobile portrait cards are
+   // content-sized so they do not reserve unnecessary space before the calculator.
+   if(width!==390)assert(Math.max(...heights)-Math.min(...heights)<=1,'Equal desktop card heights at '+width+': '+heights.join(','));
    for(const key of [...Object.keys(routes),'home','why','own','budget']){
     await page.evaluate(k=>NICCalculatorNavigation.select(k),key);
     await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
