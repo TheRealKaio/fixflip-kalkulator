@@ -158,6 +158,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    },screen);
    assert.equal(await page.locator('.deal-type-card .deal-type-option[data-calculator="budget"]').evaluate(el=>el.hidden),false,'Calculator budget tile independent of homepage: '+screen);
    assert.equal(await page.locator('.deal-type-card .deal-type-option[data-calculator="flip"]').evaluate(el=>el.hidden),true,'Calculator flip hidden independently: '+screen);
+   assert.equal(await page.locator('#nicMobileCalculatorOptions [data-value="flip"]').evaluate(el=>el.hidden),false,'Dropdown keeps Flip available despite hidden calculator bar tile: '+screen);
    assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Other-pages dropdown remains enabled: '+screen);
    assert.equal(await page.locator('.deal-type-card a[href*="immobilien-abc"]').count(),0,'Six-tile bar never links to Immobilien ABC: '+screen);
    // A direct admin URL must remain in the same application with the shared hero.
