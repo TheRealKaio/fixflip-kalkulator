@@ -43,20 +43,35 @@ style.textContent=`
   grid-column:1/-1!important;
  }
 }
-/* Identical top baseline and label heights for purchase-fee fields. */
+/* The purchase fee fields share one identical label row and input row.
+   Remove inherited per-field offsets rather than adjusting individual inputs. */
 #rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker){
- align-items:start!important;
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:10px!important;align-items:start!important;
 }
-#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker)>.field{
- display:flex!important;flex-direction:column!important;align-self:stretch!important;
- min-width:0!important;margin-top:0!important;padding-top:0!important;
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker) > .field{
+ display:grid!important;grid-template-rows:28px minmax(40px,auto)!important;
+ align-content:start!important;align-self:start!important;
+ width:100%!important;min-width:0!important;
+ padding:0!important;margin:0!important;
+ border:0!important;transform:none!important;
 }
-#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker)>.field>label{
- display:flex!important;align-items:center!important;min-height:24px!important;
- margin:0 0 5px!important;line-height:1.3!important;
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker) > .field > label{
+ display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;
+ box-sizing:border-box!important;height:28px!important;min-height:28px!important;
+ margin:0!important;padding:0!important;line-height:20px!important;
 }
-#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker)>.field>.input-wrap{
- margin-top:0!important;width:100%!important;
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker) > .field > .input-wrap{
+ align-self:start!important;width:100%!important;
+ margin:0!important;transform:none!important;
+}
+#rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker) :is(#rentNotary,#rentBroker){
+ box-sizing:border-box!important;margin:0!important;
+}
+@media(max-width:700px){
+ #rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker){
+  grid-template-columns:minmax(0,1fr)!important;
+ }
 }
 /* Caption centered over the actual checkbox, including its help icon. */
 #rentFinanceCard .finance-acq-option{
