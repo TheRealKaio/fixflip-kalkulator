@@ -197,6 +197,24 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await page.locator('html').getAttribute('data-calculator'),'own','Hidden Eigenheim menu still opens its calculator: '+screen);
    assert(await page.locator('.app>main.section').isVisible(),'Hidden menus do not remove calculator pages: '+screen);
 
+   // A homepage tile navigates inside the same document. It must not carry
+   // an oversized homepage hero into a mobile portrait calculator header.
+   if(width===390){
+    for(const [key,slug] of [['budget','budget'],['own','eigennutzung'],['rent','vermietung'],['flip','fix-flip'],['finance','finanzierungsrechner']]){
+     await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
+     await page.locator('#nic-home-intro a[data-calculator="'+key+'"]').click();
+     await page.waitForURL('**/fixflip-kalkulator/'+slug+'/');
+     await page.waitForFunction(k=>document.documentElement.dataset.calculator===k,key);
+     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+     const fromHome=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
+     await page.goto('http://localhost/fixflip-kalkulator/'+slug+'/',{waitUntil:'networkidle'});
+     await page.waitForFunction(k=>document.documentElement.dataset.calculator===k,key);
+     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+     const direct=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
+     assert(Math.abs(fromHome-direct)<=3,'Hero height changed after homepage button: '+key+' '+JSON.stringify({fromHome,direct}));
+     assert(fromHome<550,'Mobile portrait header enlarged into image panel after homepage button: '+key+' '+fromHome);
+    }
+   }
    // A direct admin URL must remain in the same application with the shared hero.
    await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
    await page.waitForFunction(()=>location.pathname==='/fixflip-kalkulator/'&&location.hash.startsWith('#admin'),null,{timeout:10000}).catch(async error=>{
