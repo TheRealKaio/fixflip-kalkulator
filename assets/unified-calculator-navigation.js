@@ -436,7 +436,14 @@ function initResponsiveCalculatorMenu(){
   for(const tile of menu.querySelectorAll('.deal-type-row > .deal-type-option')){
    const key=tile.dataset.calculator;
    if(tile.dataset.nicNavObsolete==='true')continue;
-   if(navigationKeys.includes(key))tile.hidden=!navigationAllowed(key,screen,'calculator');
+   if(navigationKeys.includes(key)){
+    const enabled=navigationAllowed(key,screen,'calculator');
+    tile.hidden=!enabled;
+    // Legacy calculator styles can override display:none even with [hidden].
+    // An inline important declaration guarantees that ONLY this tile disappears.
+    if(enabled)tile.style.removeProperty('display');
+    else tile.style.setProperty('display','none','important');
+   }
   }
   // Dropdown destinations are independent from the separately controlled tile bar.
   for(const item of rows)item.hidden=false;
