@@ -87,11 +87,48 @@ NIC_RAW_PATTERN;
                 $node->parentNode->removeChild($node);
             }
         }
+        // Remove menu tiles disabled in both viewport categories before HTML delivery.
+        // Viewport-specific permissions are enforced by initial critical CSS below;
+        // a server cannot reliably infer CSS viewport width on a first HTTP request.
+        $navVisibility = $settings['navigationVisibility'] ?? [];
+        $navOptions = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " deal-type-option ")]');
+        if ($navOptions === false) nic_gate_fail();
+        $menuKeys = ['budget','own','rent','flip','finance','settlement'];
+        $hideOnMobile = [];
+        $hideOnDesktop = [];
+        for ($i = $navOptions->length - 1; $i >= 0; $i--) {
+            $option = $navOptions->item($i);
+            if (!$option instanceof DOMElement) continue;
+            $key = $option->getAttribute('data-calculator');
+            if (!in_array($key, $menuKeys, true)) {
+                $href = $option->getAttribute('href') ?: $option->getAttribute('data-href');
+                $byPath = ['/budget/'=>'budget','/eigennutzung/'=>'own','/vermietung/'=>'rent','/fix-flip/'=>'flip','/finanzierungsrechner/'=>'finance','/nebenkostenabrechnung/'=>'settlement'];
+                $key = $byPath[$href] ?? '';
+            }
+            if (!in_array($key, $menuKeys, true)) continue;
+            $mobile = ($navVisibility['mobile'][$key] ?? true) !== false;
+            $desktop = ($navVisibility['desktop'][$key] ?? true) !== false;
+            if (!$mobile && !$desktop) {
+                $option->parentNode?->removeChild($option);
+            } else {
+                // Add a stable attribute even to legacy tiles without data-calculator.
+                $option->setAttribute('data-nic-nav-key', $key);
+                if (!$mobile) $hideOnMobile[$key] = true;
+                if (!$desktop) $hideOnDesktop[$key] = true;
+            }
+        }
+        $criticalNavCss = [];
+        foreach (array_keys($hideOnMobile) as $key) $criticalNavCss[] = '@media(max-width:700px){[data-nic-nav-key="' . $key . '"]{display:none!important}}';
+        foreach (array_keys($hideOnDesktop) as $key) $criticalNavCss[] = '@media(min-width:701px){[data-nic-nav-key="' . $key . '"]{display:none!important}}';
         $output = $dom->saveHTML();
         if (!is_string($output)) nic_gate_fail();
         // Restore only placeholders that survived removal of disabled nodes.
         $html = strtr($output, $rawBodies);
         $html = preg_replace('/<\?xml encoding="UTF-8">/', '', $html, 1) ?? $html;
+        if ($criticalNavCss) {
+            $html = str_replace('</head>', '<style id="nic-server-menu-visibility">' . implode('', $criticalNavCss) . '</style></head>', $html);
+        }
+
     } else {
         // Fail closed: without an HTML parser we cannot reliably remove nested content.
         nic_gate_fail();
