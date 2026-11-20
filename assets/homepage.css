@@ -404,3 +404,7 @@ body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
 #nic-home-intro .nic-home-options>.deal-type-option:not([hidden]){
  box-sizing:border-box!important;min-width:0!important;width:100%!important;max-width:none!important;flex:1 1 auto!important
 }
+
+/* Empty or administratively disabled six-button shell must collapse completely. */
+body .app>.hero>.deal-type-card.nic-portrait-calculator-menu[hidden],
+body .app>main.section>.deal-type-card[hidden]{display:none!important}
