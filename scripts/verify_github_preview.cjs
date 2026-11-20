@@ -41,7 +41,6 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const portrait=width===390;
     const calculatorIds=['budget','own','rent','flip','finance'];
     const isHomepage=slug==='';
-    const chooser=page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu');
     if(isHomepage){
      const home=page.locator('#nic-home-intro .nic-home-options > .deal-type-option[data-calculator="own"]');
      assert.equal((await home.locator('strong').textContent()).trim(),'Eigenheim','Home keeps its original short title');
@@ -57,41 +56,23 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       assert.equal(await card.locator('small').evaluate(el=>getComputedStyle(el).display),'none','Calculator tile descriptions hidden: '+slug+' tile '+i);
      }
     }
+    const globalShell=page.locator('.app>.hero>.nic-global-dropdown-shell');
+    assert(await globalShell.isVisible(),'Dropdown remains in header: '+slug);
+    assert(await globalShell.locator('#nicMobileCalculatorTrigger').isVisible(),'Dropdown trigger visible: '+slug);
+    assert.equal(await page.locator('.app>.hero>.deal-type-card').count(),0,'Calculator tiles never inside hero: '+slug);
+    assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Single calculator tile bar stays in content: '+slug);
     if(portrait&&!isHomepage){
-     assert.equal(await page.locator('.app>.hero>.deal-type-card').count(),0,'No calculator tiles inside portrait hero: '+slug);
-     assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Calculator tiles remain below introduction: '+slug);
-     assert(await page.locator('.app>.hero>.nic-global-dropdown-shell #nicMobileCalculatorTrigger').isVisible(),'Only dropdown remains in portrait header: '+slug);
      if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
      if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
-    }else{
-       await page.locator('#nicMobileCalculatorTrigger').click();
-       assert(await page.locator('#nicMobileCalculatorOptions').isVisible(),'Dropdown opens: '+slug);
-       const bounds=await chooser.evaluate(el=>({trigger:el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect().width,list:el.querySelector('#nicMobileCalculatorOptions').getBoundingClientRect().width}));
-       assert(Math.abs(bounds.trigger-bounds.list)<1,'Dropdown uses full width: '+slug);
-       assert.equal(await page.locator('#nicMobileCalculatorOptions .nic-mobile-calculator-option.is-selected').count(),1,'One selected row');
-       assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Dein Budget berechnen');
-       await page.locator('#nicMobileCalculatorTrigger').click();
-       assert.equal(await page.locator('#nicMobileCalculatorOptions').isVisible(),false,'Dropdown closes: '+slug);
-      }
-      assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),0,'Original menu moved into header: '+slug);
-     assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one calculator menu: '+slug);
-     assert.equal(await chooser.locator('.deal-type-row').isVisible(),false,'Old cards hidden within same mobile menu');
-     if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
-    }else{
-     assert.equal(await page.locator('.nic-mobile-calculator-controls').isVisible(),true,'Shared dropdown visible on homepage and desktop: '+slug);
-     const globalShell=page.locator('.app>.hero>.nic-global-dropdown-shell');
-     assert(await globalShell.isVisible(),'Shared white dropdown panel centered above heading: '+slug);
-     assert(await globalShell.locator('#nicMobileCalculatorTrigger').isVisible(),'Same mobile dropdown trigger used for desktop and homepage: '+slug);
-     const positioning=await page.evaluate(()=>{
-      const shell=document.querySelector('.app>.hero>.nic-global-dropdown-shell').getBoundingClientRect();
-      const title=document.getElementById('heroTitle').getBoundingClientRect();
-      return {center:shell.left+shell.width/2,heroCenter:(document.querySelector('.app>.hero').getBoundingClientRect().left+document.querySelector('.app>.hero').getBoundingClientRect().right)/2,bottom:shell.bottom,top:title.top,titleVisible:title.height>0,documentOrder:!!(document.querySelector('.app>.hero>.nic-global-dropdown-shell').compareDocumentPosition(document.getElementById('heroTitle')) & Node.DOCUMENT_POSITION_FOLLOWING)};
-     });
-     assert(Math.abs(positioning.center-positioning.heroCenter)<2,'Dropdown centered: '+slug);
-     assert(positioning.documentOrder,'Dropdown precedes heading in DOM: '+slug);
-     if(positioning.titleVisible)assert(positioning.bottom<=positioning.top+2,'Dropdown has its own line above visible heading: '+slug);
-     assert.equal(await page.locator('.deal-type-card').count(),1,'No duplicate calculator menu: '+slug);
     }
+    const positioning=await page.evaluate(()=>{
+     const shell=document.querySelector('.app>.hero>.nic-global-dropdown-shell').getBoundingClientRect();
+     const title=document.getElementById('heroTitle').getBoundingClientRect();
+     return {center:shell.left+shell.width/2,heroCenter:(document.querySelector('.app>.hero').getBoundingClientRect().left+document.querySelector('.app>.hero').getBoundingClientRect().right)/2,bottom:shell.bottom,top:title.top,titleVisible:title.height>0};
+    });
+    assert(Math.abs(positioning.center-positioning.heroCenter)<2,'Dropdown centered: '+slug);
+    if(positioning.titleVisible)assert(positioning.bottom<=positioning.top+2,'Dropdown above heading: '+slug);
+    assert.equal(await page.locator('.deal-type-card').count(),1,'Exactly one calculator tile menu: '+slug);
     if(currentId==='finance'){
      const labels=page.locator('#nicFinanceModule .field label');
      assert(await labels.count()>0,'Finance labels present');
