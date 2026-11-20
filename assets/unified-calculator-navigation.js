@@ -199,13 +199,16 @@ function initResponsiveCalculatorMenu(){
  for(const oldLink of menu.querySelectorAll('.deal-type-row a[href*="immobilien-abc"],.deal-type-row [data-href*="immobilien-abc"]'))oldLink.remove();
  // Settlement is an existing content route, not a sixth calculation engine.
  // Avoid resurrecting a tile intentionally switched off on both devices.
+ function ensureSettlementTile(){
  if(row&&!row.querySelector('[data-calculator="settlement"]')&&
     (navigationAllowed('settlement','mobile','calculator')||navigationAllowed('settlement','desktop','calculator'))){
   const tile=document.createElement('a');tile.className='deal-type-option';
-  tile.dataset.calculator='settlement';tile.href='/nebenkostenabrechnung/';
+  tile.dataset.calculator='settlement';tile.dataset.href='/nebenkostenabrechnung/';tile.href='/nebenkostenabrechnung/';
   tile.innerHTML='<svg class="nic-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span><strong>Nebenkosten abrechnen</strong><small>Betriebskosten erfassen und abrechnen</small></span>';
   row.append(tile);
  }
+ }
+ ensureSettlementTile();
  // Do not let legacy Immobilien-ABC or Sanierung entries survive in the six-tile calculator bar.
  const canonicalTileRoutes={budget:'/budget/',own:'/eigennutzung/',rent:'/vermietung/',flip:'/fix-flip/',finance:'/finanzierungsrechner/',settlement:'/nebenkostenabrechnung/'};
  const keyByPath=Object.fromEntries(Object.entries(canonicalTileRoutes).map(([key,url])=>[url,key]));
@@ -231,7 +234,7 @@ function initResponsiveCalculatorMenu(){
    if(heading?.textContent.trim()==='Budget')heading.textContent='Budgetrechner';
   }
  }
- if(menu.querySelector('#nicMobileCalculatorSelect'))return;
+ if(document.getElementById('nicMobileCalculatorSelect'))return;
  calculatorMenuAnchor=document.createComment('Original calculator menu position');
  menu.after(calculatorMenuAnchor);
  const label=document.createElement('label');
@@ -392,6 +395,7 @@ function initResponsiveCalculatorMenu(){
   }else select(picker.value,true);
  });
  function refreshNavigationVisibility(){
+  ensureSettlementTile();
   const screen=navigationMobileQuery.matches?'mobile':'desktop';
   const isHome=document.body.classList.contains('nic-home-active')||location.pathname==='/'||location.pathname==='/index.html'||location.pathname==='/fixflip-kalkulator/';
   const dropdownSection=isHome?'dropdownHome':'dropdownOther';
