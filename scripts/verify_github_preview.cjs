@@ -206,6 +206,31 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert(await page.locator('.app > .hero').isVisible(),'Admin shares the main website header');
    assert.equal(await page.locator('iframe').count(),0,'Admin is native, not a separate iframe');
    assert.equal((await page.locator('.nic-admin-back').textContent()).trim(),'← Zurück','Admin back button retains its configured label despite CSS uppercase');
+   // End-to-end: change the REAL admin checkbox, let its save finish, then
+   // reload another calculator URL. Previous tests changed settings directly in JS
+   // and missed the admin event/save path altogether.
+   await page.locator('#tab-layout').click();
+   const visibilityBox=page.locator('#nic-navigation-calculator-'+screen+'-flip');
+   assert.equal(await visibilityBox.isChecked(),true,'Calculator flip initially enabled in Admin: '+screen);
+   await visibilityBox.uncheck();
+   await page.waitForFunction(s=>window.NICSettings.current.navigationVisibility.calculator[s].flip===false,screen);
+   await page.locator('#saveState').getByText('Lokal gespeichert').waitFor({timeout:20000});
+   await page.goto('http://localhost/fixflip-kalkulator/budget/',{waitUntil:'networkidle'});
+   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady);
+   const bar=page.locator('.deal-type-card .deal-type-row');
+   assert.equal(await bar.locator('[data-calculator="flip"]').evaluate(e=>e.hidden),true,'Admin disabled only Flip after reload: '+screen);
+   for(const key of ['budget','own','rent','finance','settlement']){
+    assert.equal(await bar.locator('[data-calculator="'+key+'"]').evaluate(e=>e.hidden),false,'Admin retained '+key+' after reload: '+screen);
+   }
+   assert.equal(await page.locator('.deal-type-card').evaluate(e=>e.hidden),false,'One disabled checkbox cannot hide parent bar: '+screen);
+   assert.equal(await page.locator('#nicMobileCalculatorSelect option[value="flip"]').isEnabled(),true,'Dropdown independent from tile checkbox: '+screen);
+   await page.goto('http://localhost/fixflip-kalkulator/admin.html',{waitUntil:'networkidle'});
+   await page.locator('#nicAdminContent[data-ready="true"]').waitFor({timeout:20000});
+   await page.locator('#tab-layout').click();
+   assert.equal(await page.locator('#nic-navigation-calculator-'+screen+'-flip').isChecked(),false,'Checkbox remains disabled after reload: '+screen);
+   await page.locator('#nic-navigation-calculator-'+screen+'-flip').check();
+   await page.waitForFunction(s=>window.NICSettings.current.navigationVisibility.calculator[s].flip===true,screen);
+   await page.locator('#saveState').getByText('Lokal gespeichert').waitFor({timeout:20000});
    await page.locator('.nic-admin-back').click();
    await page.waitForURL('http://localhost/fixflip-kalkulator/');
    await page.locator('.app > main.section').waitFor({state:'visible',timeout:15000});
