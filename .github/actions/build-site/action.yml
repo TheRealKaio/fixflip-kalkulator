@@ -3,6 +3,12 @@ description: Complete shared production build and existing release checks
 runs:
   using: composite
   steps:
+    - name: Verify responsive navigation visibility
+      shell: bash
+      run: |
+        node scripts/test_navigation_visibility.cjs
+        php -l server/webspace/immocheck-web/content-gate.php
+        php -l server/webspace/immocheck-private/app.php
     - name: Build static site
       shell: bash
       run: |
