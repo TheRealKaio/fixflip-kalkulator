@@ -34,8 +34,9 @@ function updateHomepageNavigationVisibility(){
   const key=tile.dataset.calculator||(tile.hasAttribute('data-home-settlement')?'settlement':'');
   if(navigationKeys.includes(key))tile.hidden=!navigationAllowed(key,screen,'home');
  }
- const settlement=intro.querySelector('.nic-home-settlement');
- if(settlement)settlement.hidden=!intro.querySelector('[data-home-settlement]:not([hidden])');
+ for(const group of intro.querySelectorAll('.nic-home-group')){
+  group.hidden=!Array.from(group.querySelectorAll('.nic-home-options > .deal-type-option')).some(tile=>!tile.hidden);
+ }
 }
 function applyHeader(key){
  const name=key==='home'||key==='website'?'welcome':key;
@@ -366,6 +367,7 @@ function initResponsiveCalculatorMenu(){
   }else{
    setOpen(false);
    menu.classList.remove('nic-portrait-calculator-menu');
+   menu.hidden=false;
    if(calculatorMenuAnchor?.parentNode&&menu.previousSibling!==calculatorMenuAnchor)calculatorMenuAnchor.after(menu);
    if(compact.parentElement!==dropdownShell)dropdownShell.append(compact);
    compact.classList.add('nic-desktop-calculator-controls');
@@ -398,6 +400,7 @@ function initResponsiveCalculatorMenu(){
   const showDropdown=navigationAllowed('dropdown',screen,dropdownSection);
   compact.hidden=!showDropdown;
   dropdownShell.hidden=menu.classList.contains('nic-portrait-calculator-menu')||!showDropdown;
+  if(menu.classList.contains('nic-portrait-calculator-menu'))menu.hidden=!showDropdown;
   if(!navigationAllowed(picker.value,screen,'calculator')){
    const first=Array.from(picker.options).find(option=>!option.disabled);
    if(first)picker.value=first.value;
