@@ -11,7 +11,7 @@ const parseNumber=value=>{
 const value=id=>parseNumber(document.getElementById(id)?.value);
 const euroText=id=>parseNumber(document.getElementById(id)?.textContent);
 const byId=id=>document.getElementById(id);
-const format=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(value);
+const format=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(value);
 const activeMode=()=>document.documentElement.dataset.calculator||document.body.dataset.calculator||'';
 const controllers=new Map();
 const style=document.createElement('style');
@@ -63,7 +63,7 @@ function install(id,equityId){
  wrapper.className='nic-finance-percent-control';
  const slider=document.createElement('input');
  slider.type='range';slider.className='nic-finance-percent-range';
- slider.min='0';slider.step='1';slider.max='100';slider.setAttribute('aria-label','Finanzierungsanteil in Prozent');
+ slider.min='0';slider.step='0.01';slider.max='120';slider.setAttribute('aria-label','Finanzierungsanteil in Prozent');
  const line=document.createElement('div');line.className='nic-finance-percent-labels';
  const low=document.createElement('span');low.textContent='0 %';
  const out=document.createElement('output');out.setAttribute('aria-live','off');
@@ -87,30 +87,39 @@ function install(id,equityId){
   high.textContent=format(Number(slider.max))+' %';
   slider.setAttribute('aria-valuetext',out.textContent);
  };
+ const syncAutoEquity=()=>{
+  if(manual)return;
+  const c=costs(id);
+  if(!(c.total>=0&&c.base>0))return;
+  const share=Math.max(0,parseNumber(original.value));
+  const required=Math.round(Math.max(0,c.total-c.base*share/100)*100)/100;
+  if(Math.abs(parseNumber(equity.value)-required)<0.005)return;
+  updating=true;
+  try{
+   equity.value=String(required);
+   equity.dispatchEvent(new Event('input',{bubbles:true}));
+  }finally{updating=false;}
+ };
  const changedBySlider=()=>{
-  const next=Number(slider.value);
-  original.value=next.toFixed(2);
-  // The native input continues to drive all historical calculation listeners.
-  if(!manual){
-   const c=costs(id);
-   if(c.total>=0&&c.base>0){
-    const required=Math.max(0,c.total-c.base*next/100);
-    updating=true;
-    equity.value=Math.round(required*100)/100;
-    equity.dispatchEvent(new Event('input',{bubbles:true}));
-    updating=false;
-   }
-  }
+  original.value=Number(slider.value).toFixed(2);
+  // Reuse the native field listeners; do not create a second loan calculation.
+  syncAutoEquity();
   original.dispatchEvent(new Event('input',{bubbles:true}));
   refresh();
  };
  slider.addEventListener('input',changedBySlider);
  slider.addEventListener('change',()=>original.dispatchEvent(new Event('change',{bubbles:true})));
  original.addEventListener('input',refresh);
- const observed=['purchase','financeAcquisition','acquisitionCostsTotal','rentPurchase','rentRenovation','rentNotary','rentBroker','rentState','rentFinanceAcquisition'];
+ const observed=['purchase','financeAcquisition','notary','buyBroker','state','buffer','rentPurchase','rentRenovation','rentNotary','rentBroker','rentState','rentFinanceAcquisition'];
  for(const sourceId of observed){
-  byId(sourceId)?.addEventListener('change',refresh);
-  byId(sourceId)?.addEventListener('input',refresh);
+  const onChange=()=>queueMicrotask(()=>{refresh();syncAutoEquity();});
+  byId(sourceId)?.addEventListener('change',onChange);
+  byId(sourceId)?.addEventListener('input',onChange);
+ }
+ const acquisitionOutput=id==='rentLtv'?'rentAcquisitionDisplay':'acquisitionCostsTotal';
+ if(byId(acquisitionOutput)){
+  const watcher=new MutationObserver(()=>queueMicrotask(()=>{refresh();syncAutoEquity();}));
+  watcher.observe(byId(acquisitionOutput),{subtree:true,childList:true,characterData:true});
  }
  controllers.set(id,{refresh});
  refresh();
