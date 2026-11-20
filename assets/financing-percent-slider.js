@@ -14,6 +14,19 @@ const byId=id=>document.getElementById(id);
 const format=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:1}).format(value);
 const activeMode=()=>document.documentElement.dataset.calculator||document.body.dataset.calculator||'';
 const controllers=new Map();
+const style=document.createElement('style');
+style.id='nic-financing-percent-slider-style';
+style.textContent=`
+/* Full-width financing control, identical on phone and desktop. */
+.nic-finance-percent-field{grid-column:1 / -1!important;width:100%;min-width:0}
+.nic-finance-percent-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;border:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+.nic-finance-percent-control{display:block;width:100%;min-width:0;padding:4px 0 7px}
+.nic-finance-percent-range{display:block;width:100%!important;min-width:0;height:36px;accent-color:var(--nic-accent,#2463e6);cursor:pointer;touch-action:pan-y}
+.nic-finance-percent-labels{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:var(--nic-subtext-font-size,14px);font-variant-numeric:tabular-nums}
+.nic-finance-percent-labels output{font-weight:800;color:var(--ink,#172033)}
+@media(max-width:700px){.nic-finance-percent-control{grid-column:1 / -1!important}.nic-finance-percent-labels{flex-wrap:wrap}}
+`;
+(document.head||document.documentElement).appendChild(style);
 function costs(id){
  if(id==='rentLtv' && typeof window.rentalCalculation==='function'){
   const m=window.rentalCalculation();
@@ -52,6 +65,7 @@ function install(id,equityId){
  field.classList.add('nic-finance-percent-field');
  let manual=Boolean(parseNumber(equity.value)>0);
  let updating=false;
+ equity.addEventListener('beforeinput',()=>{if(!updating)manual=true;},true);
  equity.addEventListener('input',event=>{if(!updating&&event.isTrusted)manual=true;},true);
  const refresh=()=>{
   const share=Math.max(0,parseNumber(original.value));
