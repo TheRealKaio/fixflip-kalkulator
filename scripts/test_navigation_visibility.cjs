@@ -71,7 +71,7 @@ assert(nav.includes("if(tile.querySelector('input')){tile.hidden=true"),'Legacy 
 assert(nav.includes("heading.textContent='Eigenheim'"),'Prerendered calculator bar must show Eigenheim');
 assert(admin.includes("own:'Eigenheim'"),'Admin navigation name must match Eigenheim');
 const registry=JSON.parse(read('assets/calculators.json'));
-assert.equal(registry.calculators.find(item=>item.id==='own').label,'Eigenheim','Dropdown must say Eigenheim');
+assert.equal(registry.calculators.find(item=>item.id==='own').label,'Eigenheim','Calculator registry retains its short internal label');
 assert(read('assets/homepage.html').includes('<strong>Eigenheim</strong>'),'Homepage tile must say Eigenheim');
 assert(read('scripts/build_unified_navigation.py').includes(">Eigenheim<"),'Static calculator tiles must use Eigenheim on first load');
 const titleScript=nav.match(/const calculatorTileTitles=\{([\s\S]*?)\n \};/);
@@ -79,6 +79,24 @@ assert(titleScript,'Separate two-line calculator title map is required');
 for(const key of ['budget','own','rent','flip','finance','settlement']){
  assert(new RegExp(key+':\\[').test(titleScript[1]),'Missing compact label: '+key);
 }
+const desiredLabels={
+ budget:'Dein Budget berechnen',
+ own:'Eigenheim berechnen',
+ rent:'Vermietung als Kapitalanlage',
+ flip:'Fix und Flip Projekt',
+ finance:'Finanzierung & Restschuld',
+ settlement:'Nebenkosten abrechnen'
+};
+for(const [key,label] of Object.entries(desiredLabels)){
+ const match=titleScript[1].match(new RegExp('(?:^|\\n)\\s*'+key+':\\[([^\\]]+)\\]'));
+ assert(match,'Expected title segments for '+key);
+ const actual=Array.from(match[1].matchAll(/'([^']+)'/g),m=>m[1]).join(' ');
+ assert.equal(actual,label,'Visible navigation title for '+key);
+}
+assert(nav.includes("option.textContent=calculatorTileTitles[item.id]?.join(' ')||item.label;"),'Dropdown options must inherit calculator button titles');
+assert(nav.includes("settlementOption.textContent=calculatorTileTitles.settlement.join(' ');"),'Settlement dropdown option must inherit button title');
+assert(nav.includes("name.textContent=option.textContent;"),'Visible custom dropdown rows must mirror option labels');
+assert(nav.includes("picker.selectedOptions[0]?.textContent"),'Selected dropdown caption must mirror option labels');
 assert(nav.includes('formatCalculatorTiles();'),'Calculator titles must be formatted at initialisation and refresh');
 assert(css.includes('Calculator pages only: compact equal-height six-tile bar'),'Compact card CSS must be scoped');
 assert(css.includes('.deal-type-card > .deal-type-row > .deal-type-option small'),'Calculator descriptions must be hidden');
