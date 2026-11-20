@@ -847,6 +847,7 @@ runs:
         print(f'Mobile haptics loaded on {len(pages)} HTML pages')
         PY
         python scripts/fingerprint_assets.py _site
+        NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_financing_percent_slider.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_result_headings.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_tile_typography.cjs
