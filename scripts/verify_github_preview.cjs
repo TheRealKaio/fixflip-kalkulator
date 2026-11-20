@@ -91,7 +91,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        const bounds=await chooser.evaluate(el=>({trigger:el.querySelector('#nicMobileCalculatorTrigger').getBoundingClientRect().width,list:el.querySelector('#nicMobileCalculatorOptions').getBoundingClientRect().width}));
        assert(Math.abs(bounds.trigger-bounds.list)<1,'Dropdown uses full width: '+slug);
        assert.equal(await page.locator('#nicMobileCalculatorOptions .nic-mobile-calculator-option.is-selected').count(),1,'One selected row');
-       assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Budgetrechner');
+       assert.equal((await page.locator('#nicMobileCalculatorOptions [data-value="budget"] .nic-mobile-calculator-option-text').textContent()).trim(),'Dein Budget berechnen');
        await page.locator('#nicMobileCalculatorTrigger').click();
        assert.equal(await page.locator('#nicMobileCalculatorOptions').isVisible(),false,'Dropdown closes: '+slug);
       }
@@ -173,10 +173,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    },screen);
    assert.equal(await page.locator('.deal-type-card .deal-type-option[data-calculator="budget"]').evaluate(el=>el.hidden),false,'Calculator budget tile independent of homepage: '+screen);
    assert.equal(await page.locator('.deal-type-card .deal-type-option[data-calculator="flip"]').evaluate(el=>el.hidden),true,'Calculator flip hidden independently: '+screen);
+   if(screen==='desktop'){
+    assert(await page.locator('.app>main.section>.deal-type-card').isVisible(),'Six-button bar stays visible with one hidden entry: '+screen);
+    assert.equal(await page.locator('.deal-type-card .deal-type-row > .deal-type-option:not([hidden])').count(),5,'Other five calculator buttons remain after one is disabled: '+screen);
+   }
    assert.equal(await page.locator('#nicMobileCalculatorOptions [data-value="flip"]').evaluate(el=>el.hidden),false,'Dropdown keeps Flip available despite hidden calculator bar tile: '+screen);
    assert(await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Other-pages dropdown remains enabled: '+screen);
    assert.equal(await page.locator('.deal-type-card a[href*="immobilien-abc"]').count(),0,'Six-tile bar never links to Immobilien ABC: '+screen);
-   assert.equal(await page.locator('#nicMobileCalculatorSelect option[value="own"]').textContent(),'Eigenheim','Dropdown own option renamed: '+screen);
+   assert.equal(await page.locator('#nicMobileCalculatorSelect option[value="own"]').textContent(),'Eigenheim berechnen','Dropdown own option renamed: '+screen);
    // Hiding all menu buttons must not disable any calculator or its underlying
    // radio controls. The calculator route and forms remain usable from a direct URL.
    const beforeControls=await page.locator('.deal-type-card input').count();
@@ -226,7 +230,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Nebenkosten abrechnen','Dropdown follows internal navigation');
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Back from settlement restores calculator');
-    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Budgetrechner','Dropdown follows browser back');
+    assert.equal((await page.locator('.nic-mobile-calculator-current-text').textContent()).trim(),'Dein Budget berechnen','Dropdown follows browser back');
     // Standalone information pages do not contain calculator forms; their
     // selector must open the complete target document, not switch an empty shell.
     await page.goto('http://localhost/fixflip-kalkulator/ueber-uns/',{waitUntil:'networkidle'});
