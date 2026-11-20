@@ -355,9 +355,8 @@ function initResponsiveCalculatorMenu(){
   for(const item of rows){item.hidden=!navigationAllowed(item.dataset.value,screen);}
   for(const option of picker.options){option.disabled=!navigationAllowed(option.value,screen);}
   const showDropdown=navigationAllowed('dropdown',screen);
-  if(compactMode)compact.hidden=!showDropdown;
-  else if(desktopMode)compact.hidden=!showDropdown;
-  else compact.hidden=true;
+  const controlsInUse=(compact.parentElement===header&&!document.body.matches('.nic-admin-open,.nic-legal-open'))||(menu.classList.contains('nic-portrait-calculator-menu'));
+  compact.hidden=!showDropdown||!controlsInUse;
   // A hidden selected item must not create a phantom navigation target.
   if(!navigationAllowed(picker.value,screen)){
    const first=Array.from(picker.options).find(option=>!option.disabled);
