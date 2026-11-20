@@ -287,13 +287,13 @@ function initResponsiveCalculatorMenu(){
  for(const item of calculators){
   const option=document.createElement('option');
   option.value=item.id;
-  option.textContent=item.id==='finance'?'Finanzierung & Restschuld':item.label;
+  option.textContent=calculatorTileTitles[item.id]?.join(' ')||item.label;
   picker.append(option);
  }
  // The Mieter-Abrechnung is an existing content route, not a sixth calculator.
  const settlementOption=document.createElement('option');
  settlementOption.value='settlement';
- settlementOption.textContent='Nebenkosten abrechnen';
+ settlementOption.textContent=calculatorTileTitles.settlement.join(' ');
  picker.append(settlementOption);
  // 'Budget' is the default visible entry on information pages.
  const compact=document.createElement('div');
