@@ -120,6 +120,14 @@
   const legacySettlementDescription="<p>Erstelle die jährliche Mieterabrechnung für deine Mietwohnung Schritt für Schritt. Erfasse Kosten, ordne sie verständlich zu und behalte die Abrechnung für deine Mieter im Blick.</p><p>ImmoCheck konzentriert sich auf das, was private Vermieter wirklich brauchen: eine klare Abrechnung ohne den Ballast einer umfassenden Hausverwaltungssoftware.</p>";
   const fonts={system:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',arial:'Arial,Helvetica,sans-serif',verdana:'Verdana,Geneva,sans-serif',georgia:'Georgia,"Times New Roman",serif',trebuchet:'"Trebuchet MS",Arial,sans-serif'};
   const homeFields={"homeTitle": {"label": "Startseite · Titel im Headerbild", "max": 240, "default": "Deine Immobilie. Dein Plan. Dein Überblick."}, "homeDescription": {"label": "Startseite · Kurzbeschreibung im Headerbild", "max": 500, "default": "Plane deinen Immobilienkauf, prüfe deine Finanzierung und vergleiche deine Möglichkeiten. Oder bereite die Mieterabrechnung vor – wähle einfach das passende Werkzeug für dein Vorhaben."}, "settlementButtonTitle": {"label": "Mieterabrechnung · Button-Titel", "max": 240, "default": "Nebenkosten abrechnen"}, "settlementButtonText": {"label": "Mieterabrechnung · Button-Subtext", "max": 500, "default": "Betriebskosten erfassen und versenden"}, "settlementButtonUrl": {"label": "Mieterabrechnung · Button-Verknüpfung", "max": 2000, "default": "/nebenkostenabrechnung/"}};
+  // Two independent navigation audiences; these preferences do not block routes.
+  const navigationItems=['budget','own','rent','flip','finance','settlement','dropdown'];
+  function navigationVisibility(raw){
+    const result={mobile:{},desktop:{}};
+    for(const screen of ['mobile','desktop'])for(const key of navigationItems)
+      result[screen][key]=raw?.[screen]?.[key]!==false;
+    return result;
+  }
   const layoutDefaults={font:'system',bodySize:16,subtextSize:14,hintSize:12,h1:30,h2:18,h3:22,h4:16,cornerRadius:22,expandBackground:'#FDE68A',expandBorder:'#FDE68A',expandGlyphSize:19.2,expandPadding:0,footerExpandBackground:'#EDF3FF',footerExpandBorder:'#C7D8FF',footerExpandInk:'#2563EB',footerExpandGlyphSize:16,footerExpandPadding:0,background:'#F5F7FB',text:'#172033',buttonBackground:'#0F172A',buttonText:'AUTO',greenBackground:'#075C55',greenText:'AUTO',redBackground:'#B42318',redText:'AUTO',highlightBackground:'#FDE68A',highlightGoodBackground:'#F0FDF4',highlightWarningBackground:'#FECACA',outerBackground:'#F6F1E9'};
   let published=null,current=null;
   let settingsReady=false,initPending=null,settingsEpoch=0;
@@ -130,6 +138,7 @@
   function normalize(raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1)throw new Error('Ungültiges Konfigurationsformat (Version 1 erforderlich).');
     const s={version:1,seoIndexing:{},company:{},layout:{},social:{},content:{},favicon:validFavicon(raw.favicon),websiteLogo:validFavicon(raw.websiteLogo),appleTouchIcon:typeof raw.appleTouchIcon==='string' && raw.appleTouchIcon.length<=400000 && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(raw.appleTouchIcon)?raw.appleTouchIcon:'',meta:{immobilienABC:typeof raw.meta?.immobilienABC==='string'&&raw.meta.immobilienABC.length<=200000?raw.meta.immobilienABC:''},reporting:{},sharing:{text:text(raw.sharing?.text??'Immobilien verstehen. Sicherer entscheiden.',160),image:validFavicon(raw.sharing?.image)}};
+    s.navigationVisibility=navigationVisibility(raw.navigationVisibility);
     for(const [key,defaultIndex] of Object.entries(seoRouteDefaults))s.seoIndexing[key]=key==='admin'||key==='login'?false:(typeof raw.seoIndexing?.[key]==='boolean'?raw.seoIndexing[key]:defaultIndex);
     for(const [key,defaults] of Object.entries(contentPageDefaults)){const value=(raw.content||raw.meta?.content)?.[key]||{};s.content[key]={title:text(value.title,240)||defaults.title,description:contentText(value.description)||defaults.description,seoTitle:text(value.seoTitle,200)||defaults.seoTitle,metaDescription:text(value.metaDescription,500)||defaults.metaDescription,headerTitle:text(value.headerTitle??published?.content?.[key]?.headerTitle??defaults.headerTitle??'',70),headerDescription:text(value.headerDescription??published?.content?.[key]?.headerDescription??defaults.headerDescription??'',90),noindex:key==='login'||!s.seoIndexing[key]};if(key==='settlement'){s.content[key].boxTitle=text(value.boxTitle,240)||defaults.boxTitle;if(value.description&&!value.boxTitle)s.content[key].description=value.description===legacySettlementDescription?defaults.description:value.description+defaults.description.replace(/^<p>[\s\S]*?<\/p>/,'');}}
     companyFields.forEach(([k])=>s.company[k]=text(raw.company?.[k]));
@@ -290,6 +299,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
     window.NICContent?.refresh();
     window.NICHeader?.refresh();
     window.NICExplanations?.refresh();
+    window.NICNavigationVisibility?.refresh();
   }
   if(typeof window.addEventListener==='function')window.addEventListener('nic-auth-changed',()=>{if(current)apply(current);});
   // Shared five-tile active state for all calculator routes.
@@ -344,7 +354,7 @@ body.nic-admin .admin-tabs button{font-size:${l.bodySize}px!important}
   function imprint(s){const c=s.company,lines=[];
     for(const [keys,label] of imprintGroups){const values=label==='Anschrift'?[c.street,[c.postalCode,c.city].filter(Boolean).join(' '),c.country]:keys.map(k=>c[k]);const value=values.filter(Boolean).join('\n');if(value)lines.push({label,value});}return lines;
   }
-  window.NICSettings={ROOT,KEY,seoRouteDefaults,homeFields,contentPageDefaults,legalLabels,legalSource,legalIssues,legalFragment,contentFragment,CONTENT_HTML_LIMIT,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,useFallback,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
+  window.NICSettings={ROOT,KEY,navigationItems,navigationVisibility,seoRouteDefaults,homeFields,contentPageDefaults,legalLabels,legalSource,legalIssues,legalFragment,contentFragment,CONTENT_HTML_LIMIT,companyFields,imageAltDefaults,portals,pages,fonts,layoutDefaults,normalize,httpUrl,websiteUrl,validFavicon,applyLogo,apply,applyMeta,pageMeta,save,saveGlobal,discard,imprint,init,useFallback,syncCalculatorMenu,get ready(){return settingsReady;},get current(){return current;},get published(){return published;},get isLocal(){return !!readLocal();}};
   // Apply the versioned public configuration before the first rendered frame.
   const bootstrap=document.getElementById?.('nic-published-settings');
   if(bootstrap){try{published=normalize(JSON.parse(bootstrap.textContent));apply(readLocal()||published);}catch(err){console.warn('Initiale Einstellungen:',err.message);}}
