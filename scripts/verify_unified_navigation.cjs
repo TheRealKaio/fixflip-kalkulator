@@ -96,6 +96,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   await page.waitForFunction(()=>window.NICCalculators?.active==='budget'&&document.body.dataset.calculator==='budget');
+  assert.equal(await page.locator('.deal-type-card .nic-abc-term').count(),0,'Immobilien ABC must not turn navigation terms into help buttons');
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
   if(width<=700){
    try{await page.locator('#nicMobileCalculatorSelect').waitFor({state:'visible',timeout:10000});}
