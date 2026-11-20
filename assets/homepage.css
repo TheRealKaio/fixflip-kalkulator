@@ -315,3 +315,9 @@ html body:not(.nic-admin) .app main.section .nic-property-aligned-field>:is(.inp
  .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-current{display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px}
  .app>.hero>.nic-desktop-calculator-controls .nic-mobile-calculator-options[hidden]{display:none!important}
 }
+
+/* Must outrank desktop/portrait !important display rules when an admin box is off. */
+body .app>.hero>.nic-desktop-calculator-controls[hidden],
+body .nic-portrait-calculator-menu .nic-mobile-calculator-controls[hidden],
+body .app>.hero .nic-mobile-calculator-options[hidden],
+body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
