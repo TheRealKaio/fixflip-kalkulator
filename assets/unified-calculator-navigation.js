@@ -263,7 +263,7 @@ function initResponsiveCalculatorMenu(){
   // Rename only visible navigation captions, never calculator routes or page titles.
   if(tile.dataset.calculator==='own'||tile.dataset.href==='/eigennutzung/'){
    const heading=tile.querySelector('strong');
-   if(heading)heading.textContent='Eigenheim';
+   if(heading&&heading.dataset.nicTwoLine!=='true')heading.textContent='Eigenheim';
   }
  }
  formatCalculatorTiles();
