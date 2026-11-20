@@ -42,6 +42,21 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const calculatorIds=['budget','own','rent','flip','finance'];
     const isHomepage=slug==='';
     const chooser=page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu');
+    if(isHomepage){
+     const home=page.locator('#nic-home-intro .nic-home-options > .deal-type-option[data-calculator="own"]');
+     assert.equal((await home.locator('strong').textContent()).trim(),'Eigenheim','Home keeps its original short title');
+     assert.equal((await home.locator('small').textContent()).trim(),'Immobilie kaufen und selbst nutzen','Home keeps its original description');
+     assert.equal(await home.locator('.nic-calculator-title-line').count(),0,'Home must not inherit two-line calculator titles');
+    }else if(calculatorIds.includes(currentId)){
+     const cards=page.locator('.deal-type-card .deal-type-row > .deal-type-option:not([hidden])');
+     const count=await cards.count();
+     assert(count>=1,'Calculator tile navigation remains in DOM');
+     for(let i=0;i<count;i++){
+      const card=cards.nth(i);
+      assert.equal(await card.locator('strong > .nic-calculator-title-line').count(),2,'Every calculator title has exactly two lines: '+slug+' tile '+i);
+      assert.equal(await card.locator('small').evaluate(el=>getComputedStyle(el).display),'none','Calculator tile descriptions hidden: '+slug+' tile '+i);
+     }
+    }
     if(portrait&&!isHomepage){
      assert(await chooser.isVisible(),'Portrait selector shown for '+slug);
      if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
