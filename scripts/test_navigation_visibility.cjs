@@ -72,7 +72,7 @@ assert(nav.includes("heading.textContent='Eigenheim'"),'Prerendered calculator b
 assert(admin.includes("own:'Eigenheim'"),'Admin navigation name must match Eigenheim');
 const registry=JSON.parse(read('assets/calculators.json'));
 assert.equal(registry.calculators.find(item=>item.id==='own').label,'Eigenheim','Calculator registry retains its short internal label');
-assert(read('assets/homepage.html').includes('<strong>Eigenheim</strong>'),'Homepage tile must say Eigenheim');
+assert(read('assets/homepage.html').includes('<strong>Eigenheim berechnen</strong>'),'Homepage tile must match the Eigenheim dropdown entry');
 assert(read('scripts/build_unified_navigation.py').includes(">Eigenheim<"),'Static calculator tiles must use Eigenheim on first load');
 const titleScript=nav.match(/const calculatorTileTitles=\{([\s\S]*?)\n \};/);
 assert(titleScript,'Separate two-line calculator title map is required');
