@@ -210,7 +210,10 @@ function install(id,equityId){
    wrapper.classList.add('nic-finance-at-100');
   }else wrapper.classList.remove('nic-finance-at-100');
   original.value=next.toFixed(2);
-  if(!isManual())syncAutoEquity();
+  // Moving the financing slider is an explicit user decision to recalculate
+  // equity. A previously typed amount must not silently lock this control.
+  setManual(false);
+  syncAutoEquity();
   changedFinance();
   refresh();
  };
