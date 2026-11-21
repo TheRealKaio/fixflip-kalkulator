@@ -71,11 +71,6 @@ style.textContent=`
  box-sizing:border-box!important;margin:0!important;
 }
 }
-/* Fix & Flip has an independent finance-card layout. Ensure its actual
-   checkbox receives taps/clicks instead of a positioned decoration. */
-body:not(.nic-admin) #flipFinanceCard .finance-check-box input[type="checkbox"]{
- pointer-events:auto!important;position:relative!important;z-index:5!important;
-}
 /* Caption centered over the actual checkbox, including its help icon. */
 body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option{
  display:flex!important;flex-direction:column!important;align-items:center!important;
