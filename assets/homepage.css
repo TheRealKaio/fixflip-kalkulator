@@ -409,6 +409,15 @@ body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
 body .app>.hero>.deal-type-card.nic-portrait-calculator-menu[hidden],
 body .app>main.section>.deal-type-card[hidden]{display:none!important}
 
+@media(max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .app > main.section > .deal-type-card > .deal-type-row{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ html body:not(.nic-embed) .app > main.section > .deal-type-card > .deal-type-row:has(> .deal-type-option:not([hidden])):not(:has(> .deal-type-option:not([hidden]) ~ .deal-type-option:not([hidden]))){
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
+
 /* Landscape calculator navigation: never let the sixth button sit alone.
    Use the actual menu width, not the viewport width, to switch from 6 to 3+3. */
 @media (orientation:landscape){
@@ -482,4 +491,11 @@ html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-opt
 html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option[hidden],
 html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option[data-nic-nav-obsolete="true"]{
  display:none!important;
+}
+
+@media(max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option strong .nic-calculator-title-line{
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+ }
 }

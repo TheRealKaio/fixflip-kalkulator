@@ -184,6 +184,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 
 - Auf Mobilgeräten stehen „Notar + Grundbuch“ und „Makler beim Kauf“ in den Kaufnebenkosten-Eingaben jeweils auf einer eigenen Zeile über die volle verfügbare Breite, in dieser Reihenfolge. Desktop-Spalten und bestehende Eingaben/Berechnungen bleiben erhalten.
 - In der Vermietungs-Finanzierungsbox teilen sich Zins p.a. und Tilgung p.a. auf Tablet/Desktop die verfügbare Zeilenbreite gleichmäßig (je 50 % abzüglich Abstand). Der Finanzierungsregler steht darunter in einer eigenen vollen Zeile; Notar + Grundbuch und Makler haben dieselbe Eingabeoberkante. Die Beschriftung „Mitfinanzieren“ ist zentriert über der Checkbox positioniert. Mobile bleibt gemäß den bestehenden Vollbreiten-Regeln.
+- Die sechs Rechner-Kacheln im Inhaltsbereich stehen im mobilen Hochformat in zwei gleich breiten Spalten und drei Reihen.
+- Bei Fix & Flip steht die Zeile „Kaufnebenkosten / Mitfinanzieren“ im Hoch- und Querformat direkt unter „Makler beim Kauf“. „Mitfinanzieren“ steht mittig über der Checkbox. Zins und Tilgung teilen sich die verfügbare Breite gleichmäßig.
 - Änderungen an Notar- oder Maklerwerten verändern den manuell gewählten Finanzierungsprozentsatz nicht. Bei automatischem Eigenkapital wird der Bedarf aus den aktuellen Kosten erneut bestimmt; manuell eingetragenes Eigenkapital bleibt erhalten.
 
 ## Ergebnisboxen der Rechner

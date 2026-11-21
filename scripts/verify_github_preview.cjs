@@ -56,6 +56,19 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      const cards=page.locator('.deal-type-card .deal-type-row > .deal-type-option:not([hidden])');
      const count=await cards.count();
      assert(count>=1,'Calculator tile navigation remains in DOM');
+     if(portrait){
+      assert.equal(count,6,'All six calculator destinations are visible');
+      const boxes=await cards.evaluateAll(tiles=>tiles.map(tile=>{
+       const r=tile.getBoundingClientRect();
+       return {x:r.x,y:r.y,width:r.width};
+      }));
+      for(let i=0;i<boxes.length;i+=2){
+       assert(Math.abs(boxes[i].y-boxes[i+1].y)<1&&boxes[i].x<boxes[i+1].x,'Each portrait row has two tiles');
+       assert(Math.abs(boxes[i].width-boxes[i+1].width)<1,'Portrait tile columns are equal');
+       if(i)assert(boxes[i].y>boxes[i-2].y,'Portrait tile rows follow reading order');
+      }
+     }
+
      for(let i=0;i<count;i++){
       const card=cards.nth(i);
       assert.equal(await card.locator('strong > .nic-calculator-title-line').count(),2,'Every calculator title has exactly two lines: '+slug+' tile '+i);

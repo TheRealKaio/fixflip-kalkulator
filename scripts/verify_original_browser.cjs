@@ -329,6 +329,20 @@ const assert=require('node:assert/strict');
     if(slug==='fix-flip'){
      for(const viewport of [{width:320,height:740},{width:390,height:900},{width:844,height:390}]){
       await page.setViewportSize(viewport);
+      const financing=await page.evaluate(()=>{
+       const box=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width};};
+       const field=id=>document.getElementById(id).closest('.field');
+       const caption=document.querySelector('#flipFinanceCard .finance-check-label span');
+       const text=document.createRange();text.selectNodeContents(caption);
+       const label=text.getBoundingClientRect(),checkbox=document.getElementById('financeAcquisition').getBoundingClientRect();
+       return {rates:['interest','repayment'].map(id=>box(field(id))),row:box(document.getElementById('finance-acq-row-swap-v8403')),
+        broker:box(field('buyBroker')),labelCenter:label.x+label.width/2,checkboxCenter:checkbox.x+checkbox.width/2};
+      });
+      const [interest,repayment]=financing.rates;
+      assert(financing.row.top>=financing.broker.bottom,'Acquisition row follows purchase broker at '+viewport.width);
+      assert(Math.abs(financing.labelCenter-financing.checkboxCenter)<2,'Checkbox caption is centered at '+viewport.width);
+      assert(Math.abs(interest.top-repayment.top)<1&&Math.abs(interest.width-repayment.width)<1,'Rates share one equal-width row at '+viewport.width);
+      assert(Math.abs(interest.left-financing.row.left)<2&&Math.abs(repayment.right-financing.row.right)<2,'Rates fill available width at '+viewport.width);
       const sale=await page.evaluate(()=>{
        const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width};};
        const broker=document.getElementById('sellBroker').closest('.field');
