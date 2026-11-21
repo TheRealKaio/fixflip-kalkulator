@@ -63,7 +63,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    const accept=async dialog=>{dialogCount++;await dialog.accept()};
    page.on('dialog',accept);
    const checkedBefore=await checkbox.isChecked();
-   await checkbox.focus();await checkbox.press('Space');
+   const checkboxDetail=await checkbox.evaluate(el=>({
+    html:el.outerHTML,disabled:el.disabled,readOnly:el.readOnly,hidden:el.hidden,
+    visible:getComputedStyle(el).visibility,display:getComputedStyle(el).display,
+    enclosingLabel:el.closest('label')?.outerHTML?.slice(0,600)
+   }));
+   console.log('Flip checkbox before trusted click:',JSON.stringify({checkedBefore,checkboxDetail}));
+   await checkbox.click({force:true});
    await page.waitForTimeout(150);
    page.off('dialog',accept);
    const checkedAfter=await checkbox.isChecked();
