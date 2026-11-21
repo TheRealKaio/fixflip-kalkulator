@@ -12,7 +12,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(route.request().resourceType()==='document')documentLoads++;
    if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
    if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:''});
-   if(u.hostname!=='localhost'&&u.searchParams.get('r')==='settings'&&documentLoads===1){
+   if(u.hostname!=='localhost'&&u.searchParams.get('r')==='settings'){
     await settingsArrival;
     const settings=JSON.parse(JSON.stringify(require('../assets/site-settings.json')));
     settings.layout.bodySize=20;settings.layout.h1=30;
