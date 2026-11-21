@@ -43,15 +43,22 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    }
    await slider.waitFor({state:'visible',timeout:5000});
    const checkbox=page.locator('#financeAcquisition'),equity=page.locator('#ownEquityInput');
+   const checkboxCheck=async()=>{if(!(await checkbox.isChecked()))await checkbox.check();};
    assert.equal(await page.locator('#equityShortfallWarning').count(),0,'Duplicate red equity warning removed');
    await page.locator('#purchase').fill('300000');
+   await checkboxCheck();
    await page.evaluate(()=>{
-    const box=document.getElementById('financeAcquisition');
-    if(!box.checked){box.checked=true;box.dispatchEvent(new Event('change',{bubbles:true}));}
     const el=document.getElementById('ltv').closest('.field').querySelector('.nic-finance-percent-range');
     el.value='100';el.dispatchEvent(new Event('input',{bubbles:true}));
    });
    await page.waitForTimeout(150);
+   const beforeToggle=await page.evaluate(()=>({
+     checked:document.getElementById('financeAcquisition').checked,
+     active:document.body.dataset.calculator,
+     cash:document.getElementById('ownEquityInput').value,
+     ratio:document.getElementById('ltv').value
+   }));
+   assert(beforeToggle.checked,'Checkbox must start ON before user removes financing: '+JSON.stringify(beforeToggle));
    let dialogCount=0;
    const accept=async dialog=>{dialogCount++;await dialog.accept()};
    page.on('dialog',accept);
