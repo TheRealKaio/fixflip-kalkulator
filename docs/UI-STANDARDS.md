@@ -172,6 +172,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Untertext „Betriebskosten erfassen und versenden“. Die Gruppenüberschrift lautet
   „Mieterabrechnung“. Das Symbol steht bereits im HTML, auch bei internem
   Wechsel zur Startseite.
+- Die Titel in Startseiten-Kacheln bleiben bei jeder Bildschirmbreite einzeilig. Die Startseite verwendet ihre eigenen Titel auch nach einem internen Seitenwechsel.
 - Titel, Texte und Zielverknüpfung des Mieterabrechnungsbuttons bleiben wie die
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.

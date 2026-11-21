@@ -467,7 +467,11 @@ function initWelcome(){
    if(!original.querySelector('.nic-menu-icon')&&link.querySelector('.nic-menu-icon'))continue;
    link.className=original.className.replace(/\b(?:nic-tile-active|current)\b/g,'').trim();
    link.dataset.href=item.path;
+   const title=link.querySelector('strong').textContent;
    link.innerHTML=original.innerHTML;
+   const heading=link.querySelector('strong');
+   heading.textContent=title;
+   delete heading.dataset.nicTwoLine;
    link.querySelectorAll('input').forEach(input=>input.remove());
   }
   intro.dataset.controlsSynced='true';

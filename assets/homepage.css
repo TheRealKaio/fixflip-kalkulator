@@ -499,3 +499,14 @@ html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-opt
   overflow-wrap:anywhere;
  }
 }
+
+
+/* Homepage button captions stay on one line, even in narrower grid cells. */
+#nic-home-intro .nic-home-options > .deal-type-option{
+ container-type:inline-size;
+}
+html body #nic-home-intro .nic-home-options > .deal-type-option strong{
+ white-space:nowrap!important;
+ overflow-wrap:normal!important;
+ font-size:min(var(--nic-body-font-size, 18px), 5.6cqi)!important;
+}
