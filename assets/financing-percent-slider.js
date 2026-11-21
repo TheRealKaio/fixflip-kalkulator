@@ -358,6 +358,15 @@ function install(id,equityId){
 
  controllers.set(id,{refresh,isManual,synchronize});
  refresh();
+ // The legacy owner-use restore path stores LTV with only two decimals.
+ // After all initial model/input restore handlers finish, derive the precise
+ // financing percentage again from the saved, user-fixed cash amount.
+ // Otherwise a reload can silently alter the loan by several euros.
+ setTimeout(()=>{
+  if(!original.isConnected||!equity.isConnected)return;
+  if(isManual() && mode()!=='flip')syncManualPercentage();
+  else refresh();
+ },0);
 }
 function setup(){
  install('ltv','ownEquityInput');
