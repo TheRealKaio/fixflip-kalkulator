@@ -13,6 +13,15 @@ function setPage(key){
  window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
 }
 const navigationMobileQuery=window.matchMedia('(max-width:700px)');
+const calculatorTileTitles={
+ budget:['Dein Budget','berechnen'],
+ own:['Eigenheim','berechnen'],
+ rent:['Vermietung als','Kapitalanlage'],
+ flip:['Fix und Flip','Projekt'],
+ finance:['Finanzierung &','Restschuld'],
+ settlement:['Nebenkosten','abrechnen']
+};
+function calculatorTitle(key){return calculatorTileTitles[key].join(' ');}
 const navigationKeys=['budget','own','rent','flip','finance','settlement'];
 function navigationAllowed(key,screen,section='calculator'){
  const v=window.NICSettings?.current?.navigationVisibility;
@@ -202,14 +211,6 @@ function initResponsiveCalculatorMenu(){
  }
  // Only the six-button calculator bar gets short, deliberately two-line titles.
  // Homepage tiles and the shared dropdown retain their original labels and subtexts.
- const calculatorTileTitles={
-  budget:['Dein Budget','berechnen'],
-  own:['Eigenheim','berechnen'],
-  rent:['Vermietung als','Kapitalanlage'],
-  flip:['Fix und Flip','Projekt'],
-  finance:['Finanzierung &','Restschuld'],
-  settlement:['Nebenkosten','abrechnen']
- };
  function formatCalculatorTiles(){
   for(const tile of menu.querySelectorAll('.deal-type-row > .deal-type-option')){
    const lines=calculatorTileTitles[tile.dataset.calculator];
@@ -257,13 +258,13 @@ function initResponsiveCalculatorMenu(){
  for(const item of calculators){
   const option=document.createElement('option');
   option.value=item.id;
-  option.textContent=calculatorTileTitles[item.id]?.join(' ')||item.label;
+  option.textContent=calculatorTitle(item.id);
   picker.append(option);
  }
  // The Mieter-Abrechnung is an existing content route, not a sixth calculator.
  const settlementOption=document.createElement('option');
  settlementOption.value='settlement';
- settlementOption.textContent=calculatorTileTitles.settlement.join(' ');
+ settlementOption.textContent=calculatorTitle('settlement');
  picker.append(settlementOption);
  // 'Budget' is the default visible entry on information pages.
  const compact=document.createElement('div');
@@ -445,7 +446,7 @@ function initWelcome(){
  if(intro.parentElement!==main)main.prepend(intro);
  const settlement=intro.querySelector('[data-home-settlement]');
  if(settlement){
-  settlement.querySelector('strong').textContent=home.settlementButtonTitle;
+  settlement.querySelector('strong').textContent=calculatorTitle('settlement');
   settlement.querySelector('small').textContent=home.settlementButtonText;
   if(home.settlementButtonUrl){settlement.href=home.settlementButtonUrl;settlement.removeAttribute('aria-disabled');}else{settlement.removeAttribute('href');settlement.setAttribute('aria-disabled','true');}
  }
@@ -467,10 +468,9 @@ function initWelcome(){
    if(!original.querySelector('.nic-menu-icon')&&link.querySelector('.nic-menu-icon'))continue;
    link.className=original.className.replace(/\b(?:nic-tile-active|current)\b/g,'').trim();
    link.dataset.href=item.path;
-   const title=link.querySelector('strong').textContent;
    link.innerHTML=original.innerHTML;
    const heading=link.querySelector('strong');
-   heading.textContent=title;
+   heading.textContent=calculatorTitle(item.id);
    delete heading.dataset.nicTwoLine;
    link.querySelectorAll('input').forEach(input=>input.remove());
   }

@@ -49,8 +49,19 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const isHomepage=slug==='';
     if(isHomepage){
      const home=page.locator('#nic-home-intro .nic-home-options > .deal-type-option[data-calculator="own"]');
-     assert.equal((await home.locator('strong').textContent()).trim(),'Eigenheim','Home keeps its original short title');
+     assert.equal((await home.locator('strong').textContent()).trim(),'Eigenheim berechnen','Home title matches the dropdown');
      assert.equal((await home.locator('small').textContent()).trim(),'Immobilie kaufen und selbst nutzen','Home keeps its original description');
+     const titles=await page.locator('#nic-home-intro .nic-home-options>a').evaluateAll(links=>{
+      const options=new Map([...document.getElementById('nicMobileCalculatorSelect').options].map(option=>[option.value,option.textContent]));
+      return links.map(link=>{
+       const title=link.querySelector('strong'),range=document.createRange();
+       range.selectNodeContents(title);
+       const rect=range.getBoundingClientRect(),button=link.getBoundingClientRect();
+       return {text:title.textContent,expected:options.get(link.dataset.calculator||'settlement'),fits:range.getClientRects().length===1&&rect.left>=button.left&&rect.right<=button.right};
+      });
+     });
+     assert.equal(titles.length,6);
+     for(const {text,expected,fits} of titles){assert.equal(text,expected);assert(fits,'One-line homepage title fits: '+text);}
      assert.equal(await home.locator('.nic-calculator-title-line').count(),0,'Home must not inherit two-line calculator titles');
     }else if(calculatorIds.includes(currentId)){
      const cards=page.locator('.deal-type-card .deal-type-row > .deal-type-option:not([hidden])');
