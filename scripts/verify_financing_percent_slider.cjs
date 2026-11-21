@@ -145,6 +145,56 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      slider.value='120';slider.dispatchEvent(new Event('input',{bubbles:true}));
     },{id:input});
     assert.equal(Number(await page.locator('#'+input).inputValue()),120,'120 percent reaches the original model field');
+
+    // Cross-calculator parity: with the same project cost/base and financing
+    // percentage, both modes must produce the same required-equity arithmetic.
+    // A checkbox change must not preserve a stale manually fixed equity amount.
+    const checkbox=page.locator('#'+(route==='vermietung'?'rentFinanceAcquisition':'financeAcquisition'));
+    await page.evaluate(id=>{
+      const c=document.getElementById(id);
+      if(!c.checked){c.checked=true;c.dispatchEvent(new Event('change',{bubbles:true}));}
+      const slider=document.getElementById(id==='rentFinanceAcquisition'?'rentLtv':'ltv').closest('.field').querySelector('input[type="range"]');
+      slider.value='100';slider.dispatchEvent(new Event('input',{bubbles:true}));
+    },route==='vermietung'?'rentFinanceAcquisition':'financeAcquisition');
+    await page.waitForTimeout(100);
+    const financed=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,base:m.financingBase,
+        equity:Number(document.getElementById(eq).value),ratio:Number(document.getElementById(id).value)};
+    },{id:input,eq:equity});
+    assert(Math.abs(financed.equity-Math.max(0,financed.total-financed.base))<1,
+      'Financed acquisition costs follow identical equity formula in '+route);
+    assert.equal(financed.ratio,100,'Financing checkbox keeps 100 percent ratio');
+
+    // Keyboard toggles are trusted browser actions, unlike synthetic click().
+    // Dismissing the confirmation must leave all values unchanged.
+    let dialogs=0;
+    const dismiss=async dialog=>{dialogs++;assert.match(dialog.message(),/Kaufnebenkosten/);await dialog.dismiss();};
+    page.on('dialog',dismiss);
+    await checkbox.focus();
+    await checkbox.press('Space');
+    await page.waitForTimeout(70);
+    page.off('dialog',dismiss);
+    assert.equal(dialogs,1,'Unchecking financed costs requires confirmation');
+    assert.equal(await checkbox.isChecked(),true,'Declining confirmation preserves financing');
+    const accept=async dialog=>{dialogs++;await dialog.accept();};
+    page.on('dialog',accept);
+    await checkbox.press('Space');
+    await page.waitForTimeout(120);
+    page.off('dialog',accept);
+    assert.equal(dialogs,2,'Accepting confirmation is prompted');
+    assert.equal(await checkbox.isChecked(),false,'Confirmation removes acquisition financing');
+    const unfinanced=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,base:m.financingBase,
+        equity:Number(document.getElementById(eq).value),ratio:Number(document.getElementById(id).value)};
+    },{id:input,eq:equity});
+    assert.equal(unfinanced.ratio,100,'Disabling acquisition financing does not shift LTV');
+    assert(unfinanced.base<financed.base,'Disabling acquisition financing reduces financing base');
+    assert(Math.abs(unfinanced.equity-Math.max(0,unfinanced.total-unfinanced.base))<1,
+      'Unfinanced acquisition costs are covered by equity in '+route);
+    assert(unfinanced.equity>financed.equity,'Removing financing increases required equity');
+
    }
    assert.deepEqual(errors,[],'No uncaught browser errors');
    await page.close();
