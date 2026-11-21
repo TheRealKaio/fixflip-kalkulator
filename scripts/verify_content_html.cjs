@@ -74,6 +74,20 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     return {text:host.textContent,script:host.querySelectorAll('script,img,[onclick],a[href]').length};
    });
    assert(security.text.includes('Erhalten'));assert.equal(security.script,0);
+   // About Us must use the saved Admin description, not stale build-time HTML.
+   await page.goto('http://localhost/fixflip-kalkulator/ueber-uns/',{waitUntil:'networkidle'});
+   const about=page.locator('main.nic-content-main > article.nic-content-card > div');
+   await about.waitFor({state:'visible'});
+   await page.evaluate(()=>{
+    const s=JSON.parse(JSON.stringify(window.NICSettings.current));
+    s.content.about.description='<h2>Über uns – aus dem Admin</h2><p>Aktualisierter Inhalt aus den Einstellungen.</p>';
+    window.NICSettings.save(s);
+    window.dispatchEvent(new Event('nic-settings-updated'));
+   });
+   assert.equal(await about.locator('h2').textContent(),'Über uns – aus dem Admin');
+   assert((await about.innerText()).includes('Aktualisierter Inhalt aus den Einstellungen.'));
+   await page.reload({waitUntil:'networkidle'});
+   assert.equal(await page.locator('main.nic-content-main > article.nic-content-card h2').textContent(),'Über uns – aus dem Admin','About Us keeps saved Admin content after reload');
    assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
    await page.close();
   }
