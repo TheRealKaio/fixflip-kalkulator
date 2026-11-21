@@ -36,6 +36,7 @@ style.textContent=`
  html[data-calculator="own"] .nic-balanced-finance-rates,
  html[data-calculator="flip"] .nic-balanced-finance-rates{
   display:grid!important;
+  grid-column:1 / -1!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   column-gap:12px!important;
   row-gap:14px!important;
@@ -109,30 +110,32 @@ body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option>.
 
 `;
 (document.head||document.documentElement).appendChild(style);
-/* Identify the existing pair without altering inputs, values or calculations.
-   Reapply after calculator navigation replaces the visible form. */
+/* Match visible finance fields independently from their surrounding grid.
+   Stable data markers allow layout rules to identify the pair thereafter. */
 function balanceFinanceRateFields(){
  const mode=document.documentElement.dataset.calculator||document.body.dataset.calculator;
  if(mode!=='own'&&mode!=='flip')return;
+ const norm=value=>String(value||'').replace(/\s+/g,' ').trim().toLowerCase();
  const fields=Array.from(document.querySelectorAll('.app .field'));
- const normalize=text=>String(text||'').replace(/\\s+/g,' ').trim().toLowerCase();
- const rates=fields.filter(field=>{
-  const label=field.querySelector(':scope > label');
-  if(!label)return false;
-  const name=normalize(label.textContent);
-  return /^(zins|zinssatz)\\s*(p\\.?a\\.?)?/.test(name)
-   || /^tilgung\\s*(p\\.?a\\.?)?/.test(name);
+ const labelled=fields.map(field=>{
+  const label=field.querySelector('label');
+  const name=norm(label?.textContent);
+  const input=field.querySelector('input,select');
+  return {field,name,input};
  });
- for(const interest of rates){
-  if(!/^(zins|zinssatz)/.test(normalize(interest.querySelector(':scope > label')?.textContent)))continue;
-  const parent=interest.parentElement;
-  if(!parent)continue;
-  const repayment=rates.find(field=>field!==interest&&field.parentElement===parent
-   && /^tilgung/.test(normalize(field.querySelector(':scope > label')?.textContent)));
-  if(!repayment)continue;
-  // Only mark the dedicated two-field row, never unrelated finance inputs.
-  if(Array.from(parent.children).filter(el=>el.classList.contains('field')).length!==2)continue;
-  parent.classList.add('nic-balanced-finance-rates');
+ const interest=labelled.find(x=>/^(zins|zinssatz)(\s|$)/.test(x.name) && x.input);
+ const repayment=labelled.find(x=>/^tilgung(\s|$)/.test(x.name) && x.input);
+ if(!interest||!repayment||interest.field===repayment.field)return;
+ interest.field.dataset.nicRateField='interest';
+ repayment.field.dataset.nicRateField='repayment';
+ const first=interest.field,second=repayment.field;
+ if(first.parentElement===second.parentElement){
+  const parent=first.parentElement;
+  if(parent.classList.contains('nic-balanced-finance-rates'))return;
+  const pair=document.createElement('div');
+  pair.className='nic-balanced-finance-rates';
+  parent.insertBefore(pair,first);
+  pair.append(first,second);
  }
 }
 balanceFinanceRateFields();
