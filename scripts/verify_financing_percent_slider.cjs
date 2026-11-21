@@ -231,7 +231,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
         base:m.financingBase,ratio:Number(document.getElementById(id).value),
         equity:Number(document.getElementById(eq).value),
-        loan:m.loan};
+        loan:id==='rentLtv'?m.loan:m.financingBase*Number(document.getElementById(id).value)/100};
     },{id:input,eq:equity});
     assert(Math.abs(partiallyFinanced.loan-(partiallyFinanced.total-cashHalf))<1,
       'The loan covers exactly the investment minus entered cash (no double deduction)');
