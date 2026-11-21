@@ -22,6 +22,9 @@ START = "    if ($route==='users-import' && $method==='POST') {"
 ADMIN = '$admin=nic_admin($db,$c);'
 HEALTH = "nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360']);"
 CAPABLE = "nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360','usersImportVersion'=>1]);"
+SETTINGS_CAPABLE = "nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360','usersImportVersion'=>1,'settingsVisibilityVersion'=>1]);"
+VIS_START = "    $visibility = $s['navigationVisibility'] ?? [];"
+VIS_END = '    // Inputs are public website settings, never server configuration or account data.'
 
 
 def import_block(source):
@@ -32,6 +35,41 @@ def functions(source):
     matches = list(re.finditer(r'^function\s+(\w+)\(', source, re.M))
     return {match[1]: source[match.start():matches[i+1].start() if i+1 < len(matches) else len(source)].strip()
             for i, match in enumerate(matches)}
+
+
+def patch_settings_persistence(installed, tested):
+    """Add only known missing menu/SEO fields; preserve other PHP server logic."""
+    remote = functions(installed).get('nic_clean_settings')
+    local = functions(tested).get('nic_clean_settings')
+    if not remote or not local:
+        raise CheckError('Server-Einstellungsvalidierung fehlt.')
+    expected = local[local.index(VIS_START):local.index(VIS_END)]
+    if VIS_START in remote:
+        if VIS_END not in remote or remote[remote.index(VIS_START):remote.index(VIS_END)] != expected:
+            raise CheckError('Unbekannte Menüvalidierung auf STRATO; nicht überschreiben.')
+        patched = remote
+    else:
+        if remote.count(VIS_END) != 1 or "'contentSections'" not in remote:
+            raise CheckError('Alte Einstellungsstruktur unbekannt; keine Änderung.')
+        patched = remote.replace(VIS_END, expected + VIS_END, 1)
+    whitelist = next((line for line in patched.splitlines() if line.startswith('    $keys = [')), None)
+    if not whitelist or not whitelist.endswith('];') or "'contentSections'" not in whitelist:
+        raise CheckError('Unbekannte Server-Whitelist.')
+    desired = whitelist
+    for key in ('navigationVisibility', 'seoIndexing'):
+        if "'" + key + "'" not in desired:
+            desired = desired[:-2] + ",'" + key + "'];"
+    patched = patched.replace(whitelist, desired, 1)
+    validation = next((line for line in patched.splitlines() if "Ungültiges Einstellungsfeld: " in line), None)
+    if not validation or "'] as $key)" not in validation:
+        raise CheckError('Unbekannte Einstellungsvalidierung.')
+    if "'seoIndexing'" not in validation:
+        patched = patched.replace(validation, validation.replace('] as $key)', ",'seoIndexing'] as $key)"), 1)
+    if patched == remote:
+        return installed
+    if installed.count(remote) != 1:
+        raise CheckError('Einstellungsfunktion nicht eindeutig.')
+    return installed.replace(remote, patched, 1)
 
 
 def patch_application(installed, tested):
@@ -48,9 +86,12 @@ def patch_application(installed, tested):
         patched = installed
     else:
         patched = installed.replace(ANCHOR, block + ANCHOR, 1)
+    patched = patch_settings_persistence(patched, tested)
     if HEALTH in patched:
-        patched = patched.replace(HEALTH, CAPABLE, 1)
-    elif CAPABLE not in patched:
+        patched = patched.replace(HEALTH, SETTINGS_CAPABLE, 1)
+    elif CAPABLE in patched:
+        patched = patched.replace(CAPABLE, SETTINGS_CAPABLE, 1)
+    elif SETTINGS_CAPABLE not in patched:
         raise CheckError('Bekannter Health-Einstieg fehlt; keine Aktivierung.')
     return patched
 
@@ -71,7 +112,7 @@ def verify_health(ips, require_import=False):
             health = json.loads(body)
             if status != 200 or health.get('ok') is not True or health.get('ready') is not True:
                 raise CheckError('API nicht bereit: ' + host)
-            if require_import and health.get('usersImportVersion') != 1:
+            if require_import and (health.get('usersImportVersion') != 1 or health.get('settingsVisibilityVersion') != 1):
                 raise CheckError('Aktualisierte Import-Route noch nicht bestaetigt: ' + host)
 
 
@@ -144,7 +185,7 @@ def main():
             print(json.dumps({'mode': mode, 'installed_sha256': hashlib.sha256(original).hexdigest(),
                               'import_route_present': START in text}), flush=True)
             patched = patch_application(text, APP.read_text(encoding='utf-8')).encode()
-            print('Gezielte Ergaenzung und vorhandene Admin-/CSRF-Pruefungen kompatibel.', flush=True)
+            print('Menü-/SEO-Speicherung, Nutzerimport und Admin-/CSRF-Schutz geprüft.', flush=True)
             if mode == 'inspect':
                 print('Nur API-Quellcode geprueft; keine Dateien, Konten oder Einstellungen geaendert.')
                 return 0

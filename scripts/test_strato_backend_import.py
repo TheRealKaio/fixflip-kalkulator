@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from strato_backend_import import APP, START, HEALTH, CAPABLE, import_block, patch_application, cache_refresher
+from strato_backend_import import APP, START, HEALTH, CAPABLE, SETTINGS_CAPABLE, VIS_START, VIS_END, import_block, patch_application, cache_refresher
 from strato_sftp_check import CheckError
 from test_strato_stage import MemorySFTP, ROOT
 
@@ -8,12 +8,30 @@ from test_strato_stage import MemorySFTP, ROOT
 class BackendImportTests(unittest.TestCase):
     def setUp(self):
         self.tested = APP.read_text(encoding='utf-8')
-        self.old = self.tested.replace(import_block(self.tested), '').replace(CAPABLE, HEALTH)
+        self.old = self.tested.replace(import_block(self.tested), '').replace(SETTINGS_CAPABLE, HEALTH)
+        begin = self.old.index(VIS_START)
+        end = self.old.index(VIS_END, begin)
+        self.old = self.old[:begin] + self.old[end:]
+        self.old = self.old.replace(",'navigationVisibility','seoIndexing'", '')
+        self.old = self.old.replace(",'seoIndexing'] as $key", "] as $key")
 
     def test_only_import_route_and_health_capability_are_added(self):
         patched = patch_application(self.old, self.tested)
-        self.assertEqual(patched, self.tested.replace(HEALTH, CAPABLE))
+        self.assertEqual(patched, self.tested)
         self.assertEqual(patch_application(patched, self.tested), patched)
+
+    def test_settings_are_added_without_replacing_unrelated_backend_code(self):
+        installed = self.old.replace("function nic_clean_settings", "// retained server comment\nfunction nic_clean_settings", 1)
+        patched = patch_application(installed, self.tested)
+        self.assertIn("// retained server comment", patched)
+        self.assertIn("settingsVisibilityVersion", patched)
+        self.assertEqual(patch_application(patched, self.tested), patched)
+
+    def test_unknown_menu_validation_refuses_write(self):
+        unsafe = self.tested.replace("    $allowedMenuKeys = ['budget','own','rent','flip','finance','settlement'];",
+                                      "    $allowedMenuKeys = ['budget'];")
+        with self.assertRaises(CheckError):
+            patch_application(unsafe, self.tested)
 
     def test_drifted_security_or_existing_route_is_never_replaced(self):
         for source in [self.old.replace("$u['role'] !== 'admin'", "$u['role'] !== 'user'"),
