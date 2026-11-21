@@ -235,19 +235,33 @@ function install(id,equityId){
  // Use one confirmation and recalculation policy for own-use and rental.
  const acquisitionCheckbox=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
  if(acquisitionCheckbox){
+  let shareBeforeToggle=null;
   acquisitionCheckbox.addEventListener('click',event=>{
+   // Keep the chosen borrowing percentage while the financing basis changes.
+   shareBeforeToggle=parseNumber(original.value);
    if(!event.isTrusted||acquisitionCheckbox.checked)return;
    const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\n\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
    if(!accepted){
+    shareBeforeToggle=null;
     event.preventDefault();
     event.stopImmediatePropagation();
    }
   },true);
   acquisitionCheckbox.addEventListener('change',()=>{
-   // The toggle explicitly changes the equity required at the chosen LTV;
-   // do not let a previously typed equity value silently change that LTV.
+   const chosenShare=shareBeforeToggle===null?parseNumber(original.value):shareBeforeToggle;
+   shareBeforeToggle=null;
    setManual(false);
-   queueMicrotask(()=>{syncAutoEquity();refresh();});
+   // Existing owner/rental listeners may still derive a new ratio from the
+   // previously fixed equity during this change event. Run AFTER those
+   // listeners, restoring the explicit percentage and updating equity once.
+   setTimeout(()=>{
+    if(!original.isConnected||!equity.isConnected)return;
+    const target=chosenShare.toFixed(2);
+    if(Math.abs(parseNumber(original.value)-chosenShare)>0.005)original.value=target;
+    syncAutoEquity();
+    changedFinance();
+    refresh();
+   },0);
   });
  }
  const observed=id==='rentLtv'
