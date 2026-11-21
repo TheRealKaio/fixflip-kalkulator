@@ -1,4 +1,5 @@
 /* Development regression: manual equity drives LTV until an explicit slider move; the slider then updates equity. */
+/* Release check: effective financing share is measured against total project investment. */
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 (async()=>{
