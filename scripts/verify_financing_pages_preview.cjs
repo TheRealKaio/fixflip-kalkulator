@@ -64,7 +64,8 @@ const parse=v=>Number(String(v).replace(/\./g,'').replace(',','.').replace(/[^\d
     assert(Math.abs(before.percent-100)<0.01,'Initial preview financing display is 100%');
     // Test a real trusted user interaction with a real confirm dialog.
     let prompts=0;
-    page.on('dialog',async dialog=>{prompts++;await dialog.accept();});
+    const acceptDialog=async dialog=>{prompts++;await dialog.accept();};
+    page.on('dialog',acceptDialog);
     await page.locator('#'+test.checkbox).focus();
     await page.locator('#'+test.checkbox).press('Space');
     await page.waitForTimeout(200);
@@ -76,6 +77,7 @@ const parse=v=>Number(String(v).replace(/\./g,'').replace(',','.').replace(/[^\d
      return {checked:document.getElementById(t.checkbox).checked,percent:Number(range.value),
       label:output.textContent,total,base:c.financingBase,equity:Number(document.getElementById(t.eq).value)};
     },test);
+    page.off('dialog',acceptDialog);
     assert.equal(prompts,1,'Checkbox uncheck confirmation shown on actual Pages preview');
     assert.equal(after.checked,false,'Confirmed box unchecked in actual Pages preview');
     assert(after.base<before.base,'Removing financing reduced eligible borrowing base');
