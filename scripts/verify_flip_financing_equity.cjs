@@ -72,7 +72,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     visible:getComputedStyle(el).visibility,display:getComputedStyle(el).display,
     enclosingLabel:el.closest('label')?.outerHTML?.slice(0,600)
    }));
-   console.log('Flip checkbox before trusted click:',JSON.stringify({checkedBefore,checkboxDetail}));
+   const hitTarget=await checkbox.evaluate(el=>{
+     const b=el.getBoundingClientRect();
+     const t=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
+     return {rect:{x:b.x,y:b.y,width:b.width,height:b.height},
+       target:t?.outerHTML?.slice(0,400),pointer:getComputedStyle(el).pointerEvents,
+       zIndex:getComputedStyle(el).zIndex};
+   });
+   console.log('Flip checkbox before trusted click:',JSON.stringify({checkedBefore,checkboxDetail,hitTarget}));
    await page.evaluate(()=>{
      window.nicFlipClickEvents=[];
      document.addEventListener('click',e=>{
