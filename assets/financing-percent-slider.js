@@ -108,37 +108,28 @@ body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option>.
 
 `;
 (document.head||document.documentElement).appendChild(style);
-/* Match visible finance fields independently from their surrounding grid.
-   Stable data markers allow layout rules to identify the pair thereafter. */
+/* The two rate inputs have stable IDs shared by Eigenheim and Fix & Flip.
+   Labels are for people, not programmatic identification. Avoid moving
+   unrelated calculator fields when the finance form is rearranged. */
 function balanceFinanceRateFields(){
- const mode=document.documentElement.dataset.calculator||document.body.dataset.calculator;
+ const mode=activeMode();
  if(mode!=='own'&&mode!=='flip')return;
- const norm=value=>String(value||'').replace(/\s+/g,' ').trim().toLowerCase();
- const fields=Array.from(document.querySelectorAll('.app .field'));
- const labelled=fields.map(field=>{
-  const label=field.querySelector('label');
-  const name=norm(label?.textContent);
-  const input=field.querySelector('input,select');
-  return {field,name,input};
- });
- const interest=labelled.find(x=>/^(zins|zinssatz)(\s|$)/.test(x.name) && x.input);
- const repayment=labelled.find(x=>/^tilgung(\s|$)/.test(x.name) && x.input);
- if(!interest||!repayment||interest.field===repayment.field)return;
- interest.field.dataset.nicRateField='interest';
- repayment.field.dataset.nicRateField='repayment';
- const first=interest.field,second=repayment.field;
- if(first.parentElement===second.parentElement){
-  const parent=first.parentElement;
-  if(parent.classList.contains('nic-balanced-finance-rates'))return;
-  const pair=document.createElement('div');
-  pair.className='nic-balanced-finance-rates';
-  parent.insertBefore(pair,first);
-  pair.append(first,second);
- }
+ const interest=byId('interest')?.closest('.field');
+ const repayment=byId('repayment')?.closest('.field');
+ if(!interest||!repayment||interest===repayment)return;
+ interest.dataset.nicRateField='interest';
+ repayment.dataset.nicRateField='repayment';
+ const parent=interest.parentElement;
+ if(!parent||parent!==repayment.parentElement)return;
+ if(parent.classList.contains('nic-balanced-finance-rates'))return;
+ const pair=document.createElement('div');
+ pair.className='nic-balanced-finance-rates';
+ parent.insertBefore(pair,interest);
+ pair.append(interest,repayment);
 }
 balanceFinanceRateFields();
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',balanceFinanceRateFields,{once:true});
-new MutationObserver(balanceFinanceRateFields).observe(document.body||document.documentElement,{childList:true,subtree:true});
+if(document.readyState==='loading')
+ document.addEventListener('DOMContentLoaded',balanceFinanceRateFields,{once:true});
 
 function costs(id){
  if(id==='rentLtv' && typeof window.rentalCalculation==='function'){
@@ -477,6 +468,7 @@ function install(id,equityId){
  },0);
 }
 function setup(){
+ balanceFinanceRateFields();
  install('ltv','ownEquityInput');
  install('rentLtv','rentEquity');
  for(const x of controllers.values())x.refresh();
