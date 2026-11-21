@@ -28,6 +28,7 @@ style.textContent=`
 .nic-finance-percent-range{display:block;width:100%!important;min-width:0;height:36px;accent-color:var(--nic-accent,#2463e6);cursor:pointer;touch-action:pan-y}
 .nic-finance-percent-labels{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:var(--nic-subtext-font-size,14px);font-variant-numeric:tabular-nums}
 .nic-finance-percent-labels output{font-weight:800;color:var(--ink,#172033)}
+.nic-finance-equity-hint{margin:5px 0 0;color:var(--muted,#777f89);font-size:var(--nic-hint-font-size,13px);line-height:1.45}
 @media(max-width:700px){.nic-finance-percent-control{grid-column:1 / -1!important}.nic-finance-percent-labels{flex-wrap:wrap}}
 /* Rental financing: two equal rate columns on tablet/desktop.
    The finance percentage slider keeps its own full-width row. */
@@ -128,6 +129,10 @@ function install(id,equityId){
  const out=document.createElement('output');out.setAttribute('aria-live','off');
  const high=document.createElement('span');
  line.append(low,out,high);wrapper.append(slider,line);
+ const hint=document.createElement('p');
+ hint.className='nic-finance-equity-hint';
+ hint.setAttribute('aria-live','polite');
+ wrapper.appendChild(hint);
  oldWrap.insertAdjacentElement('afterend',wrapper);
  oldWrap.classList.add('nic-finance-percent-native');
  field.classList.add('nic-finance-percent-field');
@@ -199,7 +204,9 @@ function install(id,equityId){
  };
  equity.addEventListener('input',userEquity,true);
  equity.addEventListener('change',userEquity,true);
+ let equityBeforeDrag=null;
  const changedBySlider=()=>{
+  if(equityBeforeDrag===null)equityBeforeDrag=Math.max(0,parseNumber(equity.value));
   let next=Number(slider.value);
   // Magnetic detent at 100%; a deliberate drag past the 1% zone still works.
   if(Math.abs(next-100)<=1){
@@ -210,13 +217,53 @@ function install(id,equityId){
    wrapper.classList.add('nic-finance-at-100');
   }else wrapper.classList.remove('nic-finance-at-100');
   original.value=next.toFixed(2);
-  if(!isManual())syncAutoEquity();
+  // Moving the financing slider is an explicit user decision to recalculate
+  // equity. A previously typed amount must not silently lock this control.
+  setManual(false);
+  syncAutoEquity();
+  const difference=Math.round((Math.max(0,parseNumber(equity.value))-equityBeforeDrag)*100)/100;
+  hint.textContent=Math.abs(difference)<0.01?'Eigenkapitalbedarf unverändert.':difference>0
+   ?'Du benötigst '+format(difference)+' € mehr Eigenkapital.'
+   :'Du benötigst '+format(-difference)+' € weniger Eigenkapital.';
   changedFinance();
   refresh();
  };
+ slider.addEventListener('pointerdown',()=>{equityBeforeDrag=Math.max(0,parseNumber(equity.value));});
  slider.addEventListener('input',changedBySlider);
- slider.addEventListener('change',()=>original.dispatchEvent(new Event('change',{bubbles:true})));
+ slider.addEventListener('change',()=>{equityBeforeDrag=null;original.dispatchEvent(new Event('change',{bubbles:true}));});
  original.addEventListener('input',refresh);
+ // Use one confirmation and recalculation policy for own-use and rental.
+ const acquisitionCheckbox=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
+ if(acquisitionCheckbox){
+  let shareBeforeToggle=null;
+  acquisitionCheckbox.addEventListener('click',event=>{
+   // Keep the chosen borrowing percentage while the financing basis changes.
+   shareBeforeToggle=parseNumber(original.value);
+   if(!event.isTrusted||acquisitionCheckbox.checked)return;
+   const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\n\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
+   if(!accepted){
+    shareBeforeToggle=null;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+   }
+  },true);
+  acquisitionCheckbox.addEventListener('change',()=>{
+   const chosenShare=shareBeforeToggle===null?parseNumber(original.value):shareBeforeToggle;
+   shareBeforeToggle=null;
+   setManual(false);
+   // Existing owner/rental listeners may still derive a new ratio from the
+   // previously fixed equity during this change event. Run AFTER those
+   // listeners, restoring the explicit percentage and updating equity once.
+   setTimeout(()=>{
+    if(!original.isConnected||!equity.isConnected)return;
+    const target=chosenShare.toFixed(2);
+    if(Math.abs(parseNumber(original.value)-chosenShare)>0.005)original.value=target;
+    syncAutoEquity();
+    changedFinance();
+    refresh();
+   },0);
+  });
+ }
  const observed=id==='rentLtv'
   ? ['rentPurchase','rentRenovation','rentNotary','rentBroker','rentState','rentFinanceAcquisition']
   : ['purchase','financeAcquisition','notary','buyBroker','state','buffer'];
