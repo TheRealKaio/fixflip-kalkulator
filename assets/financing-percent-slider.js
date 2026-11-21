@@ -30,6 +30,28 @@ style.textContent=`
 .nic-finance-percent-labels output{font-weight:800;color:var(--ink,#172033)}
 .nic-finance-equity-hint{margin:5px 0 0;color:var(--muted,#777f89);line-height:1.45}
 @media(max-width:700px){.nic-finance-percent-control{grid-column:1 / -1!important}.nic-finance-percent-labels{flex-wrap:wrap}}
+/* Eigenheim and Fix & Flip: equal-width interest and repayment fields.
+   Only the identified pair is affected; mobile layout stays untouched. */
+@media(min-width:701px){
+ html[data-calculator="own"] .nic-balanced-finance-rates,
+ html[data-calculator="flip"] .nic-balanced-finance-rates{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  column-gap:12px!important;
+  row-gap:14px!important;
+  align-items:start!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+ }
+ html[data-calculator="own"] .nic-balanced-finance-rates>.field,
+ html[data-calculator="flip"] .nic-balanced-finance-rates>.field{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+ }
+}
 /* Rental financing: two equal rate columns on tablet/desktop.
    The finance percentage slider keeps its own full-width row. */
 @media(min-width:701px){
@@ -87,6 +109,36 @@ body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option>.
 
 `;
 (document.head||document.documentElement).appendChild(style);
+/* Identify the existing pair without altering inputs, values or calculations.
+   Reapply after calculator navigation replaces the visible form. */
+function balanceFinanceRateFields(){
+ const mode=document.documentElement.dataset.calculator||document.body.dataset.calculator;
+ if(mode!=='own'&&mode!=='flip')return;
+ const fields=Array.from(document.querySelectorAll('.app .field'));
+ const normalize=text=>String(text||'').replace(/\\s+/g,' ').trim().toLowerCase();
+ const rates=fields.filter(field=>{
+  const label=field.querySelector(':scope > label');
+  if(!label)return false;
+  const name=normalize(label.textContent);
+  return /^(zins|zinssatz)\\s*(p\\.?a\\.?)?/.test(name)
+   || /^tilgung\\s*(p\\.?a\\.?)?/.test(name);
+ });
+ for(const interest of rates){
+  if(!/^(zins|zinssatz)/.test(normalize(interest.querySelector(':scope > label')?.textContent)))continue;
+  const parent=interest.parentElement;
+  if(!parent)continue;
+  const repayment=rates.find(field=>field!==interest&&field.parentElement===parent
+   && /^tilgung/.test(normalize(field.querySelector(':scope > label')?.textContent)));
+  if(!repayment)continue;
+  // Only mark the dedicated two-field row, never unrelated finance inputs.
+  if(Array.from(parent.children).filter(el=>el.classList.contains('field')).length!==2)continue;
+  parent.classList.add('nic-balanced-finance-rates');
+ }
+}
+balanceFinanceRateFields();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',balanceFinanceRateFields,{once:true});
+new MutationObserver(balanceFinanceRateFields).observe(document.body||document.documentElement,{childList:true,subtree:true});
+
 function costs(id){
  if(id==='rentLtv' && typeof window.rentalCalculation==='function'){
   const m=window.rentalCalculation();
