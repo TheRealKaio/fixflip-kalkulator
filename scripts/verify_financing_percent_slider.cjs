@@ -216,6 +216,45 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     }
     assert(Math.abs(unfinanced.equity+unfinanced.base-unfinanced.total)<1,
       'Investment must equal loan plus equity after unchecking');
+    // Manual equity is authoritative even when it no longer covers all
+    // unfinanced acquisition costs. Auto-check the checkbox and borrow the
+    // remaining costs without changing what the person typed.
+    const gap=unfinanced.total-unfinanced.base;
+    assert(gap>5000,'Regression case must have ancillary costs above 5,000 euros');
+    await page.locator('#'+equity).fill('5000');
+    await page.waitForTimeout(160);
+    assert.equal(await checkbox.isChecked(),true,
+      'Insufficient manually entered cash turns acquisition financing back on');
+    assert(Math.abs(parse(await page.locator('#'+equity).inputValue())-5000)<0.005,
+      'Automatic checkbox activation must preserve manually entered 5,000 euros');
+    const partial=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
+        base:m.financingBase,ratio:Number(document.getElementById(id).value),
+        equity:Number(document.getElementById(eq).value)};
+    },{id:input,eq:equity});
+    assert(Math.abs(partial.base*partial.ratio/100-(partial.total-5000))<2,
+      'Loan finances only the part of acquisition costs not covered by 5,000 euros');
+    await page.locator('#'+equity).fill('0');
+    await page.waitForTimeout(160);
+    assert.equal(await checkbox.isChecked(),true,
+      'Setting equity to zero retains automatic acquisition financing');
+    const zero=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
+        base:m.financingBase,ratio:Number(document.getElementById(id).value),
+        equity:Number(document.getElementById(eq).value)};
+    },{id:input,eq:equity});
+    assert.equal(zero.equity,0,'Zero manual equity remains zero');
+    assert(Math.abs(zero.base*zero.ratio/100-zero.total)<2,
+      'Zero equity leads to complete financing including ancillary costs');
+    // Having enough cash must never force the checkbox OFF: the user may
+    // deliberately choose to finance ancillary costs regardless.
+    await page.locator('#'+equity).fill(String(Math.ceil(gap+1000)));
+    await page.waitForTimeout(140);
+    assert.equal(await checkbox.isChecked(),true,
+      'Enough equity does not override the selected acquisition financing');
+
 
 
    }
