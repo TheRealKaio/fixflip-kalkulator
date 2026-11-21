@@ -62,9 +62,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    let dialogCount=0;
    const accept=async dialog=>{dialogCount++;await dialog.accept()};
    page.on('dialog',accept);
+   const checkedBefore=await checkbox.isChecked();
    await checkbox.focus();await checkbox.press('Space');
    await page.waitForTimeout(150);
    page.off('dialog',accept);
+   const checkedAfter=await checkbox.isChecked();
+   console.log('Flip checkbox toggle diagnosis:',JSON.stringify({checkedBefore,checkedAfter,dialogCount,
+     capital:await equity.inputValue(),ratio:await page.locator('#ltv').inputValue()}));
    assert.equal(dialogCount,1,'Trusted user uncheck requires confirmation');
    assert.equal(await checkbox.isChecked(),false);
    const state=()=>page.evaluate(()=>{
