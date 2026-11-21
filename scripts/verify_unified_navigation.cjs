@@ -5,21 +5,29 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
  for(const width of [1440,390]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
   page.on('pageerror',e=>{const details=e.stack||e.message;errors.push(details);console.error('BROWSER PAGE ERROR '+width+' '+page.url()+'\\n'+details);});
-  let releaseInitialSettings,documentLoads=0;
+  let releaseInitialSettings,documentLoads=0,settingsRequestCount=0,resolveSettingsRequested;
   const settingsArrival=new Promise(resolve=>{releaseInitialSettings=resolve;});
+  const settingsRequested=new Promise(resolve=>{resolveSettingsRequested=resolve;});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
    if(route.request().resourceType()==='document')documentLoads++;
    if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
-   if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:''});
+   // The STRATO API is cross-origin in this local browser test. Simulate its
+   // credentialed CORS response and preflight, otherwise the browser silently
+   // rejects the response and the application falls back to bundled 16px settings.
+   const cors={'access-control-allow-origin':'http://localhost','access-control-allow-credentials':'true','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':'X-NIC-Request, X-NIC-CSRF, Content-Type'};
+   if(u.hostname!=='localhost'&&route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+   if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:'',headers:cors});
    if(u.hostname!=='localhost'&&u.searchParams.get('r')==='settings'){
+    settingsRequestCount++;
+    resolveSettingsRequested();
     await settingsArrival;
     const settings=JSON.parse(JSON.stringify(require('../assets/site-settings.json')));
     settings.layout.bodySize=20;settings.layout.h1=30;
     settings.company.email='layout-test@example.com';
-    return route.fulfill({status:200,json:{user:null,settings,csrf:'test'}});
+    return route.fulfill({status:200,json:{user:null,settings,csrf:'test'},headers:cors});
    }
-   if(u.hostname!=='localhost')return route.fulfill({status:200,json:{user:null,settings:require('../assets/site-settings.json'),csrf:'test'}});
+   if(u.hostname!=='localhost')return route.fulfill({status:200,json:{user:null,settings:require('../assets/site-settings.json'),csrf:'test'},headers:cors});
    let name=u.pathname;if(name.endsWith('/'))name+='index.html';
    const file=path.join(process.cwd(),'_site',name);
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
@@ -36,12 +44,13 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    }).observe(document,{childList:true,subtree:true});
   });
   await page.goto('http://localhost/',{waitUntil:'domcontentloaded'});
+  await Promise.race([settingsRequested,new Promise((_,reject)=>setTimeout(()=>reject(new Error('The browser did not request cloud settings before the first reveal')),10000))]);
   assert.equal(await page.locator('.app').evaluate(el=>getComputedStyle(el).visibility),'hidden','App must not display the bundled intermediate layout while published settings are pending');
   releaseInitialSettings();
   await page.locator('.app').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='ready');
   const initialState=await page.evaluate(()=>({bodySize:NICSettings.current?.layout.bodySize,ready:NICSettings.ready,published:NICSettings.published?.layout.bodySize,remoteEnabled:NICAccess?.enabled,bootstrap:!!document.getElementById('nic-published-settings'),state:document.documentElement.dataset.nicLayoutReady}));
-   assert.equal(initialState.bodySize,20,'Published typography must be applied before reveal: '+JSON.stringify(initialState));
+  assert.equal(initialState.bodySize,20,'Published typography must be applied before reveal: '+JSON.stringify({initialState,settingsRequestCount}));
   assert.equal(await page.locator('#nicFooterEmail').textContent(),'layout-test@example.com','Footer must be populated before reveal');
   const firstVisible=await page.locator('.app').evaluate(app=>['.nic-brand-bar','.hero','.footer-note'].map(selector=>{const r=app.querySelector(selector).getBoundingClientRect();return {height:r.height,top:r.top};}));
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
