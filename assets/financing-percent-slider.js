@@ -95,8 +95,19 @@ function costs(id){
  // These outputs are already calculated by the existing own/flip model.
  // No second loan/debt/interest formula is introduced here.
  if(id==='ltv'){
-  // Owner-use exposes these same financing totals in its existing model.
-  // Reuse them when available, rather than recalculate ancillary costs.
+  // Owner and Fix & Flip both expose exact acquisition components. For Flip,
+  // do not use model.financingBase in the special zero-cash full-finance case:
+  // that amount also capitalizes holding costs/interest.
+  if(typeof window.model==='function' && activeMode()==='flip'){
+   try{
+    const m=window.model();
+    const purchase=Math.max(0,m.p||0),renovation=Math.max(0,m.reno||0);
+    const fees=Math.max(0,m.tax||0)+Math.max(0,m.notary||0)+Math.max(0,m.buyBroker||0);
+    if(purchase>0)return {total:purchase+renovation+fees,
+     base:purchase+renovation+(byId('financeAcquisition')?.checked?fees:0)};
+   }catch(_error){/* Fall back to visible project totals. */}
+  }
+  // Owner-use uses the existing calculator financing totals.
   if(typeof window.model==='function' && activeMode()==='own'){
    try{
     const m=window.model();
@@ -162,7 +173,10 @@ function install(id,equityId){
  // The calculator's legacy input stores percent of the FINANCEABLE basis.
  // Present percent of the TOTAL investment to the user, without touching
  // Fix & Flip's separate financing / reserve model.
- const effectiveMode=()=>mode()!=='flip';
+ // Also show Fix & Flip's selected acquisition/renovation loan as a share
+ // of initial investment. The Flip model separately adds holding/interest
+ // capitalization when truly no cash is available.
+ const effectiveMode=()=>true;
  const effectiveShare=(internal,c)=>{
   return effectiveMode()&&c.total>0 ? internal*c.base/c.total : internal;
  };
@@ -220,7 +234,6 @@ function install(id,equityId){
   if(updating||!event.isTrusted)return;
   setManual(true);
   queueMicrotask(()=>{
-   if(mode()==='flip')return syncManualPercentage();
    const box=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
    const c=costs(id);
    const cash=Math.max(0,parseNumber(equity.value));
@@ -364,7 +377,7 @@ function install(id,equityId){
  // Otherwise a reload can silently alter the loan by several euros.
  setTimeout(()=>{
   if(!original.isConnected||!equity.isConnected)return;
-  if(isManual() && mode()!=='flip')syncManualPercentage();
+  if(isManual())syncManualPercentage();
   else refresh();
  },0);
 }
@@ -378,7 +391,7 @@ function setup(){
  setTimeout(()=>{
   const active=activeMode();
   for(const [id,controller] of controllers){
-   if(id==='ltv'&&active!=='own')continue;
+   if(id==='ltv'&&active!=='own'&&active!=='flip')continue;
    if(controller.isManual())controller.synchronize();
    else controller.refresh();
   }
