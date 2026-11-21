@@ -33,8 +33,7 @@ style.textContent=`
 /* Eigenheim and Fix & Flip: equal-width interest and repayment fields.
    Only the identified pair is affected; mobile layout stays untouched. */
 @media(min-width:701px){
- html[data-calculator="own"] .nic-balanced-finance-rates,
- html[data-calculator="flip"] .nic-balanced-finance-rates{
+ .nic-balanced-finance-rates{
   display:grid!important;
   grid-column:1 / -1!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -45,8 +44,7 @@ style.textContent=`
   max-width:none!important;
   min-width:0!important;
  }
- html[data-calculator="own"] .nic-balanced-finance-rates>.field,
- html[data-calculator="flip"] .nic-balanced-finance-rates>.field{
+ .nic-balanced-finance-rates>.field{
   box-sizing:border-box!important;
   width:100%!important;
   min-width:0!important;
