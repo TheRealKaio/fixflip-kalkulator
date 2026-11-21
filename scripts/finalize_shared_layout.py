@@ -344,7 +344,7 @@ rules.append("""
 
 
 # Eigennutzung financing responsive layout mirrors the desktop field groups.
-# Keep the 3-rate row, full-width duration, paired purchase fees, and acquisition row.
+# Keep paired interest and repayment fields above the full-width financing slider.
 rules.append("""
 @media (min-width:701px) and (max-width:1000px){
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields{
@@ -352,7 +352,7 @@ rules.append("""
   gap:14px!important;min-width:0!important;max-width:100%!important;
  }
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields>.finance-rate-grid{
-  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:10px!important;grid-column:1/-1!important;min-width:0!important;
  }
  body:not(.nic-admin) #ownFinanceCard .nic-finance-mobile-fields>.quick-grid{
@@ -360,7 +360,7 @@ rules.append("""
   gap:14px 10px!important;grid-column:1/-1!important;min-width:0!important;
  }
  body:not(.nic-admin) #ownFinanceCard .finance-rate-grid .field:has(#ltv){
-  grid-column:auto!important;
+  grid-column:1/-1!important;
  }
  body:not(.nic-admin) #ownFinanceCard .finance-duration-swap-v8403{
   grid-column:1/-1!important;
@@ -427,11 +427,11 @@ rules.append("""
   gap:14px!important;min-width:0!important;max-width:100%!important;
  }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.finance-rate-grid{
-  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:10px!important;grid-column:1/-1!important;min-width:0!important;
  }
  body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv){
-  grid-column:auto!important;min-width:0!important;
+  grid-column:1/-1!important;min-width:0!important;
  }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls){
   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;

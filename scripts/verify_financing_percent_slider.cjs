@@ -5,7 +5,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  const browser=await chromium.launch({headless:true});
  try{
   for(const width of [390,900,1440]){
-   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[];
+   const page=await browser.newPage({viewport:{width,height:width===900?430:900},serviceWorkers:'block'}),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
@@ -51,10 +51,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.waitForFunction(()=>window.NICSettings?.ready);
     const hintFont=await slider.evaluate(el=>{
      const settings=window.NICSettings;
+     const label=el.parentElement.querySelector('.nic-finance-percent-labels output');
+     const originalSize=getComputedStyle(label).fontSize;
      settings.apply({...settings.current,layout:{...settings.current.layout,hintSize:19}});
-     return getComputedStyle(el.parentElement.querySelector('.nic-finance-equity-hint')).fontSize;
+     return {hint:getComputedStyle(el.parentElement.querySelector('.nic-finance-equity-hint')).fontSize,
+      labelsUnchanged:getComputedStyle(label).fontSize===originalSize};
     });
-    assert.equal(hintFont,'19px','Financing hint uses the Admin hint size');
+    assert.deepEqual(hintFont,{hint:'19px',labelsUnchanged:true},'Only the explanation uses the Admin hint size');
     assert.equal(await page.locator('#ownEquityShortfallWarning,#rentFundingGap').count(),0,
       'Retired redundant red shortfall warning must not appear in either calculator');
     assert.equal(await page.locator('#'+input).count(),1,'Original percent field is retained once');
@@ -62,6 +65,18 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await slider.evaluate(el=>Math.round(el.getBoundingClientRect().width)),
                  await slider.evaluate(el=>Math.round(el.closest('.field').getBoundingClientRect().width)),
                  'Slider spans its field');
+    if(width===900){
+     const geometry=await slider.evaluate((el,mode)=>{
+      const box=input=>document.getElementById(input).closest('.field').getBoundingClientRect();
+      const [left,right]=mode==='rent'?['rentInterest','rentRepayment']:['interest','repayment'];
+      const interest=box(left),repayment=box(right);
+      const field=el.closest('.field').getBoundingClientRect();
+      return {equal:Math.abs(interest.width-repayment.width)<1&&Math.abs(interest.top-repayment.top)<1,
+       below:field.top>=Math.max(interest.bottom,repayment.bottom)-1,
+       full:Math.abs(field.left-interest.left)<1&&Math.abs(field.right-repayment.right)<1};
+     },key);
+     assert.deepEqual(geometry,{equal:true,below:true,full:true},route+' landscape financing grid');
+    }
     if(route==='vermietung' && width>700){
       const layout=await page.evaluate(()=>{
         const rent=document.getElementById('rentFinanceCard');
