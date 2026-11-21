@@ -27,8 +27,19 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.waitForFunction(()=>document.body.dataset.calculator==='flip'&&window.NICCalculators?.active==='flip'&&typeof window.model==='function',{timeout:25000});
    const slider=page.locator('#ltv').locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]').locator('.nic-finance-percent-range');
    if(!(await slider.isVisible())){
-    const details=page.locator('#ownFinanceCard details.advanced');
-    if(await details.count())await details.evaluate(el=>el.open=true);
+    const ancestors=await slider.evaluate(el=>{
+      const a=[];for(let p=el;p;p=p.parentElement){
+        const st=getComputedStyle(p);
+        if(st.display==='none'||st.visibility==='hidden'||p.hidden||p.tagName==='DETAILS')
+         a.push({tag:p.tagName,id:p.id,cls:String(p.className).slice(0,65),hidden:p.hidden,open:p.open,display:st.display});
+      }return a;
+    });
+    console.log('Fix & Flip slider visibility diagnosis:',JSON.stringify(ancestors));
+    await slider.evaluate(el=>{
+      for(let p=el;p;p=p.parentElement){
+        if(p.tagName==='DETAILS')p.open=true;
+      }
+    });
    }
    await slider.waitFor({state:'visible',timeout:5000});
    const checkbox=page.locator('#financeAcquisition'),equity=page.locator('#ownEquityInput');
