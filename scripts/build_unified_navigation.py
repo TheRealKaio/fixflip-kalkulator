@@ -60,6 +60,9 @@ finance_result_grid_css += '#nicFinanceModule .grid.finance-result-grid:has(> .k
 finance_result_grid_css += '@media(max-width:700px),(hover:none){#nicFinanceModule .grid.finance-result-grid:has(> .kpi){grid-template-columns:minmax(0,1fr)!important}}';
 finance_result_grid_css += '#nicFinanceModule .refinance-slider .rangehead>*{font-size:var(--nic-subtext-font-size,14px)!important;line-height:1.5!important}';
 finance_result_grid_css += '#nicFinanceModule .finance-result-grid>.kpi{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:.35em!important}#nicFinanceModule .finance-result-grid>.kpi>span,#nicFinanceModule .finance-result-grid>.kpi>strong{display:block!important;width:100%;margin:0!important}';
+slider_layout=re.search(r"/\* Refinance slider layout start \*/(.*?)/\* Refinance slider layout end \*/",source,re.S)
+if not slider_layout:raise SystemExit("Refinance slider layout missing")
+finance_result_grid_css += slider_layout[1]
 financeMarkup=namespace_finance_ids(markup+actions);
 factory='function createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
