@@ -139,7 +139,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     },{id:input});
     const at80=await page.evaluate(({id})=>{const m=id==='rentLtv'?window.rentalCalculation():window.model();return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,base:m.financingBase};},{id:input});
     assert(Math.abs(parse(await page.locator('#'+equity).inputValue())-Math.max(0,at80.total-at80.base*0.8))<1,'80 percent slider updates equity after manual entry');
-    assert.match(await page.locator('#'+input).closest('.field').locator('.nic-finance-equity-hint').textContent(),/Eigenkapital|mehr|weniger/,'Slider explains equity change');
+    assert.match(await page.locator('#'+input).locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]').locator('.nic-finance-equity-hint').textContent(),/Eigenkapital|mehr|weniger/,'Slider explains equity change');
     await page.evaluate(({id})=>{
      const slider=document.getElementById(id).closest('.field').querySelector('input[type="range"]');
      slider.value='120';slider.dispatchEvent(new Event('input',{bubbles:true}));
