@@ -5,7 +5,19 @@ const page=document.documentElement.dataset.nicPage||'website';
 let activePage=page;
 const isContentPage=()=>['settlement','prices','why','immobilien-abc','about','contact','login'].includes(document.documentElement.dataset.nicPage);
 function company(s){if(/\/impressum\/?$/.test(location.pathname)&&!document.getElementById('heroTitle')){location.replace(new URL('#impressum',S.ROOT).href);return;}const root=document.getElementById('companyContent');if(!root)return;root.replaceChildren();const parts=S.imprint(s);if(!parts.length){const p=document.createElement('p');p.textContent='Die Anbieterangaben wurden noch nicht hinterlegt.';root.append(p);return;}for(const {label,value} of parts){const h=document.createElement('h2');h.textContent=label;const p=document.createElement('p');p.textContent=value;root.append(h,p);}}
-function apply(){if(!S.current)return;S.apply(S.current,activePage);syncCalculatorMenu();window.NICShell?.refresh(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
+// Informational pages are prerendered from bundled settings. Keep About Us in sync
+// with the latest published/admin content after the asynchronous settings load.
+let renderedAboutDescription=null;
+function syncAboutContent(s){
+ if(document.documentElement.dataset.nicPage!=='about')return;
+ const container=document.querySelector('main.nic-content-main > article.nic-content-card > div');
+ if(!container)return;
+ const description=String(s.content?.about?.description||'');
+ if(description===renderedAboutDescription)return;
+ container.replaceChildren(S.contentFragment(description,s));
+ renderedAboutDescription=description;
+}
+function apply(){if(!S.current)return;S.apply(S.current,activePage);syncAboutContent(S.current);syncCalculatorMenu();window.NICShell?.refresh(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
 // A single route-based selection for every navigation card, including financing.
 function syncCalculatorMenu(){
  S.syncCalculatorMenu(activePage);
