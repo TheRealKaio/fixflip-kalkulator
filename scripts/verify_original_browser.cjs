@@ -150,10 +150,11 @@ const assert=require('node:assert/strict');
       const rect=id=>{const r=document.querySelector('.field:has(#'+id+')').getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,width:r.width};};
       return {interest:rect('interest'),repayment:rect('repayment'),financed:rect('ltv')};
      });
-     assert(Math.abs(fields.interest.top-fields.repayment.top)<1&&Math.abs(fields.repayment.top-fields.financed.top)<1,
-       'Own-use tablet places interest, repayment and financed on one row: '+JSON.stringify(fields));
-     assert(fields.financed.left>fields.repayment.left&&fields.financed.width>0,
-       'Own-use tablet places financed to the right of repayment: '+JSON.stringify(fields));
+     assert(Math.abs(fields.interest.top-fields.repayment.top)<1&&Math.abs(fields.interest.width-fields.repayment.width)<1,
+       'Own-use tablet places equal interest and repayment fields on one row: '+JSON.stringify(fields));
+     assert(fields.financed.top>fields.repayment.top&&Math.abs(fields.financed.left-fields.interest.left)<1&&
+       Math.abs(fields.financed.right-fields.repayment.right)<1,
+       'Own-use tablet places financed across the full next row: '+JSON.stringify(fields));
      await page.setViewportSize({width,height:900});
     }
     if(width===1440&&['eigennutzung','vermietung','fix-flip'].includes(slug)){
