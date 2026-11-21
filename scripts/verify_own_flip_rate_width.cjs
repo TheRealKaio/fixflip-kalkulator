@@ -38,6 +38,18 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       widths:[x.width,y.width],top:[x.top,y.top],pairWidth:p.width,containerWidth:container.width,
       pairLeft:p.left,containerLeft:container.left,columns:getComputedStyle(pair).gridTemplateColumns};
     });
+    console.log('RATE DEBUG',slug,width,JSON.stringify(await page.evaluate(()=>{
+     return Array.from(document.querySelectorAll('.app .field')).map(el=>{
+      const label=el.querySelector('label')?.textContent?.trim()||'';
+      if(!/zins|tilgung/i.test(label))return null;
+      const input=el.querySelector('input');
+      const r=el.getBoundingClientRect();
+      const ancestors=[];for(let n=el;n&&ancestors.length<6;n=n.parentElement){
+       ancestors.push({id:n.id,cls:n.className,display:getComputedStyle(n).display,hidden:n.hidden});
+      }
+      return {label,id:input?.id,width:r.width,top:r.top,ancestors};
+     }).filter(Boolean);
+    })));
     assert(/zins/i.test(result.labels[0])&&/tilgung/i.test(result.labels[1]),'Correct named inputs: '+JSON.stringify(result));
     assert(Math.abs(result.widths[0]-result.widths[1])<2,slug+' '+width+' equal columns: '+JSON.stringify(result));
     assert(Math.abs(result.top[0]-result.top[1])<2,slug+' '+width+' same row: '+JSON.stringify(result));
