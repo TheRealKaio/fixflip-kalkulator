@@ -5,7 +5,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  const browser=await chromium.launch({headless:true});
  try{
   for(const width of [390,900,1440]){
-   const page=await browser.newPage({viewport:{width,height:width===900?430:900},serviceWorkers:'block'}),errors=[];
+   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',async route=>{
     const u=new URL(route.request().url());
@@ -66,6 +66,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
                  await slider.evaluate(el=>Math.round(el.closest('.field').getBoundingClientRect().width)),
                  'Slider spans its field');
     if(width===900){
+     await page.setViewportSize({width,height:430});
      const geometry=await slider.evaluate((el,mode)=>{
       const box=input=>document.getElementById(input).closest('.field').getBoundingClientRect();
       const [left,right]=mode==='rent'?['rentInterest','rentRepayment']:['interest','repayment'];
@@ -76,6 +77,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        full:Math.abs(field.left-interest.left)<1&&Math.abs(field.right-repayment.right)<1};
      },key);
      assert.deepEqual(geometry,{equal:true,below:true,full:true},route+' landscape financing grid');
+     await page.setViewportSize({width,height:900});
     }
     if(route==='vermietung' && width>700){
       const layout=await page.evaluate(()=>{
