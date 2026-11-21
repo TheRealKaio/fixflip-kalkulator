@@ -201,16 +201,40 @@ function install(id,equityId){
   // Fixed user equity determines the effective debt, not a second deduction
   // from the already reduced financing percentage.
   const borrowed=Math.max(0,c.total-Math.max(0,parseNumber(equity.value)));
-  const percentage=Math.round(borrowed/c.base*10000)/100;
-  if(Math.abs(parseNumber(original.value)-percentage)<0.005){refresh();return;}
-  original.value=percentage.toFixed(2);
+  // Use six percentage decimals for calculation; only the displayed slider
+  // caption rounds to two. Rounding to 0.01 percentage points can otherwise
+  // change a six-figure loan by several euros after a manual cash entry.
+  const percentage=Math.round(borrowed/c.base*100000000)/1000000;
+  if(Math.abs(parseNumber(original.value)-percentage)<0.0000005){refresh();return;}
+  original.value=percentage.toFixed(6);
   changedFinance();
   refresh();
  };
+ // Direct cash entry is authoritative. If the cash is too small to pay
+ // every acquisition cost, some of those costs necessarily enter the loan.
+ // Turn the checkbox ON, without a confirmation or a second equity rewrite.
+ // Do not turn it OFF automatically: users may deliberately choose to
+ // finance ancillary costs even if they have enough cash to pay them.
+ let automaticCheckboxChange=false;
  const userEquity=event=>{
   if(updating||!event.isTrusted)return;
   setManual(true);
-  queueMicrotask(syncManualPercentage);
+  queueMicrotask(()=>{
+   if(mode()==='flip')return syncManualPercentage();
+   const box=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
+   const c=costs(id);
+   const cash=Math.max(0,parseNumber(equity.value));
+   const unfinancedCosts=Math.max(0,c.total-c.base);
+   if(box&&!box.checked&&cash+0.005<unfinancedCosts){
+    automaticCheckboxChange=true;
+    try{
+     box.checked=true;
+     box.dispatchEvent(new Event('change',{bubbles:true}));
+    }finally{automaticCheckboxChange=false;}
+   }
+   // The new financeable base must be read only after the checkbox changes.
+   syncManualPercentage();
+  });
  };
  equity.addEventListener('input',userEquity,true);
  equity.addEventListener('change',userEquity,true);
@@ -267,6 +291,10 @@ function install(id,equityId){
    }
   },true);
   acquisitionCheckbox.addEventListener('change',()=>{
+   // The auto-check from a manual cash edit is not a new financing decision.
+   // Let the cash amount drive the ratio, and skip the delayed checkbox
+   // handler which would otherwise clear the fixed-equity state.
+   if(automaticCheckboxChange)return;
    const previouslyBorrowed=shareBeforeToggle;
    shareBeforeToggle=null;
    setManual(false);
