@@ -100,7 +100,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Keine zweite Rücksetzlogik, die erst einen falschen Titel sichtbar schreibt.
 - Kein seitenspezifisches Nachbauen von Logo, Grafik, Schriftgrößen oder Abständen.
 - Startseite, alle fünf Kalkulatoren und alle Contentseiten (einschließlich Über uns,
-  Kontakt und Anmeldung) verwenden denselben Bildheader und denselben Footer.
+  Kontakt, Anmeldung und Immobilien ABC) verwenden denselben Bildheader und denselben Footer.
   Nur die aktiven Content-Felder `headerTitle` (max. 70 Zeichen) und
   `headerDescription` (max. 90 Zeichen) variieren je Seite. Leere Felder
   bleiben ohne Ersatztext und ohne Leerraum. Schriftgrößen, Logo, Layout,
@@ -172,6 +172,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Untertext „Betriebskosten erfassen und versenden“. Die Gruppenüberschrift lautet
   „Mieterabrechnung“. Das Symbol steht bereits im HTML, auch bei internem
   Wechsel zur Startseite.
+- Die Titel in Startseiten-Kacheln bleiben bei jeder Bildschirmbreite einzeilig. Ihre Bezeichnungen entsprechen den Einträgen im Rechner-Dropdown, auch nach einem internen Seitenwechsel.
 - Titel, Texte und Zielverknüpfung des Mieterabrechnungsbuttons bleiben wie die
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.
@@ -183,6 +184,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Der Hinweis „geändert (bitte prüfen)“ beim Fix-und-Flip-Verkaufspreis und der Eigenkapital-Hinweis nutzen die zentrale Schriftgröße `--nic-hint-font-size` aus Admin → Layout → Hinweistexte (px); bestehende Farben und Funktionslogiken bleiben unverändert.
 
 - Auf Mobilgeräten stehen „Notar + Grundbuch“ und „Makler beim Kauf“ in den Kaufnebenkosten-Eingaben jeweils auf einer eigenen Zeile über die volle verfügbare Breite, in dieser Reihenfolge. Desktop-Spalten und bestehende Eingaben/Berechnungen bleiben erhalten.
+- In der Vermietungs-Finanzierungsbox teilen sich Zins p.a. und Tilgung p.a. auf Tablet/Desktop die verfügbare Zeilenbreite gleichmäßig (je 50 % abzüglich Abstand). Der Finanzierungsregler steht darunter in einer eigenen vollen Zeile; Notar + Grundbuch und Makler haben dieselbe Eingabeoberkante. Die Beschriftung „Mitfinanzieren“ ist zentriert über der Checkbox positioniert. Mobile bleibt gemäß den bestehenden Vollbreiten-Regeln.
+- Die sechs Rechner-Kacheln im Inhaltsbereich stehen im mobilen Hochformat in zwei gleich breiten Spalten und drei Reihen.
+- Bei Fix & Flip steht die Zeile „Kaufnebenkosten / Mitfinanzieren“ im Hoch- und Querformat direkt unter „Makler beim Kauf“. „Mitfinanzieren“ steht mittig über der Checkbox. Zins und Tilgung teilen sich die verfügbare Breite gleichmäßig.
+- Änderungen an Notar- oder Maklerwerten verändern den manuell gewählten Finanzierungsprozentsatz nicht. Bei automatischem Eigenkapital wird der Bedarf aus den aktuellen Kosten erneut bestimmt; manuell eingetragenes Eigenkapital bleibt erhalten.
 
 ## Ergebnisboxen der Rechner
 
@@ -231,15 +236,14 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Die bestehende Server-Schnittstelle speichert die normalisierten Contentdaten kompatibel unter `meta.content`; `content` und `meta.content` referenzieren im Frontend dieselben Daten. Beim Laden werden beide Formate unterstützt. Keine zweite redaktionelle Quelle und keine Änderung an Datenbank, Zugangsdaten oder Serverinstallation.
 - Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
   Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
+- Auf Desktop, Tablet und Mobil sind zunächst genau die ersten beiden Absätze
+  einschließlich der Überschrift des zweiten Abschnitts sichtbar. Rechts unten
+  steht `weiterlesen`. Ein natives `details`/`summary` öffnet den
+  verbleibenden Text; `weniger anzeigen` schließt ihn wieder. Beim Wechsel
+  zu einem anderen Werkzeug beginnt die Box erneut eingeklappt.
 - Bei gleicher Fensterbreite und Typografie haben alle Boxen dieselbe minimale
-  Höhe: vollständiger Text auf Desktop, eingeklappte Fassung mobil. Die größte
-  benötigte Höhe wird ohne Abschneiden aus allen sechs Texten ermittelt; die
-  Desktop-Skalierung wird dabei berücksichtigt.
-- Mobil (bis 760 px bzw. gemeinsame schmale Querformatansicht) zunächst nur
-  Titel und erster Absatz; rechts unten steht `weiterlesen`. Ein natives
-  `details`/`summary` öffnet die beiden restlichen Abschnitte. Danach kann über
-  `weniger anzeigen` geschlossen werden. Beim neuen Seitenaufruf bzw. Wechsel
-  zu einem anderen Werkzeug beginnt die mobile Box wieder eingeklappt.
+  Höhe in eingeklapptem Zustand; die Messung berücksichtigt die Desktop-Skalierung.
+  Beim Aufklappen wächst der Text natürlich ohne Abschneiden.
 - Der vollständige Text steht bereits im HTML der direkten Route, auch mobil.
   Öffnen erfordert keinen Netzwerkabruf; Tastaturbedienung bleibt möglich.
 
@@ -318,6 +322,17 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Der Budgetrechner prüft den allgemeinen Spielraum, der Eigenheim-Rechner eine
   konkrete Immobilie. Der Einführungstext ist auf der direkten Route im HTML
   vorhanden und bei internen Wechseln nur im Modus Eigennutzung sichtbar.
+
+## Finanzierung: Prozent-Schieberegler und automatisches Eigenkapital (Development)
+
+- Eigennutzung, Fix & Flip und Vermietung verwenden für das bestehende Finanzierungs-Prozentfeld einen Schieberegler, ohne dessen Berechnungs-ID oder die Darlehens-/Zinsformeln zu ersetzen.
+- Der Regler besitzt auf Mobil und Desktop eine eigene Rasterzeile über die volle verfügbare Breite.
+- Die Skala umfasst mindestens 0–120 %, und bereits vorhandene höhere Werte müssen angezeigt und erhalten werden. Eingaben bleiben mit zwei Dezimalstellen kompatibel.
+- Ohne manuelle Eigenkapitaleingabe folgt das bestehende Eurofeld automatisch dem aus Finanzierungsquote und Projektkosten hergeleiteten Eigenkapitalbedarf. Veränderungen von Kaufpreis und Nebenkosten aktualisieren den automatischen Vorschlag.
+- Hat der Nutzer Eigenkapital selbst eingegeben, bleibt dieser Betrag auch bei Änderungen von Kaufpreis, Notar, Makler und Finanzierungsquote fix; bei einer Eigenkapitaländerung bestimmt er umgekehrt den Finanzierungsprozentsatz. Der manuelle Zustand bleibt getrennt für Eigennutzung, Fix & Flip und Vermietung gespeichert, bis eine erneute Eingabe oder ein bestätigter Rechner-Reset erfolgt.
+- Der Prozentwert bezeichnet den Brutto-Finanzierungsanteil der Finanzierungsbasis. Das Eigenkapital wird nur einmal von den Gesamtkosten zur Ermittlung des notwendigen Darlehensanteils berücksichtigt. In Fix & Flip bleiben Projekt- und Zinsreserven erhalten; beim Reglerbetrieb darf ein überschüssiger Eigenkapitalbetrag die bereits angepasste Kreditsumme nicht ein zweites Mal reduzieren.
+- Der Regler unterstützt mindestens 0–120 % und besitzt bei 100 % eine Einrastzone von ±1 Prozentpunkt; ein bewusstes Weiterziehen über die Zone hinaus bleibt möglich.
+- Vor Übernahme nach main muss der Browser-Test beide relevanten Layoutbreiten, 0 % / 120 % und manuelle Eingaben prüfen. Keine automatische STRATO-Veröffentlichung auf develop.
 
 ## Eingabefelder: Beispieltexte
 
@@ -399,7 +414,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Das Dropdown zeigt die fünf Rechner und als letzten auswählbaren Eintrag „Mieter-Abrechnung“. Auf Inhaltsseiten ist **Budgetrechner** als Standard vorausgewählt; es wird kein Platzhalter („Rechner auswählen“ / „Bitte wählen“) im Dropdown angelegt. Die Vorauswahl verändert den Inhalt der gerade geöffneten Seite nicht, bis ein Menüwechsel erfolgt.
 - Auf Rechner- und gemeinsamen Inhaltsseiten wird die vorhandene `.deal-type-card` als **einzige** Navigation wiederverwendet: im Mobil-Hochformat im Bildheader, sonst an ihrem ursprünglichen Ort im Hauptinhalt. Keine zweite Kachelleiste und keine doppelte Routing-Logik.
 - Reine Inhaltsseiten ohne Rechnerformular und ohne ursprüngliche Kachelleiste erzeugen über dieselbe Initialisierungsfunktion genau eine kompakte Navigation; sie bleibt außerhalb von Mobil Portrait unsichtbar. Die Auswahl eines Rechners lädt dort die vollständige Rechnerseite, während die gemeinsame Rechner-App weiterhin ohne kompletten Seitenwechsel navigiert.
-- Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der jeweilige Bildheader zeigt die mobile Überschrift „Jetzt [Rechnername] berechnen!“ mit kurzem Subtext. Die ausführliche Erklär-/SEO-Karte steht im Dokumentfluss nach den Rechnermodulen.
+- Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der Bildheader verwendet auch mobil den Titel und die Kurzbeschreibung aus Admin → Seiten & Metadaten. Seine Höhe ergibt sich aus den sichtbaren Elementen im normalen Dokumentfluss. Die ausführliche Erklär-/SEO-Karte steht im Dokumentfluss nach den Rechnermodulen.
 - Startseite, Querformat, Tablet/Desktop und rechtliche/adminstrative Überlagerungen auf der Startseite bleiben außerhalb dieser Porträt-Navigation.
 - Vor Freigabe: alle Unterseiten, 320/375/390/430 px Hochformat, 700/701 px Übergang, sämtliche sechs Ziele, Browser-Zurück/Vorwärts, direkte Routen, Wechsel zwischen Hoch-/Querformat und Live-Layout-Radius testen.
 
@@ -456,3 +471,17 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Rechner, Mieterabrechnung, Inhaltsseiten und rechtliche Seiten sind gruppiert. Jeder Seiteneintrag ist standardmäßig geschlossen und zeigt rechts ein Plus zum Öffnen.
 - Pro Seite stehen Inhalt und Metadaten zusammen. Richtwerte für Meta-Titel und Meta-Beschreibung erscheinen als kurze Hinweise. Noindex steht mit der Checkbox rechts neben der Beschriftung.
 - Rechner zeigen je ein Feld für Meta-Titel und Meta-Beschreibung. Gespeicherte Werte aus älteren Konfigurationen bleiben als Fallback lesbar.
+
+
+## Menüsichtbarkeit nach Gerät (20. November 2026)
+
+- Die sechs Kacheln sind Budgetrechner, Eigenheim & Eigennutzung, Vermietung, Fix und Flip, Finanzierung & Restschuld und Nebenkosten abrechnen. Die letzte Kachel führt auf die bestehende Inhaltsroute `/nebenkostenabrechnung/`, sie ist kein sechster Rechner.
+- Keine dieser Kacheln führt zum Immobilien ABC.
+- Admin → Layout bietet eine eigene weiße Karte unmittelbar vor der Projektdokumentation mit 28 Checkboxen in vier Gruppen: sechs Startseiten-Kacheln, sechs Rechnerseiten-Kacheln, ein Dropdown auf der Startseite, ein Dropdown auf allen anderen Seiten – jede Gruppe getrennt für Mobil (bis 700 px) und Desktop/Rest (ab 701 px).
+- Sichtbarkeit ist keine Zugriffsberechtigung: direkte Rechner-/Content-URLs bleiben nutzbar.
+- Das Dropdown verwendet auf allen Seiten denselben Controller, dieselben sechs Ziele und das mobile Gestaltungsmuster (weißer Rahmen, grüner Schalter, Symbolzeilen). Es steht in einer eigenen, mittigen Zeile über dem Seitentitel und hält die Bezeichnungen einzeilig.
+- Die Einstellungen werden als `navigationVisibility.{home,calculator,dropdownHome,dropdownOther}.{mobile,desktop}` im zentralen Einstellungsobjekt gespeichert. Ältere `mobile`/`desktop`-Konfigurationen werden rückwärtskompatibel eingelesen. Beim ersten Laden verhindert der PHP-Content-Gate ein Aufblitzen bereits bekannter deaktivierter statischer Kacheln.
+- Vollständig deaktivierte statische Kacheln entfernt der PHP-Gate aus der HTML-Antwort. Ansichtsspezifische Freigaben werden wegen der beim ersten HTTP-Request nicht verlässlich bekannten Bildschirmbreite zusätzlich vor der Darstellung per CSS und nach der Initialisierung im gemeinsamen JS-Controller durchgesetzt; dies ersetzt keine serverseitige Berechtigungssperre.
+- Änderungen bleiben zunächst auf `develop`. Vor einem Live-Release sind Vorschau, mobile/desktop Browserprüfungen, Server-Konfiguration, HTML-Auslieferung und alle vorhandenen Build-Checks abzunehmen.
+
+- Ausgeblendete Kacheln geben ihre Breite an die verbleibenden frei. Leere Startseiten-Gruppen werden versteckt. Veraltete `Sanierung`/Immobilien-ABC-Verknüpfungen dürfen nie in der sechsfachen Rechnerleiste stehen.

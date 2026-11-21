@@ -272,3 +272,241 @@ html body:not(.nic-admin) .app main.section .nic-property-aligned-field>label .n
 html body:not(.nic-admin) .app main.section .nic-property-aligned-field>:is(.input-wrap,.metric-box){
  flex:0 0 auto;margin-top:0!important;box-sizing:border-box;
 }
+
+
+/* Server-configured navigation visibility. Hidden controls never flash on resize. */
+.deal-type-option[hidden],.nic-mobile-calculator-option[hidden],
+.nic-mobile-calculator-controls[hidden]{display:none!important}
+/* Must outrank desktop/portrait !important display rules when an admin box is off. */
+body .app>.hero>.nic-desktop-calculator-controls[hidden],
+body .nic-portrait-calculator-menu .nic-mobile-calculator-controls[hidden],
+body .app>.hero .nic-mobile-calculator-options[hidden],
+body .app>.hero .nic-mobile-calculator-option[hidden]{display:none!important}
+
+/* Preserve server/client hidden state even against legacy card display rules. */
+#nic-home-intro .nic-home-group[hidden],#nic-home-intro .deal-type-option[hidden]{display:none!important}
+
+/* Unified dropdown: centered white panel on a dedicated line above the hero heading. */
+.app>.hero:has(>.nic-global-dropdown-shell:not([hidden])){overflow:visible!important}
+
+.app>.hero>.nic-global-dropdown-shell{
+ box-sizing:border-box;position:relative;z-index:35;display:flex!important;
+ justify-content:center;align-items:center;clear:both;
+ width:100%;max-width:100%;margin:12px auto 10px;padding:0;
+}
+.app>.hero>.nic-global-dropdown-shell[hidden]{display:none!important}
+.app>.hero>.nic-global-dropdown-shell>.nic-mobile-calculator-controls{
+ box-sizing:border-box;position:relative;display:block!important;
+ width:min(100%,430px);max-width:100%;margin:0 auto;padding:6px!important;
+ background:#fff!important;border:0;border-radius:var(--nic-menu-radius,16px)!important;
+ box-shadow:none;
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-label,
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-select{
+ position:absolute!important;width:1px!important;height:1px!important;
+ min-height:0!important;padding:0!important;margin:0!important;
+ border:0!important;opacity:0!important;overflow:hidden!important;
+ clip-path:inset(50%)!important;pointer-events:none!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-trigger{
+ box-sizing:border-box;display:flex!important;align-items:center!important;
+ width:100%!important;min-height:44px!important;padding:0!important;margin:0!important;
+ background:var(--nic-green-bg,#075c55)!important;color:#fff!important;
+ border:0!important;border-radius:var(--nic-menu-radius,16px)!important;
+ cursor:pointer!important;font-family:var(--nic-body-font-family,inherit)!important;
+ font-size:var(--nic-subtext-font-size,14px)!important;font-weight:600!important;
+ line-height:1.25!important;text-transform:none!important;letter-spacing:normal!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-current{
+ box-sizing:border-box;position:relative;display:flex!important;
+ align-items:center;justify-content:center;gap:10px;min-width:0;width:100%;
+ margin:0!important;padding:14px 32px!important;background:transparent!important;
+ font:inherit!important;font-weight:700!important;color:#fff!important;
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-current-text{
+ flex:0 1 auto;min-width:0;text-align:center;white-space:nowrap!important;
+ overflow:hidden;text-overflow:ellipsis
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-chevron{
+ position:absolute;right:13px;top:50%;margin-top:-3px;width:8px;height:8px;
+ border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+ font-size:0!important;transform:translateY(-2px) rotate(45deg)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-trigger[aria-expanded="true"] .nic-mobile-calculator-chevron{
+ transform:translateY(2px) rotate(225deg)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-options{
+ box-sizing:border-box;position:absolute;z-index:120;top:calc(100% + 5px);
+ left:0;right:0;width:100%;max-height:min(60vh,430px);overflow-y:auto;
+ padding:6px!important;background:#fff!important;border:1px solid #e1e6e2!important;
+ border-radius:var(--nic-menu-radius,16px)!important;box-shadow:0 12px 24px #0c2b2630!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-options[hidden],
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option[hidden]{display:none!important}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option{
+ box-sizing:border-box;display:flex!important;align-items:center;gap:12px;width:100%!important;
+ min-height:48px!important;margin:0!important;padding:12px 10px!important;
+ background:transparent!important;color:var(--ink,#263b3a)!important;
+ border:0!important;border-radius:calc(var(--nic-menu-radius,16px) * .7)!important;
+ font-family:var(--nic-body-font-family,inherit)!important;font-size:var(--nic-subtext-font-size,14px)!important;
+ font-weight:600!important;line-height:1.25!important;white-space:nowrap!important;
+ text-align:left!important;text-transform:none!important;cursor:pointer!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option svg{
+ flex:none;width:24px;height:24px;color:var(--nic-green-bg,#075c55)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option-text{
+ flex:1 1 auto;white-space:nowrap!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-check{
+ display:none;flex:none;color:var(--nic-green-bg,#075c55)
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option.is-selected{
+ background:#e1f1e9!important;color:var(--nic-green-bg,#075c55)!important
+}
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option.is-selected .nic-mobile-calculator-check{display:inline}
+/* Remaining tiles claim the entire freed row width, both on homepage and calculator pages. */
+/* Keep the approved 1:2 homepage grouping until a whole group disappears. */
+#nic-home-intro .nic-home-groups:has(>.nic-home-group[hidden]){
+ grid-template-columns:minmax(0,1fr)!important
+}
+#nic-home-intro .nic-home-planning>.nic-home-options,
+#nic-home-intro .nic-home-property>.nic-home-options{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))!important
+}
+.deal-type-card:not(.nic-portrait-calculator-menu)>.deal-type-row{
+ display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr))!important;
+ gap:8px!important
+}
+@media(max-width:700px){
+ .deal-type-card:not(.nic-portrait-calculator-menu)>.deal-type-row{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important
+ }
+}
+/* The hidden attribute always wins over old responsive display!important declarations. */
+#nic-home-intro .nic-home-group[hidden],
+#nic-home-intro .nic-home-options>.deal-type-option[hidden],
+.deal-type-card .deal-type-option[hidden],
+.app>.hero>.nic-global-dropdown-shell[hidden],
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-controls[hidden],
+.app>.hero>.nic-global-dropdown-shell .nic-mobile-calculator-option[hidden]{display:none!important}
+
+/* Narrow portrait follows the same one-line wording rule as the shared dropdown. */
+@media(max-width:700px) and (orientation:portrait){
+ .nic-portrait-calculator-menu .nic-mobile-calculator-current-text,
+ .nic-portrait-calculator-menu .nic-mobile-calculator-option-text{
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+ }
+}
+
+/* Remove residual fixed widths from legacy menu buttons. */
+.deal-type-card:not(.nic-portrait-calculator-menu)>.deal-type-row>.deal-type-option:not([hidden]),
+#nic-home-intro .nic-home-options>.deal-type-option:not([hidden]){
+ box-sizing:border-box!important;min-width:0!important;width:100%!important;max-width:none!important;flex:1 1 auto!important
+}
+
+/* Empty or administratively disabled six-button shell must collapse completely. */
+body .app>.hero>.deal-type-card.nic-portrait-calculator-menu[hidden],
+body .app>main.section>.deal-type-card[hidden]{display:none!important}
+
+@media(max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .app > main.section > .deal-type-card > .deal-type-row{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ html body:not(.nic-embed) .app > main.section > .deal-type-card > .deal-type-row:has(> .deal-type-option:not([hidden])):not(:has(> .deal-type-option:not([hidden]) ~ .deal-type-option:not([hidden]))){
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
+
+/* Landscape calculator navigation: never let the sixth button sit alone.
+   Use the actual menu width, not the viewport width, to switch from 6 to 3+3. */
+@media (orientation:landscape){
+  .deal-type-card:not(.nic-standalone-calculator-menu){
+    container-type:inline-size;
+  }
+  @container (max-width:999px){
+    .deal-type-card:not(.nic-standalone-calculator-menu) > .deal-type-row{
+      grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    }
+  }
+  @container (min-width:1000px){
+    .deal-type-card:not(.nic-standalone-calculator-menu) > .deal-type-row{
+      grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    }
+  }
+}
+
+
+/* Calculator pages only: compact equal-height six-tile bar with icon and two-line
+   title. This never targets #nic-home-intro or the independent home button bar. */
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option:not([hidden]){
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ grid-template-rows:26px auto!important;
+ align-content:center!important;
+ align-items:center!important;
+ justify-items:center!important;
+ row-gap:7px!important;
+ box-sizing:border-box!important;
+ width:100%!important;
+ height:auto!important;
+ min-height:99px!important;
+ max-height:none!important;
+ padding:12px 7px!important;
+}
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option > .nic-menu-icon{
+ grid-column:1!important;
+ grid-row:1!important;
+ justify-self:center!important;
+ align-self:center!important;
+ margin:0!important;
+ width:24px!important;
+ height:24px!important;
+}
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option strong{
+ grid-column:1!important;
+ grid-row:2!important;
+ display:block!important;
+ align-self:center!important;
+ justify-self:stretch!important;
+ width:100%!important;
+ max-width:100%!important;
+ margin:0!important;
+ padding:0!important;
+ line-height:1.25!important;
+ text-align:center!important;
+}
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option strong .nic-calculator-title-line{
+ display:block!important;
+ width:100%!important;
+ white-space:nowrap!important;
+ line-height:1.25!important;
+ text-align:center!important;
+}
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option small{
+ display:none!important;
+}
+/* Admin visibility must beat every legacy tile display rule. A disabled
+   calculator option is never visible, even before the navigation JS runs. */
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option[hidden],
+html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option[data-nic-nav-obsolete="true"]{
+ display:none!important;
+}
+
+@media(max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .app .deal-type-card > .deal-type-row > .deal-type-option strong .nic-calculator-title-line{
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+ }
+}
+
+
+/* Homepage button captions stay on one line, even in narrower grid cells. */
+#nic-home-intro .nic-home-options > .deal-type-option{
+ container-type:inline-size;
+}
+html body #nic-home-intro .nic-home-options > .deal-type-option strong{
+ white-space:nowrap!important;
+ overflow-wrap:normal!important;
+ font-size:min(var(--nic-body-font-size, 18px), 5.6cqi)!important;
+}

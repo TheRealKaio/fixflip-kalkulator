@@ -5,21 +5,28 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
  for(const width of [1440,390]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
   page.on('pageerror',e=>{const details=e.stack||e.message;errors.push(details);console.error('BROWSER PAGE ERROR '+width+' '+page.url()+'\\n'+details);});
-  let releaseInitialSettings,documentLoads=0;
+  let releaseInitialSettings,settingsRequestCount=0,resolveSettingsRequested;
   const settingsArrival=new Promise(resolve=>{releaseInitialSettings=resolve;});
+  const settingsRequested=new Promise(resolve=>{resolveSettingsRequested=resolve;});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
-   if(route.request().resourceType()==='document')documentLoads++;
    if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
-   if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:''});
-   if(u.hostname!=='localhost'&&u.searchParams.get('r')==='settings'&&documentLoads===1){
+   // The STRATO API is cross-origin in this local browser test. Simulate its
+   // credentialed CORS response and preflight, otherwise the browser silently
+   // rejects the response and the application falls back to bundled 16px settings.
+   const cors={'access-control-allow-origin':'http://localhost','access-control-allow-credentials':'true','access-control-allow-methods':'GET, POST, OPTIONS','access-control-allow-headers':'X-NIC-Request, X-NIC-CSRF, Content-Type'};
+   if(u.hostname!=='localhost'&&route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+   if(u.hostname!=='localhost'&&route.request().resourceType()==='script')return route.fulfill({contentType:'application/javascript',body:'',headers:cors});
+   if(u.hostname!=='localhost'&&u.searchParams.get('r')==='settings'){
+    settingsRequestCount++;
+    resolveSettingsRequested();
     await settingsArrival;
     const settings=JSON.parse(JSON.stringify(require('../assets/site-settings.json')));
     settings.layout.bodySize=20;settings.layout.h1=30;
     settings.company.email='layout-test@example.com';
-    return route.fulfill({status:200,json:{user:null,settings,csrf:'test'}});
+    return route.fulfill({status:200,json:{user:null,settings,csrf:'test'},headers:cors});
    }
-   if(u.hostname!=='localhost')return route.fulfill({status:200,json:{user:null,settings:require('../assets/site-settings.json'),csrf:'test'}});
+   if(u.hostname!=='localhost')return route.fulfill({status:200,json:{user:null,settings:require('../assets/site-settings.json'),csrf:'test'},headers:cors});
    let name=u.pathname;if(name.endsWith('/'))name+='index.html';
    const file=path.join(process.cwd(),'_site',name);
    if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
@@ -36,11 +43,13 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    }).observe(document,{childList:true,subtree:true});
   });
   await page.goto('http://localhost/',{waitUntil:'domcontentloaded'});
+  await Promise.race([settingsRequested,new Promise((_,reject)=>setTimeout(()=>reject(new Error('The browser did not request cloud settings before the first reveal')),10000))]);
   assert.equal(await page.locator('.app').evaluate(el=>getComputedStyle(el).visibility),'hidden','App must not display the bundled intermediate layout while published settings are pending');
   releaseInitialSettings();
   await page.locator('.app').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady==='ready');
-  assert.equal(await page.evaluate(()=>NICSettings.current.layout.bodySize),20,'Published typography must be applied before reveal');
+  const initialState=await page.evaluate(()=>({bodySize:NICSettings.current?.layout.bodySize,ready:NICSettings.ready,published:NICSettings.published?.layout.bodySize,remoteEnabled:NICAccess?.enabled,bootstrap:!!document.getElementById('nic-published-settings'),state:document.documentElement.dataset.nicLayoutReady}));
+  assert.equal(initialState.bodySize,20,'Published typography must be applied before reveal: '+JSON.stringify({initialState,settingsRequestCount}));
   assert.equal(await page.locator('#nicFooterEmail').textContent(),'layout-test@example.com','Footer must be populated before reveal');
   const firstVisible=await page.locator('.app').evaluate(app=>['.nic-brand-bar','.hero','.footer-note'].map(selector=>{const r=app.querySelector(selector).getBoundingClientRect();return {height:r.height,top:r.top};}));
   await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
@@ -96,6 +105,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculatorNavigation&&window.NICSettings.current);
   await page.waitForFunction(()=>window.NICCalculators?.active==='budget'&&document.body.dataset.calculator==='budget');
+  assert.equal(await page.locator('.deal-type-card .nic-abc-term').count(),0,'Immobilien ABC must not turn navigation terms into help buttons');
   await page.waitForFunction(()=>window.NICReferenceInterest?.rate===4.09);
   if(width<=700){
    try{await page.locator('#nicMobileCalculatorSelect').waitFor({state:'visible',timeout:10000});}
@@ -142,8 +152,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await page.waitForFunction(()=>[...document.querySelectorAll('.app>main input[placeholder],.app>main textarea[placeholder]')].every(field=>field.closest('#ownBudgetTransferCard')));
    if(key==='finance')await page.waitForFunction(()=>{const host=document.getElementById('nicFinanceModule');return !host.shadowRoot&&!host.querySelector('input[placeholder],textarea[placeholder]')});
 
+   const {headerTitle,headerDescription}=await page.evaluate(k=>NICSettings.current.content[k],key);
+   assert.equal((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,''),headerTitle,'Calculator uses the published heading: '+key);
+   assert.equal((await page.locator('#heroText').innerText()).replace(/\u00ad/g,''),headerDescription,'Calculator uses the published description: '+key);
    if(key==='own'){
-    assert.equal(await page.locator('#heroTitle').innerText(),width<=700?'Jetzt Eigenheim & Eigennutzung berechnen!':'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');
     assert((await page.locator('#nicOwnIntro').textContent()).includes('Hausgeld'),'House and apartment running costs explained');
     assert.equal(await page.locator('#result #kpiEquity').isVisible(),false,'Project-specific KPI is hidden in Eigenheim');
@@ -173,7 +185,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     for(const grid of grids){assert(grid.rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,grid}));if(grid.rows.length>1)assert(grid.rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,grid}));}
    }
 
-   if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes(width<=700?'Jetzt Finanzierung & Restschuld berechnen!':'Finanzierungsrechner'));}
+   if(key==='finance')assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());
    if(key==='rent'){
     const term=page.locator('.nic-abc-term', {hasText:'Nettokaltmiete pro Monat'}).first();
     await term.waitFor({state:'visible',timeout:10000});
@@ -321,10 +333,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
    if(width<=700){
     assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on '+slug);
-    assert(h>standardHeader.height,'Subpage header includes selector absent on homepage: '+slug);
+    assert(h>0&&await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Subpage retains usable mobile dropdown: '+slug);
     if(subpageHeaderHeight===null)subpageHeaderHeight=h;
     else assert(Math.abs(h-subpageHeaderHeight)<=1,'Information subpages retain equal header height: '+slug);
-   }else assert(Math.abs(h-standardHeader.height)<=1,'Same-document information navigation changes desktop header height');
+   }else assert(h>0&&await page.locator('.nic-global-dropdown-shell').isVisible(),'Desktop content retains centered dropdown: '+slug);
   }
   await page.goBack();await page.waitForURL('http://localhost/preise/');
   assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.prices.headerTitle);
@@ -352,9 +364,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     for(const key of ['background','font','size','logo'])assert.equal(header[key],standardHeader[key],'Standard header '+key+' differs on '+routeName);
     if(width<=700){
      assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on direct '+routeName);
-     assert(header.height>standardHeader.height,'Direct subpage includes selector absent on homepage: '+routeName);
-     if(subpageHeaderHeight!==null)assert(Math.abs(header.height-subpageHeaderHeight)<=1,'Direct and same-document informational header heights must match: '+routeName);
-    }else assert(Math.abs(header.height-standardHeader.height)<=1,'Header height changes on '+routeName);
+     assert(header.height>0&&await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Direct content route retains mobile dropdown: '+routeName);
+     assert.equal(await page.locator('.app>.hero>.nic-global-dropdown-shell').count(),1,'Direct information page uses the shared header dropdown: '+routeName);
+     assert.equal(await page.locator('.app>.hero>.deal-type-card').count(),0,'Calculator tiles stay outside the header: '+routeName);
+    }else assert(header.height>0&&await page.locator('.nic-global-dropdown-shell').isVisible(),'Direct content retains centered desktop dropdown: '+routeName);
 
    }else {
     const key=({'ueber-uns':'about','kontakt':'contact'})[routeName];

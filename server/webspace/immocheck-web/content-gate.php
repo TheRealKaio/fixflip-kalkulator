@@ -87,11 +87,66 @@ NIC_RAW_PATTERN;
                 $node->parentNode->removeChild($node);
             }
         }
+        // Remove menu tiles disabled in both viewport categories before HTML delivery.
+        // Viewport-specific permissions are enforced by initial critical CSS below;
+        // a server cannot reliably infer CSS viewport width on a first HTTP request.
+        $navVisibility = $settings['navigationVisibility'] ?? [];
+        if (!is_array($navVisibility)) nic_gate_fail();
+        $navOptions = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " deal-type-option ")]');
+        if ($navOptions === false) nic_gate_fail();
+        $menuKeys = ['budget','own','rent','flip','finance','settlement'];
+        $hideOnMobile = [];
+        $hideOnDesktop = [];
+        for ($i = $navOptions->length - 1; $i >= 0; $i--) {
+            $option = $navOptions->item($i);
+            if (!$option instanceof DOMElement) continue;
+            $homeAncestors = $xpath->query('ancestor::*[@id="nic-home-intro"]', $option);
+            if ($homeAncestors === false) nic_gate_fail();
+            $section = $homeAncestors->length ? 'home' : 'calculator';
+            $heading = $xpath->query('.//strong', $option)?->item(0)?->textContent ?? '';
+            if ($section === 'calculator' && strtolower(trim($heading)) === 'sanierung') {
+                // Old tiles can contain the calculator's live radio control.
+                // Never remove these DOM nodes: only suppress their visual wrapper.
+                $option->setAttribute('data-nic-nav-obsolete', 'true');
+                continue;
+            }
+            $key = $option->getAttribute('data-calculator');
+            if (!in_array($key, $menuKeys, true)) {
+                $href = $option->getAttribute('href') ?: $option->getAttribute('data-href');
+                $byPath = ['/budget/'=>'budget','/eigennutzung/'=>'own','/vermietung/'=>'rent','/fix-flip/'=>'flip','/finanzierungsrechner/'=>'finance','/nebenkostenabrechnung/'=>'settlement'];
+                $key = $byPath[$href] ?? '';
+            }
+            if (!in_array($key, $menuKeys, true)) continue;
+            $legacy = $navVisibility['mobile'] ?? [];
+            $legacyDesktop = $navVisibility['desktop'] ?? [];
+            $mobile = ($navVisibility[$section]['mobile'][$key] ?? $legacy[$key] ?? true) !== false;
+            $desktop = ($navVisibility[$section]['desktop'][$key] ?? $legacyDesktop[$key] ?? true) !== false;
+            // Preserve calculator controls even if both menu visibility switches
+            // are off. Removing a label with its input removes a working calculator.
+            // The server emits pre-paint viewport CSS instead of deleting a tile.
+            $option->setAttribute('data-nic-nav-key', $key);
+            $option->setAttribute('data-nic-nav-context', $section);
+            if (!$mobile) $hideOnMobile[$section][] = $key;
+            if (!$desktop) $hideOnDesktop[$section][] = $key;
+        }
+        $criticalNavCss = [
+            '[data-nic-nav-obsolete="true"]{display:none!important}',
+        ];
+        foreach ($hideOnMobile as $section => $keys) {
+            foreach (array_unique($keys) as $key) $criticalNavCss[] = '@media(max-width:700px){[data-nic-nav-context="' . $section . '"][data-nic-nav-key="' . $key . '"]{display:none!important}}';
+        }
+        foreach ($hideOnDesktop as $section => $keys) {
+            foreach (array_unique($keys) as $key) $criticalNavCss[] = '@media(min-width:701px){[data-nic-nav-context="' . $section . '"][data-nic-nav-key="' . $key . '"]{display:none!important}}';
+        }
         $output = $dom->saveHTML();
         if (!is_string($output)) nic_gate_fail();
         // Restore only placeholders that survived removal of disabled nodes.
         $html = strtr($output, $rawBodies);
         $html = preg_replace('/<\?xml encoding="UTF-8">/', '', $html, 1) ?? $html;
+        if ($criticalNavCss) {
+            $html = str_replace('</head>', '<style id="nic-server-menu-visibility">' . implode('', $criticalNavCss) . '</style></head>', $html);
+        }
+
     } else {
         // Fail closed: without an HTML parser we cannot reliably remove nested content.
         nic_gate_fail();

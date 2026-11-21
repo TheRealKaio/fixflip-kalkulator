@@ -8,14 +8,14 @@ assert.equal(config.apiUrl,'https://neustart-immocheck.de/api/index.php');
 const source=fs.readFileSync('assets/user-access.js','utf8');
 function environment(enabled,role='admin'){
  const calls=[],store=new Map();let revision=1;
- const settings=JSON.parse(fs.readFileSync('assets/site-settings.json','utf8'));
+ let settings=JSON.parse(fs.readFileSync('assets/site-settings.json','utf8'));
  function el(){return{setAttribute(){},append(){},addEventListener(){},textContent:'',className:''};}
  const document={currentScript:{src:'https://www.neustart-immocheck.de/user-access.js'},createElement:el,head:{append(){}},body:{classList:{contains:()=>true}},addEventListener(){},getElementById:()=>null};
  const ctx={URL,AbortSignal,console,document,Event:class{},setInterval(){},dispatchEvent(){},fetch:async(url,options={})=>{
   const u=new URL(url);if(u.pathname.endsWith('backend-config.json'))return{ok:true,json:async()=>({enabled,apiUrl:config.apiUrl})};
   calls.push({route:u.searchParams.get('r'),options});const r=u.searchParams.get('r');
   if(r==='me')return{ok:true,json:async()=>({user:{id:'u',first_name:'Test',last_name:'Person',email:'test@example.com',role},csrf:'test-csrf'})};
-  if(r==='settings'&&options.method==='POST'){const body=JSON.parse(options.body);assert.equal(body.revision,revision);assert.equal(options.headers['X-NIC-CSRF'],'test-csrf');revision++;return{ok:true,json:async()=>({settings:body.settings,revision})};}
+  if(r==='settings'&&options.method==='POST'){const body=JSON.parse(options.body);assert.equal(body.revision,revision);assert.equal(options.headers['X-NIC-CSRF'],'test-csrf');const {content,...retained}=body.settings;settings=retained;revision++;return{ok:true,json:async()=>({settings,revision})};}
   if(r==='settings')return{ok:true,json:async()=>({settings,revision})};
   if(r==='delete-own-account')return{ok:true,json:async()=>({ok:true})};
   if(r==='email-change-finish')return{ok:true,json:async()=>({ok:true,email:'new@example.test',loggedOut:true})};
@@ -28,7 +28,14 @@ function environment(enabled,role='admin'){
  const deleted=environment(true,'user');await deleted.A.init();await deleted.A.deleteOwn();assert.equal(deleted.A.user,null,'deletion clears client login state');
  const off=environment(false);assert.equal(await off.A.init(),false);assert.equal(await off.A.authorize('pdfDownload'),true);assert.equal(off.calls.length,0);
  const normal=environment(true,'user');assert.equal(await normal.A.requireAdmin(),false);assert.equal(normal.calls.filter(x=>x.route==='settings').length,0);
- const admin=environment(true);await admin.A.init();assert.equal(await admin.A.requireAdmin(),true);await admin.A.loadSettings();const next={...admin.settings,access:{calculators:true,pdfDownload:false,pdfShare:true}};assert.equal((await admin.A.saveSettings(next)).access.pdfDownload,false);await admin.A.authorize('pdfShare');
+ const admin=environment(true);await admin.A.init();assert.equal(await admin.A.requireAdmin(),true);await admin.A.loadSettings();
+ const content=JSON.parse(JSON.stringify(admin.settings.content));
+ for(const [key,entry] of Object.entries(content)){
+  entry.headerTitle='Titel '+key;
+  entry.headerDescription=key==='finance'?'':'Kurzbeschreibung '+key;
+ }
+ const next={...admin.settings,content,access:{calculators:true,pdfDownload:false,pdfShare:true}};
+ assert.equal((await admin.A.saveSettings(next)).access.pdfDownload,false);await admin.A.authorize('pdfShare');
  assert(admin.calls.every(x=>x.options.credentials==='include'));assert(admin.calls.every(x=>x.options.cache==='no-store'));
  // Cloud settings supersede old local drafts; public defaults still work offline mode.
  const settingsSource=fs.readFileSync('assets/site-settings.js','utf8'),local=new Map();
@@ -36,6 +43,10 @@ function environment(enabled,role='admin'){
  const originalFetch=admin.ctx.fetch;admin.ctx.fetch=async(u,o)=>String(u).endsWith('site-settings.json')?{ok:true,json:async()=>admin.settings}:originalFetch(u,o);
  vm.runInContext(settingsSource,admin.ctx);const S=admin.ctx.NICSettings;
  const stale={...admin.settings,access:{calculators:false,pdfDownload:false,pdfShare:false}};S.save(stale);const loaded=await S.init();assert.equal(loaded.access.calculators,true,'local draft must not override server policy');
+ for(const [key,entry] of Object.entries(content)){
+  assert.equal(loaded.content[key].headerTitle,entry.headerTitle,'Saved header title: '+key);
+  assert.equal(loaded.content[key].headerDescription,entry.headerDescription,'Saved header description: '+key);
+ }
  const html=fs.readFileSync(site+'/finanzierungsrechner/index.html','utf8');assert(html.includes('user-access.js'));assert(html.indexOf('user-access.js')<html.indexOf('site-settings.js'));
  const root=fs.readFileSync(site+'/index.html','utf8');for(const action of ['pdfShare','pdfDownload'])assert(root.includes("NICAccess.authorize('"+action+"')"));
  const finance=fs.readFileSync('assets/pdf-reports.js','utf8');assert(finance.includes("authorize(download?'pdfDownload':'pdfShare')"));assert(finance.includes("authorize('pdfDownload')"));

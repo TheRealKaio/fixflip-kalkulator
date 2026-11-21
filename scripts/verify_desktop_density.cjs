@@ -44,7 +44,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.evaluate(k=>NICCalculatorNavigation.select(k),key);
     await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
     const after=await measure();
-    assert(Math.abs(after.height-before.height)<=1,'Header stable during navigation at '+width+' '+key);
+    // The homepage now has its own centered dropdown row. Its header can
+    // legitimately be a different height from calculator pages.
+    if(key!=='home')assert(Math.abs(after.height-before.height)<=1,'Calculator/content header stable at '+width+' '+key);
+    else assert(await page.locator('.app>.hero>.nic-global-dropdown-shell').isVisible(),'Home dropdown is displayed independently at '+width);
     assert(after.contentBottom<=after.bottom+1,'Header text not clipped at '+width+' '+key);
     assert(!after.overflow,'No route overflow at '+width+' '+key);
    }

@@ -468,7 +468,9 @@ rules.append("""
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls){
   display:contents!important;
  }
- body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv),
+ body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv){
+  grid-column:1/-1!important;order:3!important;
+ }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.field:has(#rentMonths){
   grid-column:1/-1!important;order:4!important;
  }
@@ -554,16 +556,40 @@ body:not(.nic-admin) #finance-acq-row-swap-v8403 .finance-acq-option{grid-column
 # Fix & Flip phone layout: financed share fills its row, and purchase costs sit
 # beside the co-financing checkbox at the same width as one interest field.
 rules.append("""
-@media(max-width:700px){
+@media(max-width:700px), (max-width:1000px) and (max-height:600px) and (orientation:landscape){
+ body:not(.nic-admin) #flipFinanceCard .nic-finance-mobile-fields{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px 12px!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .nic-finance-mobile-fields>:is(.finance-rate-grid,.quick-grid){
+  display:contents!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .field:has(#interest){order:1}
+ body:not(.nic-admin) #flipFinanceCard .field:has(#repayment){order:2}
+ body:not(.nic-admin) #flipFinanceCard .finance-duration-swap-v8403{order:4}
+ body:not(.nic-admin) #flipFinanceCard .field:has(#notary){order:5}
+ body:not(.nic-admin) #flipFinanceCard .field:has(#buyBroker){order:6}
+ body:not(.nic-admin) #flipFinanceCard .field:has(:is(#interest,#repayment)) > .input-wrap{
+  width:100%!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .field:has(:is(#interest,#repayment)) > label{
+  min-height:1.5em;
+ }
+
  body:not(.nic-admin) #flipFinanceCard .nic-finance-mobile-fields .finance-rate-grid .field:has(#ltv){
   grid-column:1 / -1!important;order:3!important;width:100%!important;
   max-width:100%!important;min-width:0!important;box-sizing:border-box!important;
  }
- body:not(.nic-admin) #flipFinanceCard .finance-acq-row{
+ body:not(.nic-admin) #flipFinanceCard .nic-finance-mobile-fields .finance-acq-row{
+  order:7!important;
   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:10px!important;align-items:start!important;grid-column:1/-1!important;
   width:100%!important;max-width:100%!important;min-width:0!important;
   box-sizing:border-box!important;
+ }
+ body:not(.nic-admin) #flipFinanceCard .finance-acq-option > :is(.finance-check-label,.finance-check-box){
+  display:grid!important;place-items:center!important;justify-content:stretch!important;
+  width:100%!important;margin-inline:auto!important;text-align:center!important;
  }
  body:not(.nic-admin) #flipFinanceCard .finance-acq-total{
   grid-column:1!important;order:0!important;grid-row:1!important;

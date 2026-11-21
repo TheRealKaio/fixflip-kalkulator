@@ -46,11 +46,15 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await preview.locator('details.imc-faq-item').count(),10,'All ten FAQ previews');
    await preview.locator('details.imc-faq-item summary').first().click();
    assert(await preview.locator('.imc-faq-answer').first().isVisible(),'Native FAQ opens');
+   await page.locator('[id$="content-why-headerTitle"]').fill('Mein Titel aus dem Adminbereich');
+   await page.locator('[id$="content-why-headerDescription"]').fill('Meine Kurzbeschreibung aus dem Adminbereich');
    await page.locator('[id$="saveSettings"]').click();
    await page.waitForFunction(source=>window.NICSettings.current.content.why.description===source,source);
    await page.goto('http://localhost/fixflip-kalkulator/warum-immocheck/',{waitUntil:'networkidle'});
    const content=page.locator('#nicContentView');
    await content.locator('section.imc-content').waitFor({state:'visible'});
+   assert.equal(await page.locator('#heroTitle').textContent(),'Mein Titel aus dem Adminbereich');
+   assert.equal(await page.locator('#heroText').textContent(),'Meine Kurzbeschreibung aus dem Adminbereich');
    assert.equal(await page.evaluate(()=>window.NICSettings.current.content.why.description),source,'Save/reload is lossless');
    assert.equal(await page.evaluate(()=>window.NICSettings.current.content.own.seoTitle),'Eigenheim Test');
    assert.equal(await page.evaluate(()=>window.NICSettings.current.seoIndexing.own),false);

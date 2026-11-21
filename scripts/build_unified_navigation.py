@@ -6,7 +6,6 @@ explanation_templates=templates(json.loads((Path(sys.argv[1] if len(sys.argv)>1 
 site=Path(sys.argv[1] if len(sys.argv)>1 else '_site')
 finance=(site/'finanzierungsrechner/index.html').read_text()
 source=Path('assets/financing.html').read_text()
-finance_header=[re.search(r'<h1\b[^>]*>(.*?)</h1>',finance,re.S)[1], html.unescape(re.sub('<[^>]+>','',re.search(r'<p\b[^>]*id="heroText"[^>]*>(.*?)</p>',finance,re.S)[1]))]
 
 body=re.search(r'(<section\b[^>]*><h2>1\. Finanzierung einstellen</h2>.*?)</main>',finance,re.S)
 if not body:raise SystemExit('Finance content missing')
@@ -62,7 +61,7 @@ finance_result_grid_css += '@media(max-width:700px),(hover:none){#nicFinanceModu
 finance_result_grid_css += '#nicFinanceModule .refinance-slider .rangehead{justify-content:flex-start!important;text-align:left!important;gap:.5em!important}#nicFinanceModule .refinance-slider .rangehead>*{flex:0 0 auto;font-size:var(--nic-subtext-font-size,14px)!important;line-height:1.5!important}';
 finance_result_grid_css += '#nicFinanceModule .finance-result-grid>.kpi{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:.35em!important}#nicFinanceModule .finance-result-grid>.kpi>span,#nicFinanceModule .finance-result-grid>.kpi>strong{display:block!important;width:100%;margin:0!important}';
 financeMarkup=namespace_finance_ids(markup+actions);
-factory='const financeHeader='+json.dumps(finance_header)+';\nfunction createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
+factory='function createFinance(host){const root=host;root.classList.add("nic-finance-module");root.innerHTML='+json.dumps('<style>'+finance_component_css+finance_result_grid_css+'</style>'+financeMarkup)+';\n'+script+'\nreturn root;}\n'
 registry=json.loads(Path('assets/calculators.json').read_text())
 calculators=registry['calculators']
 if len(calculators)!=5 or len({item['id'] for item in calculators})!=5 or len({item['path'] for item in calculators})!=5:
@@ -136,16 +135,14 @@ for page in site.rglob('*.html'):
  if 'nic-published-settings' in s and re.search(r'class="[^"]*\bapp\b',s) and 'initial-layout.js' not in s:
   s=s.replace('<head>','<head><script src="/initial-layout.js"></script>',1)
  s=re.sub(r'<script\b[^>]*src="[^"]*calculator-finance(?:\.[a-f0-9]{16})?\.js"[^>]*>\s*</script>','',s)
- # Shared calculator initialization may warm hidden controls on the homepage,
- # but only the route controller owns its header. Avoid the old title/restore race.
+ # The legacy calculator code can re-run after a route change or a reset.
+ # Remove its hard-coded header writes from the final shared application.
  if 'function updateDealTypeUI(){' in s:
   for target in ['heroTitle','heroText']:
-   old='if($("'+target+'")){'
-   new='if($("'+target+'")&&!document.body.matches(".nic-home-active,.nic-content-active")){'
-   if s.count(old)!=1:raise SystemExit('Header ownership guard missing: '+str(page)+' '+target)
-   s=s.replace(old,new,1)
-  s=s.replace('if(heroTitle) heroTitle.innerHTML=', 'if(heroTitle&&!document.body.matches(".nic-home-active,.nic-content-active")) heroTitle.innerHTML=')
-  s=s.replace('if(heroText) heroText.textContent=', 'if(heroText&&!document.body.matches(".nic-home-active,.nic-content-active")) heroText.textContent=')
+   pattern=r'  if\(\$\("'+target+r'"\)\)\{\n.*?\n  \}\n'
+   s,count=re.subn(pattern,'',s,count=1,flags=re.S)
+   if count!=1:raise SystemExit('Legacy header update missing: '+str(page)+' '+target)
+  s=re.sub(r'^ +if\(hero(?:Title|Text)\) hero(?:Title|Text)\.[^\n]+\n','',s,flags=re.M)
  if 'async function initializeReferenceInterest()' in s:
   anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
   if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))
@@ -166,9 +163,6 @@ for page in site.rglob('*.html'):
   items=[pair for pair in headers if any(pair)]
   return match[1]+json.dumps(items,ensure_ascii=False).replace('<','\\u003c')+match[3]
  s=re.sub(r'(<script type="application/json" id="nic-header-variants">)(.*?)(</script>)',variants,s,flags=re.S)
- if page==site/'finanzierungsrechner/index.html':
-  s=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',lambda m:m[1]+finance_header[0]+m[2],s,count=1,flags=re.S)
-  s=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',lambda m:m[1]+html.escape(finance_header[1])+m[2],s,count=1,flags=re.S)
  if 'homepage.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/homepage.css"></head>',1)
  key=next((item['id'] for item in calculators if page==site/item['path'].strip('/')/'index.html'),'home' if page==site/'index.html' else next((key for key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck'),('about','ueber-uns'),('contact','kontakt'),('login','anmelden')] if page==site/slug/'index.html'),'budget'))
  header_key='welcome' if key=='home' else key
@@ -201,4 +195,6 @@ for page in site.rglob('*.html'):
  if page.parent.name=='nebenkostenabrechnung':s=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>','',s,flags=re.S)
  if 'calculator-explanations.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/calculator-explanations.css"></head>',1)
  if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
+ # Rename navigation-only labels in prerendered HTML; leave SEO headlines and paths intact.
+ s=s.replace('>Eigenheim &amp; Eigennutzung<','>Eigenheim<').replace('>Eigenheim & Eigennutzung<','>Eigenheim<')
  page.write_text(s)

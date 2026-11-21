@@ -36,3 +36,22 @@ html:not(.nic-embed){overflow-y:scroll;scrollbar-gutter:stable}
     padding-top:14px;
   }
 }
+
+/* On mobile portrait the hero is a compact introduction, not a viewport-high
+   image panel. Override legacy minimum heights while preserving content growth. */
+@media(max-width:700px) and (orientation:portrait){
+ html body:not(.nic-embed) .app:has(> .nic-brand-bar) > .hero.nic-responsive-header{
+  padding-top:8px;
+  padding-bottom:12px;
+ }
+ html body:not(.nic-embed) .app > .hero.nic-responsive-header > h1{
+  margin-top:10px;
+  margin-bottom:6px;
+ }
+ html body:not(.nic-embed) .app > .hero.nic-responsive-header.nic-fixed-header{
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:var(--nic-header-content-height,0px)!important;
+  max-height:none!important;
+ }
+}

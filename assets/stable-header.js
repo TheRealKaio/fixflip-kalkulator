@@ -6,7 +6,7 @@ const data=document.getElementById('nic-header-variants');
 if(!hero||!data)return;
 const variants=JSON.parse(data.textContent);
 hero.classList.add('nic-responsive-header');
-let queued=false,lastWidth=0,lastSignature='',largestForLayout=0,renderScale=1;
+let queued=false,lastWidth=0,renderScale=1;
 // DOM rectangles include CSS zoom; CSS dimensions and padding do not.
 // Convert once into layout units before sizing the hidden probe or live header.
 function effectiveScale(el){
@@ -27,39 +27,35 @@ function measure(){
  renderScale=effectiveScale(hero);
  const width=geometry(hero).width;if(width<=0)return;
  const probe=hero.cloneNode(true);probe.classList.remove('nic-fixed-header');
+ // The probe must measure CONTENT height, not inherit the previously reserved
+ // height from the real header. Otherwise route changes cause a feedback loop.
+ probe.style.setProperty('--nic-header-content-height','0px');
  probe.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
- // Portrait navigation lives inside the header. Cloned checked radios would
- // join the live group on insertion and uncheck the actual calculator choice.
- // Inert/aria-hidden do not isolate native radio groups.
+ // Isolate any cloned form controls from the live page's radio groups.
+ // Inert/aria-hidden alone do not isolate native radio groups.
  probe.querySelectorAll('[name]').forEach(el=>el.removeAttribute('name'));
  probe.removeAttribute('id');probe.setAttribute('aria-hidden','true');probe.inert=true;
- Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',height:'auto',minHeight:'0',maxHeight:'none',display:'flow-root'});
+ Object.assign(probe.style,{position:'fixed',left:'-20000px',top:'0',visibility:'hidden',pointerEvents:'none',boxSizing:'border-box',width:width+'px',display:'flow-root'});
+ for(const [property,value] of [['height','auto'],['min-height','0px'],['max-height','none']])probe.style.setProperty(property,value,'important');
  // Keep the same ancestor styles and inherited typography as the visible header.
  hero.parentElement.append(probe);
  try{
   const heading=probe.querySelector('h1'),description=probe.querySelector('p');
   let maximum=0;
-  const states=[...variants,[hero.querySelector('h1').textContent,hero.querySelector('p').textContent]];
-  for(const [title,text]of states){
-   heading.textContent=title;description.textContent=text;
-   const rect=geometry(probe),style=getComputedStyle(probe);
-   const bottom=Math.max(rect.top,...Array.from(probe.children).map(el=>geometry(el).bottom));
-   // Measure every variant's actual text extent, including rental, before fixing
-   // the live height. This guard must not depend on visiting that calculator.
-   const extent=bottom-rect.top+parseFloat(style.paddingBottom||0)+parseFloat(style.borderBottomWidth||0);
-   maximum=Math.max(maximum,rect.height,extent);
+  const configured=window.NICCalculators?Object.values(window.NICSettings?.current?.content||{})
+   .map(({headerTitle,headerDescription})=>[headerTitle,headerDescription]):[];
+  const states=[...(configured.length?configured:variants),
+   [hero.querySelector('h1').textContent,hero.querySelector('p').textContent]];
+  for(const [title,text] of states){
+   heading.textContent=title;
+   description.textContent=text;
+   heading.style.display=title?'':'none';
+   description.style.display=text?'':'none';
+   maximum=Math.max(maximum,geometry(probe).height);
   }
-  // Include the actual rendered text, so inherited styles or late font changes
-  // cannot make the live subtitle exceed the measured clone.
-  const box=geometry(hero),heroStyle=getComputedStyle(hero);
-  const headingStyle=getComputedStyle(hero.querySelector('h1')),descriptionStyle=getComputedStyle(hero.querySelector('p'));
-  const top=hero.querySelector('.hero-top');
-  const signature=[width,heroStyle.padding,headingStyle.font,headingStyle.letterSpacing,descriptionStyle.font,descriptionStyle.letterSpacing,(top?geometry(top).height:0)].join('|');
-  const contentBottom=Math.max(...Array.from(hero.children).map(el=>geometry(el).bottom));
-  maximum=Math.max(maximum,contentBottom-box.top+parseFloat(heroStyle.paddingBottom||0)+parseFloat(heroStyle.borderBottomWidth||0));
-  if(signature!==lastSignature){largestForLayout=0;lastSignature=signature;}
-  largestForLayout=Math.max(largestForLayout,maximum);
-  const value=Math.ceil(largestForLayout+1)+'px';
+  // Only the normal-flow box contributes to the reserved height. Sticky or
+  // positioned children can report viewport-relative coordinates while scrolling.
+  const value=Math.ceil(maximum+1)+'px';
   if(hero.style.getPropertyValue('--nic-header-content-height')!==value)hero.style.setProperty('--nic-header-content-height',value);
   if(!hero.classList.contains('nic-fixed-header'))hero.classList.add('nic-fixed-header');
   lastWidth=width;

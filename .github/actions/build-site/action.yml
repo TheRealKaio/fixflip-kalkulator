@@ -3,6 +3,12 @@ description: Complete shared production build and existing release checks
 runs:
   using: composite
   steps:
+    - name: Verify responsive navigation visibility
+      shell: bash
+      run: |
+        node scripts/test_navigation_visibility.cjs
+        php -l server/webspace/immocheck-web/content-gate.php
+        php -l server/webspace/immocheck-private/app.php
     - name: Build static site
       shell: bash
       run: |
@@ -476,6 +482,8 @@ runs:
         python scripts/patch_reno_buffer_spacing_v8402.py _site/index.html
         python scripts/patch_own_heading_v8323.py _site/index.html
         python scripts/patch_rental_equity_shortfall_v8324.py _site/index.html
+        # The percentage-based loan already includes the financing allocation.
+        python scripts/patch_finance_equity_consistency_20261120.py _site/index.html
         python scripts/patch_admin_settings_v8325.py _site/index.html
         python scripts/patch_statistics_v8326.py _site/index.html
         python scripts/patch_cookie_notice_v8327.py _site/index.html
@@ -807,6 +815,23 @@ runs:
       shell: bash
       run: |
         python scripts/build_unified_navigation.py _site
+        # Keep the original percent input as the single calculation source.
+        # The shared range control is a UI adapter, not another financing model.
+        cp assets/financing-percent-slider.js _site/financing-percent-slider.js
+        node --check _site/financing-percent-slider.js
+        python - <<'PY'
+        from pathlib import Path
+        tag='<script defer src="/financing-percent-slider.js"></script>'
+        pages=[p for p in Path('_site').rglob('*.html') if '_checks' not in p.parts]
+        for page in pages:
+            source=page.read_text(encoding='utf-8')
+            if tag not in source:
+                if '</head>' not in source:
+                    raise SystemExit('Missing head: '+str(page))
+                source=source.replace('</head>',tag+'</head>',1)
+                page.write_text(source,encoding='utf-8')
+        print('Financing slider loaded on',len(pages),'routes')
+        PY
         python scripts/audit_immobilien_abc_info.py _site
         python scripts/add_immobilien_abc.py _site
         python scripts/verify_immobilien_abc.py _site
@@ -830,6 +855,7 @@ runs:
         print(f'Mobile haptics loaded on {len(pages)} HTML pages')
         PY
         python scripts/fingerprint_assets.py _site
+        NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_financing_percent_slider.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_unified_navigation.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_result_headings.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_tile_typography.cjs

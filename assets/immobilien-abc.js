@@ -33,13 +33,15 @@ function render(panel){
  panel.replaceChildren();
  const view=element('section','nic-abc');
  view.setAttribute('aria-label','Immobilien ABC');
- const lead=element('p','nic-abc-lead','Wichtige Begriffe rund um Kauf, Notar, Finanzierung, Vermietung und die ImmoCheck-Rechner – einfach erklärt und mit Beispielen.');
+ const settings=window.NICSettings.current, content=settings.content['immobilien-abc'];
+ const lead=element('div','nic-abc-lead');
+ lead.append(window.NICSettings.contentFragment(content.description,settings));
  const toolbar=element('div','nic-abc-toolbar');
  const search=element('input','nic-abc-search');search.type='search';search.style.setProperty('display','block','important');search.style.setProperty('width','100%','important');search.style.setProperty('max-width','100%','important');search.style.setProperty('min-width','0','important');search.style.boxSizing='border-box';search.placeholder='Begriff suchen, z. B. Grundschuld …';search.autocomplete='off';search.setAttribute('aria-label','Immobilienbegriff suchen');
  toolbar.append(search);
  const categories=element('div','nic-abc-filters');categories.setAttribute('role','group');categories.setAttribute('aria-label','Thema auswählen');
  const headingRow=element('div','nic-abc-heading-row');
- const heading=element('h2','nic-abc-heading','Begriffe von A bis Z');
+ const heading=element('h2','nic-abc-heading',content.title);
  const count=element('p','nic-abc-count');count.setAttribute('aria-live','polite');
  headingRow.append(heading,count);
  const list=element('div','nic-abc-list');
@@ -162,7 +164,7 @@ function findTermMatch(raw,term){
  }
  return null;
 }
-function markTerm(label,item,legacy,rich){
+function markTerm(label,item,legacy,rich,displayTerm=item.term){
  const walker=document.createTreeWalker(label,NodeFilter.SHOW_TEXT,{
   acceptNode(node){
    return node.parentElement?.closest('button, input, select, textarea, .nic-abc-term, .nic-abc-help, .inline-info, .info-btn, .info-dot, .rent-info-dot')
@@ -172,7 +174,7 @@ function markTerm(label,item,legacy,rich){
  const textNodes=[];while(walker.nextNode())textNodes.push(walker.currentNode);
  for(const node of textNodes){
   const raw=node.textContent||'';
-  const match=findTermMatch(raw,item.term);
+  const match=findTermMatch(raw,displayTerm);
   if(!match)continue;
   const pos=match.start;
   const original=raw.slice(pos,pos+match.length);
@@ -214,7 +216,9 @@ function showHints(){
   const byContextKey=new Map(contexts.filter(x=>x.key).map(x=>[x.key,x]));
   const terms=[...items].sort((a,b)=>b.term.length-a.term.length);
   for(const label of main.querySelectorAll('label')){
-   if(label.closest('#nicContentView')||label.querySelector('.nic-abc-term'))continue;
+   // Navigation tiles are destinations, never glossary labels. In particular, the
+   // word Sanierung in Fix & Flip must not steal the click from its calculator.
+   if(label.closest('#nicContentView,.deal-type-card,.deal-type-option,#nic-home-intro,[data-nic-site-nav],.nic-mobile-calculator-controls')||label.querySelector('.nic-abc-term'))continue;
    const legacy=identifyLegacy(label);
    // Some legacy labels contain an inline help icon: only the visible field
    // name is considered a glossary match, not the icon text.
@@ -239,7 +243,16 @@ function showHints(){
    const control=card.querySelector(':scope > button.info-btn[data-info], :scope > .name button.rent-info-dot[data-info]');
    const name=card.querySelector(':scope > .name');
    const heading=name?.querySelector(':scope > span')||name;
-   if(!control||!heading||heading.querySelector('.nic-abc-term'))continue;
+   if(!heading||heading.querySelector('.nic-abc-term'))continue;
+   // The rental KPI uses a descriptive label; the ABC entry is named
+   // "Eigenkapitalrendite". Link them without adding another help control.
+   const rentalEquityLabel='Rendite auf dein Eigenkapital';
+   if(card.closest('#rentSection')&&normalize(heading.textContent.trim())===normalize(rentalEquityLabel)){
+    const equityEntry=byId.get('eigenkapitalrendite');
+    if(equityEntry)markTerm(heading,equityEntry,null,null,rentalEquityLabel);
+    continue;
+   }
+   if(!control)continue;
    const info=byContextKey.get(control.dataset.info)||byContext.get(normalize(heading.textContent.trim()));
    const entry=info&&byName.get(normalize(info.term));
    if(!entry)continue;

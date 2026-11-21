@@ -49,7 +49,16 @@ async function requireAdmin(){
 }
 async function loadSettings(){if(!await init())return null;const data=await api('settings');revision=data.revision;authControlsVersion=data.authControlsVersion||0;return data.settings;}
 async function refresh(){if(!await init())return null;try{const me=await api('me');user=me.user;csrf=me.csrf;return user;}catch(error){if(error.status===401)return null;throw error;}}
-async function saveSettings(settings){if((settings.access?.registrationBlocked||settings.access?.loginBlocked)&&authControlsVersion<1)throw Error('Bitte zuerst die aktualisierte app.php auf STRATO hochladen. Die Sperren wurden nicht gespeichert.');if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');return api('settings',{settings,revision}).then(data=>{revision=data.revision;return data.settings;});}
+async function saveSettings(settings){
+ if((settings.access?.registrationBlocked||settings.access?.loginBlocked)&&authControlsVersion<1)throw Error('Bitte zuerst die aktualisierte app.php auf STRATO hochladen. Die Sperren wurden nicht gespeichert.');
+ if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');
+ // The installed API retains editable page content under meta.
+ const {content,...wireSettings}=settings;
+ wireSettings.meta={...wireSettings.meta,content};
+ const data=await api('settings',{settings:wireSettings,revision});
+ revision=data.revision;
+ return data.settings;
+}
 async function logout(){await api('logout',{});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));const destination=new URL('.',ROOT);destination.searchParams.set('logged-out','1');window.top.location.replace(destination.href);}
 async function profile(){
  if(!await init())return;

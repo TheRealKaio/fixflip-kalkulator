@@ -150,6 +150,14 @@
   },
   "contentSections": {},
   "content": {
+    "immobilien-abc": {
+      "title": "Begriffe von A bis Z",
+      "description": "<p>Wichtige Begriffe rund um Kauf, Notar, Finanzierung, Vermietung und die ImmoCheck-Rechner – einfach erklärt und mit Beispielen.</p>",
+      "seoTitle": "Immobilien ABC – Immobilienbegriffe einfach erklärt | Neustart ImmoCheck",
+      "metaDescription": "Immobilienbegriffe rund um Kauf, Notar, Finanzierung und Vermietung – verständlich erklärt mit Beispielen.",
+      "headerTitle": "Immobilien ABC",
+      "headerDescription": "Immobilienwissen einfach erklärt – mit Beispielen aus der Praxis."
+    },
     "welcome": {
       "title": "Deine Immobilien. Klar gerechnet.",
       "description": "<p>Für private Vermieter, die ihre Immobilien selbst im Blick behalten möchten: verständliche Rechner und eine schlanke Mieterabrechnung – ohne die Komplexität einer großen Verwaltungssoftware.</p><p>Von der ersten Kaufentscheidung bis zur jährlichen Abrechnung bekommst du klare Schritte und nachvollziehbare Ergebnisse – alles an einem Ort.</p>",
