@@ -372,6 +372,17 @@ function setup(){
  install('ltv','ownEquityInput');
  install('rentLtv','rentEquity');
  for(const x of controllers.values())x.refresh();
+ // The shared navigation activates own-use after the initial DOM startup.
+ // The owner calculator may then reload its stored two-decimal LTV, overwriting
+ // the high-precision cash-derived ratio. Reconcile AFTER route activation.
+ setTimeout(()=>{
+  const active=activeMode();
+  for(const [id,controller] of controllers){
+   if(id==='ltv'&&active!=='own')continue;
+   if(controller.isManual())controller.synchronize();
+   else controller.refresh();
+  }
+ },80);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 window.addEventListener('nic-calculator-changed',setup);
