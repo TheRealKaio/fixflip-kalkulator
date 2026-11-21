@@ -30,20 +30,7 @@ function updateHomepageNavigationVisibility(){
   group.hidden=!Array.from(group.querySelectorAll('.nic-home-options > .deal-type-option')).some(tile=>!tile.hidden);
  }
 }
-function applyHeader(key){
- const name=key==='home'||key==='website'?'welcome':key;
- const values=window.NICSettings?.current?.content?.[name];
- if(!values)return;
- const title=document.getElementById('heroTitle'),description=document.getElementById('heroText');
- for(const [element,text] of [[title,values.headerTitle],[description,values.headerDescription]]){
-  if(!element)continue;
-  const value=typeof text==='string'?text:'';
-  if(element.textContent!==value)element.textContent=value;
-  element.style.display=value?'':'none';
- }
- window.NICHeader?.refresh();
-}
-window.NICHeaderContent={apply:applyHeader};
+function applyHeader(key){window.NICSettings?.applyHeader(key);}
 function showContent(key,refresh=false){
  const main=document.querySelector('.app>main.section');if(!main)return;
  document.body.classList.remove('nic-home-active','nic-finance-active');
@@ -445,14 +432,10 @@ function initWelcome(){
  if(document.documentElement.dataset.nicPage!=='website')return;
  const main=document.querySelector('main.section')||document.querySelector('main'),menu=document.querySelector('.deal-type-card');
  if(!main)return;
- const title=document.getElementById('heroTitle'),text=document.getElementById('heroText');
  const settings=window.NICSettings.current,home=settings.meta.website;
  if(!/^#(?:admin(?:-|$)|account$|impressum$|agbs$|datenschutz$|haftungsausschluss$|cookie-hinweis$)/.test(location.hash)){
-  let changed=false;
-  if(title&&title.textContent!==settings.content.welcome.headerTitle){title.textContent=settings.content.welcome.headerTitle;changed=true;}
-  if(text&&text.textContent!==settings.content.welcome.headerDescription){text.textContent=settings.content.welcome.headerDescription;changed=true;}
   applyHeader('welcome');
-  window.NICSettings.applyMeta(settings,'website');if(changed)window.NICHeader?.refresh();
+  window.NICSettings.applyMeta(settings,'website');
  }
  let intro=document.getElementById('nic-home-intro');
  if(!intro){

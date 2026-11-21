@@ -43,15 +43,6 @@ def replace_once(old,new):
     nav=nav.replace(old,new,1)
 
 replace_once("why:'/warum-immocheck/'}", "why:'/warum-immocheck/','immobilien-abc':'/immobilien-abc/'}")
-replace_once(" if(!values)return;\n const title=document.getElementById('heroTitle')",
-""" if(!values&&key==='immobilien-abc'){
-   const title=document.getElementById('heroTitle'),text=document.getElementById('heroText');
-   if(title)title.textContent='Immobilien ABC';
-   if(text)text.textContent='Immobilienwissen einfach erklärt – mit Beispielen aus der Praxis.';
-   window.NICHeader?.refresh();return;
- }
- if(!values)return;
- const title=document.getElementById('heroTitle')""")
 replace_once(" const settings=window.NICSettings.current,c=settings.content[key];",
 """ if(key==='immobilien-abc'){
   active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;
@@ -82,10 +73,14 @@ page=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>',
 page=page.replace('data-nic-page="prices"','data-nic-page="immobilien-abc"')
 page=page.replace('data-calculator="prices"','data-calculator="immobilien-abc"')
 page=page.replace('data-calculator="preise"','data-calculator="immobilien-abc"')
-page=re.sub(r'(<h1\b[^>]*id="heroTitle"[^>]*>).*?(</h1>)',r'\g<1>Immobilien ABC\2',page,count=1,flags=re.S)
-page=re.sub(r'(<p\b[^>]*id="heroText"[^>]*>).*?(</p>)',r'\g<1>Immobilienwissen einfach erklärt – mit Beispielen aus der Praxis.\2',page,count=1,flags=re.S)
-page=re.sub(r'<title>.*?</title>','<title>Immobilien ABC – Immobilienbegriffe einfach erklärt | Neustart ImmoCheck</title>',page,count=1,flags=re.S)
-page=re.sub(r'(<meta\s+name="description"\s+content=")[^"]*(")',r'\g<1>120 Immobilienbegriffe rund um Kauf, Notar, Finanzierung, Vermietung und Rechner verständlich erklärt – mit Beispielen.\2',page,count=1)
+settings=json.loads((site/'site-settings.json').read_text(encoding='utf-8'))
+config=settings['content']['immobilien-abc']
+for tag,identifier,field in [('h1','heroTitle','headerTitle'),('p','heroText','headerDescription')]:
+    page=re.sub(r'(<'+tag+r'\b[^>]*id="'+identifier+r'"[^>]*>).*?(</'+tag+'>)',
+                lambda m:m[1]+html.escape(config[field])+m[2],page,count=1,flags=re.S)
+page=re.sub(r'<title>.*?</title>',lambda _: '<title>'+html.escape(config['seoTitle'])+'</title>',page,count=1,flags=re.S)
+page=re.sub(r'(<meta\s+name="description"\s+content=")[^"]*(")',
+            lambda m:m[1]+html.escape(config['metaDescription'],quote=True)+m[2],page,count=1)
 page=re.sub(r'(<link\s+rel="canonical"\s+href=")[^"]*(")',r'\g<1>https://www.neustart-immocheck.de/immobilien-abc/\2',page,count=1)
 folder=site/'immobilien-abc';folder.mkdir(exist_ok=True)
 (folder/'index.html').write_text(page,encoding='utf-8')

@@ -33,13 +33,15 @@ function render(panel){
  panel.replaceChildren();
  const view=element('section','nic-abc');
  view.setAttribute('aria-label','Immobilien ABC');
- const lead=element('p','nic-abc-lead','Wichtige Begriffe rund um Kauf, Notar, Finanzierung, Vermietung und die ImmoCheck-Rechner – einfach erklärt und mit Beispielen.');
+ const settings=window.NICSettings.current, content=settings.content['immobilien-abc'];
+ const lead=element('div','nic-abc-lead');
+ lead.append(window.NICSettings.contentFragment(content.description,settings));
  const toolbar=element('div','nic-abc-toolbar');
  const search=element('input','nic-abc-search');search.type='search';search.style.setProperty('display','block','important');search.style.setProperty('width','100%','important');search.style.setProperty('max-width','100%','important');search.style.setProperty('min-width','0','important');search.style.boxSizing='border-box';search.placeholder='Begriff suchen, z. B. Grundschuld …';search.autocomplete='off';search.setAttribute('aria-label','Immobilienbegriff suchen');
  toolbar.append(search);
  const categories=element('div','nic-abc-filters');categories.setAttribute('role','group');categories.setAttribute('aria-label','Thema auswählen');
  const headingRow=element('div','nic-abc-heading-row');
- const heading=element('h2','nic-abc-heading','Begriffe von A bis Z');
+ const heading=element('h2','nic-abc-heading',content.title);
  const count=element('p','nic-abc-count');count.setAttribute('aria-live','polite');
  headingRow.append(heading,count);
  const list=element('div','nic-abc-list');

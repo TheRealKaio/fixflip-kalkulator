@@ -73,6 +73,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       assert(Math.abs(layout.feeTop[0]-layout.feeTop[1])<0.51,'Notary and broker inputs align to the same pixel');
       assert(Math.abs(layout.captionCenter-layout.checkCenter)<6,'Checkbox sits centered under caption');
     }
+    if(width<=700){
+      const centers=await page.evaluate(id=>{
+        const card=document.getElementById(id==='rentLtv'?'rentFinanceCard':'ownFinanceCard');
+        const label=card.querySelector('.finance-check-label');
+        const checkbox=card.querySelector('.finance-check-box input');
+        const range=document.createRange();
+        range.selectNodeContents(label);
+        return [range.getBoundingClientRect(),checkbox.getBoundingClientRect()].map(rect=>rect.left+rect.width/2);
+      },input);
+      assert(Math.abs(centers[0]-centers[1])<3,'Mobile caption is centered over its checkbox: '+route);
+    }
     const purchaseId=route==='vermietung'?'rentPurchase':'purchase';
     await page.locator('#'+purchaseId).fill('300000');
     await page.evaluate(({id})=>{

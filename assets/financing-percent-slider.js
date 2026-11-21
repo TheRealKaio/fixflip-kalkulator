@@ -43,6 +43,7 @@ style.textContent=`
   grid-column:1/-1!important;
  }
 }
+@media(min-width:701px){
 /* The purchase fee fields share one identical label row and input row.
    Remove inherited per-field offsets rather than adjusting individual inputs. */
 #rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker){
@@ -68,21 +69,17 @@ style.textContent=`
 #rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker) :is(#rentNotary,#rentBroker){
  box-sizing:border-box!important;margin:0!important;
 }
-@media(max-width:700px){
- #rentFinanceCard .quick-grid:has(#rentNotary):has(#rentBroker){
-  grid-template-columns:minmax(0,1fr)!important;
- }
 }
 /* Caption centered over the actual checkbox, including its help icon. */
-#rentFinanceCard .finance-acq-option{
+body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option{
  display:flex!important;flex-direction:column!important;align-items:center!important;
  justify-content:flex-end!important;text-align:center!important;min-width:0!important;
 }
-#rentFinanceCard .finance-acq-option>.finance-check-label{
+body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option>.finance-check-label{
  display:flex!important;align-items:center!important;justify-content:center!important;
- gap:5px!important;text-align:center!important;width:100%!important;
+ gap:5px!important;text-align:center!important;width:100%!important;margin-inline:auto!important;
 }
-#rentFinanceCard .finance-acq-option>.finance-check-box{
+body:not(.nic-admin) :is(#ownFinanceCard,#rentFinanceCard) .finance-acq-option>.finance-check-box{
  display:flex!important;align-items:center!important;justify-content:center!important;
  width:100%!important;min-width:0!important;margin-inline:auto!important;
 }

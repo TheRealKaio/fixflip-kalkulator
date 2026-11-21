@@ -135,16 +135,14 @@ for page in site.rglob('*.html'):
  if 'nic-published-settings' in s and re.search(r'class="[^"]*\bapp\b',s) and 'initial-layout.js' not in s:
   s=s.replace('<head>','<head><script src="/initial-layout.js"></script>',1)
  s=re.sub(r'<script\b[^>]*src="[^"]*calculator-finance(?:\.[a-f0-9]{16})?\.js"[^>]*>\s*</script>','',s)
- # Shared calculator initialization may warm hidden controls on the homepage,
- # but only the route controller owns its header. Avoid the old title/restore race.
+ # The legacy calculator code can re-run after a route change or a reset.
+ # Remove its hard-coded header writes from the final shared application.
  if 'function updateDealTypeUI(){' in s:
   for target in ['heroTitle','heroText']:
-   old='if($("'+target+'")){'
-   new='if($("'+target+'")&&!document.body.matches(".nic-home-active,.nic-content-active")){'
-   if s.count(old)!=1:raise SystemExit('Header ownership guard missing: '+str(page)+' '+target)
-   s=s.replace(old,new,1)
-  s=s.replace('if(heroTitle) heroTitle.innerHTML=', 'if(heroTitle&&!document.body.matches(".nic-home-active,.nic-content-active")) heroTitle.innerHTML=')
-  s=s.replace('if(heroText) heroText.textContent=', 'if(heroText&&!document.body.matches(".nic-home-active,.nic-content-active")) heroText.textContent=')
+   pattern=r'  if\(\$\("'+target+r'"\)\)\{\n.*?\n  \}\n'
+   s,count=re.subn(pattern,'',s,count=1,flags=re.S)
+   if count!=1:raise SystemExit('Legacy header update missing: '+str(page)+' '+target)
+  s=re.sub(r'^ +if\(hero(?:Title|Text)\) hero(?:Title|Text)\.[^\n]+\n','',s,flags=re.M)
  if 'async function initializeReferenceInterest()' in s:
   anchor='const value=(Math.round(rate*100)/100).toFixed(2);'
   if s.count(anchor)!=1:raise SystemExit('Shared interest initializer must occur once: '+str(page))

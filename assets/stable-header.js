@@ -42,22 +42,19 @@ function measure(){
  try{
   const heading=probe.querySelector('h1'),description=probe.querySelector('p');
   let maximum=0;
-  const states=[...variants,[hero.querySelector('h1').textContent,hero.querySelector('p').textContent]];
-  for(const [title,text]of states){
-   heading.textContent=title;description.textContent=text;
-   const rect=geometry(probe),style=getComputedStyle(probe);
-   const bottom=Math.max(rect.top,...Array.from(probe.children).map(el=>geometry(el).bottom));
-   // Measure every variant's actual text extent, including rental, before fixing
-   // the live height. This guard must not depend on visiting that calculator.
-   const extent=bottom-rect.top+parseFloat(style.paddingBottom||0)+parseFloat(style.borderBottomWidth||0);
-   maximum=Math.max(maximum,rect.height,extent);
+  const configured=window.NICCalculators?Object.values(window.NICSettings?.current?.content||{})
+   .map(({headerTitle,headerDescription})=>[headerTitle,headerDescription]):[];
+  const states=[...(configured.length?configured:variants),
+   [hero.querySelector('h1').textContent,hero.querySelector('p').textContent]];
+  for(const [title,text] of states){
+   heading.textContent=title;
+   description.textContent=text;
+   heading.style.display=title?'':'none';
+   description.style.display=text?'':'none';
+   maximum=Math.max(maximum,geometry(probe).height);
   }
-  // Include the actual rendered text, so inherited styles or late font changes
-  // cannot make the live subtitle exceed the measured clone.
-  const box=geometry(hero),heroStyle=getComputedStyle(hero);
-  const contentBottom=Math.max(...Array.from(hero.children).map(el=>geometry(el).bottom));
-  maximum=Math.max(maximum,contentBottom-box.top+parseFloat(heroStyle.paddingBottom||0)+parseFloat(heroStyle.borderBottomWidth||0));
-  // Recompute from actual content on each route; never preserve an oversized old value.
+  // Only the normal-flow box contributes to the reserved height. Sticky or
+  // positioned children can report viewport-relative coordinates while scrolling.
   const value=Math.ceil(maximum+1)+'px';
   if(hero.style.getPropertyValue('--nic-header-content-height')!==value)hero.style.setProperty('--nic-header-content-height',value);
   if(!hero.classList.contains('nic-fixed-header'))hero.classList.add('nic-fixed-header');

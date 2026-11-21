@@ -100,7 +100,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Keine zweite Rücksetzlogik, die erst einen falschen Titel sichtbar schreibt.
 - Kein seitenspezifisches Nachbauen von Logo, Grafik, Schriftgrößen oder Abständen.
 - Startseite, alle fünf Kalkulatoren und alle Contentseiten (einschließlich Über uns,
-  Kontakt und Anmeldung) verwenden denselben Bildheader und denselben Footer.
+  Kontakt, Anmeldung und Immobilien ABC) verwenden denselben Bildheader und denselben Footer.
   Nur die aktiven Content-Felder `headerTitle` (max. 70 Zeichen) und
   `headerDescription` (max. 90 Zeichen) variieren je Seite. Leere Felder
   bleiben ohne Ersatztext und ohne Leerraum. Schriftgrößen, Logo, Layout,
@@ -411,7 +411,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Das Dropdown zeigt die fünf Rechner und als letzten auswählbaren Eintrag „Mieter-Abrechnung“. Auf Inhaltsseiten ist **Budgetrechner** als Standard vorausgewählt; es wird kein Platzhalter („Rechner auswählen“ / „Bitte wählen“) im Dropdown angelegt. Die Vorauswahl verändert den Inhalt der gerade geöffneten Seite nicht, bis ein Menüwechsel erfolgt.
 - Auf Rechner- und gemeinsamen Inhaltsseiten wird die vorhandene `.deal-type-card` als **einzige** Navigation wiederverwendet: im Mobil-Hochformat im Bildheader, sonst an ihrem ursprünglichen Ort im Hauptinhalt. Keine zweite Kachelleiste und keine doppelte Routing-Logik.
 - Reine Inhaltsseiten ohne Rechnerformular und ohne ursprüngliche Kachelleiste erzeugen über dieselbe Initialisierungsfunktion genau eine kompakte Navigation; sie bleibt außerhalb von Mobil Portrait unsichtbar. Die Auswahl eines Rechners lädt dort die vollständige Rechnerseite, während die gemeinsame Rechner-App weiterhin ohne kompletten Seitenwechsel navigiert.
-- Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der jeweilige Bildheader zeigt die mobile Überschrift „Jetzt [Rechnername] berechnen!“ mit kurzem Subtext. Die ausführliche Erklär-/SEO-Karte steht im Dokumentfluss nach den Rechnermodulen.
+- Auf Rechnerseiten in Mobil Portrait entfällt die große Kachelleiste. Der Bildheader verwendet auch mobil den Titel und die Kurzbeschreibung aus Admin → Seiten & Metadaten. Seine Höhe ergibt sich aus den sichtbaren Elementen im normalen Dokumentfluss. Die ausführliche Erklär-/SEO-Karte steht im Dokumentfluss nach den Rechnermodulen.
 - Startseite, Querformat, Tablet/Desktop und rechtliche/adminstrative Überlagerungen auf der Startseite bleiben außerhalb dieser Porträt-Navigation.
 - Vor Freigabe: alle Unterseiten, 320/375/390/430 px Hochformat, 700/701 px Übergang, sämtliche sechs Ziele, Browser-Zurück/Vorwärts, direkte Routen, Wechsel zwischen Hoch-/Querformat und Live-Layout-Radius testen.
 

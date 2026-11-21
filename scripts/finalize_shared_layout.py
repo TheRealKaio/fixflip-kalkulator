@@ -468,7 +468,9 @@ rules.append("""
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.quick-grid:not(#rentFinancingControls){
   display:contents!important;
  }
- body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv),
+ body:not(.nic-admin) #rentFinanceCard .finance-rate-grid .field:has(#rentLtv){
+  grid-column:1/-1!important;order:3!important;
+ }
  body:not(.nic-admin) #rentFinanceCard .nic-finance-mobile-fields>.field:has(#rentMonths){
   grid-column:1/-1!important;order:4!important;
  }

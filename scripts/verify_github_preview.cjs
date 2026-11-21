@@ -37,6 +37,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const heading=await page.locator('#heroTitle').evaluate(e=>({configured:getComputedStyle(document.documentElement).getPropertyValue('--nic-h1-font-size').trim(),actual:parseFloat(getComputedStyle(e).fontSize)}));
     assert.equal(heading.configured,layout.h1+'px','Public heading setting: '+width+' '+slug);
     assert(heading.actual>0&&heading.actual<=layout.h1,'Shared responsive heading limit: '+width+' '+slug);
+    const pageKey=await page.locator('html').getAttribute('data-nic-page');
+    const contentKey=slug===''?'welcome':pageKey;
+    const header=legacySettings.content[contentKey];
+    assert(header,'Admin content configuration exists for '+slug);
+    assert.equal((await page.locator('#heroTitle').textContent()).replace(/\u00ad/g,''),header.headerTitle,'Configured header title: '+slug);
+    assert.equal((await page.locator('#heroText').textContent()).replace(/\u00ad/g,''),header.headerDescription,'Configured header description: '+slug);
     const currentId=(await page.locator('html').getAttribute('data-calculator'));
     const portrait=width===390;
     const calculatorIds=['budget','own','rent','flip','finance'];
@@ -47,9 +53,6 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      assert.equal((await home.locator('small').textContent()).trim(),'Immobilie kaufen und selbst nutzen','Home keeps its original description');
      assert.equal(await home.locator('.nic-calculator-title-line').count(),0,'Home must not inherit two-line calculator titles');
     }else if(calculatorIds.includes(currentId)){
-     const {headerTitle,headerDescription}=legacySettings.content[currentId];
-     assert.equal((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,''),headerTitle,'Published calculator heading: '+slug);
-     assert.equal((await page.locator('#heroText').innerText()).replace(/\u00ad/g,''),headerDescription,'Published calculator description: '+slug);
      const cards=page.locator('.deal-type-card .deal-type-row > .deal-type-option:not([hidden])');
      const count=await cards.count();
      assert(count>=1,'Calculator tile navigation remains in DOM');
@@ -173,7 +176,15 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
      const direct=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
      assert(Math.abs(fromHome-direct)<=3,'Hero height changed after homepage button: '+key+' '+JSON.stringify({fromHome,direct}));
-     assert(fromHome<550,'Mobile portrait header enlarged into image panel after homepage button: '+key+' '+fromHome);
+     assert(fromHome<400,'Mobile portrait header enlarged into image panel after homepage button: '+key+' '+fromHome);
+     const afterScroll=await page.evaluate(async()=>{
+      const hero=document.querySelector('.app>.hero');
+      scrollTo(0,500);
+      window.NICHeader.refresh();
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      return hero.getBoundingClientRect().height;
+     });
+     assert(Math.abs(afterScroll-direct)<=1,'Scrolling must not enlarge the mobile header: '+key);
     }
    }
    // A direct admin URL must remain in the same application with the shared hero.

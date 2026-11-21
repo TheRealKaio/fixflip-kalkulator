@@ -37,7 +37,7 @@ const calculatorPages = ['budget', 'own', 'rent', 'flip', 'finance'];
 const pageLabels = {
  budget:'Budget', own:'Eigenheim', rent:'Vermietung', flip:'Fix & Flip', finance:'Finanzierung',
  settlement:'Mieterabrechnung', website:'Startseite', prices:'Preise', why:'Warum ImmoCheck?',
- about:'Über uns', contact:'Kontakt', login:'Anmelden', company:'Unternehmen (Direktlink)',
+ 'immobilien-abc':'Immobilien ABC', about:'Über uns', contact:'Kontakt', login:'Anmelden', company:'Unternehmen (Direktlink)',
  impressum:'Impressum', agbs:'AGB', datenschutz:'Datenschutz', haftungsausschluss:'Haftungsausschluss',
  widerruf:'Widerruf', avv:'AVV', 'cookie-hinweis':'Cookie-Hinweis'
 };
@@ -45,9 +45,9 @@ function buildContent(){
  const groups = [
   ['Rechner', calculatorPages],
   ['Mieterabrechnung', ['settlement']],
-  ['Inhaltsseiten', ['website','prices','why','about','contact','login','company']],
+  ['Inhaltsseiten', ['website','prices','why','immobilien-abc','about','contact','login','company']],
   ['Rechtliche Seiten', Object.keys(S.seoRouteDefaults).filter(key =>
-   !calculatorPages.includes(key) && !['admin','settlement','website','prices','why','about','contact','login','company'].includes(key))]
+   !calculatorPages.includes(key) && !['admin','settlement','website','prices','why','immobilien-abc','about','contact','login','company'].includes(key))]
  ];
  for(const [label,keys] of groups){
   const group=document.createElement('section');
