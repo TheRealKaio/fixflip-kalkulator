@@ -216,6 +216,42 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     }
     assert(Math.abs(unfinanced.equity+unfinanced.base-unfinanced.total)<1,
       'Investment must equal loan plus equity after unchecking');
+
+    // A manual equity reduction below the acquisition costs must re-enable
+    // acquisition-cost financing without discarding the user's cash amount.
+    const cashHalf=Math.round(unfinanced.equity/2*100)/100;
+    assert(cashHalf>0 && cashHalf<unfinanced.equity,'Test requires positive acquisition costs');
+    await page.locator('#'+equity).fill(String(cashHalf));
+    await page.waitForTimeout(150);
+    assert.equal(await checkbox.isChecked(),true,'Too little cash automatically enables partial acquisition financing');
+    assert(Math.abs(parse(await page.locator('#'+equity).inputValue())-cashHalf)<0.01,
+      'Automatic checkbox activation preserves the manually entered equity');
+    const partiallyFinanced=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
+        base:m.financingBase,ratio:Number(document.getElementById(id).value),
+        equity:Number(document.getElementById(eq).value),
+        loan:m.loan};
+    },{id:input,eq:equity});
+    assert(Math.abs(partiallyFinanced.loan-(partiallyFinanced.total-cashHalf))<1,
+      'The loan covers exactly the investment minus entered cash (no double deduction)');
+    assert(Math.abs(partiallyFinanced.ratio*partiallyFinanced.base/100-partiallyFinanced.loan)<1,
+      'Internal ratio, loan and financed base agree after automatic checkbox activation');
+    const partialOutput=await page.locator('#'+input)
+      .locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]')
+      .locator('.nic-finance-percent-control output').textContent();
+    assert(Math.abs(Number(partialOutput.replace('%','').trim().replace(',','.'))-
+      partiallyFinanced.loan/partiallyFinanced.total*100)<0.02,
+      'Visible slider percentage reflects partial acquisition financing');
+    await page.locator('#'+equity).fill('0');
+    await page.waitForTimeout(120);
+    assert.equal(await checkbox.isChecked(),true,'Zero cash keeps acquisition financing checked');
+    assert.equal(parse(await page.locator('#'+equity).inputValue()),0,'Zero cash remains zero');
+    const fullyFinanced=await page.evaluate(({id})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,loan:m.loan};
+    },{id:input});
+    assert(Math.abs(fullyFinanced.total-fullyFinanced.loan)<1,'Zero cash finances the total investment');
     // Manual equity is authoritative even when it no longer covers all
     // unfinanced acquisition costs. Auto-check the checkbox and borrow the
     // remaining costs without changing what the person typed.
