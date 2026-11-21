@@ -52,6 +52,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     el.value='100';el.dispatchEvent(new Event('input',{bubbles:true}));
    });
    await page.waitForTimeout(150);
+   // Exercise an actual user-owned cash amount before switching funding mode.
+   // Flip's special zero-cash capitalization path must not hide a normal toggle.
+   await equity.fill('60000');
+   await page.waitForTimeout(180);
    const beforeToggle=await page.evaluate(()=>({
      checked:document.getElementById('financeAcquisition').checked,
      active:document.body.dataset.calculator,
@@ -69,14 +73,31 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     enclosingLabel:el.closest('label')?.outerHTML?.slice(0,600)
    }));
    console.log('Flip checkbox before trusted click:',JSON.stringify({checkedBefore,checkboxDetail}));
+   await page.evaluate(()=>{
+     window.nicFlipClickEvents=[];
+     document.addEventListener('click',e=>{
+       if(e.target?.id==='financeAcquisition')window.nicFlipClickEvents.push({kind:'click',trusted:e.isTrusted,checked:e.target.checked});
+     },true);
+     document.getElementById('financeAcquisition').addEventListener('change',e=>{
+       window.nicFlipClickEvents.push({kind:'change',trusted:e.isTrusted,checked:e.target.checked});
+     });
+   });
    await checkbox.click({force:true});
    await page.waitForTimeout(150);
    page.off('dialog',accept);
    const checkedAfter=await checkbox.isChecked();
    console.log('Flip checkbox toggle diagnosis:',JSON.stringify({checkedBefore,checkedAfter,dialogCount,
-     capital:await equity.inputValue(),ratio:await page.locator('#ltv').inputValue()}));
+     capital:await equity.inputValue(),ratio:await page.locator('#ltv').inputValue(),
+     events:await page.evaluate(()=>window.nicFlipClickEvents)}));
    assert.equal(dialogCount,1,'Trusted user uncheck requires confirmation');
    assert.equal(await checkbox.isChecked(),false);
+   // A deliberate slider move to maximum allowable debt with fees excluded
+   // must automatically reserve those fees as equity.
+   await page.evaluate(()=>{
+     const el=document.getElementById('ltv').closest('.field').querySelector('.nic-finance-percent-range');
+     el.value='100';el.dispatchEvent(new Event('input',{bubbles:true}));
+   });
+   await page.waitForTimeout(120);
    const state=()=>page.evaluate(()=>{
     const m=window.model();
     const investment=(m.p||0)+(m.reno||0)+(m.tax||0)+(m.notary||0)+(m.buyBroker||0);
