@@ -291,6 +291,37 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.waitForTimeout(140);
     assert.equal(await checkbox.isChecked(),true,
       'Enough equity does not override the selected acquisition financing');
+    // Saving must survive an actual reload, not merely update DOM widgets.
+    // Verify both cash and the auto-enabled financing checkbox plus the
+    // calculated loan, in each calculator and each viewport.
+    await page.locator('#'+equity).fill('5000');
+    await page.waitForTimeout(250);
+    assert.equal(await checkbox.isChecked(),true,'Auto-financing is active before persistence check');
+    const saved=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      const loan=m.financingBase*Number(document.getElementById(id).value)/100;
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
+       loan, equity:Number(document.getElementById(eq).value)};
+    },{id:input,eq:equity});
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(k=>document.body.dataset.calculator===k&&window.NICCalculators?.active===k,
+      key,{timeout:25000});
+    await page.waitForTimeout(250);
+    const restored=await page.evaluate(({id,eq})=>{
+      const m=id==='rentLtv'?window.rentalCalculation():window.model();
+      const loan=m.financingBase*Number(document.getElementById(id).value)/100;
+      return {checked:document.getElementById(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition').checked,
+       total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
+       loan,equity:Number(document.getElementById(eq).value)};
+    },{id:input,eq:equity});
+    assert.equal(restored.checked,true,'Auto-enabled acquisition checkbox must persist after reload: '+route);
+    assert(Math.abs(restored.equity-5000)<0.01,
+      'Manually fixed equity must persist after reload: '+JSON.stringify({route,restored}));
+    assert(Math.abs(restored.loan-saved.loan)<1,
+      'Calculated loan must persist after reload without duplicate equity subtraction: '+JSON.stringify({route,saved,restored}));
+    assert(Math.abs(restored.loan+restored.equity-restored.total)<1,
+      'Persisted debt plus equity equals entire investment: '+JSON.stringify({route,restored}));
+
 
 
 
