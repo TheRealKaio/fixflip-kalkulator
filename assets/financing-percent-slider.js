@@ -159,11 +159,21 @@ function install(id,equityId){
  const changedFinance=()=>{
   original.dispatchEvent(new Event('input',{bubbles:true}));
  };
+ // The calculator's legacy input stores percent of the FINANCEABLE basis.
+ // Present percent of the TOTAL investment to the user, without touching
+ // Fix & Flip's separate financing / reserve model.
+ const effectiveMode=()=>mode()!=='flip';
+ const effectiveShare=(internal,c)=>{
+  return effectiveMode()&&c.total>0 ? internal*c.base/c.total : internal;
+ };
+ const internalShare=(effective,c)=>{
+  return effectiveMode()&&c.base>0 ? effective*c.total/c.base : effective;
+ };
  const refresh=()=>{
-  const share=Math.max(0,parseNumber(original.value));
+  const internal=Math.max(0,parseNumber(original.value));
   const c=costs(id);
-  const necessary=c.base>0?100*c.total/c.base:100;
-  const maximum=Math.max(120,Math.ceil(Math.max(share,necessary)/20)*20);
+  const share=effectiveShare(internal,c);
+  const maximum=Math.max(120,Math.ceil(share/20)*20);
   slider.max=String(maximum);
   slider.value=String(Math.min(share,maximum));
   wrapper.style.setProperty('--nic-finance-snap-position',(100/maximum*100)+'%');
@@ -216,7 +226,14 @@ function install(id,equityId){
     try{navigator.vibrate(8);}catch(_error){}
    wrapper.classList.add('nic-finance-at-100');
   }else wrapper.classList.remove('nic-finance-at-100');
-  original.value=next.toFixed(2);
+  const c=costs(id);
+  // Without acquisition-cost financing, the loan may not exceed the
+  // acquisition-cost-excluding basis. Keep the displayed share honest.
+  const permitted=effectiveMode() && c.total>0 &&
+    !(byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition')?.checked)
+    ? 100*c.base/c.total : Number(slider.max);
+  if(next>permitted){next=Math.max(0,permitted);slider.value=String(next);}
+  original.value=internalShare(next,c).toFixed(6);
   // Moving the financing slider is an explicit user decision to recalculate
   // equity. A previously typed amount must not silently lock this control.
   setManual(false);
@@ -237,8 +254,10 @@ function install(id,equityId){
  if(acquisitionCheckbox){
   let shareBeforeToggle=null;
   acquisitionCheckbox.addEventListener('click',event=>{
-   // Keep the chosen borrowing percentage while the financing basis changes.
-   shareBeforeToggle=parseNumber(original.value);
+   // Remember the current loan before the checkbox changes the financeable
+   // basis; changing the checkbox must not accidentally finance ancillary costs.
+   const before=costs(id);
+   shareBeforeToggle=Math.max(0,before.base*parseNumber(original.value)/100);
    if(!event.isTrusted||acquisitionCheckbox.checked)return;
    const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\n\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
    if(!accepted){
@@ -248,16 +267,21 @@ function install(id,equityId){
    }
   },true);
   acquisitionCheckbox.addEventListener('change',()=>{
-   const chosenShare=shareBeforeToggle===null?parseNumber(original.value):shareBeforeToggle;
+   const previouslyBorrowed=shareBeforeToggle;
    shareBeforeToggle=null;
    setManual(false);
-   // Existing owner/rental listeners may still derive a new ratio from the
-   // previously fixed equity during this change event. Run AFTER those
-   // listeners, restoring the explicit percentage and updating equity once.
+   // Recalculate after native calculator listeners. When ancillary financing is
+   // removed, cap the old loan at the new financeable amount. This makes the
+   // effective slider share fall (e.g. 330k -> 300k of a 330k investment).
    setTimeout(()=>{
     if(!original.isConnected||!equity.isConnected)return;
-    const target=chosenShare.toFixed(2);
-    if(Math.abs(parseNumber(original.value)-chosenShare)>0.005)original.value=target;
+    const c=costs(id);
+    if(!(c.base>0))return;
+    const borrowed=previouslyBorrowed===null
+      ? c.base*parseNumber(original.value)/100
+      : Math.min(previouslyBorrowed,c.base);
+    const percentage=borrowed/c.base*100;
+    original.value=percentage.toFixed(6);
     syncAutoEquity();
     changedFinance();
     refresh();
