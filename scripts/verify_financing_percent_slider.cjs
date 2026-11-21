@@ -127,6 +127,14 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       });
       assert(Math.abs(updated.loan-updated.expected)<0.02,'Loan remains percentage-based after broker change');
     }
+    // The 100% full-investment snap applies when ancillary costs may be financed.
+    await page.evaluate(id=>{
+      const checkbox=document.getElementById(id);
+      if(!checkbox.checked){
+        checkbox.checked=true;checkbox.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+    },route==='vermietung'?'rentFinanceAcquisition':'financeAcquisition');
+    await page.waitForTimeout(80);
     await page.evaluate(({id})=>{
       const slider=document.getElementById(id).closest('.field').querySelector('input[type="range"]');
       slider.value='99.6';slider.dispatchEvent(new Event('input',{bubbles:true}));
@@ -196,6 +204,19 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert(Math.abs(unfinanced.equity-Math.max(0,unfinanced.total-unfinanced.base))<1,
       'Unfinanced acquisition costs are covered by equity in '+route);
     assert(unfinanced.equity>financed.equity,'Removing financing increases required equity');
+    const visibleShare=await page.locator('#'+input)
+      .locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]')
+      .locator('.nic-finance-percent-control output').textContent();
+    const effectiveShare=unfinanced.total>0?unfinanced.base/unfinanced.total*100:0;
+    const displayed=Number(visibleShare.replace('%','').trim().replace(',','.'));
+    assert(Math.abs(displayed-effectiveShare)<0.02,
+      'Slider displays the loan as a share of TOTAL investment after unchecking: '+route);
+    if(unfinanced.base<unfinanced.total){
+      assert(displayed<100,'Unchecking must visibly reduce the financed share below 100%');
+    }
+    assert(Math.abs(unfinanced.equity+unfinanced.base-unfinanced.total)<1,
+      'Investment must equal loan plus equity after unchecking');
+
 
    }
    assert.deepEqual(errors,[],'No uncaught browser errors');
