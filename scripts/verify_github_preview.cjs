@@ -47,6 +47,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      assert.equal((await home.locator('small').textContent()).trim(),'Immobilie kaufen und selbst nutzen','Home keeps its original description');
      assert.equal(await home.locator('.nic-calculator-title-line').count(),0,'Home must not inherit two-line calculator titles');
     }else if(calculatorIds.includes(currentId)){
+     const {headerTitle,headerDescription}=legacySettings.content[currentId];
+     assert.equal((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,''),headerTitle,'Published calculator heading: '+slug);
+     assert.equal((await page.locator('#heroText').innerText()).replace(/\u00ad/g,''),headerDescription,'Published calculator description: '+slug);
      const cards=page.locator('.deal-type-card .deal-type-row > .deal-type-option:not([hidden])');
      const count=await cards.count();
      assert(count>=1,'Calculator tile navigation remains in DOM');
@@ -63,7 +66,6 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Single calculator tile bar stays in content: '+slug);
     if(portrait&&!isHomepage){
      if(calculatorIds.includes(currentId)||currentId==='settlement')assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),currentId,'Current calculator selected: '+slug);
-     if(calculatorIds.includes(currentId))assert((await page.locator('#heroTitle').innerText()).startsWith('Jetzt '),'Mobile calculator heading: '+slug);
     }
     const positioning=await page.evaluate(()=>{
      const shell=document.querySelector('.app>.hero>.nic-global-dropdown-shell').getBoundingClientRect();
@@ -234,7 +236,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      await page.locator('#nicMobileCalculatorOptions [data-value="finance"]').click();
     await page.waitForURL('**/fixflip-kalkulator/finanzierungsrechner/');
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'finance','Dropdown switches to finance');
-    assert.match(await page.locator('#heroTitle').innerText(),/Jetzt Finanzierung & Restschuld berechnen!/);
+    assert.equal(await page.locator('#heroTitle').innerText(),legacySettings.content.finance.headerTitle);
     await page.goBack({waitUntil:'networkidle'});
     assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),'budget','Browser back restores budget');
     const options=await page.locator('#nicMobileCalculatorSelect option:not([disabled])').evaluateAll(nodes=>nodes.map(node=>({key:node.value,label:node.textContent.trim()})));
@@ -271,10 +273,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     const originalMenu=await page.locator('.deal-type-card').elementHandle();
     await page.setViewportSize({width:844,height:390});
     await page.locator('.app>main.section>.deal-type-card').waitFor({state:'attached'});
-    assert.equal(await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),false,'Landscape does not show portrait selector');
+    assert(await page.locator('.app>.hero>.nic-global-dropdown-shell #nicMobileCalculatorTrigger').isVisible(),'Landscape retains the shared header dropdown');
+    assert.equal(await page.locator('.app>.hero>.deal-type-card').count(),0,'Landscape calculator tiles stay outside the header');
     assert.equal(await page.locator('.app>main.section>.deal-type-card').count(),1,'Same calculator menu restored to main in landscape');
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu node is reused rather than replaced');
-    await page.waitForFunction(()=>!document.getElementById('heroTitle').innerText.startsWith('Jetzt '));
+    assert.equal(await page.locator('#heroTitle').innerText(),legacySettings.content.budget.headerTitle,'Rotation retains the published budget heading');
     await page.setViewportSize({width:390,height:900});
     await page.locator('.app>.hero>.nic-global-dropdown-shell #nicMobileCalculatorTrigger').waitFor({state:'visible',timeout:10000});
     assert(await originalMenu.evaluate(el=>el===document.querySelector('.app>main.section>.deal-type-card')),'Menu stays in content area in portrait');

@@ -438,7 +438,6 @@ function initResponsiveCalculatorMenu(){
  navigationMobileQuery.addEventListener('change',sync);
  window.addEventListener('nic-calculator-changed',sync);
  window.addEventListener('nic-route-changed',sync);
- portraitQuery.addEventListener('change',sync);
  sync();
 }
 
@@ -510,7 +509,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(key)select(key);
   initResponsiveCalculatorMenu();
  }
- window.NICSettings.init().then(startDirectRoute).catch(async error=>{
+ window.NICSettings.init().then(startDirectRoute,async error=>{
   console.error(error);
   try{
    const response=await fetch(new URL('site-settings.json',window.NICSettings.ROOT),{cache:'no-store'});

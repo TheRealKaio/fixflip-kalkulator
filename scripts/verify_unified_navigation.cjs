@@ -5,12 +5,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
  for(const width of [1440,390]){
   const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
   page.on('pageerror',e=>{const details=e.stack||e.message;errors.push(details);console.error('BROWSER PAGE ERROR '+width+' '+page.url()+'\\n'+details);});
-  let releaseInitialSettings,documentLoads=0,settingsRequestCount=0,resolveSettingsRequested;
+  let releaseInitialSettings,settingsRequestCount=0,resolveSettingsRequested;
   const settingsArrival=new Promise(resolve=>{releaseInitialSettings=resolve;});
   const settingsRequested=new Promise(resolve=>{resolveSettingsRequested=resolve;});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
-   if(route.request().resourceType()==='document')documentLoads++;
    if(u.hostname==='api.statistiken.bundesbank.de')return route.fulfill({contentType:'text/csv',body:'TIME_PERIOD;OBS_VALUE\n2026-09;4,09'});
    // The STRATO API is cross-origin in this local browser test. Simulate its
    // credentialed CORS response and preflight, otherwise the browser silently
@@ -153,8 +152,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    await page.waitForFunction(()=>[...document.querySelectorAll('.app>main input[placeholder],.app>main textarea[placeholder]')].every(field=>field.closest('#ownBudgetTransferCard')));
    if(key==='finance')await page.waitForFunction(()=>{const host=document.getElementById('nicFinanceModule');return !host.shadowRoot&&!host.querySelector('input[placeholder],textarea[placeholder]')});
 
+   const {headerTitle,headerDescription}=await page.evaluate(k=>NICSettings.current.content[k],key);
+   assert.equal((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,''),headerTitle,'Calculator uses the published heading: '+key);
+   assert.equal((await page.locator('#heroText').innerText()).replace(/\u00ad/g,''),headerDescription,'Calculator uses the published description: '+key);
    if(key==='own'){
-    assert.equal(await page.locator('#heroTitle').innerText(),width<=700?'Jetzt Eigenheim & Eigennutzung berechnen!':'Kannst Du Dir Dein Eigenheim leisten?');
     assert(await page.locator('#nicOwnIntro').isVisible(),'Eigenheim explanation must appear on internal navigation');
     assert((await page.locator('#nicOwnIntro').textContent()).includes('Hausgeld'),'House and apartment running costs explained');
     assert.equal(await page.locator('#result #kpiEquity').isVisible(),false,'Project-specific KPI is hidden in Eigenheim');
@@ -184,7 +185,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     for(const grid of grids){assert(grid.rows.every(count=>count<=4),'Desktop KPI rows contain no more than four cards: '+JSON.stringify({key,grid}));if(grid.rows.length>1)assert(grid.rows.every(count=>count>1),'Desktop KPI layout avoids a lonely final card: '+JSON.stringify({key,grid}));}
    }
 
-   if(key==='finance'){assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());assert((await page.locator('#heroTitle').innerText()).replace(/\u00ad/g,'').includes(width<=700?'Jetzt Finanzierung & Restschuld berechnen!':'Finanzierungsrechner'));}
+   if(key==='finance')assert(await page.locator('#nicFinanceModule [data-finance-id="loan"]').isVisible());
    if(key==='rent'){
     const term=page.locator('.nic-abc-term', {hasText:'Nettokaltmiete pro Monat'}).first();
     await term.waitFor({state:'visible',timeout:10000});
@@ -364,7 +365,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     if(width<=700){
      assert(await page.locator('#nicMobileCalculatorSelect').isVisible(),'Shared portrait selector on direct '+routeName);
      assert(header.height>0&&await page.locator('#nicMobileCalculatorTrigger').isVisible(),'Direct content route retains mobile dropdown: '+routeName);
-     if(subpageHeaderHeight!==null)assert(header.height>0&&await page.locator('.app>.hero>.deal-type-card.nic-portrait-calculator-menu').isVisible(),'Direct information page retains its own complete portrait selector: '+routeName);
+     assert.equal(await page.locator('.app>.hero>.nic-global-dropdown-shell').count(),1,'Direct information page uses the shared header dropdown: '+routeName);
+     assert.equal(await page.locator('.app>.hero>.deal-type-card').count(),0,'Calculator tiles stay outside the header: '+routeName);
     }else assert(header.height>0&&await page.locator('.nic-global-dropdown-shell').isVisible(),'Direct content retains centered desktop dropdown: '+routeName);
 
    }else {
