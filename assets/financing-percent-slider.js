@@ -232,6 +232,24 @@ function install(id,equityId){
  slider.addEventListener('input',changedBySlider);
  slider.addEventListener('change',()=>{equityBeforeDrag=null;original.dispatchEvent(new Event('change',{bubbles:true}));});
  original.addEventListener('input',refresh);
+ // Use one confirmation and recalculation policy for own-use and rental.
+ const acquisitionCheckbox=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
+ if(acquisitionCheckbox){
+  acquisitionCheckbox.addEventListener('click',event=>{
+   if(!event.isTrusted||acquisitionCheckbox.checked)return;
+   const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\\n\\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
+   if(!accepted){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+   }
+  },true);
+  acquisitionCheckbox.addEventListener('change',()=>{
+   // The toggle explicitly changes the equity required at the chosen LTV;
+   // do not let a previously typed equity value silently change that LTV.
+   setManual(false);
+   queueMicrotask(()=>{syncAutoEquity();refresh();});
+  });
+ }
  const observed=id==='rentLtv'
   ? ['rentPurchase','rentRenovation','rentNotary','rentBroker','rentState','rentFinanceAcquisition']
   : ['purchase','financeAcquisition','notary','buyBroker','state','buffer'];
