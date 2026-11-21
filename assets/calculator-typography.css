@@ -60,7 +60,7 @@ html body:not(.nic-admin) :is(
   .legend,.legend :where(*),.rent-note,.rent-note :where(*),
   .rent-maintenance-status,
   .budget-rate-slider-head,.budget-rate-slider-head :where(*),
-  .budget-rate-slider-note,.budget-rate-slider-warning,
+  .budget-rate-slider-note,.budget-rate-slider-warning,.nic-finance-equity-hint,
   .budget-rate-guidance,.budget-rate-guidance :where(*)
 ) {
   font-size: var(--nic-hint-font-size, 12px) !important;

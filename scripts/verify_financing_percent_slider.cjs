@@ -48,6 +48,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        await ownDetails.evaluate(el=>el.open=true);
     }
     await slider.waitFor({state:'visible',timeout:4000});
+    await page.waitForFunction(()=>window.NICSettings?.ready);
+    const hintFont=await slider.evaluate(el=>{
+     const settings=window.NICSettings;
+     settings.apply({...settings.current,layout:{...settings.current.layout,hintSize:19}});
+     return getComputedStyle(el.parentElement.querySelector('.nic-finance-equity-hint')).fontSize;
+    });
+    assert.equal(hintFont,'19px','Financing hint uses the Admin hint size');
     assert.equal(await page.locator('#ownEquityShortfallWarning,#rentFundingGap').count(),0,
       'Retired redundant red shortfall warning must not appear in either calculator');
     assert.equal(await page.locator('#'+input).count(),1,'Original percent field is retained once');

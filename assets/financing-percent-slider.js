@@ -28,7 +28,7 @@ style.textContent=`
 .nic-finance-percent-range{display:block;width:100%!important;min-width:0;height:36px;accent-color:var(--nic-accent,#2463e6);cursor:pointer;touch-action:pan-y}
 .nic-finance-percent-labels{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:var(--nic-subtext-font-size,14px);font-variant-numeric:tabular-nums}
 .nic-finance-percent-labels output{font-weight:800;color:var(--ink,#172033)}
-.nic-finance-equity-hint{margin:5px 0 0;color:var(--muted,#777f89);font-size:var(--nic-hint-font-size,13px);line-height:1.45}
+.nic-finance-equity-hint{margin:5px 0 0;color:var(--muted,#777f89);line-height:1.45}
 @media(max-width:700px){.nic-finance-percent-control{grid-column:1 / -1!important}.nic-finance-percent-labels{flex-wrap:wrap}}
 /* Rental financing: two equal rate columns on tablet/desktop.
    The finance percentage slider keeps its own full-width row. */
@@ -139,6 +139,7 @@ function install(id,equityId){
  // The owner/flip calculator shares DOM input IDs but keeps separate saved states.
  const mode=()=>id==='rentLtv'?'rent':(activeMode()==='flip'?'flip':'own');
  const isFlip=()=>mode()==='flip';
+ const flipFeeEquityKey='nic_flip_equity_before_fee_shift';
  const manualKey=()=> 'nic_finance_equity_manual_v2_'+mode();
  const flags=new Map();
  const isManual=()=>{
@@ -232,6 +233,7 @@ function install(id,equityId){
  let automaticCheckboxChange=false;
  const userEquity=event=>{
   if(updating||!event.isTrusted)return;
+  if(isFlip())localStorage.removeItem(flipFeeEquityKey);
   setManual(true);
   queueMicrotask(()=>{
    const box=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
@@ -269,8 +271,12 @@ function install(id,equityId){
    if(!m?.p)return;
    const fees=m.tax+m.notary+m.buyBroker;
    const plan=window.flipFinancingPlan(m.p,m.reno,fees,m.months,m.p*next/100);
-   const minimum=byId('financeAcquisition')?.checked ? 0 : fees;
-   equity.value=String(Math.round(Math.max(minimum,plan.equityForRequestedDebt)*100)/100);
+   const requested=Math.round(plan.equityForRequestedDebt*100)/100;
+   const minimum=byId('financeAcquisition')?.checked ? 0 : Math.ceil(fees*100)/100;
+   const nextEquity=Math.max(minimum,requested);
+   if(nextEquity>requested)localStorage.setItem(flipFeeEquityKey,requested+':'+nextEquity);
+   else localStorage.removeItem(flipFeeEquityKey);
+   equity.value=String(nextEquity);
    equity.dispatchEvent(new Event('input',{bubbles:true}));
    setManual(false);
    refresh();
@@ -306,8 +312,10 @@ function install(id,equityId){
   acquisitionCheckbox.addEventListener('click',event=>{
    // Remember the current loan before the checkbox changes the financeable
    // basis; changing the checkbox must not accidentally finance ancillary costs.
-   const before=costs(id);
-   shareBeforeToggle=Math.max(0,before.base*parseNumber(original.value)/100);
+   if(!isFlip()){
+    const before=costs(id);
+    shareBeforeToggle=Math.max(0,before.base*parseNumber(original.value)/100);
+   }
    if(!event.isTrusted||acquisitionCheckbox.checked)return;
    const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\n\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
    if(!accepted){
@@ -325,9 +333,22 @@ function install(id,equityId){
     queueMicrotask(()=>{
      const m=window.model?.();
      if(!m)return;
-     const fees=m.tax+m.notary+m.buyBroker;
-     if(!acquisitionCheckbox.checked && parseNumber(equity.value)<fees){
-      equity.value=String(Math.ceil(fees*100)/100);
+     const current=Math.max(0,parseNumber(equity.value));
+     const fees=Math.ceil((m.tax+m.notary+m.buyBroker)*100)/100;
+     let nextEquity=current;
+     if(acquisitionCheckbox.checked){
+      const allocation=localStorage.getItem(flipFeeEquityKey);
+      if(allocation){
+       const [previous,assigned]=allocation.split(':').map(Number);
+       if(Number.isFinite(previous) && assigned===current)nextEquity=previous;
+      }
+      localStorage.removeItem(flipFeeEquityKey);
+     }else if(current<fees){
+      nextEquity=fees;
+      localStorage.setItem(flipFeeEquityKey,current+':'+nextEquity);
+     }
+     if(nextEquity!==current){
+      equity.value=String(nextEquity);
       equity.dispatchEvent(new Event('input',{bubbles:true}));
      }
      refresh();
@@ -393,6 +414,7 @@ function install(id,equityId){
  byId('recalc')?.addEventListener('click',()=>{
   setTimeout(()=>{
    if(parseNumber(equity.value)===0 && Math.abs(parseNumber(original.value)-100)<0.01){
+    if(isFlip())localStorage.removeItem(flipFeeEquityKey);
     setManual(false);
     refresh();
    }

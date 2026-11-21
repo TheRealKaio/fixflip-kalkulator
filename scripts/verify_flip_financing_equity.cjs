@@ -67,6 +67,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 
    await equity.fill('5000');
    const partial=await verify(5000);
+   await page.waitForFunction(()=>window.NICSettings?.ready);
+   const hintFont=await slider.evaluate(el=>{
+    const settings=window.NICSettings;
+    settings.apply({...settings.current,layout:{...settings.current.layout,hintSize:19}});
+    return getComputedStyle(el.parentElement.querySelector('.nic-finance-equity-hint')).fontSize;
+   });
+   assert.equal(hintFont,'19px','Fix & Flip hint uses the Admin hint size');
    assert(partial.checked && partial.debt<full.debt);
    assert(Math.abs(full.debt-partial.debt-5000-full.interest+partial.interest)<0.01);
    await page.reload({waitUntil:'domcontentloaded'});
@@ -82,6 +89,33 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await checkbox.uncheck();
    await page.waitForFunction(()=>Number(document.getElementById('ownEquityInput').value)>=window.model().acquisitionCosts);
    assert.equal(await checkbox.isChecked(),false);
+   assert((await state()).debt<restored.debt);
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.waitForFunction(()=>window.NICCalculators?.active==='flip');
+   await checkbox.evaluate(el=>{
+    for(let parent=el.parentElement;parent;parent=parent.parentElement){
+     if(parent.tagName==='DETAILS')parent.open=true;
+    }
+   });
+   await checkbox.check();
+   const refinanced=await verify(5000);
+   assert(Math.abs(refinanced.debt-partial.debt)<0.01);
+
+   await equity.fill('0');
+   await verify(0);
+   page.once('dialog',dialog=>dialog.accept());
+   await checkbox.uncheck();
+   await page.waitForFunction(()=>Number(document.getElementById('ownEquityInput').value)>=window.model().acquisitionCosts);
+   await checkbox.check();
+   assert(Math.abs((await verify(0)).debt-full.debt)<0.01);
+
+   await equity.fill('60000');
+   const manual=await verify(60000);
+   page.once('dialog',dialog=>dialog.accept());
+   await checkbox.uncheck();
+   await verify(60000);
+   await checkbox.check();
+   assert(Math.abs((await verify(60000)).debt-manual.debt)<0.01);
    await equity.fill('0');
    assert((await verify(0)).checked);
 
