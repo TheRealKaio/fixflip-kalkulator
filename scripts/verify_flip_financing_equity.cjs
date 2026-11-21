@@ -82,7 +82,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        window.nicFlipClickEvents.push({kind:'change',trusted:e.isTrusted,checked:e.target.checked});
      });
    });
-   await checkbox.click({force:true});
+   await checkbox.uncheck({timeout:5000});
    await page.waitForTimeout(150);
    page.off('dialog',accept);
    const checkedAfter=await checkbox.isChecked();
