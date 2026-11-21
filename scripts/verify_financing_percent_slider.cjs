@@ -234,7 +234,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
         loan:id==='rentLtv'?m.loan:m.financingBase*Number(document.getElementById(id).value)/100};
     },{id:input,eq:equity});
     assert(Math.abs(partiallyFinanced.loan-(partiallyFinanced.total-cashHalf))<1,
-      'The loan covers exactly the investment minus entered cash (no double deduction)');
+      'The loan covers exactly the investment minus entered cash (no double deduction): '+JSON.stringify({route,partiallyFinanced,cashHalf}));
     assert(Math.abs(partiallyFinanced.ratio*partiallyFinanced.base/100-partiallyFinanced.loan)<1,
       'Internal ratio, loan and financed base agree after automatic checkbox activation');
     const partialOutput=await page.locator('#'+input)
