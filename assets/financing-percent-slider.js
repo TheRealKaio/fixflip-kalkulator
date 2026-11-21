@@ -237,7 +237,7 @@ function install(id,equityId){
  if(acquisitionCheckbox){
   acquisitionCheckbox.addEventListener('click',event=>{
    if(!event.isTrusted||acquisitionCheckbox.checked)return;
-   const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\\n\\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
+   const accepted=window.confirm('Möchtest du die Kaufnebenkosten wirklich aus deinem Eigenkapital finanzieren?\n\nOhne Mitfinanzierung steigt dein Eigenkapitalbedarf.');
    if(!accepted){
     event.preventDefault();
     event.stopImmediatePropagation();
