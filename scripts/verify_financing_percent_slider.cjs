@@ -48,6 +48,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
        await ownDetails.evaluate(el=>el.open=true);
     }
     await slider.waitFor({state:'visible',timeout:4000});
+    assert.equal(await page.locator('#ownEquityShortfallWarning,#rentFundingGap').count(),0,
+      'Retired redundant red shortfall warning must not appear in either calculator');
     assert.equal(await page.locator('#'+input).count(),1,'Original percent field is retained once');
     assert(Number(await slider.getAttribute('max'))>=120,'Slider supports 120 percent');
     assert.equal(await slider.evaluate(el=>Math.round(el.getBoundingClientRect().width)),
