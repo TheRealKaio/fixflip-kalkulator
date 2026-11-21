@@ -484,6 +484,20 @@ const assert=require('node:assert/strict');
     assert(typography.repay.length>=2&&typography.repay.every(font=>Math.abs(font-17)<.05),'Start/Jahr 10 follow Untertexte (px): '+JSON.stringify(typography));
     assert(typography.rates.length>=5&&typography.rates.every(font=>Math.abs(font-17)<.05),'Rate chart percentages and year labels follow Untertexte (px): '+JSON.stringify(typography));
     assert(typography.scenario.length>=3&&typography.scenario.every(font=>font==='17px'),'Scenario slider percentages follow Untertexte (px): '+JSON.stringify(typography));
+    const sliderLabels=await page.locator('.refinance-slider .rangehead:visible').evaluate(row=>{
+     const {left,right,width}=row.getBoundingClientRect();
+     const [minimum,output,maximum]=Array.from(row.children,el=>el.getBoundingClientRect());
+     const note=row.closest('.card').querySelector('.refinance-note');
+     return {left:minimum.left-left,right:right-maximum.right,
+      center:output.left+output.width/2-(left+width/2),
+      alignment:Array.from(row.children,el=>getComputedStyle(el).textAlign),
+      language:note.lang,hyphens:getComputedStyle(note).hyphens};
+    });
+    assert(Math.abs(sliderLabels.left)<1&&Math.abs(sliderLabels.right)<1&&Math.abs(sliderLabels.center)<1,
+     'Scenario slider endpoints and selected rate are aligned across the full width');
+    assert.deepEqual(sliderLabels.alignment,['left','center','right']);
+    assert.equal(sliderLabels.language,'de');
+    assert.equal(sliderLabels.hyphens,'auto');
     assert.deepEqual(typography.repayText,['Start','Jahr 10'],'Repayment chart endpoint labels are present');
     assert.equal(await page.locator('.bottom-primary').first().textContent(),'Neu berechnen');
    }

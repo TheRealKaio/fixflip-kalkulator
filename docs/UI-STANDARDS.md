@@ -209,7 +209,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Rechnerkacheln nicht ohne Abstand aneinandergrenzen.
 - Schieberegler und Eingabe-/Übernahmebereiche behalten ihre eigene Zeile und
   werden nicht in Ergebnisraster einsortiert.
-- Im Zinsszenario der Anschlussfinanzierung stehen die Markierungen „0 %“, der aktuelle Sollzins und „10 %“ linksbündig in einer Zeile beziehungsweise bei schmalem Platz linksbündig umbrochen.
+- Im Zinsszenario der Anschlussfinanzierung steht „0 %“ links, der aktuelle Sollzins mittig und „10 %“ rechts. Bei wenig Platz darf der mittlere Text umbrechen. Der Erklärungstext ist linksbündig und nutzt automatische deutsche Silbentrennung.
 - Das Zinsdiagramm trägt die Überschrift „Hypothekenzinsen – 10 Jahre“; die historische Datenreihe bleibt vollständig erhalten.
 - Im Eingabebereich zur Immobilie lautet die Feldbezeichnung „Grundstück“.
 - Zwischen gemeinsamer Buttonleiste und Footer bleiben mindestens 16 px
