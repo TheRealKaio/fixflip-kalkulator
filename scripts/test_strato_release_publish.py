@@ -127,6 +127,17 @@ class AtomicTests(unittest.TestCase):
         visible = '<script>const text="🟡 prüfen · – &uuml;";</script><style>.x:after{content:"ü"}</style>'
         removed = '<script>const disabled="secret";</script>'
         check_raw_text(visible + removed, visible)
+        nav = ('<style id="nic-server-menu-visibility">'
+               '[data-nic-nav-obsolete="true"]{display:none!important}'
+               '@media(max-width:700px){[data-nic-nav-context="home"]'
+               '[data-nic-nav-key="budget"]{display:none!important}}</style>')
+        check_raw_text('<head>' + visible + '</head>', '<head>' + visible + nav + '</head>')
+        with self.assertRaises(CheckError):
+            check_raw_text('<head>' + visible + '</head>',
+                           '<head>' + visible + nav.replace('display:none', 'display:block') + '</head>')
+        with self.assertRaises(CheckError):
+            check_raw_text('<head>' + visible + '</head>', '<head>' + visible + nav + nav + '</head>')
+
         for output in [visible.replace('ü', '&uuml;'), visible.replace('🟡', '&#128993;'),
                        visible.replace('–', '&ndash;'), visible.replace('&uuml;', 'ü')]:
             with self.subTest(output=output), self.assertRaises(CheckError):

@@ -155,6 +155,21 @@ def raw_text_blocks(html):
 def check_raw_text(source, output):
     # Disabled sections may remove complete blocks, but no surviving script or
     # style may be rewritten, decoded or HTML-entity-encoded by the server.
+    # The content gate appends one generated visibility stylesheet to the head.
+    # Recognize only its fixed selectors and declarations, never arbitrary CSS.
+    obsolete = '[data-nic-nav-obsolete="true"]{display:none!important}'
+    visibility_rule = (
+        r'@media\((?:max-width:700px|min-width:701px)\)\{'
+        r'\[data-nic-nav-context="(?:home|calculator)"\]'
+        r'\[data-nic-nav-key="(?:budget|own|rent|flip|finance|settlement)"\]'
+        r'\{display:none!important\}\}'
+    )
+    gate_pattern = (
+        r'<style id="nic-server-menu-visibility">'
+        + re.escape(obsolete) + '(?:' + visibility_rule + '){0,24}</style>(?=</head>)'
+    )
+    if 'id="nic-server-menu-visibility"' not in source:
+        output = re.sub(gate_pattern, '', output, count=1)
     if not raw_text_blocks(output) <= raw_text_blocks(source):
         raise CheckError('Server hat JavaScript- oder CSS-Inhalt bei der HTML-Filterung veraendert.')
 
@@ -175,7 +190,10 @@ def verify_release(ips, manifest, preview_token=None, request=origin_request, so
                 raise CheckError('Release-Pruefung fehlgeschlagen: ' + name + ' HTTP ' + str(status))
             check_source(headers, body, manifest, name)
             if source_files is not None and name.endswith('.html'):
-                check_raw_text(source_files[name].read_text(encoding='utf-8'), body.decode('utf-8'))
+                try:
+                    check_raw_text(source_files[name].read_text(encoding='utf-8'), body.decode('utf-8'))
+                except CheckError as error:
+                    raise CheckError(f'{name}: {error}') from error
         for path, expected in [('/nic-unknown-page-test/', 404), ('/.nic-releases/' + manifest['release'] + '/.ready.json', 403)]:
             if request(WWW, ip, path)[0] != expected:
                 raise CheckError('Unbekannte Pfade oder Release-Speicher nicht geschuetzt.')
