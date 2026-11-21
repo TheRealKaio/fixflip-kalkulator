@@ -249,7 +249,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     assert.equal(parse(await page.locator('#'+equity).inputValue()),0,'Zero cash remains zero');
     const fullyFinanced=await page.evaluate(({id})=>{
       const m=id==='rentLtv'?window.rentalCalculation():window.model();
-      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,loan:m.loan};
+      return {total:id==='rentLtv'?m.totalInvestment:m.initialOwnUseCosts,
+        loan:id==='rentLtv'?m.loan:m.financingBase*Number(document.getElementById(id).value)/100};
     },{id:input});
     assert(Math.abs(fullyFinanced.total-fullyFinanced.loan)<1,'Zero cash finances the total investment');
     // Manual equity is authoritative even when it no longer covers all
