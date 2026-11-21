@@ -23,7 +23,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    });
    await page.goto('http://localhost/fix-flip/',{waitUntil:'domcontentloaded'});
    const consent=page.getByRole('button',{name:'Ablehnen',exact:true});
-   if(await consent.isVisible())await consent.click();
+   // Consent appears asynchronously; wait for it before touching calculator.
+   await consent.waitFor({state:'visible',timeout:15000});
+   await consent.click();
+   await page.locator('#nicConsentDialog').waitFor({state:'hidden',timeout:10000});
    await page.waitForFunction(()=>document.body.dataset.calculator==='flip'&&window.NICCalculators?.active==='flip'&&typeof window.model==='function',{timeout:25000});
    const slider=page.locator('#ltv').locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]').locator('.nic-finance-percent-range');
    if(!(await slider.isVisible())){
