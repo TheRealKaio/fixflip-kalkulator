@@ -95,18 +95,6 @@ function costs(id){
  // These outputs are already calculated by the existing own/flip model.
  // No second loan/debt/interest formula is introduced here.
  if(id==='ltv'){
-  // Owner and Fix & Flip both expose exact acquisition components. For Flip,
-  // do not use model.financingBase in the special zero-cash full-finance case:
-  // that amount also capitalizes holding costs/interest.
-  if(typeof window.model==='function' && activeMode()==='flip'){
-   try{
-    const m=window.model();
-    const purchase=Math.max(0,m.p||0),renovation=Math.max(0,m.reno||0);
-    const fees=Math.max(0,m.tax||0)+Math.max(0,m.notary||0)+Math.max(0,m.buyBroker||0);
-    if(purchase>0)return {total:purchase+renovation+fees,
-     base:purchase+renovation+(byId('financeAcquisition')?.checked?fees:0)};
-   }catch(_error){/* Fall back to visible project totals. */}
-  }
   // Owner-use uses the existing calculator financing totals.
   if(typeof window.model==='function' && activeMode()==='own'){
    try{
@@ -150,6 +138,7 @@ function install(id,equityId){
 
  // The owner/flip calculator shares DOM input IDs but keeps separate saved states.
  const mode=()=>id==='rentLtv'?'rent':(activeMode()==='flip'?'flip':'own');
+ const isFlip=()=>mode()==='flip';
  const manualKey=()=> 'nic_finance_equity_manual_v2_'+mode();
  const flags=new Map();
  const isManual=()=>{
@@ -186,7 +175,8 @@ function install(id,equityId){
  const refresh=()=>{
   const internal=Math.max(0,parseNumber(original.value));
   const c=costs(id);
-  const share=effectiveShare(internal,c);
+  const flip=isFlip() && window.model?.();
+  const share=flip ? flip.financingRatioActual*100 : effectiveShare(internal,c);
   const maximum=Math.max(120,Math.ceil(share/20)*20);
   slider.max=String(maximum);
   slider.value=String(Math.min(share,maximum));
@@ -194,9 +184,18 @@ function install(id,equityId){
   out.textContent=format(share)+' %';
   high.textContent=format(maximum)+' %';
   slider.setAttribute('aria-valuetext',out.textContent);
+  if(flip){
+   const message=flip.equityShortfall>0
+    ? 'Bei diesen Zins- und Laufzeitangaben lässt sich die Projektfinanzierung nicht berechnen.'
+    : out.textContent+' des Kaufpreises finanziert. Das Darlehen deckt die verbleibenden Projektkosten inklusive Halte- und Zinskosten.';
+   if(hint.textContent!==message)hint.textContent=message;
+  }else if(hint.dataset.flip==='true'){
+   hint.textContent='';
+  }
+  hint.dataset.flip=String(Boolean(flip));
  };
  const syncAutoEquity=()=>{
-  if(isManual())return;
+  if(isFlip()||isManual())return;
   const c=costs(id);
   if(!(c.total>=0&&c.base>0))return;
   const share=Math.max(0,parseNumber(original.value));
@@ -209,6 +208,7 @@ function install(id,equityId){
   }finally{updating=false;}
  };
  const syncManualPercentage=()=>{
+  if(isFlip()){refresh();return;}
   if(!isManual())return;
   const c=costs(id);
   if(!(c.base>0&&c.total>0))return;
@@ -237,7 +237,8 @@ function install(id,equityId){
    const box=byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition');
    const c=costs(id);
    const cash=Math.max(0,parseNumber(equity.value));
-   const unfinancedCosts=Math.max(0,c.total-c.base);
+   const flip=isFlip() && window.model?.();
+   const unfinancedCosts=flip ? flip.tax+flip.notary+flip.buyBroker : Math.max(0,c.total-c.base);
    if(box&&!box.checked&&cash+0.005<unfinancedCosts){
     automaticCheckboxChange=true;
     try{
@@ -263,6 +264,18 @@ function install(id,equityId){
     try{navigator.vibrate(8);}catch(_error){}
    wrapper.classList.add('nic-finance-at-100');
   }else wrapper.classList.remove('nic-finance-at-100');
+  if(isFlip()){
+   const m=window.model?.();
+   if(!m?.p)return;
+   const fees=m.tax+m.notary+m.buyBroker;
+   const plan=window.flipFinancingPlan(m.p,m.reno,fees,m.months,m.p*next/100);
+   const minimum=byId('financeAcquisition')?.checked ? 0 : fees;
+   equity.value=String(Math.round(Math.max(minimum,plan.equityForRequestedDebt)*100)/100);
+   equity.dispatchEvent(new Event('input',{bubbles:true}));
+   setManual(false);
+   refresh();
+   return;
+  }
   const c=costs(id);
   // Without acquisition-cost financing, the loan may not exceed the
   // acquisition-cost-excluding basis. Keep the displayed share honest.
@@ -308,6 +321,19 @@ function install(id,equityId){
    // Let the cash amount drive the ratio, and skip the delayed checkbox
    // handler which would otherwise clear the fixed-equity state.
    if(automaticCheckboxChange)return;
+   if(isFlip()){
+    queueMicrotask(()=>{
+     const m=window.model?.();
+     if(!m)return;
+     const fees=m.tax+m.notary+m.buyBroker;
+     if(!acquisitionCheckbox.checked && parseNumber(equity.value)<fees){
+      equity.value=String(Math.ceil(fees*100)/100);
+      equity.dispatchEvent(new Event('input',{bubbles:true}));
+     }
+     refresh();
+    });
+    return;
+   }
    const previouslyBorrowed=shareBeforeToggle;
    shareBeforeToggle=null;
    setManual(false);
@@ -350,6 +376,10 @@ function install(id,equityId){
   const onChange=()=>queueMicrotask(onCostChange);
   byId(sourceId)?.addEventListener('change',onChange);
   byId(sourceId)?.addEventListener('input',onChange);
+ }
+ if(id==='ltv' && byId('financedAmount')){
+  const outputWatcher=new MutationObserver(()=>{if(isFlip())refresh();});
+  outputWatcher.observe(byId('financedAmount'),{childList:true,characterData:true,subtree:true});
  }
  const acquisitionOutput=id==='rentLtv'?'rentAcquisitionDisplay':'acquisitionCostsTotal';
  if(byId(acquisitionOutput)){

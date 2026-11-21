@@ -325,12 +325,12 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 ## Finanzierung: Prozent-Schieberegler und automatisches Eigenkapital (Development)
 
-- Eigennutzung, Fix & Flip und Vermietung verwenden für das bestehende Finanzierungs-Prozentfeld einen Schieberegler, ohne dessen Berechnungs-ID oder die Darlehens-/Zinsformeln zu ersetzen.
+- Eigennutzung, Fix & Flip und Vermietung verwenden für das bestehende Finanzierungs-Prozentfeld einen Schieberegler, mit der bestehenden Berechnungs-ID.
 - Der Regler besitzt auf Mobil und Desktop eine eigene Rasterzeile über die volle verfügbare Breite.
 - Die Skala umfasst mindestens 0–120 %, und bereits vorhandene höhere Werte müssen angezeigt und erhalten werden. Eingaben bleiben mit zwei Dezimalstellen kompatibel.
 - Ohne manuelle Eigenkapitaleingabe folgt das bestehende Eurofeld automatisch dem aus Finanzierungsquote und Projektkosten hergeleiteten Eigenkapitalbedarf. Veränderungen von Kaufpreis und Nebenkosten aktualisieren den automatischen Vorschlag.
 - Hat der Nutzer Eigenkapital selbst eingegeben, bleibt dieser Betrag auch bei Änderungen von Kaufpreis, Notar, Makler und Finanzierungsquote fix; bei einer Eigenkapitaländerung bestimmt er umgekehrt den Finanzierungsprozentsatz. Der manuelle Zustand bleibt getrennt für Eigennutzung, Fix & Flip und Vermietung gespeichert, bis eine erneute Eingabe oder ein bestätigter Rechner-Reset erfolgt.
-- Der Prozentwert bezeichnet den Brutto-Finanzierungsanteil der Finanzierungsbasis. Das Eigenkapital wird nur einmal von den Gesamtkosten zur Ermittlung des notwendigen Darlehensanteils berücksichtigt. In Fix & Flip bleiben Projekt- und Zinsreserven erhalten; beim Reglerbetrieb darf ein überschüssiger Eigenkapitalbetrag die bereits angepasste Kreditsumme nicht ein zweites Mal reduzieren.
+- In Fix & Flip zeigen Regler und hellgrauer Hinweis das tatsächliche Darlehen in Prozent des Kaufpreises. Eingetragenes Eigenkapital deckt einen Teil der Projektkosten, das Darlehen deckt den Rest einschließlich Halte- und Zinskosten. Beim Verschieben des Reglers wird das notwendige Eigenkapital ermittelt. Verkaufskosten werden beim Verkauf berücksichtigt.
 - Der Regler unterstützt mindestens 0–120 % und besitzt bei 100 % eine Einrastzone von ±1 Prozentpunkt; ein bewusstes Weiterziehen über die Zone hinaus bleibt möglich.
 - Vor Übernahme nach main muss der Browser-Test beide relevanten Layoutbreiten, 0 % / 120 % und manuelle Eingaben prüfen. Keine automatische STRATO-Veröffentlichung auf develop.
 

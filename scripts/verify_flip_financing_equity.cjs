@@ -1,5 +1,4 @@
-// Real-browser parity test for Fix & Flip's special capital/reserve waterfall.
-// Exercises checked -> unchecked -> partial cash -> zero cash -> reload.
+// Verify that the loan, equity and slider cover the same Fix & Flip costs.
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 (async()=>{
@@ -29,127 +28,81 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.locator('#nicConsentDialog').waitFor({state:'hidden',timeout:10000});
    await page.waitForFunction(()=>document.body.dataset.calculator==='flip'&&window.NICCalculators?.active==='flip'&&typeof window.model==='function',{timeout:25000});
    const slider=page.locator('#ltv').locator('xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," field ")][1]').locator('.nic-finance-percent-range');
-   if(!(await slider.isVisible())){
-    const ancestors=await slider.evaluate(el=>{
-      const a=[];for(let p=el;p;p=p.parentElement){
-        const st=getComputedStyle(p);
-        if(st.display==='none'||st.visibility==='hidden'||p.hidden||p.tagName==='DETAILS')
-         a.push({tag:p.tagName,id:p.id,cls:String(p.className).slice(0,65),hidden:p.hidden,open:p.open,display:st.display});
-      }return a;
-    });
-    console.log('Fix & Flip slider visibility diagnosis:',JSON.stringify(ancestors));
-    await slider.evaluate(el=>{
-      for(let p=el;p;p=p.parentElement){
-        if(p.tagName==='DETAILS')p.open=true;
-      }
-    });
-   }
+   await slider.evaluate(el=>{
+    for(let parent=el.parentElement;parent;parent=parent.parentElement){
+     if(parent.tagName==='DETAILS')parent.open=true;
+    }
+   });
    await slider.waitFor({state:'visible',timeout:5000});
    const checkbox=page.locator('#financeAcquisition'),equity=page.locator('#ownEquityInput');
-   const checkboxCheck=async()=>{if(!(await checkbox.isChecked()))await checkbox.check();};
-   assert.equal(await page.locator('#equityShortfallWarning').count(),0,'Duplicate red equity warning removed');
    await page.locator('#purchase').fill('300000');
-   await checkboxCheck();
-   await page.evaluate(()=>{
-    const el=document.getElementById('ltv').closest('.field').querySelector('.nic-finance-percent-range');
-    el.value='100';el.dispatchEvent(new Event('input',{bubbles:true}));
-   });
-   await page.waitForTimeout(150);
-   // Exercise an actual user-owned cash amount before switching funding mode.
-   // Flip's special zero-cash capitalization path must not hide a normal toggle.
-   await equity.fill('60000');
-   await page.waitForTimeout(180);
-   const beforeToggle=await page.evaluate(()=>({
-     checked:document.getElementById('financeAcquisition').checked,
-     active:document.body.dataset.calculator,
-     cash:document.getElementById('ownEquityInput').value,
-     ratio:document.getElementById('ltv').value
-   }));
-   assert(beforeToggle.checked,'Checkbox must start ON before user removes financing: '+JSON.stringify(beforeToggle));
-   let dialogCount=0;
-   const accept=async dialog=>{dialogCount++;await dialog.accept()};
-   page.on('dialog',accept);
-   const checkedBefore=await checkbox.isChecked();
-   const checkboxDetail=await checkbox.evaluate(el=>({
-    html:el.outerHTML,disabled:el.disabled,readOnly:el.readOnly,hidden:el.hidden,
-    visible:getComputedStyle(el).visibility,display:getComputedStyle(el).display,
-    enclosingLabel:el.closest('label')?.outerHTML?.slice(0,600)
-   }));
-   const hitTarget=await checkbox.evaluate(el=>{
-     const b=el.getBoundingClientRect();
-     const t=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);
-     return {rect:{x:b.x,y:b.y,width:b.width,height:b.height},
-       target:t?.outerHTML?.slice(0,400),pointer:getComputedStyle(el).pointerEvents,
-       zIndex:getComputedStyle(el).zIndex};
-   });
-   console.log('Flip checkbox before trusted click:',JSON.stringify({checkedBefore,checkboxDetail,hitTarget}));
-   await page.evaluate(()=>{
-     window.nicFlipClickEvents=[];
-     document.addEventListener('click',e=>{
-       if(e.target?.id==='financeAcquisition')window.nicFlipClickEvents.push({kind:'click',trusted:e.isTrusted,checked:e.target.checked});
-     },true);
-     document.getElementById('financeAcquisition').addEventListener('change',e=>{
-       window.nicFlipClickEvents.push({kind:'change',trusted:e.isTrusted,checked:e.target.checked});
-     });
-   });
-   await checkbox.uncheck({timeout:5000});
-   await page.waitForTimeout(150);
-   page.off('dialog',accept);
-   const checkedAfter=await checkbox.isChecked();
-   console.log('Flip checkbox toggle diagnosis:',JSON.stringify({checkedBefore,checkedAfter,dialogCount,
-     capital:await equity.inputValue(),ratio:await page.locator('#ltv').inputValue(),
-     events:await page.evaluate(()=>window.nicFlipClickEvents)}));
-   assert.equal(dialogCount,1,'Trusted user uncheck requires confirmation');
-   assert.equal(await checkbox.isChecked(),false);
-   // A deliberate slider move to maximum allowable debt with fees excluded
-   // must automatically reserve those fees as equity.
-   await page.evaluate(()=>{
-     const el=document.getElementById('ltv').closest('.field').querySelector('.nic-finance-percent-range');
-     el.value='100';el.dispatchEvent(new Event('input',{bubbles:true}));
-   });
-   await page.waitForTimeout(120);
    const state=()=>page.evaluate(()=>{
     const m=window.model();
-    const investment=(m.p||0)+(m.reno||0)+(m.tax||0)+(m.notary||0)+(m.buyBroker||0);
-    const fees=(m.tax||0)+(m.notary||0)+(m.buyBroker||0);
-    const range=document.getElementById('ltv').closest('.field').querySelector('.nic-finance-percent-range');
-    return {investment,fees,base:investment-fees,loan:m.debt,grossDebt:m.grossDebt,
-      capital:Number(document.getElementById('ownEquityInput').value),ratio:Number(document.getElementById('ltv').value),
-      visible:Number(range.value),full:m.fullFinanceMode,shortfall:m.equityShortfall,
-      holding:m.holding,interest:m.interest,need:m.equity,
-      checkbox:document.getElementById('financeAcquisition').checked};
+    const control=document.getElementById('ltv').closest('.field');
+    return {purchase:m.p, fees:m.acquisitionCosts, debt:m.debt, interest:m.interest,
+     costs:m.p+m.reno+m.acquisitionCosts+m.holding+m.interest,
+     equity:Number(document.getElementById('ownEquityInput').value),
+     gap:m.equityShortfall, checked:document.getElementById('financeAcquisition').checked,
+     slider:Number(control.querySelector('.nic-finance-percent-range').value),
+     hint:control.querySelector('.nic-finance-equity-hint').textContent};
    });
-   const before=await state();
-   assert(before.fees>5000,'Acquisition fee test fixture');
-   assert(before.visible<100,'Removing acquisition financing reduces Flip displayed percentage');
-   assert(Math.abs(before.capital-before.fees)<1,'Unfinanced fees included in available cash');
-   await equity.fill('5000');await page.waitForTimeout(200);
-   const partial=await state();
-   assert(partial.checkbox,'Partial cash automatically re-enables acquisition financing');
-   assert.equal(partial.capital,5000,'Typed partial cash preserved');
-   assert(Math.abs(partial.grossDebt-(partial.investment-5000))<1,'Gross debt accounts for typed cash only once');
-   assert(Math.abs(partial.loan-partial.grossDebt)<1,'No double cash deduction from Flip loan');
-   assert(partial.need>=5000,'Project reserve waterfall includes project costs');
-   await equity.fill('0');await page.waitForTimeout(200);
-   const zero=await state();
-   assert(zero.checkbox,'Zero cash preserves auto-financed acquisition costs');
-   assert.equal(zero.capital,0,'Zero cash remains zero');
-   assert(zero.full,'Flip zero-cash special full-finance branch remains active');
-   assert(zero.loan>=zero.investment,'Full finance includes initial investment plus financing reserves');
-   assert(zero.shortfall<1,'Fully financed zero-cash project does not report a phantom cash gap');
-   await equity.fill('5000');await page.waitForTimeout(250);
-   const saved=await state();
+   const verify=async expectedEquity=>{
+    await page.waitForFunction(expected=>{
+     const m=window.model();
+     const control=document.getElementById('ltv').closest('.field');
+     const slider=control.querySelector('.nic-finance-percent-range');
+     return Number(document.getElementById('ownEquityInput').value)===expected &&
+      Math.abs(Number(slider.value)-100*m.debt/m.p)<0.011;
+    },expectedEquity);
+    const current=await state();
+    assert.equal(current.gap,0);
+    assert(Math.abs(current.debt+current.equity-current.costs)<0.01);
+    assert.match(current.hint,/% des Kaufpreises finanziert/);
+    return current;
+   };
+   await equity.fill('0');
+   const full=await verify(0);
+   assert(full.slider>100 && full.checked);
+   assert.equal(await page.locator('#financeFullWarning').isVisible(),false);
+
+   await equity.fill('5000');
+   const partial=await verify(5000);
+   assert(partial.checked && partial.debt<full.debt);
+   assert(Math.abs(full.debt-partial.debt-5000-full.interest+partial.interest)<0.01);
    await page.reload({waitUntil:'domcontentloaded'});
-   await page.waitForFunction(()=>document.body.dataset.calculator==='flip'&&window.NICCalculators?.active==='flip',{timeout:25000});
-   await page.waitForTimeout(400);
-   const restored=await state();
-   assert(restored.checkbox,'Auto-enabled checkbox is saved');
-   assert.equal(restored.capital,5000,'Partial cash is saved');
-   assert(Math.abs(restored.grossDebt-saved.grossDebt)<1,
-    'Financing ratio and gross loan survive reload: '+JSON.stringify({saved,restored}));
-   assert(Math.abs(restored.loan-saved.loan)<1,'Flip loan survives reload');
-   assert.deepEqual(errors,[],'No browser runtime exceptions');
-   console.log('Fix & Flip financing, equity, reserves and reload PASS:',width,JSON.stringify({before,partial,zero,restored}));
+   await page.waitForFunction(()=>document.body.dataset.calculator==='flip'&&window.NICCalculators?.active==='flip');
+   const restored=await verify(5000);
+   assert(Math.abs(restored.debt-partial.debt)<0.01);
+   await checkbox.evaluate(el=>{
+    for(let parent=el.parentElement;parent;parent=parent.parentElement){
+     if(parent.tagName==='DETAILS')parent.open=true;
+    }
+   });
+   page.once('dialog',dialog=>dialog.accept());
+   await checkbox.uncheck();
+   await page.waitForFunction(()=>Number(document.getElementById('ownEquityInput').value)>=window.model().acquisitionCosts);
+   assert.equal(await checkbox.isChecked(),false);
+   await equity.fill('0');
+   assert((await verify(0)).checked);
+
+   await slider.evaluate(el=>{
+    el.value='100';
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+   });
+   const atPurchase=await state();
+   assert(Math.abs(atPurchase.debt-atPurchase.purchase)<0.02);
+   assert(Math.abs(atPurchase.debt+atPurchase.equity-atPurchase.costs)<0.02);
+   const maximumPurchaseBreakEven=await page.evaluate(()=>{
+    const m=window.model();
+    const atMaximum=window.model({purchase:m.maxBuy,sale:m.s});
+    return {maximum:m.maxBuy, profit:atMaximum.profit,
+     target:Number(document.getElementById('targetProfit').value)};
+   });
+   if(maximumPurchaseBreakEven.maximum>0){
+    assert(Math.abs(maximumPurchaseBreakEven.profit-maximumPurchaseBreakEven.target)<0.02);
+   }
+   assert.deepEqual(errors,[]);
+   console.log('Fix & Flip loan, equity, rate and reload PASS:',width);
    await page.close();
   }
  }finally{await browser.close()}
