@@ -99,5 +99,48 @@ once(
     "PDF financing ratio uses actual Fix & Flip loan"
 )
 
+once(
+    'Dein Eigenkapital deckt zuerst den Liquiditätsbedarf des Projekts. Nur der danach verbleibende Betrag reduziert die Kreditsumme.',
+    '',
+    "remove outdated Fix & Flip equity explanation"
+)
+once(
+    '    financingRatioActual:p>0 ? debt/p : 0,',
+    '    debtWithoutEquity:netLoanFactor>0 ? projectCostsBeforeInterest/netLoanFactor : null,\n'
+    '    financingRatioActual:p>0 ? debt/p : 0,',
+    "reference loan for the equity explanation"
+)
+once(
+    '    equityRemaining:0,',
+    '    debtWithoutEquity:isFlipFinancing ? financePlan.debtWithoutEquity : null,\n'
+    '    equityRemaining:0,',
+    "expose the reference loan to the Fix & Flip result"
+)
+start=s.index('  if($("equityCapitalNote")){')
+end=s.index('  if($("equityNeedNote")',start)
+s=s[:start]+r"""  if($("equityCapitalNote")){
+    const isFlip = currentDealType()==="flip";
+    $("equityCapitalNote").classList.toggle("show",isFlip);
+    let note = "";
+    if(isFlip){
+      if(m.debtWithoutEquity === null){
+        note = "Bei diesen Zins- und Laufzeitangaben lässt sich die Vollfinanzierung nicht berechnen.";
+      }else if(m.equity > 0){
+        const reduction = Math.max(0,m.debtWithoutEquity - m.debt);
+        const interestSaved = Math.max(0,reduction - m.equity);
+        note = "Dein Darlehen sinkt um "+eur(reduction)+". Dein Eigenkapital deckt "+
+          eur(m.equity)+" der Projektkosten.";
+        if(interestSaved >= 0.5){
+          note += " Durch das kleinere Darlehen sparst du zusätzlich rund "+
+            eur(interestSaved)+" Zinsen, die du weniger mitfinanzieren musst.";
+        }
+      }else{
+        note = "Ohne Eigenkapital deckt das Darlehen die Projektkosten inklusive Halte- und Zinskosten.";
+      }
+    }
+    $("equityCapitalNeed").textContent = note;
+  }
+"""+s[end:]
+
 path.write_text(s,encoding="utf-8")
 print("Financing equity consistency applied")

@@ -65,6 +65,16 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert(full.slider>100 && full.checked);
    assert.equal(await page.locator('#financeFullWarning').isVisible(),false);
 
+   await equity.fill('904');
+   const withEquity=await verify(904);
+   const money=amount=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(amount);
+   const explanation=page.locator('#equityCapitalNeed');
+   const note=await explanation.textContent();
+   assert(note.includes('Darlehen sinkt um '+money(full.debt-withEquity.debt)));
+   assert(note.includes(money(904)+' der Projektkosten'));
+   const savedInterest=full.interest-withEquity.interest;
+   if(savedInterest>=0.5)assert(note.includes(money(savedInterest)+' Zinsen'));
+
    await equity.fill('5000');
    const partial=await verify(5000);
    await page.waitForFunction(()=>window.NICSettings?.ready);
@@ -74,6 +84,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     return getComputedStyle(el.parentElement.querySelector('.nic-finance-equity-hint')).fontSize;
    });
    assert.equal(hintFont,'19px','Fix & Flip hint uses the Admin hint size');
+   assert.deepEqual(await explanation.evaluate(el=>[el.parentElement,el].map(node=>getComputedStyle(node).fontSize)),
+    ['19px','19px'],'The entire equity box uses the Admin hint size');
    assert(partial.checked && partial.debt<full.debt);
    assert(Math.abs(full.debt-partial.debt-5000-full.interest+partial.interest)<0.01);
    await page.reload({waitUntil:'domcontentloaded'});
