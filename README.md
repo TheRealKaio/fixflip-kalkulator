@@ -82,3 +82,7 @@ Die Browserprüfung vergleicht nun ausdrücklich die bereinigten externen Styles
 ### Gemeinsame Einbindung der Finanzierung
 
 Die zuvor eingeführte zusätzliche Datei `calculator-finance.js` ist wieder entfernt. Die Finanzierungsfunktion wird innerhalb von `calculator-navigation.js` zusammen mit den fünf zentral registrierten Rechnern geladen und initialisiert. Es gibt keinen zusätzlichen globalen `NICFinanceModule`-Startpunkt. Navigation, Rechnerkennung und Referenzzins bleiben gemeinsam. Die fachlichen Finanzierungsformeln und der bestehende isolierte Formularcontainer bleiben erhalten, um Feld-ID- und CSS-Kollisionen zu vermeiden. Dies vereinheitlicht die Einbindung; es behauptet keine vollständige Zusammenführung aller historisch gewachsenen Speicher- oder PDF-Implementierungen.
+
+### Statistik der Mieterabrechnung
+
+Die Mieterabrechnung (`/nebenkostenabrechnung/`) wird nach Statistik-Einwilligung als eigener Seitenaufruf erfasst und im Admin unter Statistik getrennt ausgewiesen. Rechner- und PDF-Aktionen der Inhaltsseite werden nicht als ausgeführte Vorgänge ausgegeben. Der statische STRATO-Website-Deploy ersetzt nicht automatisch die private `immocheck-private/app.php`; deren Statistik-Akzeptanz ist separat zu aktualisieren.

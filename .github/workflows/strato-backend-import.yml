@@ -39,7 +39,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check paramiko==5.1.0
       - name: Inspect or atomically activate admin import route
         env:
-          STRATO_BACKEND_IMPORT_MODE: ${{ inputs.mode || (contains(github.event.head_commit.message, 'activate user-import route') && 'apply' || 'inspect') }}
+          STRATO_BACKEND_IMPORT_MODE: ${{ inputs.mode || ((contains(github.event.head_commit.message, 'activate user-import route') || contains(github.event.head_commit.message, 'activate settings persistence')) && 'apply' || 'inspect') }}
           STRATO_SFTP_HOST: ${{ secrets.STRATO_SFTP_HOST }}
           STRATO_SFTP_USER: ${{ secrets.STRATO_SFTP_USER }}
           STRATO_SFTP_PASSWORD: ${{ secrets.STRATO_SFTP_PASSWORD }}

@@ -63,7 +63,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await equity.fill('0');
    const full=await verify(0);
    assert(full.slider>100 && full.checked);
-   assert.equal(await page.locator('#financeFullWarning').isVisible(),false);
+   assert.equal(await page.locator('#financeFullWarning').count(),0);
 
    await equity.fill('904');
    const withEquity=await verify(904);

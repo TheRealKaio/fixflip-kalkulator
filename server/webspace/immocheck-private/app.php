@@ -118,9 +118,9 @@ function nic_auth_settings(PDO $db): array {
 }
 function nic_clean_settings(mixed $raw): array {
     if (!is_array($raw) || ($raw['version'] ?? null) !== 1) nic_fail('Ungültige Einstellungen.');
-    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility'];
+    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility','seoIndexing'];
     $s = array_intersect_key($raw, array_flip($keys));
-    foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
+    foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access','seoIndexing'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
     $s['access'] = $s['access'] ?? [];
     foreach (['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare','budgetInsightsLoginRequired'] as $key) {
         $value = $s['access'][$key] ?? !in_array($key,['registrationBlocked','loginBlocked','budgetInsightsLoginRequired'],true);
@@ -200,7 +200,7 @@ function nic_run(): void {
     if ($route === 'health' && $method === 'GET') {
         $ready = false;
         try { $ready = (bool)nic_query($db, 'SELECT id FROM nic_settings WHERE id=1')->fetchColumn(); } catch (PDOException) {}
-        nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360','usersImportVersion'=>1]);
+        nic_reply(['ok'=>true,'ready'=>$ready,'version'=>'8.360','usersImportVersion'=>1,'settingsVisibilityVersion'=>1]);
     }
     if ($route === 'setup' && $method === 'POST') {
         if (!is_string($input['key'] ?? null) || !hash_equals($c['setup_key'], $input['key'])) nic_fail('Einrichtungsschlüssel ungültig.', 403);

@@ -1,6 +1,7 @@
 """Keep financing allocation consistent across the property calculators."""
 from pathlib import Path
 import sys
+import re
 
 path=Path(sys.argv[1] if len(sys.argv)>1 else "_site/index.html")
 s=path.read_text(encoding="utf-8")
@@ -43,8 +44,6 @@ s=s[:start]+r"""function flipFinancingPlan(p,reno,acquisitionCosts,months,reques
   const projectEquityNeed = Math.max(0,projectCostsBeforeInterest + projection.totalInterest - debt);
   const selectedLoan = Math.max(0,requestedDebt ?? 0);
   const equityForRequestedDebt = Math.max(0,projectCostsBeforeInterest + project(selectedLoan).totalInterest - selectedLoan);
-  const reserveHolding = Math.min(projectEquityNeed,holding);
-  const reserveInterest = Math.min(projectEquityNeed-reserveHolding,projection.totalInterest);
 
   return {
     financeAcquisition,
@@ -53,13 +52,7 @@ s=s[:start]+r"""function flipFinancingPlan(p,reno,acquisitionCosts,months,reques
     debt,
     projection,
     availableCapital,
-    requiredReserve:reserveHolding + reserveInterest,
-    reserveInitial:0,
-    reserveHolding,
-    reserveInterest,
-    equityForFinancing:Math.max(0,projectEquityNeed - holding - projection.totalInterest),
     projectEquityNeed,
-    equityRemaining:Math.max(0,availableCapital-projectEquityNeed),
     equityShortfall:solvable ? 0 : netFunding,
     fullFinanceMode:solvable && availableCapital === 0,
     financingRatioActual:p>0 ? debt/p : 0,
@@ -112,8 +105,7 @@ once(
 )
 once(
     '    equityRemaining:0,',
-    '    debtWithoutEquity:isFlipFinancing ? financePlan.debtWithoutEquity : null,\n'
-    '    equityRemaining:0,',
+    '    debtWithoutEquity:isFlipFinancing ? financePlan.debtWithoutEquity : null,',
     "expose the reference loan to the Fix & Flip result"
 )
 start=s.index('  if($("equityCapitalNote")){')
@@ -141,6 +133,32 @@ s=s[:start]+r"""  if($("equityCapitalNote")){
     $("equityCapitalNeed").textContent = note;
   }
 """+s[end:]
+
+for name in ("syncComparisonOneFromDeal", "median"):
+    start=s.index(f"function {name}(")
+    end=s.index("\n}",start)+2
+    s=s[:start]+s[end:].lstrip("\n")
+
+once(
+    '          <div class="finance-full-warning" id="financeFullWarning" hidden></div>\n',
+    '',
+    "remove retired financing warning"
+)
+s=re.sub(r"(?m)^(?:#financedAmountField\.finance-full|\.finance-full-warning)[^\n]*\n?", "", s)
+s=re.sub(r"(?m)^    (?:equityForFinancing|projectReserveNeed|projectReserveInitial|projectReserveHolding|projectReserveInterest):[^\n]*\n", "", s)
+
+once(
+    '    page2Line("Eigenkapital verfügbar", pdfMoney(m.ownEquityInput), true);\n'
+    '    page2Line("Projektreserve", pdfMoney(m.projectReserveNeed));\n'
+    '    page2Line("Davon zur Kreditreduzierung", pdfMoney(m.equityForFinancing));',
+    """    page2Line("Eigenkapital eingesetzt", pdfMoney(m.equity), true);
+    if(m.debtWithoutEquity !== null && m.equity > 0){
+      const loanReduction = Math.max(0,m.debtWithoutEquity - m.debt);
+      page2Line("Darlehensreduzierung", pdfMoney(loanReduction));
+      page2Line("Davon eingesparte Zinsen", pdfMoney(Math.max(0,loanReduction - m.equity)));
+    }""",
+    "align Fix & Flip PDF with the equity explanation"
+)
 
 path.write_text(s,encoding="utf-8")
 print("Financing equity consistency applied")

@@ -160,19 +160,9 @@ function install(id,equityId){
  const changedFinance=()=>{
   original.dispatchEvent(new Event('input',{bubbles:true}));
  };
- // The calculator's legacy input stores percent of the FINANCEABLE basis.
- // Present percent of the TOTAL investment to the user, without touching
- // Fix & Flip's separate financing / reserve model.
- // Also show Fix & Flip's selected acquisition/renovation loan as a share
- // of initial investment. The Flip model separately adds holding/interest
- // capitalization when truly no cash is available.
- const effectiveMode=()=>true;
- const effectiveShare=(internal,c)=>{
-  return effectiveMode()&&c.total>0 ? internal*c.base/c.total : internal;
- };
- const internalShare=(effective,c)=>{
-  return effectiveMode()&&c.base>0 ? effective*c.total/c.base : effective;
- };
+ // Convert the legacy financeable-base percentage to a share of total investment.
+ const effectiveShare=(internal,c)=>c.total>0 ? internal*c.base/c.total : internal;
+ const internalShare=(effective,c)=>c.base>0 ? effective*c.total/c.base : effective;
  const refresh=()=>{
   const internal=Math.max(0,parseNumber(original.value));
   const c=costs(id);
@@ -285,7 +275,7 @@ function install(id,equityId){
   const c=costs(id);
   // Without acquisition-cost financing, the loan may not exceed the
   // acquisition-cost-excluding basis. Keep the displayed share honest.
-  const permitted=effectiveMode() && c.total>0 &&
+  const permitted=c.total>0 &&
     !(byId(id==='rentLtv'?'rentFinanceAcquisition':'financeAcquisition')?.checked)
     ? 100*c.base/c.total : Number(slider.max);
   if(next>permitted){next=Math.max(0,permitted);slider.value=String(next);}
