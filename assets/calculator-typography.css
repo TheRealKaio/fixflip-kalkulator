@@ -44,6 +44,11 @@ html body:not(.nic-admin) :is(
 ) {
   font-size: var(--nic-subtext-font-size, 14px) !important;
 }
+html[data-calculator="flip"] body:not(.nic-admin) :is(
+  #flipGoalsCard .section-summary-subtitle,#flipGoalsSubtitle,#decisionText
+) {
+  font-size: var(--nic-subtext-font-size, 14px) !important;
+}
 /* Cost-chart total may have a generic class. Keep this scoped to cost charts. */
 html body:not(.nic-admin) :is(section,.card):has(.cost-row)
 :is(.total,.total :where(*),.total-row,.total-row :where(*),

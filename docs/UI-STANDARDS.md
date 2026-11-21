@@ -456,6 +456,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 
 ## Kacheltitel und kontextbezogene Hilfebegriffe (17.11.2026)
 
+- Die grauen Texte unter „Projektziele & Steuer“ und „Ergebnis Fix und Flip“ verwenden ebenfalls „Untertexte (px)“.
 - Alle Ergebnis-Kacheltitel der fünf Rechner verwenden Admin → Layout → Untertexte (px), einschließlich Budget- und Kennzahlenbeschriftungen. Änderungen der Einstellung wirken gemeinsam auf diese Titel.
 - Anklickbare Fachbegriffe übernehmen Schriftfamilie, Schriftgröße, Schriftstärke, Zeilenhöhe, Farbe, Buchstabenabstand und Groß-/Kleinschreibung des ursprünglichen Textes. Die Hilfefunktion darf keine globale Button-Typografie einschleusen; die gepunktete Unterstreichung und Bedienbarkeit bleiben erhalten.
 - Die geöffneten Hilfedialoge und ergänzenden Hinweistexte behalten ihre bisherigen Typografie-Zuordnungen.

@@ -80,10 +80,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.waitForFunction(()=>window.NICSettings?.ready);
    const hintFont=await slider.evaluate(el=>{
     const settings=window.NICSettings;
-    settings.apply({...settings.current,layout:{...settings.current.layout,hintSize:19}});
+    settings.apply({...settings.current,layout:{...settings.current.layout,bodySize:17,subtextSize:15,hintSize:19}});
     return getComputedStyle(el.parentElement.querySelector('.nic-finance-equity-hint')).fontSize;
    });
    assert.equal(hintFont,'19px','Fix & Flip hint uses the Admin hint size');
+   const subtitles=await page.locator('#flipGoalsCard .section-summary-subtitle:visible,#flipGoalsSubtitle:visible,#decisionText:visible')
+    .evaluateAll(nodes=>nodes.map(node=>getComputedStyle(node).fontSize));
+   assert.deepEqual(subtitles,['15px','15px'],'Both grey subtitles use the Admin subtext size');
    assert.deepEqual(await explanation.evaluate(el=>[el.parentElement,el].map(node=>getComputedStyle(node).fontSize)),
     ['19px','19px'],'The entire equity box uses the Admin hint size');
    assert(partial.checked && partial.debt<full.debt);
