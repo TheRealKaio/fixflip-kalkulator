@@ -87,9 +87,15 @@ html body:not(.nic-admin) :is(
 ) {
   font-size: var(--nic-hint-font-size, 12px) !important;
 }
-html body:not(.nic-admin) #equityCapitalNote,
-html body:not(.nic-admin) #equityCapitalNote :where(*) {
+html body:not(.nic-admin) :is(#equityCapitalNote,#saleChangeNote,#flipPurchaseCheckNote),
+html body:not(.nic-admin) :is(#equityCapitalNote,#flipPurchaseCheckNote) :where(*) {
   font-size: var(--nic-hint-font-size, 12px) !important;
+}
+html body:not(.nic-admin) #flipPurchaseCheckNote {
+  text-align: left;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 /* The refinancing slider's endpoint percentages and current rate are subtexts.
    This explicit selector beats the calculator-wide base-size reset above. */

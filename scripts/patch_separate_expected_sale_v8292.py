@@ -59,6 +59,9 @@ s=s.replace(anchor,goal_listener+"\n"+anchor,1)
 old_note='''            <strong>Hinweis:</strong> Der erwartete Verkaufspreis wird automatisch aus den aktuellen Projekt- und Finanzierungskosten kalkuliert. Änderungen am Eigenkapital, an der Finanzierung oder an den Projektkosten aktualisieren den Wert automatisch. Du kannst ihn weiterhin manuell überschreiben.'''
 new_note='''            <strong>Hinweis:</strong> Der Verkaufspreis nach Sanierung wird aus den aktuellen Projekt- und Finanzierungskosten kalkuliert und gespeichert. Änderungen an Ziel-Gewinn oder Ziel-Marge verändern dieses Feld nicht. Der separate erwartete Verkaufspreis zeigt stattdessen, welcher Verkaufspreis für deine aktuellen Zielwerte erforderlich ist.'''
 replace_once(old_note,new_note,"sale separation note")
+replace_once('class="equity-capital-note" id="flipPurchaseCheckNote">',
+             'class="equity-capital-note" id="flipPurchaseCheckNote" lang="de">',
+             "German hyphenation for the sale note")
 
 s=s.replace("V8.291","V8.292")
 s=s.replace("service-worker.js?v=8.291","service-worker.js?v=8.292")
