@@ -201,9 +201,12 @@ function install(id,equityId){
   // Fixed user equity determines the effective debt, not a second deduction
   // from the already reduced financing percentage.
   const borrowed=Math.max(0,c.total-Math.max(0,parseNumber(equity.value)));
-  const percentage=Math.round(borrowed/c.base*10000)/100;
-  if(Math.abs(parseNumber(original.value)-percentage)<0.005){refresh();return;}
-  original.value=percentage.toFixed(2);
+  // Use six percentage decimals for calculation; only the displayed slider
+  // caption rounds to two. Rounding to 0.01 percentage points can otherwise
+  // change a six-figure loan by several euros after a manual cash entry.
+  const percentage=Math.round(borrowed/c.base*100000000)/1000000;
+  if(Math.abs(parseNumber(original.value)-percentage)<0.0000005){refresh();return;}
+  original.value=percentage.toFixed(6);
   changedFinance();
   refresh();
  };
