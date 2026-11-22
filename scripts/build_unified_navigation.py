@@ -195,7 +195,7 @@ for page in site.rglob('*.html'):
  for explanation_key,slug in ROUTES.items():
   if page==site/slug/'index.html':
    s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+explanation_templates[explanation_key],s,count=1)
- if page.parent.name=='nebenkostenabrechnung':s=re.sub(r'<article id="nicContentView"[^>]*>.*?</article>','',s,flags=re.S)
+ # Keep the settlement starter, including the editable lower information area.
  if 'calculator-explanations.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/calculator-explanations.css"></head>',1)
  if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
  # Rename navigation-only labels in prerendered HTML; leave SEO headlines and paths intact.
