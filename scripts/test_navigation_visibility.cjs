@@ -51,7 +51,9 @@ assert.ok(adminHtml.indexOf('id="nicNavigationVisibility"')<adminHtml.indexOf('<
 assert.ok(admin.includes('navigationSectionTitles'));
 assert.ok(admin.includes('S.navigationSections'));
 assert.ok(admin.includes('raw.navigationVisibility[section][screen][key]'));
-assert.ok(nav.includes("tile.href='/nebenkostenabrechnung/'"));
+assert.ok(nav.includes("tile.href=routeHref(contentRoutes.settlement)"),'Settlement menu must use the canonical preview-aware route');
+assert.ok(nav.includes("settlement.href=routeHref(home.settlementButtonUrl)"),'Homepage destination must remain editable in Admin');
+assert.ok(nav.includes("absolute.startsWith(previewPrefix+'/')"),'Preview paths must not receive a duplicated prefix');
 assert.ok(nav.includes('const canonicalTileRoutes='));
 assert.ok(nav.includes("heading==='sanierung'"));
 assert.ok(nav.includes("navigationAllowed(key,screen,'home')"));
