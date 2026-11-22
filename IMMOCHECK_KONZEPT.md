@@ -191,3 +191,16 @@ Die Startseite unter der bestehenden Route `/nebenkostenabrechnung/` hat in ihre
 - Kein Duplikat der Erkennungs-/Kosten-/Abrechnungslogik: beide Wege verwenden denselben zentralen Abrechnungsdienst und Datenstruktur.
 - Status-/Platzhalterverhalten für die Startseite ohne aktivierte Module soll ausgetauscht werden können, idealerweise über eine einzelne konfigurierbare Funktion pro Einstieg.
 - Keine Live-Schaltung, keine vorhandene OCR und keine fertigen Berechnungen behaupten, solange sie nicht implementiert und geprüft sind.
+
+## 15. Admin-Medienbibliothek für Website-Content (22.11.2026)
+
+**Beschlossenes Ziel:** Angemeldete Administratoren können Medien einmal zentral hochladen und sie anschließend direkt in den vorhandenen Content-Editoren für Website-Seiten auswählen, an der Cursorposition einfügen und auf mehreren Seiten wiederverwenden. Kein manuelles Eintragen von HTML-Dateipfaden erforderlich.
+
+- Bereich **Admin → Seiten & Metadaten → Medienverwaltung** mit getrennten Ansichten **Bilder** und **PDFs**; akzeptierte Formate JPG/JPEG, PNG sowie PDF, maximal **5 MB pro Datei**.
+- Bildübersicht mit Miniaturen und Angaben zu Name, Größe, Upload-Datum, optional Alternativtext/Beschreibung; PDF-Liste mit Dokumentname, Datum, Größe und optional Link-Beschriftung.
+- Im jeweiligen Content-Editor Aktion **„Medien einfügen“**: vorhandenes Bild/PDF auswählen oder neue Datei hochladen; Bild als responsives Bild, PDF als nachvollziehbarer Download-/Öffnen-Link einfügen. Referenzen sollen bei mehrfacher Verwendung auf dieselbe verwaltete Datei zeigen.
+- Bilder/PDFs zentral austauschen, umbenennen, löschen; beim Löschen vor vorhandenen Verwendungen warnen bzw. nur sicher löschen. Nachvollziehbare Referenz-IDs statt instabiler Dateinamen.
+- Öffentliche Website-Medien und **private WEG-Abrechnungen, Mieter-/Eigentümerdokumente** strikt getrennt verwalten. Private Belege sind **nicht** Bestandteil dieser öffentlichen Medienbibliothek.
+- Dateien in geeignetem geschützt bedienbarem Storage/Webspace; Datenbank nur für Metadaten und Verknüpfungen; sichere Authentifizierung und Admin-Autorisierung, Upload- und Größenprüfung **serverseitig**, Dateityp anhand Dateiinhalt prüfen, sichere Dateinamen und Speicherpfade, kein ausführbarer Upload, sichere Ausgabe und DSGVO-konforme Verwaltung.
+- Die bestehende Admin-Content- und Seitenlogik beibehalten; eine neue Medienwahl in den bestehenden Editor integrieren statt einen weiteren separaten Seiteneditor zu entwickeln.
+- **Status:** vereinbartes Feature für späteren separaten Implementierungsschritt. Nicht als bereits funktionierender Upload oder veröffentlichte Medienbibliothek darstellen. Der zuvor begonnene Entwicklungs-Build der Mieterabrechnungs-Startseite ist hiervon unabhängig.
