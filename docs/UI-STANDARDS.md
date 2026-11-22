@@ -498,3 +498,11 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Unterstützt PNG/JPG/WebP und PDF bis 5 MB je Datei. Dateien liegen separat von den Website-Einstellungen und werden erst öffentlich abrufbar, wenn sie in der gespeicherten Medienbibliothek geführt sind.
 - Contentfelder bieten ein Medium-Menü zum Einfügen. Bilder erhalten Alt-Text; PDFs öffnen sich in einem neuen Tab.
 - Die Schaltflächen folgen den Admin-Farb- und Textfarben-Einstellungen. Entfernte Dateien werden beim globalen Speichern endgültig gelöscht.
+
+## Mobile-First-Felder, deutsche Silbentrennung und Textausrichtung (22. November 2026)
+
+- Smartphone zuerst: Eingabezeilen und kurze Feldbezeichnungen möglichst einzeilig; zu schmale nebeneinander liegende Felder im responsiven Raster untereinander stapeln. Keine Überlappungen, abgeschnittenen Zahlen, zu kleinen Schriften oder horizontalen Scrollbereiche.
+- Kurze Titel und Beschriftungen möglichst nicht umbrechen; bei nötigem Umbruch durch `lang="de"` und `hyphens:auto` deutsche Silbentrennung unterstützen, mit geeignetem `overflow-wrap`-Fallback.
+- Deutsche längere Fließtexte dürfen Blocksatz mit Silbentrennung verwenden, sofern Wortabstände und Lesbarkeit gut bleiben. Sehr schmale Ansichten gegebenenfalls linksbündig; Kurztexte, Feldlabels, Buttons, Listen und Zahlen nicht pauschal im Blocksatz.
+- Lesbarkeit und Touchbedienbarkeit gehen einer erzwungenen Einzeiligkeit vor. Testfälle: lange zusammengesetzte Wörter, Browserzoom, erhöhte Admin-Schriftgrößen, 320–430px Smartphonebreite, Hoch-/Querformat, iOS Safari und Android Chrome.
+- Neue Content-Bausteine für Text/Bild verwenden responsive Layoutcontainer, nicht HTML-Tabellen für reine Gestaltung.
