@@ -333,9 +333,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     }
    }
    await page.goto('http://localhost/fixflip-kalkulator/nebenkostenabrechnung/',{waitUntil:'networkidle'});
-   const disclosure=page.locator('[data-nic-explanation] summary');
-   if(await disclosure.isVisible())await disclosure.click();
-   await page.locator('[data-nic-explanation] a[href="http://localhost/fixflip-kalkulator/vermietung/"]').click();
+   assert.equal(await page.locator('#nicContentView summary').count(),0,'Settlement content has no forced disclosure');
+   await page.locator('#nicContentView a[href="http://localhost/fixflip-kalkulator/vermietung/"]').click();
    await page.waitForURL('http://localhost/fixflip-kalkulator/vermietung/');
    await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
    const budget=page.locator('a[href="/fixflip-kalkulator/budget/"]').first();
