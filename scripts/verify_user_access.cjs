@@ -27,6 +27,7 @@ function environment(enabled,role='admin'){
  const changed=environment(true,'user');await changed.A.init();const result=await changed.A.finishEmailChange('12345678');assert.equal(result.email,'new@example.test');assert.equal(changed.A.user,null,'email change must clear client login state');
  const deleted=environment(true,'user');await deleted.A.init();await deleted.A.deleteOwn();assert.equal(deleted.A.user,null,'deletion clears client login state');
  const off=environment(false);assert.equal(await off.A.init(),false);assert.equal(await off.A.authorize('pdfDownload'),true);assert.equal(off.calls.length,0);
+ await assert.rejects(off.A.uploadMedia(null,'00000000-0000-4000-8000-000000000000'),/Medienuploads sind in dieser Vorschau deaktiviert/);assert.equal(off.calls.length,0,'disabled preview must never transmit media to the production API');
  const normal=environment(true,'user');assert.equal(await normal.A.requireAdmin(),false);assert.equal(normal.calls.filter(x=>x.route==='settings').length,0);
  const admin=environment(true);await admin.A.init();assert.equal(await admin.A.requireAdmin(),true);await admin.A.loadSettings();
  const content=JSON.parse(JSON.stringify(admin.settings.content));
