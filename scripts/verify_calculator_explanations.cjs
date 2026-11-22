@@ -35,9 +35,9 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert.equal(await card.count(),1,'Only the current explanation exists');
     assert.equal(await card.getAttribute('data-nic-explanation'),key);
     assert(await card.isVisible(),'Explanation visible: '+key+' at '+width);
-    if(key==='settlement'){assert.equal(await page.locator('#nicContentView').count(),0,'Settlement has one merged card');assert((await card.locator('.nic-explanation-intro').innerText()).startsWith('Erstelle die jährliche Mieterabrechnung'),'Previous product copy is the introduction');}
+    if(key==='settlement'){assert.equal(await page.locator('#nicContentView [data-nic-settlement-action]').count(),2,'Settlement exposes both actions');assert((await card.locator('.nic-explanation-intro').innerText()).startsWith('Erstelle die jährliche Mieterabrechnung'),'Previous product copy is the introduction');}
     assert(await card.evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first: '+key);
-    if(key==='settlement')assert.deepEqual(await card.evaluate(e=>({margin:getComputedStyle(e).marginBottom,gap:getComputedStyle(e.parentElement).paddingBottom})),{margin:'0px',gap:'16px'},'One shared footer gap');
+    if(key==='settlement')assert(await page.locator('#nicContentView').isVisible(),'Settlement content panel visible');
     const geometry=await card.evaluate(e=>({height:e.getBoundingClientRect().height,font:getComputedStyle(e).fontFamily,body:getComputedStyle(e.querySelector('p')).fontSize,h2:getComputedStyle(e.querySelector('h2')).fontSize,h3:getComputedStyle(e.querySelector('h3')).fontSize}));
     if(key!=='settlement')heights.push(geometry.height);
     assert(/verdana/i.test(geometry.font));assert.equal(geometry.body,'20px');assert.equal(geometry.h2,'24px');assert.equal(geometry.h3,'22px');
@@ -89,7 +89,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
      assert.equal(await page.locator('[data-nic-explanation] details').evaluate(e=>e.open),false,'New route starts collapsed on every device');
     }
    }
-   // The merged product card fills free viewport space, just like other content cards.
+   // Rental billing has a separate introduction followed by its action panel.
    for(const viewport of [{width:320,height:900},{width:390,height:1200},{width:768,height:1400},{width:844,height:900},{width:1440,height:1600},{width:1920,height:1800}]){
     await page.setViewportSize(viewport);
     await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
@@ -97,12 +97,14 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
      if(entry==='navigation')await page.evaluate(()=>{NICCalculatorNavigation.select('home');NICCalculatorNavigation.select('settlement');});
      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
      const layout=await page.evaluate(()=>{
-      const card=document.querySelector('[data-nic-explanation="settlement"]'),footer=document.querySelector('.app>.footer-note,.app>.nic-shared-footer');
-      const scale=card.getBoundingClientRect().width/Number.parseFloat(getComputedStyle(card).width);
-      return {gap:footer.getBoundingClientRect().top-card.getBoundingClientRect().bottom,expected:16*scale,count:document.querySelectorAll('[data-nic-explanation="settlement"]').length,overflow:document.documentElement.scrollWidth>innerWidth+1};
+      const intro=document.querySelector('[data-nic-explanation="settlement"]'),panel=document.querySelector('#nicContentView');
+      const buttons=[...panel.querySelectorAll('[data-nic-settlement-action]')].map(el=>el.getBoundingClientRect());
+      return {introBottom:intro.getBoundingClientRect().bottom,panelTop:panel.getBoundingClientRect().top,visible:getComputedStyle(panel).display!=='none',count:buttons.length,stacked:buttons.length===2&&buttons[1].top>=buttons[0].bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1};
      });
-     assert.equal(layout.count,1);
-     assert(Math.abs(layout.gap-layout.expected)<1,'Settlement white card fills to footer: '+JSON.stringify({viewport,entry,layout}));
+     assert(layout.visible,'Settlement panel visible');
+     assert(layout.panelTop>=layout.introBottom-2,'Actions follow explanation');
+     assert.equal(layout.count,2,'Both settlement buttons exist');
+     assert.equal(layout.stacked,viewport.width<=700,'Mobile uses one row per button');
      assert(!layout.overflow,'Settlement has no horizontal overflow');
     }
    }
@@ -125,7 +127,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert.equal(await edited.locator('h2').innerText(),'Meine Mieterabrechnung');
    assert.equal(await edited.locator('.nic-explanation-intro').innerText(),'Meine eigene Einleitung');
    assert.equal(await page.evaluate(()=>window.explanationInjected),undefined,'Active HTML is removed');
-   assert.equal(await page.locator('#nicContentView').count(),0);
+   assert.equal(await page.locator('#nicContentView [data-nic-settlement-action]').count(),2);
    await page.goto('http://localhost/budget/',{waitUntil:'networkidle'});
    assert.equal(await page.locator('[data-nic-explanation] h2').innerText(),'Mein Budgettext','Another box survives save and full reload');
    assert.deepEqual(errors,[]);await page.close();
