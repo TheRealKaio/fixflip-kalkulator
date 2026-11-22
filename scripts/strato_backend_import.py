@@ -77,7 +77,9 @@ def patch_application(installed, tested):
     for name in ['nic_query', 'nic_now', 'nic_email', 'nic_name', 'nic_session', 'nic_admin', 'nic_audit']:
         if remote.get(name) != local.get(name):
             raise CheckError('Installierter Schutz-/Datenbankhelfer weicht ab: ' + name + '. Nicht automatisch ersetzen.')
-    if installed.count(ANCHOR) != 1 or installed.count(ADMIN) != 1 or installed.index(ADMIN) > installed.index(ANCHOR):
+    anchor_at = installed.find(ANCHOR)
+    admin_at = installed.rfind(ADMIN, 0, anchor_at) if anchor_at >= 0 else -1
+    if installed.count(ANCHOR) != 1 or admin_at < 0:
         raise CheckError('Admin-geschuetzter Einfuegepunkt fehlt oder ist mehrdeutig.')
     block = import_block(tested)
     if START in installed:
