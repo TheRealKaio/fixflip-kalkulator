@@ -27,10 +27,17 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    const heights=[];
    for(const [key,slug]of Object.entries(routes)){
     const source=fs.readFileSync('_site/'+slug+'/index.html','utf8');
-    assert(source.includes('data-nic-explanation="'+key+'"'),'Direct HTML contains complete route explanation');
+    if(key!=='settlement')assert(source.includes('data-nic-explanation="'+key+'"'),'Direct HTML contains complete route explanation');
     await page.goto('http://localhost/'+slug+'/',{waitUntil:'networkidle'});
     await page.waitForFunction(()=>document.documentElement.dataset.nicLayoutReady);
     if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+    if(key==='settlement'){
+     const content=page.locator('#nicContentView');
+     assert(await content.isVisible(),'Settlement content page is visible');
+     assert.equal(await page.locator('[data-nic-explanation]').count(),0,'Settlement has no separate explanation accordion');
+     assert.equal(await content.locator('summary').filter({hasText:'Weiterlesen'}).count(),0,'Settlement is never folded under read more');
+     continue;
+    }
     const card=page.locator('[data-nic-explanation]');
     assert.equal(await card.count(),1,'Only the current explanation exists');
     assert.equal(await card.getAttribute('data-nic-explanation'),key);
@@ -82,31 +89,21 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    for(const key of [...Object.keys(routes),'home','why','own','budget']){
     await page.evaluate(k=>NICCalculatorNavigation.select(k),key);
     await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-    assert.equal(await page.locator('[data-nic-explanation]').count(),routes[key]?1:0,'Route cleanup: '+key);
-    if(routes[key]){
+    assert.equal(await page.locator('[data-nic-explanation]').count(),routes[key]&&key!=='settlement'?1:0,'Route cleanup: '+key);
+    if(routes[key]&&key!=='settlement'){
      assert.equal(await page.locator('[data-nic-explanation]').getAttribute('data-nic-explanation'),key);
      assert(await page.locator('[data-nic-explanation]').evaluate(e=>e.parentElement.firstElementChild===e),'Explanation comes first after navigation: '+key);
      assert.equal(await page.locator('[data-nic-explanation] details').evaluate(e=>e.open),false,'New route starts collapsed on every device');
     }
    }
-   // Rental billing has a separate introduction followed by its action panel.
+   // Rental billing is one uninterrupted content page at every viewport.
    for(const viewport of [{width:320,height:900},{width:390,height:1200},{width:768,height:1400},{width:844,height:900},{width:1440,height:1600},{width:1920,height:1800}]){
     await page.setViewportSize(viewport);
     await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
-    for(const entry of ['direct','navigation']){
-     if(entry==='navigation')await page.evaluate(()=>{NICCalculatorNavigation.select('home');NICCalculatorNavigation.select('settlement');});
-     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-     const layout=await page.evaluate(()=>{
-      const intro=document.querySelector('[data-nic-explanation="settlement"]'),panel=document.querySelector('#nicContentView');
-      const buttons=[...panel.querySelectorAll('[data-nic-settlement-action]')].map(el=>el.getBoundingClientRect());
-      return {introBottom:intro.getBoundingClientRect().bottom,panelTop:panel.getBoundingClientRect().top,visible:getComputedStyle(panel).display!=='none',count:buttons.length,stacked:buttons.length===2&&buttons[1].top>=buttons[0].bottom-1,overflow:document.documentElement.scrollWidth>innerWidth+1};
-     });
-     assert(layout.visible,'Settlement panel visible');
-     assert(layout.panelTop>=layout.introBottom-2,'Actions follow explanation');
-     assert.equal(layout.count,2,'Both settlement buttons exist');
-     assert.equal(layout.stacked,viewport.width<=700,'Mobile uses one row per button');
-     assert(!layout.overflow,'Settlement has no horizontal overflow');
-    }
+    await page.locator('#nicContentView').waitFor({state:'visible'});
+    assert.equal(await page.locator('[data-nic-explanation]').count(),0,'Settlement has one content card');
+    assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0,'No forced read-more disclosure');
+    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),'Settlement has no horizontal overflow');
    }
    await page.setViewportSize({width,height:900});
    admin=true;
@@ -123,11 +120,11 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert.equal(saves,1,'Admin saves through existing settings API');
    assert(!settings.content&&settings.meta.content.settlement.boxTitle==='Meine Mieterabrechnung','Legacy API retains the content transport');
    await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
-   const edited=page.locator('[data-nic-explanation]');
+   const edited=page.locator('#nicContentView');
    assert.equal(await edited.locator('h2').innerText(),'Meine Mieterabrechnung');
-   assert.equal(await edited.locator('.nic-explanation-intro').innerText(),'Meine eigene Einleitung');
+   assert((await edited.innerText()).includes('Meine eigene Einleitung'),'Edited settlement description is rendered in the single card');
    assert.equal(await page.evaluate(()=>window.explanationInjected),undefined,'Active HTML is removed');
-   assert.equal(await page.locator('#nicContentView [data-nic-settlement-action]').count(),2);
+   assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0);
    await page.goto('http://localhost/budget/',{waitUntil:'networkidle'});
    assert.equal(await page.locator('[data-nic-explanation] h2').innerText(),'Mein Budgettext','Another box survives save and full reload');
    assert.deepEqual(errors,[]);await page.close();
