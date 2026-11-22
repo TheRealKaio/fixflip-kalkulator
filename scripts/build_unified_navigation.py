@@ -193,9 +193,8 @@ for page in site.rglob('*.html'):
  # Informational routes now share the same visible hero; never blank their
  # prerendered title and description after build_settings_pages creates them.
  for explanation_key,slug in ROUTES.items():
-  if page==site/slug/'index.html':
+  if explanation_key!='settlement' and page==site/slug/'index.html':
    s=re.sub(r'(<main\b[^>]*>)',lambda m:m[1]+explanation_templates[explanation_key],s,count=1)
- # Keep the settlement starter, including the editable lower information area.
  if 'calculator-explanations.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/calculator-explanations.css"></head>',1)
  if 'desktop-density.css' not in s:s=s.replace('</head>','<link rel="stylesheet" href="/desktop-density.css"></head>',1)
  # Rename navigation-only labels in prerendered HTML; leave SEO headlines and paths intact.
