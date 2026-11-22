@@ -77,7 +77,18 @@ function showContent(key,refresh=false){
  const signature=JSON.stringify([key,c.description,settings.company,key==='settlement'?c.boxTitle:null]);
  if(panel.dataset.signature!==signature){
   const body=window.NICSettings.contentFragment(c.description,settings);
-  if(key==='settlement'){const title=document.createElement('h2');title.textContent=c.boxTitle||c.title;panel.replaceChildren(title,body);}
+  if(key==='settlement'){
+   // Older saved content can contain a collapsed read-more block.
+   for(const disclosure of body.querySelectorAll('details')){
+    const summary=disclosure.querySelector(':scope > summary');
+    if(!summary || !/^weiter\s*lesen[\s…+.›»]*$/i.test(summary.textContent.trim()))continue;
+    summary.remove();
+    disclosure.replaceWith(...disclosure.childNodes);
+   }
+   const title=document.createElement('h2');
+   title.textContent=c.boxTitle||c.title;
+   panel.replaceChildren(title,body);
+  }
   else panel.replaceChildren(body);
   panel.dataset.signature=signature;
  }
