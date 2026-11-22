@@ -1,0 +1,92 @@
+diff --git f8ef69a9a44066d1605821dd1467e64936540ea2 3a8c1c60fb69d3a325cb9f01094e9c0c2a2fe32c
+index f8ef69a..3a8c1c6 100644
+--- f8ef69a9a44066d1605821dd1467e64936540ea2
++++ 3a8c1c60fb69d3a325cb9f01094e9c0c2a2fe32c
+@@ -118,7 +118,21 @@ function nic_auth_settings(PDO $db): array {
+ }
++function nic_media_table(PDO $db): void {
++    $db->exec("CREATE TABLE IF NOT EXISTS nic_media (id CHAR(36) PRIMARY KEY,name VARCHAR(255) NOT NULL,mime_type VARCHAR(64) NOT NULL,file_data MEDIUMBLOB NOT NULL,size_bytes INT UNSIGNED NOT NULL,uploaded_by CHAR(32) NULL,created_at DATETIME NOT NULL,INDEX(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
++}
+ function nic_clean_settings(mixed $raw): array {
+     if (!is_array($raw) || ($raw['version'] ?? null) !== 1) nic_fail('Ungültige Einstellungen.');
+-    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility','seoIndexing'];
++    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility','seoIndexing','mediaLibrary'];
+     $s = array_intersect_key($raw, array_flip($keys));
+     foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access','seoIndexing'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
++    $media = $s['mediaLibrary'] ?? [];
++    if (!is_array($media) || count($media) > 100) nic_fail('Ungültige Medienbibliothek.');
++    $cleanMedia = [];
++    foreach ($media as $id => $item) {
++        if (!is_string($id) || !preg_match('/^[a-f0-9-]{36}$/i', $id) || !is_array($item)) nic_fail('Ungültiger Medieneintrag.');
++        $name = $item['name'] ?? ''; $type = $item['type'] ?? '';
++        if (!is_string($name) || strlen($name) > 255 || !preg_match('//u', $name) || preg_match('/[\\x00-\\x1f\\x7f]/u', $name)) nic_fail('Ungültiger Medienname.');
++        if (!in_array($type,['image','pdf'],true)) nic_fail('Ungültiger Medientyp.');
++        $cleanMedia[$id] = ['id'=>$id,'name'=>$name,'type'=>$type];
++    }
++    $s['mediaLibrary'] = $cleanMedia;
+     $s['access'] = $s['access'] ?? [];
+@@ -166,3 +180,3 @@ function nic_clean_settings(mixed $raw): array {
+         elseif (!is_string($v) && !is_bool($v) && !is_int($v) && !is_float($v) && $v !== null) nic_fail('Ungültiger Einstellungswert.');
+-        elseif (is_string($v) && (strlen($v)>400000 || !preg_match('//u',$v))) nic_fail('Einstellungswert zu lang oder ungültig.');
++        elseif (is_string($v) && (strlen($v)>700000 || !preg_match('//u',$v))) nic_fail('Einstellungswert zu lang oder ungültig.');
+     };
+@@ -191,3 +205,3 @@ function nic_run(): void {
+     $input = [];
+-    if ($method === 'POST') {
++    if ($method === 'POST' && $route !== 'media-upload') {
+         if (!str_starts_with(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json')) nic_fail('JSON erforderlich.', 415);
+@@ -199,2 +213,35 @@ function nic_run(): void {
+     $db = nic_db($c);
++    if ($route === 'media-upload' && $method === 'POST') {
++        if (!str_starts_with(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), 'multipart/form-data')) nic_fail('Multipart-Upload erforderlich.',415);
++        $length=(int)($_SERVER['CONTENT_LENGTH']??0); if($length>5*1024*1024+65536)nic_fail('Datei darf höchstens 5 MB groß sein.',413);
++        $admin=nic_admin($db,$c);
++        $upload=$_FILES['file']??null;$id=$_POST['id']??'';
++        if(!is_array($upload)||!is_string($id)||!preg_match('/^[a-f0-9-]{36}$/iD',$id))nic_fail('Datei oder Datei-ID fehlt.');if(($upload['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK){$uploadError=(int)($upload['error']??0);nic_fail(in_array($uploadError,[UPLOAD_ERR_INI_SIZE,UPLOAD_ERR_FORM_SIZE],true)?'Datei darf höchstens 5 MB groß sein.':'Datei konnte nicht hochgeladen werden.',413);}
++        $size=(int)($upload['size']??0);$tmp=$upload['tmp_name']??'';
++        if($size<1||$size>5*1024*1024||!is_string($tmp)||!is_uploaded_file($tmp))nic_fail('Datei darf höchstens 5 MB groß sein.',413);
++        $name=basename(str_replace('\\','/',(string)($upload['name']??'Datei')));$name=trim(preg_replace('/[\\x00-\\x1f\\x7f]/u','',$name)??'Datei');
++        if($name===''||strlen($name)>255||!preg_match('//u',$name))nic_fail('Ungültiger Dateiname.');
++        $finfo=new finfo(FILEINFO_MIME_TYPE);$mime=$finfo->file($tmp);$type='';
++        if(in_array($mime,['image/jpeg','image/png','image/webp'],true)){
++            $image=@getimagesize($tmp);if($image===false||$image[0]>10000||$image[1]>10000||$image[0]*$image[1]>50000000)nic_fail('Ungültige oder zu große Bildabmessungen.');
++            if(($image['mime']??'')!==$mime)nic_fail('Bildformat konnte nicht bestätigt werden.');$type='image';
++        }elseif($mime==='application/pdf'){
++            $handle=fopen($tmp,'rb');$signature=$handle?fread($handle,5):'';if($handle)fclose($handle);if($signature!=='%PDF-')nic_fail('Ungültige PDF-Datei.');$type='pdf';
++        }else nic_fail('Erlaubt sind PNG, JPG, WebP und PDF.',415);
++        $bytes=file_get_contents($tmp);if($bytes===false||strlen($bytes)!==$size)nic_fail('Datei konnte nicht gelesen werden.');
++        nic_media_table($db);
++        nic_query($db,'INSERT INTO nic_media(id,name,mime_type,file_data,size_bytes,uploaded_by,created_at) VALUES (?,?,?,?,?,?,?)',[$id,$name,$mime,$bytes,$size,$admin['id'],nic_now()]);
++        nic_audit($db,$admin['id'],'media_upload',$id);
++        nic_reply(['media'=>['id'=>$id,'name'=>$name,'type'=>$type,'size'=>$size]]);
++    }
++    if ($route === 'media' && $method === 'GET') {
++        $id=$_GET['id']??'';if(!is_string($id)||!preg_match('/^[a-f0-9-]{36}$/iD',$id))nic_fail('Datei nicht gefunden.',404);
++        $settingsRow=nic_query($db,'SELECT payload FROM nic_settings WHERE id=1')->fetchColumn();
++        $settings=$settingsRow?json_decode($settingsRow,true,16,JSON_THROW_ON_ERROR):[];
++        if(!isset($settings['mediaLibrary'][$id]))nic_fail('Datei nicht gefunden.',404);
++        nic_media_table($db);$media=nic_query($db,'SELECT name,mime_type,file_data,size_bytes FROM nic_media WHERE id=?',[$id])->fetch(PDO::FETCH_ASSOC);
++        if(!$media)nic_fail('Datei nicht gefunden.',404);
++        header('Content-Type: '.$media['mime_type']);header('Content-Length: '.(int)$media['size_bytes']);header('Cache-Control: public, max-age=3600');header('Content-Disposition: inline; filename="media-'.$id.($media['mime_type']==='application/pdf'?'.pdf':'.img').'"');header('X-Content-Type-Options: nosniff');
++        echo $media['file_data'];exit;
++    }
+     if ($route === 'health' && $method === 'GET') {
+@@ -384,5 +431,18 @@ function nic_run(): void {
+         if(!is_int($revision)||$revision<1)nic_fail('Versionsnummer fehlt.');
++        nic_media_table($db);
+         $db->beginTransaction();
++        $previousPayload = nic_query($db, 'SELECT payload FROM nic_settings WHERE id=1 AND revision=? FOR UPDATE', [$revision])->fetchColumn();
++        if ($previousPayload === false) {
++            $db->rollBack();
++            nic_fail('Die Einstellungen wurden inzwischen geändert. Bitte neu laden.', 409);
++        }
++        $previousSettings = json_decode($previousPayload, true, 512, JSON_THROW_ON_ERROR);
+         $changed=nic_query($db,'UPDATE nic_settings SET payload=?,revision=revision+1,updated_by=?,updated_at=? WHERE id=1 AND revision=?',[json_encode($s,JSON_THROW_ON_ERROR),$admin['id'],nic_now(),$revision]);
+         if(!$changed->rowCount()){$db->rollBack();nic_fail('Die Einstellungen wurden inzwischen geändert. Bitte neu laden.',409);}
++        // Remove only previously published IDs explicitly omitted from this revision.
++        $removedIds = array_keys(array_diff_key($previousSettings['mediaLibrary'] ?? [], $s['mediaLibrary']));
++        if ($removedIds) {
++            $marks = implode(',', array_fill(0, count($removedIds), '?'));
++            nic_query($db, 'DELETE FROM nic_media WHERE id IN (' . $marks . ')', $removedIds);
++        }
+         nic_audit($db,$admin['id'],'settings');$db->commit();nic_reply(['ok'=>true,'revision'=>$revision+1,'settings'=>$s]);

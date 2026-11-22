@@ -167,10 +167,32 @@ echo json_encode(['ok'=>true,'invalidated'=>$invalidated]);
             raise CheckError('Temporaerer Cache-Refresh extern geaendert; nicht automatisch entfernen.')
 
 
+def apply_media_patch(original):
+    # This release upgrades the inspected production revision only.
+    if hashlib.sha256(original).hexdigest() != 'efc1d7fac9a7b571474f1b1cd1aea687406684869386555eda55372a12c7bab4':
+        raise CheckError('Medienupdate: installierter PHP-Stand hat sich geändert.')
+    patch = Path(__file__).with_name('strato_media_v1.patch').resolve()
+    with tempfile.TemporaryDirectory() as directory:
+        target = Path(directory) / 'app.php'
+        target.write_bytes(original)
+        result = subprocess.run(['patch', '--batch', '--forward', '--fuzz=0', str(target), '-i', str(patch)], capture_output=True)
+        if result.returncode:
+            raise CheckError('Medienupdate passt nicht zum installierten PHP-Code.')
+        return target.read_bytes()
+
+
+def verify_media(ips):
+    for ip in ips:
+        for host in (APEX, WWW):
+            status, _, body, _ = origin_request(host, ip, '/api/index.php?r=media', 'GET')
+            if status != 404 or json.loads(body).get('error') != 'Datei nicht gefunden.':
+                raise CheckError('Medienroute auf ' + host + ' nicht aktiv.')
+
+
 def main():
     try:
         mode = os.environ.get('STRATO_BACKEND_IMPORT_MODE', 'inspect')
-        if mode not in {'inspect', 'apply'}:
+        if mode not in {'inspect', 'apply', 'media'}:
             raise CheckError('Unbekannter Backend-Modus.')
         root = validate_root(os.environ.get('STRATO_SFTP_ROOT', '/immocheck-web').rstrip('/'))
         private = root.rsplit('/', 1)[0] + '/immocheck-private'
@@ -189,7 +211,7 @@ def main():
             text = original.decode('utf-8')
             print(json.dumps({'mode': mode, 'installed_sha256': hashlib.sha256(original).hexdigest(),
                               'import_route_present': START in text}), flush=True)
-            patched = patch_application(text, APP.read_text(encoding='utf-8')).encode()
+            patched = apply_media_patch(original) if mode == 'media' else patch_application(text, APP.read_text(encoding='utf-8')).encode()
             print('Menü-/SEO-Speicherung, Nutzerimport und Admin-/CSRF-Schutz geprüft.', flush=True)
             if mode == 'inspect':
                 print('Nur API-Quellcode geprueft; keine Dateien, Konten oder Einstellungen geaendert.')
@@ -223,6 +245,8 @@ def main():
                     for attempt in range(10):
                         try:
                             verify_health(ips, require_import=True)
+                            if mode == 'media':
+                                verify_media(ips)
                             break
                         except CheckError:
                             if attempt == 9:

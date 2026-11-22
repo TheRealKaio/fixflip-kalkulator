@@ -199,9 +199,28 @@ function buildSettlementTileCode(parent){
  const preview=document.createElement('div');preview.className='nic-tile-code-preview nic-copy-tile-grid';preview.setAttribute('aria-label','Vorschau der ausgewählten Kachel');
  const previewStyles=document.createElement('style');
  const code=document.createElement('textarea');code.id='settlementTileCode';code.readOnly=true;code.rows=20;code.spellcheck=false;code.setAttribute('aria-label','Kopierbarer HTML- und CSS-Code');
- const copy=document.createElement('button');copy.type='button';copy.className='button primary';copy.textContent='Kachel-Code kopieren';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code.value);}catch(_){code.focus();code.select();document.execCommand('copy');}copy.textContent='Kopiert';setTimeout(()=>copy.textContent='Kachel-Code kopieren',1400);});
+ const copy=document.createElement('button');
+ copy.type='button';
+ copy.className='button nic-tile-copy';
+ copy.textContent='Kachel-Code kopieren';
+ const copyStatus=document.createElement('span');
+ copyStatus.className='helper';
+ copyStatus.setAttribute('role','status');
+ copy.addEventListener('click',async()=>{
+  let copied=false;
+  try {
+   await navigator.clipboard.writeText(code.value);
+   copied=true;
+  } catch {
+   code.focus();
+   code.select();
+   code.setSelectionRange(0,code.value.length);
+   try { copied=document.execCommand('copy'); } catch {}
+  }
+  copyStatus.textContent=copied?'Kachel-Code kopiert.':'Der Code ist markiert. Wähle „Kopieren“ im Auswahlmenü.';
+ });
  const help=document.createElement('p');help.className='helper';help.textContent='Für mehrere nebeneinander stehende Kacheln: Verwende im Inhalt einmal <div class="nic-copy-tile-grid"> … </div> als gemeinsamen Rahmen und setze die einzelnen <a class="nic-copy-tile">…</a>-Kacheln hinein. Spaltenzahl und Mindestabstand stellst du oben ein.';
- card.append(heading,intro,label,select,layout,preview,previewStyles,code,copy,help);parent.append(card);
+ card.append(heading,intro,label,select,layout,preview,previewStyles,code,copy,copyStatus,help);parent.append(card);
  const tiles={
   settlement:{title:'Nebenkostenabrechnung',description:'Betriebskosten erfassen und versenden',href:'/nebenkostenabrechnung/',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M8 12h8M8 16h8"/>'},
   weg:{title:'WEG-Abrechnung hochladen',description:'Fertige Jahresabrechnung automatisch einlesen',href:'/nebenkostenabrechnung/',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M12 19v-8m-3 3 3-3 3 3"/>'},
