@@ -475,10 +475,15 @@ function initWelcome(){
  if(settlement){
   settlement.querySelector('strong').textContent=calculatorTitle('settlement');
   settlement.querySelector('small').textContent=home.settlementButtonText;
-  // This is an internal application route, not an externally configurable destination.
-  // Always use the canonical route so a stale admin URL cannot send users to 404.
-  settlement.href=routeHref(contentRoutes.settlement);
-  settlement.removeAttribute('aria-disabled');
+  // The admin-managed URL remains editable. Normalize relative and preview URLs
+  // without adding the GitHub Pages project prefix twice.
+  if(home.settlementButtonUrl){
+   settlement.href=routeHref(home.settlementButtonUrl);
+   settlement.removeAttribute('aria-disabled');
+  }else{
+   settlement.removeAttribute('href');
+   settlement.setAttribute('aria-disabled','true');
+  }
  }
  const content=window.NICSettings.current.content.welcome;
  const signature=JSON.stringify([content.title,content.description,settings.company]);
