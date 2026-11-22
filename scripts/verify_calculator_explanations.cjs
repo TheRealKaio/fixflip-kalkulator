@@ -112,7 +112,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    for(const key of Object.keys(routes))assert.equal(await page.locator('#content-'+key+'-description').count(),1,'Admin editor for '+key);
    await page.locator('[data-admin-page="settlement"] > summary').click();
    await page.locator('#content-settlement-boxTitle').fill('Meine Mieterabrechnung');
-   await page.locator('#content-settlement-description').fill('<p>Meine eigene Einleitung</p><h3>Meine Details</h3><p>Weitere Informationen <a href="/vermietung/">Vermietung</a></p><script>window.explanationInjected=true</script>');
+   await page.locator('#content-settlement-description').fill('<p>Meine eigene Einleitung</p><details><summary>Weiterlesen …</summary><h3>Meine Details</h3><p>Weitere Informationen <a href="/vermietung/">Vermietung</a></p></details><script>window.explanationInjected=true</script>');
    await page.locator('[data-admin-page="budget"] > summary').click();
    await page.locator('#content-budget-title').fill('Mein Budgettext');
    await page.locator('#saveSettings').click();
@@ -125,6 +125,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert((await edited.innerText()).includes('Meine eigene Einleitung'),'Edited settlement description is rendered in the single card');
    assert.equal(await page.evaluate(()=>window.explanationInjected),undefined,'Active HTML is removed');
    assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0);
+   assert(await page.getByRole('heading',{name:'Meine Details'}).isVisible(),'Legacy read-more content is visible without a click');
    await page.goto('http://localhost/budget/',{waitUntil:'networkidle'});
    assert.equal(await page.locator('[data-nic-explanation] h2').innerText(),'Mein Budgettext','Another box survives save and full reload');
    assert.deepEqual(errors,[]);await page.close();
