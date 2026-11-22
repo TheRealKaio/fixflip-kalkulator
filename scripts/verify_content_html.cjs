@@ -28,6 +28,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.evaluate(()=>window.NICAdminUI.select('content'));
    assert.equal(await page.locator('#nicAdminContent [role=tab]').count(),8);
    assert.equal(await page.locator('#nicAdminContent .admin-page[open]').count(),0);
+   const settlementPage=page.locator('[data-admin-page="settlement"]');
+   await settlementPage.locator(':scope > summary').click();
+   await settlementPage.locator('#settlementTileCodeType').selectOption('weg');
+   const tileHtml=await settlementPage.locator('#settlementTileCode').inputValue();
+   await settlementPage.locator(':scope > summary').click();
    const own=page.locator('[data-admin-page="own"]');
    await own.locator('summary').click();
    const title=own.getByLabel('Meta-Titel',{exact:true});
@@ -66,6 +71,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await why.getByRole('button',{name:'2 Spalten',exact:true}).click();
    await editor.evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
    await why.getByRole('button',{name:'3 Spalten',exact:true}).click();
+   await editor.fill((await editor.inputValue())+tileHtml);
    const editedSource=await editor.inputValue();
    assert(editedSource.startsWith(source),'Insertion preserves the existing content');
    async function verifyColumns(container){
@@ -91,6 +97,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.goto('http://localhost/fixflip-kalkulator/warum-immocheck/',{waitUntil:'networkidle'});
    const content=page.locator('#nicContentView');
    await verifyColumns(content);
+   const tile=content.locator('a.nic-copy-tile');
+   const icon=tile.locator('svg'), label=tile.locator('strong'), description=tile.locator('small');
+   assert(await icon.locator('path[d]').count()>0,'Copied tile retains its icon paths');
+   assert.equal(await label.textContent(),'WEG-Abrechnung hochladen');
+   assert.equal(await description.textContent(),'Fertige Jahresabrechnung automatisch einlesen');
+   const [i,t,d]=await Promise.all([icon.boundingBox(),label.boundingBox(),description.boundingBox()]);
+   assert(i&&t&&d&&i.height>0&&i.y+i.height<=t.y+1&&t.y+t.height<=d.y+1,'Icon, title and description render top to bottom');
    await content.locator('section.imc-content').waitFor({state:'visible'});
    assert.equal(await page.locator('#heroTitle').textContent(),'Mein Titel aus dem Adminbereich');
    assert.equal(await page.locator('#heroText').textContent(),'Meine Kurzbeschreibung aus dem Adminbereich');

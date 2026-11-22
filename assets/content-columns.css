@@ -30,3 +30,32 @@
  height: auto;
  object-fit: contain;
 }
+
+/* Tile defaults are available before saved content styles are applied. */
+.nic-content-card .nic-copy-tile {
+ display: grid;
+ grid-template-columns: minmax(0, 1fr);
+ justify-items: center;
+ align-content: center;
+ text-align: center;
+ padding: 16px;
+ min-height: 128px;
+ box-sizing: border-box;
+ border: 1px solid #dce8e2;
+ border-radius: var(--nic-menu-radius, 16px);
+ background: linear-gradient(#fff, #faf7f1);
+ text-decoration: none;
+ overflow-wrap: anywhere;
+}
+.nic-content-card .nic-copy-tile > svg {
+ grid-row: 1;
+ width: 28px;
+ height: 28px;
+ fill: none;
+ stroke: var(--nic-green-bg, #075c55);
+ stroke-width: 1.8;
+ stroke-linecap: round;
+ stroke-linejoin: round;
+}
+.nic-content-card .nic-copy-tile__title { grid-row: 2; color: #172e2b; }
+.nic-content-card .nic-copy-tile__description { grid-row: 3; margin-top: 8px; color: #425b62; }

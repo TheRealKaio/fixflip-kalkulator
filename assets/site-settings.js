@@ -55,18 +55,21 @@
     const tpl=document.createElement('template');tpl.innerHTML=html;
     const css=[...tpl.content.querySelectorAll('style')].map(el=>el.textContent);
     tpl.content.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form,input,button,textarea,select,math,template').forEach(el=>el.remove());
-    const allowed=new Set('SECTION ARTICLE HEADER FOOTER MAIN ASIDE DETAILS SUMMARY H1 H2 H3 H4 H5 H6 P BR STRONG B EM I U S UL OL LI A IMG BLOCKQUOTE HR DIV SPAN TABLE CAPTION THEAD TBODY TFOOT TR TH TD SVG PATH'.split(' '));
+    const allowed=new Set('SECTION ARTICLE HEADER FOOTER MAIN ASIDE DETAILS SUMMARY H1 H2 H3 H4 H5 H6 P BR STRONG SMALL B EM I U S UL OL LI A IMG BLOCKQUOTE HR DIV SPAN TABLE CAPTION THEAD TBODY TFOOT TR TH TD SVG PATH'.split(' '));
     for(const el of [...tpl.content.querySelectorAll('*')]){
-      if(!allowed.has(el.tagName)){el.replaceWith(...el.childNodes);continue;}
+      const isSvg=el.namespaceURI==='http://www.w3.org/2000/svg';
+      const tag=isSvg?el.localName.toUpperCase():el.tagName;
+      if(isSvg && !['SVG','PATH'].includes(tag)){el.remove();continue;}
+      if(!allowed.has(tag)){el.replaceWith(...el.childNodes);continue;}
       const attrs=Object.fromEntries([...el.attributes].map(a=>[a.name,a.value]));
       for(const attr of [...el.attributes])el.removeAttribute(attr.name);
       for(const key of ['class','id','title','lang','dir','aria-label','aria-labelledby','aria-describedby','role'])if(attrs[key])el.setAttribute(key,attrs[key]);
-      if(el.tagName==='SVG'){
+      if(isSvg && tag==='SVG'){
         if(/^[0-9.\s]+$/.test(attrs.viewBox||''))el.setAttribute('viewBox',attrs.viewBox);
         if(attrs['aria-hidden']==='true')el.setAttribute('aria-hidden','true');
         el.setAttribute('focusable','false');
       }
-      if(el.tagName==='PATH'){
+      if(isSvg && tag==='PATH'){
         if(/^[MmLlHhVvCcSsQqTtAaZz0-9,.\s+\-]*$/.test(attrs.d||''))el.setAttribute('d',attrs.d);
         if(['none','currentColor'].includes(attrs.fill||''))el.setAttribute('fill',attrs.fill);
         if(['none','currentColor'].includes(attrs.stroke||''))el.setAttribute('stroke',attrs.stroke);

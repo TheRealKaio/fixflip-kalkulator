@@ -25,12 +25,25 @@ content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'
 content_nav=[('settlement','Mieterabrechnung'),('prices','Preise'),('why','Warum ImmoCheck?')]
 
 class ContentSanitizer(HTMLParser):
-    allowed={'section','article','header','footer','main','aside','details','summary','p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h1','h2','h3','h4','h5','h6','table','caption','thead','tbody','tfoot','tr','th','td','img'}
+    allowed={'section','article','header','footer','main','aside','details','summary','p','br','strong','small','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h1','h2','h3','h4','h5','h6','table','caption','thead','tbody','tfoot','tr','th','td','img'}
     void={'br','hr','img'}
     blocked_tags={'script','style','iframe','object','embed','svg','math','template'}
     def __init__(self):
-        super().__init__(convert_charrefs=True);self.out=[];self.blocked=0
+        super().__init__(convert_charrefs=True);self.out=[];self.blocked=0;self.icon_depth=0
     def handle_starttag(self,tag,attrs):
+        if self.icon_depth:
+            if tag=='svg':self.icon_depth+=1
+            if tag=='path' and self.icon_depth==1:
+                path=dict(attrs).get('d') or ''
+                if re.fullmatch(r'[MmLlHhVvCcSsQqTtAaZz0-9,.\s+\-]+',path):
+                    self.out.append('<path d="'+path+'"></path>')
+            return
+        if tag=='svg' and not self.blocked:
+            self.icon_depth=1
+            viewbox=dict(attrs).get('viewbox') or ''
+            if not re.fullmatch(r'[0-9.\s]+',viewbox):viewbox='0 0 24 24'
+            self.out.append('<svg viewBox="'+viewbox+'" aria-hidden="true" focusable="false">')
+            return
         if tag in self.blocked_tags:self.blocked+=1;return
         if self.blocked or tag not in self.allowed:return
         safe=[]
@@ -56,10 +69,15 @@ class ContentSanitizer(HTMLParser):
                 elif re.match(r'^(https?://|mailto:|tel:|/(?!/))',href) and '\\' not in href:safe.extend([('href',href),('rel','noopener noreferrer')])
         self.out.append('<'+tag+''.join(' '+k+'="'+html.escape(v,quote=True)+'"' for k,v in safe)+'>')
     def handle_endtag(self,tag):
+        if self.icon_depth:
+            if tag=='svg':
+                self.icon_depth-=1
+                if not self.icon_depth:self.out.append('</svg>')
+            return
         if tag in self.blocked_tags:self.blocked=max(0,self.blocked-1);return
         if not self.blocked and tag in self.allowed and tag not in self.void:self.out.append('</'+tag+'>')
     def handle_data(self,data):
-        if not self.blocked:self.out.append(html.escape(data))
+        if not self.blocked and not self.icon_depth:self.out.append(html.escape(data))
     def fragment(self,value):
         self.feed(str(value or ''));result=''.join(self.out)
         for key,value in config.get('company',{}).items():result=result.replace('{{company.'+key+'}}',html.escape(str(value or '')))
