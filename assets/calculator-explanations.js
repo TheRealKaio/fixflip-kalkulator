@@ -92,5 +92,10 @@ window.NICExplanations=(()=>{
  window.addEventListener('nic-settings-updated',()=>{lastSignature='';schedule();});
  window.addEventListener('nic-auth-changed',()=>{lastSignature='';schedule();});
  document.fonts?.ready.then(()=>{lastSignature='';schedule();});
- return {show,refresh(){lastSignature='';if(active)show(active);else schedule();}};
+ function clear(){
+  const main=document.querySelector('.app>main.section');
+  if(main){main.querySelectorAll('[data-nic-explanation]').forEach(card=>card.remove());main.style.removeProperty('--nic-explanation-height');}
+  active=null;lastSignature='';
+ }
+ return {show,clear,refresh(){lastSignature='';if(active)show(active);else schedule();}};
 })();

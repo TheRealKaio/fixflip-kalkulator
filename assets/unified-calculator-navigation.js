@@ -66,7 +66,7 @@ function showContent(key,refresh=false){
  const main=document.querySelector('.app>main.section');if(!main)return;
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
- if(key==='settlement')main.querySelectorAll('[data-nic-explanation]').forEach(card=>card.remove());
+ if(key==='settlement'){window.NICExplanations?.clear();main.querySelectorAll('[data-nic-explanation]').forEach(card=>card.remove());}
  let panel=document.getElementById('nicContentView');
  if(!panel){
   panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
