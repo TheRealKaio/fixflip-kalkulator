@@ -8,6 +8,10 @@ const routes=Object.fromEntries(calculators.map(item=>[item.path,item.id]));
 routes['/']='home';routes['/index.html']='home';
 const contentRoutes={settlement:'/nebenkostenabrechnung/',prices:'/preise/',why:'/warum-immocheck/'};
 for(const [key,path] of Object.entries(contentRoutes)){routes[path]=key;routes[path+'index.html']=key;}
+// GitHub Pages hosts the preview below /fixflip-kalkulator/, unlike STRATO at /.
+const previewPrefix=location.hostname.endsWith('.github.io')?'/fixflip-kalkulator':'';
+function routeKey(pathname){const path=pathname.toLowerCase();return routes[previewPrefix&&path.startsWith(previewPrefix+'/')?path.slice(previewPrefix.length):path];}
+function routeHref(path){return previewPrefix+path;}
 function setPage(key){
  document.documentElement.dataset.nicPage=key==='home'?'website':key;
  window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
@@ -59,7 +63,7 @@ function showContent(key,refresh=false){
 }
 function pushRoute(key,previousURL){
  const path=Object.keys(routes).find(p=>routes[p]===key);
- history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',path+location.search);
+ history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',routeHref(path)+location.search);
  // Close native admin/legal views before rendering the destination header.
  if(new URL(previousURL).hash)window.dispatchEvent(new HashChangeEvent('hashchange',{oldURL:previousURL,newURL:location.href}));
 }
@@ -115,14 +119,14 @@ document.addEventListener('click',event=>{
  if(bypass||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  const link=event.target.closest('a[href]');
  if(link&&document.querySelector('.deal-type-card')){
-  const url=new URL(link.href,location.href),key=routes[url.pathname.toLowerCase()];
+  const url=new URL(link.href,location.href),key=routeKey(url.pathname);
   if(url.origin===location.origin&&key&&!url.hash&&!link.download&&(!link.target||link.target==='_self')){
    event.preventDefault();select(key,true);return;
   }
  }
  const tile=event.target.closest('.deal-type-row > .deal-type-option');
  if(tile){
-  const key=tile.dataset.calculator||routes[new URL(tile.dataset.href||tile.href||location.href,location.href).pathname.toLowerCase()];
+  const key=tile.dataset.calculator||routeKey(new URL(tile.dataset.href||tile.href||location.href,location.href).pathname);
   if(!key||tile.hidden)return;
   event.preventDefault();event.stopImmediatePropagation();select(key,true);return;
  }
@@ -132,7 +136,7 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();financeHost.querySelector('[data-finance-id="'+id+'"]').click();
  }
 },true);
-window.addEventListener('popstate',()=>{const key=routes[location.pathname.toLowerCase()];if(key)select(key);});
+window.addEventListener('popstate',()=>{const key=routeKey(location.pathname);if(key)select(key);});
 function createSiteNavigation(){
  const links=[['/nebenkostenabrechnung/','Mieterabrechnung'],['/preise/','Preise'],['/warum-immocheck/','Warum ImmoCheck?']];
  const header=document.querySelector('.nic-brand-bar')||document.querySelector('.brand-logo-wrap')?.closest('header')||document.querySelector('header');
@@ -448,7 +452,7 @@ function initWelcome(){
  if(settlement){
   settlement.querySelector('strong').textContent=calculatorTitle('settlement');
   settlement.querySelector('small').textContent=home.settlementButtonText;
-  if(home.settlementButtonUrl){settlement.href=home.settlementButtonUrl;settlement.removeAttribute('aria-disabled');}else{settlement.removeAttribute('href');settlement.setAttribute('aria-disabled','true');}
+  if(home.settlementButtonUrl){settlement.href=routeHref(home.settlementButtonUrl);settlement.removeAttribute('aria-disabled');}else{settlement.removeAttribute('href');settlement.setAttribute('aria-disabled','true');}
  }
  const content=window.NICSettings.current.content.welcome;
  const signature=JSON.stringify([content.title,content.description,settings.company]);
@@ -492,7 +496,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  // The shared calculator menu may be inserted after DOMContentLoaded by the
  // site build. Initialize only after the direct route has its real menu.
  function startDirectRoute(){
-  const key=routes[location.pathname.toLowerCase()];
+  const key=routeKey(location.pathname);
   if(key)select(key);
   initResponsiveCalculatorMenu();
  }
