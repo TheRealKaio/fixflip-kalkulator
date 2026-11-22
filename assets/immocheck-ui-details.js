@@ -205,16 +205,6 @@ alignPropertyFields();
 bindBudgetAvailableEquityHint();
 bindFlipSaleReviewHint();
 new MutationObserver(()=>{alignPropertyFields();bindBudgetAvailableEquityHint();bindFlipSaleReviewHint();}).observe(document.body,{childList:true,subtree:true});
-// Align the fixed action bar to the actual calculator, including scrollbar space.
-function sizeActionBar(){
- const app=document.querySelector('.app');if(!app)return;
- const rect=app.getBoundingClientRect();
- document.documentElement.style.setProperty('--nic-calculator-width',rect.width+'px');
- document.documentElement.style.setProperty('--nic-calculator-left',rect.left+'px');
-}
-sizeActionBar();
-window.addEventListener('resize',sizeActionBar);
-const app=document.querySelector('.app');if(app)new ResizeObserver(sizeActionBar).observe(app);
 function clearMask(selector){
  const mask=document.querySelector(selector);if(!mask)return;
  // Re-query each field: existing input handlers may render fresh trade inputs.
