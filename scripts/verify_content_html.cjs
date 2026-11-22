@@ -102,8 +102,23 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert(await icon.locator('path[d]').count()>0,'Copied tile retains its icon paths');
    assert.equal(await label.textContent(),'WEG-Abrechnung hochladen');
    assert.equal(await description.textContent(),'Fertige Jahresabrechnung automatisch einlesen');
-   const [i,t,d]=await Promise.all([icon.boundingBox(),label.boundingBox(),description.boundingBox()]);
-   assert(i&&t&&d&&i.height>0&&i.y+i.height<=t.y+1&&t.y+t.height<=d.y+1,'Icon, title and description render top to bottom');
+   async function checkTileOrientation(portrait){
+    const [i,t,d]=await Promise.all([icon.boundingBox(),label.boundingBox(),description.boundingBox()]);
+    assert(i&&t&&d&&i.height>0);
+    if(portrait){
+     assert(i.x+i.width<=t.x+1 && Math.abs(i.y+i.height/2-t.y-t.height/2)<2,'Portrait puts the icon left of the centered title');
+     assert(d.y+1>=Math.max(i.y+i.height,t.y+t.height),'Portrait description below both');
+    }else{
+     assert(i.y+i.height<=t.y+1&&t.y+t.height<=d.y+1,'Landscape stacks icon, title and description');
+    }
+   }
+   await checkTileOrientation(width<900);
+   if(width===390){
+    await page.setViewportSize({width:844,height:390});
+    await checkTileOrientation(false);
+    await page.setViewportSize({width:390,height:900});
+    await checkTileOrientation(true);
+   }
    await content.locator('section.imc-content').waitFor({state:'visible'});
    assert.equal(await page.locator('#heroTitle').textContent(),'Mein Titel aus dem Adminbereich');
    assert.equal(await page.locator('#heroText').textContent(),'Meine Kurzbeschreibung aus dem Adminbereich');
