@@ -48,3 +48,9 @@ CREATE TABLE IF NOT EXISTS nic_statistics_daily (
  UNIQUE KEY nic_statistics_event_bucket (stat_date,event_name,dimension_hash),
  INDEX(stat_date), INDEX(event_name,stat_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS nic_media (
+ id CHAR(36) PRIMARY KEY,name VARCHAR(255) NOT NULL,mime_type VARCHAR(64) NOT NULL,
+ file_data MEDIUMBLOB NOT NULL,size_bytes INT UNSIGNED NOT NULL,uploaded_by CHAR(32) NULL,
+ created_at DATETIME NOT NULL,INDEX(created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -42,7 +42,7 @@ class ContentSanitizer(HTMLParser):
                 if key=='src':
                     match=re.fullmatch(r'{{\s*media\.([a-f0-9-]{36})\s*}}',value or '',re.I)
                     item=config.get('mediaLibrary',{}).get(match.group(1),{}) if match else {}
-                    if item.get('type')=='image' and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',item.get('data','')):safe.append(('src',item['data']))
+                    if item.get('type')=='image':safe.append(('src','/api/index.php?r=media&id='+item['id']))
                 elif key=='alt' and value is not None:safe.append(('alt',value[:300]))
                 elif key=='title' and value:safe.append(('title',value[:200]))
                 elif key=='loading':safe.append(('loading','lazy'))
@@ -51,9 +51,9 @@ class ContentSanitizer(HTMLParser):
                 if '{{company.email}}' in href:href='mailto:{{company.email}}'
                 match=re.fullmatch(r'{{\s*media\.([a-f0-9-]{36})\s*}}',href,re.I)
                 item=config.get('mediaLibrary',{}).get(match.group(1),{}) if match else {}
-                if item.get('type')=='pdf' and re.fullmatch(r'data:application/pdf;base64,[A-Za-z0-9+/=]+',item.get('data','')):
-                    safe.extend([('href',item['data']),('rel','noopener noreferrer'),('target','_blank')])
-                elif re.match(r'^(https?://|mailto:|tel:|/(?!/))',href) and '\\\\' not in href:safe.extend([('href',href),('rel','noopener noreferrer')])
+                if item.get('type')=='pdf':
+                    safe.extend([('href','/api/index.php?r=media&id='+item['id']),('rel','noopener noreferrer'),('target','_blank')])
+                elif re.match(r'^(https?://|mailto:|tel:|/(?!/))',href) and '\\' not in href:safe.extend([('href',href),('rel','noopener noreferrer')])
         self.out.append('<'+tag+''.join(' '+k+'="'+html.escape(v,quote=True)+'"' for k,v in safe)+'>')
     def handle_endtag(self,tag):
         if tag in self.blocked_tags:self.blocked=max(0,self.blocked-1);return

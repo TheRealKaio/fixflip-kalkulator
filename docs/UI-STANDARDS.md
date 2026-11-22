@@ -493,9 +493,8 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Leere Titel erzeugen keine Überschrift. Die Vorschau und die öffentliche Inhaltsseite nutzen dieselben Rasterregeln. Bis 700 px stehen die Spalten untereinander.
 
 
-## Content-Medien im Admin (22. November 2026)
+## Content-Medien im Admin (22. November 2026, aktualisiert)
 - Admin → Layout enthält eine Medienbibliothek für Content-Bilder und PDFs.
-- PNG/JPG/WebP-Bilder und PDF-Dateien werden zentral gespeichert. Einzelbilder bis 320 KB, PDFs bis 500 KB, zusammen bis 1 MB.
-- Contentfelder bieten ein Medienmenü zum Einfügen. Bilder erhalten Alt-Text; PDFs öffnen sich in einem neuen Tab.
-- Vorschau, öffentliche Seiten und statischer Build erlauben nur Dateien aus dieser Medienbibliothek.
-- Spalten- und Medienbuttons verwenden den grünen Admin-Hintergrund und die berechnete Admin-Textfarbe.
+- Unterstützt PNG/JPG/WebP und PDF bis 5 MB je Datei. Dateien liegen separat von den Website-Einstellungen und werden erst öffentlich abrufbar, wenn sie in der gespeicherten Medienbibliothek geführt sind.
+- Contentfelder bieten ein Medium-Menü zum Einfügen. Bilder erhalten Alt-Text; PDFs öffnen sich in einem neuen Tab.
+- Die Schaltflächen folgen den Admin-Farb- und Textfarben-Einstellungen. Entfernte Dateien werden beim globalen Speichern endgültig gelöscht.

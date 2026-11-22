@@ -10,6 +10,16 @@ async function api(route,body,query=''){
  if(!response.ok){const error=Error(data.error||'Anfrage fehlgeschlagen.');error.status=response.status;if(response.status===401){user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));}throw error;}
  return data;
 }
+async function uploadMedia(file,id){
+ if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');
+ if(!(file instanceof File)||file.size>5*1024*1024)throw Error('Dateien dürfen höchstens 5 MB groß sein.');
+ const url=new URL(config.apiUrl);url.searchParams.set('r','media-upload');
+ const form=new FormData();form.append('file',file,file.name);form.append('id',id||crypto.randomUUID());
+ const response=await fetch(url,{method:'POST',credentials:'include',headers:{'X-NIC-Request':'1','X-NIC-CSRF':csrf},body:form,cache:'no-store',signal:AbortSignal.timeout(60000)});
+ let data;try{data=await response.json();}catch(_){throw Error('Die Schnittstelle liefert keine gültige Antwort.');}
+ if(!response.ok)throw Error(data.error||'Upload fehlgeschlagen.');
+ return data.media;
+}
 function init(){
  if(!boot)boot=(async()=>{const r=await fetch(new URL('backend-config.json',ROOT),{cache:'no-store',signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error('Verbindungseinstellungen fehlen.');config=await r.json();if(config.enabled!==true)return false;
  const url=new URL(config.apiUrl);if(url.protocol!=='https:')throw Error('Die Schnittstelle benötigt HTTPS.');
@@ -100,7 +110,7 @@ document.addEventListener('click',event=>{
  event.preventDefault();event.stopImmediatePropagation();
  profile().catch(error=>alert(error.message));
 },true);
-window.NICAccess={init,authorize,requireAdmin,loadSettings,refresh,saveSettings,mountUsers,logout,login,saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:async()=>{const result=await api('delete-own-account',{confirm:true});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
+window.NICAccess={init,authorize,requireAdmin,loadSettings,refresh,saveSettings,mountUsers,logout,login,uploadMedia,mediaUrl:id=>{const u=new URL(config.apiUrl);u.searchParams.set('r','media');u.searchParams.set('id',id);return u.href;},saveOwn:async values=>{const r=await api('profile',values);user=r.user;return user;},deleteOwn:async()=>{const result=await api('delete-own-account',{confirm:true});user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},resendEmailChange:()=>api('email-change-resend',{}),emailChangeStatus:()=>api('email-change-status'),startEmailChange:email=>api('email-change-start',{email}),approveEmailChange:token=>api('email-change-approve',{token}),finishEmailChange:async code=>{const result=await api('email-change-finish',{code});if(result.loggedOut!==true||typeof result.email!=='string')throw Error('Bitte die aktuelle app.php auf STRATO hochladen und die Seite neu laden.');user=null;csrf=null;window.dispatchEvent(new Event('nic-auth-changed'));return result;},get enabled(){return config?.enabled===true;},get user(){return user;}};
 const css=element('style');css.textContent=`
 .nic-auth-dialog{box-sizing:border-box;border:1px solid var(--line,#e2e8f0);border-radius:18px;padding:24px;max-width:580px;width:calc(100% - 32px);color:var(--ink,#172033);background:var(--bg,#f5f7fb);font:inherit;line-height:1.5;box-shadow:0 20px 80px #0f172a45;color-scheme:light}
 .nic-auth-dialog [hidden]{display:none!important}
