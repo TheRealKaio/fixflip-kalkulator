@@ -104,7 +104,7 @@ shared=base
 for content_key,slug in [('settlement','nebenkostenabrechnung'),('prices','preise'),('why','warum-immocheck')]:
  destination=site/slug/'index.html'
  old=destination.read_text()
- article=re.search(r'<article class="nic-content-card(?: [^"]*)?">(.*?)</article>',old,re.S)
+ article=re.search(r'<article\b[^>]*class="nic-content-card(?: [^"]*)?"[^>]*>(.*?)</article>',old,re.S)
  if not article:raise SystemExit('Content article missing: '+slug)
  document=shared
  document=re.sub(r'data-nic-page="[^"]+"','data-nic-page="'+content_key+'"',document,count=1)
