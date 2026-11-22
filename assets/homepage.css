@@ -510,3 +510,6 @@ html body #nic-home-intro .nic-home-options > .deal-type-option strong{
  overflow-wrap:normal!important;
  font-size:min(var(--nic-body-font-size, 18px), 5.6cqi)!important;
 }
+
+/* Mieterabrechnung: separate editierbare Informationssektion und responsive Erfassungswege */
+.nic-settlement-start{display:block!important}.nic-settlement-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:4px 0 24px}.nic-settlement-action{min-height:56px;padding:14px 18px;border:1px solid #075c55;border-radius:12px;background:#075c55;color:#fff;font:inherit;font-weight:700;cursor:pointer;white-space:normal;text-align:center}.nic-settlement-action:hover{background:#0b746a}.nic-settlement-action:focus-visible{outline:3px solid #b37b00;outline-offset:3px}.nic-settlement-lower{line-height:1.6}.nic-settlement-lower>*:first-child{margin-top:0}@media(max-width:700px){.nic-settlement-actions{grid-template-columns:minmax(0,1fr);gap:12px}.nic-settlement-action{width:100%}}
