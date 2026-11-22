@@ -123,3 +123,14 @@ Jede neue verbindliche Vereinbarung versioniert in dieser Datei oder verlinkten 
 - Sichtbar einfach halten: Standardwerte vorausfüllen, nur Abweichungen und unklare Zuordnungen zur Eingabe öffnen.
 
 Diese Ergänzung dokumentiert die Startseiten- und Ablaufabsprache als Konzept; sie behauptet keine bereits erfolgte Umsetzung im Code.
+
+## 11. Mieterdaten, Mietverhältnisse und Mieterwechsel (Ergänzung 22.11.2026)
+
+- Die **WEG-Abrechnung enthält im Normalfall keine Mietvertragsdaten**. Quelle der Mieterdaten ist die Erfassung durch den Vermieter anhand von Mietvertrag, Mieterkontakt und Zahlungsdaten; bei Folgejahren Wiederverwendung bestehender Datensätze. Eine spätere optionale Mietvertragsauslesung ist eine eigenständige Funktion, **nicht** Bestandteil des schon vereinbarten WEG-Imports.
+- **Mieter-Stammdaten:** Vorname, Nachname, Zustell-/Korrespondenzanschrift (insbesondere nach Auszug relevant), E-Mail optional, Telefonnummer optional; für den Versand nur tatsächlich benötigte Kontaktdaten nutzen.
+- **Bankverbindung des Mieters:** optional (z. B. für Guthabenerstattung), nicht voraussetzen und nicht für die Berechnung erforderlich. Datenminimierung und Zugriffsschutz; ggf. Auszahlung über sicheren alternativen Prozess.
+- **Mietverhältnis ist von Wohnung und Person getrennt:** Wohnungs-ID, Mieter-ID(s), Vertragsbeginn und -ende, tatsächliches Einzugs-/Auszugsdatum soweit abweichend und abrechnungsrelevant, vertragliche Kostenumlage, vereinbarte und tatsächlich geleistete monatliche bzw. periodenbezogene Vorauszahlungen und Änderungen.
+- **Jahres-Abrechnungsperiode des Objekts** (z. B. 01.01.–31.12.) getrennt vom **individuellen Belegungs-/Nutzungszeitraum** des Mieters speichern; bei Ein-/Auszug Schnittmenge bilden und Verteilung nach einschlägigem Schlüssel/Vertrag sowie ggf. Zwischenablesungen korrekt bestimmen. Nicht sämtliche Kosten automatisch nur nach Tagen verteilen; verbrauchsabhängige Kosten benötigen geeignete Werte oder rechtlich vorgesehene Verfahren.
+- **Mieterwechsel innerhalb desselben Abrechnungsjahres:** getrennte mietverhältnisbezogene Abrechnungen für bisherigen und neuen Mieter, jeweils mit passenden Vorauszahlungen; alte Datensätze bleiben erhalten. Keine Vermischung der Kosten oder Kontakte.
+- **UX Schritt 2:** Bereits bekannte Mietverhältnisse vorausfüllen; bei neuem Mieter nur notwendige Felder erfassen, Datumsangaben und Vorauszahlungen klar abfragen; optional weitere Felder aufklappbar. Bei Auszug nach neuer Korrespondenzadresse fragen.
+- **Verantwortung:** Vermieter bestätigt Vertrags- und Zahlungsdaten; OCR eines WEG-Dokuments darf sie nicht erfinden. Benötigte Angaben vor der finalen Abrechnung validieren.
