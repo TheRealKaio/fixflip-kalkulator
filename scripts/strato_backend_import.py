@@ -58,7 +58,10 @@ def patch_settings_persistence(installed, tested):
     desired = whitelist
     for key in ('navigationVisibility', 'seoIndexing'):
         if "'" + key + "'" not in desired:
-            desired = desired[:-2] + ",'" + key + "'];"
+            if ",'mediaLibrary'" in desired:
+                desired = desired.replace(",'mediaLibrary'", ",'" + key + "','mediaLibrary'", 1)
+            else:
+                desired = desired[:-2] + ",'" + key + "'];"
     patched = patched.replace(whitelist, desired, 1)
     validation = next((line for line in patched.splitlines() if "Ungültiges Einstellungsfeld: " in line), None)
     if not validation or "'] as $key)" not in validation:
