@@ -176,6 +176,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Titel, Texte und Zielverknüpfung des Mieterabrechnungsbuttons bleiben wie die
   anderen Inhalte zentral konfigurierbar. Die Startseiten-Einstellungen liegen
   unter `meta.website`; keine zweite unabhängige Text-/Linkquelle pflegen.
+- Unter Admin → Seiten & Metadaten → Mieterabrechnung gibt es eine Vorschau
+  und einen Kopierbereich für die Kacheln „Nebenkostenabrechnung“,
+  „WEG-Abrechnung hochladen“ und „Manuelle Erfassung“. Der kopierte HTML-/CSS-
+  Block verwendet die gemeinsamen Website-Variablen für Farbe, Schriftgrößen
+  und Eckenradius; Zielpfade bleiben im kopierten Code anpassbar.
 
 ## Startseiten-Einführung und spezielle Hinweistexte
 

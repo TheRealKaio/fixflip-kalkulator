@@ -154,3 +154,4 @@ body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:
 }
 .nic-navigation-admin-head{font-size:14px}
 @media(max-width:480px){.nic-navigation-admin-row{grid-template-columns:minmax(0,1.8fr) 54px 80px;gap:5px;font-size:12px}}
+.nic-tile-code-card{display:grid;gap:12px}.nic-tile-code-card h3,.nic-tile-code-card p{margin:0}.nic-tile-code-card select{max-width:420px}.nic-tile-code-card textarea{width:100%;min-height:260px;resize:vertical;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:2}.nic-tile-code-preview{overflow:hidden}

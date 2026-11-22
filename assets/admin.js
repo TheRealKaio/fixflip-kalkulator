@@ -141,7 +141,31 @@ function buildPageContent(page,key,defaults){
   bodyPreview.className='legal-html-preview';
   bodyPreview.id='content-'+key+'-body-preview';
   card.append(Object.assign(document.createElement('strong'),{textContent:'Textvorschau'}),bodyPreview);
+  if(key==='settlement')buildSettlementTileCode(page);
   page.append(card);
+}
+function buildSettlementTileCode(page){
+ const card=document.createElement('section');card.className='form-card nic-tile-code-card';
+ const heading=document.createElement('h3');heading.textContent='Kachel-Code zum Kopieren';
+ const intro=document.createElement('p');intro.className='helper';intro.textContent='Wähle eine Kachel aus. Der kopierte HTML-Block übernimmt Farben, Schriftgrößen und Eckenradius aus den gemeinsamen Website-Einstellungen.';
+ const label=document.createElement('label');label.htmlFor='settlementTileCodeType';label.textContent='Kachel';
+ const select=document.createElement('select');select.id='settlementTileCodeType';select.innerHTML='<option value="settlement">Nebenkostenabrechnung</option><option value="weg">WEG-Abrechnung hochladen</option><option value="manual">Manuelle Erfassung</option>';
+ const preview=document.createElement('div');preview.className='nic-tile-code-preview';preview.setAttribute('aria-label','Kachel-Vorschau');
+ const code=document.createElement('textarea');code.id='settlementTileCode';code.readOnly=true;code.rows=16;code.spellcheck=false;code.setAttribute('aria-label','Kopierbarer HTML- und CSS-Code');
+ const copy=document.createElement('button');copy.type='button';copy.className='button primary';copy.textContent='Code kopieren';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code.value);}catch(_){code.focus();code.select();document.execCommand('copy');}copy.textContent='Kopiert';setTimeout(()=>copy.textContent='Code kopieren',1400);});
+ const help=document.createElement('p');help.className='helper';help.textContent='Den Zielpfad im href-Attribut kannst du im Code anpassen. Die Kacheln übernehmen die zentralen Website-Variablen für Farbe, Textgröße und Eckenradius.';
+ card.append(heading,intro,label,select,preview,code,copy,help);page.append(card);
+ const tiles={
+  settlement:{title:'Nebenkostenabrechnung',description:'Betriebskosten erfassen und versenden',href:'/nebenkostenabrechnung/',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M8 12h8M8 16h8"/>'},
+  weg:{title:'WEG-Abrechnung hochladen',description:'Fertige Jahresabrechnung automatisch einlesen',href:'/nebenkostenabrechnung/',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M12 19v-8m-3 3 3-3 3 3"/>'},
+  manual:{title:'Manuelle Erfassung',description:'Betriebskosten selbst eintragen',href:'/nebenkostenabrechnung/',icon:'<path d="M12 20h9"/><path d="m16 4 4 4-12 12-4 1 1-4L17 5a2.12 2.12 0 0 1 3 3"/>'}
+ };
+ const css='.nic-copy-tile{display:flex;align-items:center;gap:14px;min-width:0;min-height:104px;box-sizing:border-box;padding:18px;border:1px solid var(--nic-green-bg,#075c55);border-radius:var(--nic-menu-radius,16px);background:var(--nic-green-bg,#075c55);color:var(--nic-green-text,#fff);font-family:var(--nic-body-font-family,system-ui,sans-serif);text-decoration:none;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:filter .16s ease,transform .16s ease}.nic-copy-tile:hover{filter:brightness(.94);transform:translateY(-1px)}.nic-copy-tile:focus-visible{outline:3px solid var(--nic-green-bg,#075c55);outline-offset:4px}.nic-copy-tile svg{flex:none;width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.nic-copy-tile__text{min-width:0}.nic-copy-tile__title{display:block;font-size:var(--nic-body-font-size,16px);font-weight:700;line-height:1.3}.nic-copy-tile__description{display:block;margin-top:6px;font-size:var(--nic-subtext-font-size,14px);font-weight:400;line-height:1.45;color:var(--nic-green-text,#fff)}.nic-tile-code-preview{max-width:520px;padding:16px;background:#f8fafc;border-radius:8px}@media(max-width:640px){.nic-copy-tile{min-height:94px}}';
+ const previewStyles=document.createElement('style');previewStyles.textContent=css;card.append(previewStyles);
+ function render(){const item=tiles[select.value];const markup='<a class="nic-copy-tile" href="'+item.href+'" aria-label="'+item.title+': '+item.description+'">\n  <svg viewBox="0 0 24 24" aria-hidden="true">'+item.icon+'</svg>\n  <span class="nic-copy-tile__text">\n    <strong class="nic-copy-tile__title">'+item.title+'</strong>\n    <small class="nic-copy-tile__description">'+item.description+'</small>\n  </span>\n</a>';
+   code.value='<style>\n'+css+'\n</style>\n\n'+markup;preview.innerHTML=markup;
+ }
+ select.addEventListener('change',render);render();
 }
 function buildWebsiteFields(page){
  const grid=document.createElement('fieldset');
