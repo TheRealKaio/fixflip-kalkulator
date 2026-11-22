@@ -66,6 +66,7 @@ function buildPage(group,route){
  const page=document.createElement('details');
  page.className='form-card admin-page';
  page.dataset.adminPage=route;
+ page.open=route==='settlement';
  const summary=document.createElement('summary');
  const title=document.createElement('span');
  title.textContent=pageLabels[route]||route;
