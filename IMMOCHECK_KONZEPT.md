@@ -134,3 +134,21 @@ Diese Ergänzung dokumentiert die Startseiten- und Ablaufabsprache als Konzept; 
 - **Mieterwechsel innerhalb desselben Abrechnungsjahres:** getrennte mietverhältnisbezogene Abrechnungen für bisherigen und neuen Mieter, jeweils mit passenden Vorauszahlungen; alte Datensätze bleiben erhalten. Keine Vermischung der Kosten oder Kontakte.
 - **UX Schritt 2:** Bereits bekannte Mietverhältnisse vorausfüllen; bei neuem Mieter nur notwendige Felder erfassen, Datumsangaben und Vorauszahlungen klar abfragen; optional weitere Felder aufklappbar. Bei Auszug nach neuer Korrespondenzadresse fragen.
 - **Verantwortung:** Vermieter bestätigt Vertrags- und Zahlungsdaten; OCR eines WEG-Dokuments darf sie nicht erfinden. Benötigte Angaben vor der finalen Abrechnung validieren.
+
+## 12. Mehrere Mieter und Leerstand innerhalb eines Abrechnungsjahres (Ergänzung 22.11.2026)
+
+**Festlegung UI / Schritt 2:**
+- Im Abschnitt „Mieterdaten prüfen/ergänzen“ eine Aktion **„+ Weiteren Mieter im Abrechnungszeitraum erfassen“** anbieten. Es handelt sich um zusätzliche Datensätze **innerhalb desselben Schritts**, nicht um neue Hauptschritte.
+- Pro Wohnung und Abrechnungszeitraum können mehrere zeitlich aufeinanderfolgende Mietverhältnisse mit exakten Von-/Bis-Daten eingetragen werden.
+- Standardannahme bei einem durchgängig bestehenden Mietverhältnis: Anfang und Ende des jeweiligen Abrechnungsjahrs; bei unterjährigem Ein-/Auszug individuelle Daten eingeben. Bereits gespeicherte Mietverhältnisse haben Vorrang vor Annahmen.
+- Eine einfache zeitliche Übersicht zeigt Mietverhältnisse und **automatisch identifizierte Lücken**. Offene Zeiträume erscheinen als **„Leerstand / unvermietet“**, ohne dass der Nutzer dafür einen fiktiven Mieter anlegen muss.
+- Datumskonflikte, überlappende Mietzeiträume und fehlende Daten werden angezeigt und vor finaler Abrechnung aufgelöst. Übergabetage und vertraglich/rechtlich maßgebliche Nutzungszeitpunkte berücksichtigen; keine überlappende Doppelerfassung.
+- Leerstand ist eine **objekt-/wohnungsbezogene Abrechnungsposition zulasten des Vermieters**, keine mietende Person. Leerstandsanteile separat berechnen und ausweisen, nicht einfach auf verbleibende Mieter verteilen.
+
+**Berechnung und Datenhaltung:**
+- Wohnungsbezogene Jahreskosten zunächst auf Grundlage zulässiger Umlageschlüssel erfassen; dann auf Mietverhältnisse und Leerstand nach **jeweils rechtlich passender Methode** aufteilen. Einfache zeitanteilige Verteilung darf nur für dafür geeignete Kosten verwendet werden.
+- Verbrauchsabhängige Heizung/Warmwasser bzw. Zählerkosten bei Nutzerwechsel nicht pauschal nach Tagen verteilen: Zwischenablesungen und Sonderregeln der HeizkostenV (§ 9b), soweit anwendbar, berücksichtigen; falls V1 das nicht korrekt unterstützt, den Fall markieren und keine unzutreffende Endabrechnung erstellen.
+- Vorauszahlungen und Erstattungen/Nachzahlungen **je Mietverhältnis** führen; auch wenn mehrere Personen nacheinander dieselbe Wohnung bewohnen. Leerstandszeit trägt grundsätzlich der Eigentümer und hat keine Mietervorauszahlung.
+- Historische Datensätze unverändert nachvollziehbar halten; keine Überschreibung alter Mieter beim Wechsel.
+
+**Beispiel (nicht als starres Monatsraster programmieren):** Mieter A 01.01.–31.03.; Leerstand 01.04.–30.04.; Mieter B 01.05.–30.09.; Mieter C 01.10.–31.12.2026. ImmoCheck zeigt vier nicht überlappende Perioden und getrennte Kostenanteile.
