@@ -15,7 +15,17 @@ function routeHref(path){
  const value=String(path||'').trim();
  if(!value)return routeHref('/');
  // Admin settings may contain a full URL, a relative route, or an already-prefixed preview route.
- if(/^(?:https?:)?\/\//i.test(value))return value;
+ if(/^(?:https?:)?\/\//i.test(value)){
+  try{
+   const url=new URL(value,location.href);
+   // Preserve editable admin destinations, but keep our own settlement page
+   // on the deployment currently being viewed.
+   if((url.hostname===location.hostname||/^(?:www\.)?neustart-immocheck\.de$/i.test(url.hostname))&&
+      /\/nebenkostenabrechnung\/(?:index\.html)?$/i.test(url.pathname))
+    return previewPrefix+'/nebenkostenabrechnung/'+url.search+url.hash;
+  }catch(_){}
+  return value;
+ }
  const absolute=value.startsWith('/')?value:'/'+value;
  if(previewPrefix&&(absolute===previewPrefix||absolute.startsWith(previewPrefix+'/')))return absolute;
  return previewPrefix+absolute;
@@ -136,6 +146,16 @@ function select(key,push=false){
  window.NICSettings?.syncCalculatorMenu(key);
  window.scrollTo({top:y,left:0,behavior:'instant'});
 }
+document.addEventListener('click',event=>{
+ const tile=event.target.closest('[data-home-settlement]');
+ if(!tile||event.defaultPrevented||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+ const href=tile.getAttribute('href');if(!href)return;
+ const url=new URL(href,location.href);
+ if(url.origin!==location.origin||routeKey(url.pathname)!=='settlement')return;
+ event.preventDefault();event.stopImmediatePropagation();
+ // Navigate inside the app; Pages does not provide a generic SPA rewrite.
+ select('settlement',true);
+},true);
 document.addEventListener('click',event=>{
  const starter=event.target.closest('[data-nic-settlement-action]');
  if(starter){event.preventDefault();window.alert(starter.dataset.nicSettlementAction==='upload'?'Der WEG-Import wird noch entwickelt.':'Die manuelle Kostenerfassung wird noch entwickelt.');return;}
