@@ -118,9 +118,28 @@ function nic_auth_settings(PDO $db): array {
 }
 function nic_clean_settings(mixed $raw): array {
     if (!is_array($raw) || ($raw['version'] ?? null) !== 1) nic_fail('Ungültige Einstellungen.');
-    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility','seoIndexing'];
+    $keys = ['version','company','layout','social','meta','favicon','websiteLogo','appleTouchIcon','imageAlts','sharing','reporting','legal','access','contentSections','navigationVisibility','seoIndexing','mediaLibrary'];
     $s = array_intersect_key($raw, array_flip($keys));
     foreach (['company','layout','social','meta','imageAlts','sharing','reporting','legal','access','seoIndexing'] as $key) if (isset($s[$key]) && !is_array($s[$key])) nic_fail('Ungültiges Einstellungsfeld: ' . $key);
+    $media = $s['mediaLibrary'] ?? [];
+    if (!is_array($media) || count($media) > 30) nic_fail('Ungültige Medienbibliothek.');
+    $cleanMedia = []; $mediaBytes = 0;
+    foreach ($media as $id => $item) {
+        if (!is_string($id) || !preg_match('/^[a-f0-9-]{36}$/i', $id) || !is_array($item)) nic_fail('Ungültiger Medieneintrag.');
+        $type = $item['type'] ?? ''; $data = $item['data'] ?? ''; $name = $item['name'] ?? '';
+        if (!is_string($name) || strlen($name) > 120 || !preg_match('//u', $name) || preg_match('/[\\x00-\\x1f\\x7f]/u', $name)) nic_fail('Ungültiger Medienname.');
+        if (!is_string($data) || strlen($data) > 700000) nic_fail('Mediendatei ist zu groß.');
+        if ($type === 'image' && preg_match('~^data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$~D', $data)) {
+            $binary = base64_decode(substr($data, strpos($data, ',') + 1), true);
+            if ($binary === false || strlen($binary) > 320000 || @getimagesizefromstring($binary) === false) nic_fail('Ungültige Bilddatei.');
+        } elseif ($type === 'pdf' && preg_match('~^data:application/pdf;base64,[A-Za-z0-9+/=]+$~D', $data)) {
+            $binary = base64_decode(substr($data, strpos($data, ',') + 1), true);
+            if ($binary === false || strlen($binary) > 500000 || !str_starts_with($binary, '%PDF-')) nic_fail('Ungültige PDF-Datei.');
+        } else nic_fail('Nicht unterstütztes Medienformat.');
+        $mediaBytes += strlen($binary); if ($mediaBytes > 1000000) nic_fail('Die Medienbibliothek darf insgesamt 1 MB groß sein.');
+        $cleanMedia[$id] = ['id'=>$id,'name'=>$name,'type'=>$type,'data'=>$data];
+    }
+    $s['mediaLibrary'] = $cleanMedia;
     $s['access'] = $s['access'] ?? [];
     foreach (['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare','budgetInsightsLoginRequired'] as $key) {
         $value = $s['access'][$key] ?? !in_array($key,['registrationBlocked','loginBlocked','budgetInsightsLoginRequired'],true);

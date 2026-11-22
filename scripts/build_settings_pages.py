@@ -25,8 +25,8 @@ content_routes={'settlement':'nebenkostenabrechnung/','prices':'preise/','why':'
 content_nav=[('settlement','Mieterabrechnung'),('prices','Preise'),('why','Warum ImmoCheck?')]
 
 class ContentSanitizer(HTMLParser):
-    allowed={'section','article','header','footer','main','aside','details','summary','p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h1','h2','h3','h4','h5','h6','table','caption','thead','tbody','tfoot','tr','th','td'}
-    void={'br','hr'}
+    allowed={'section','article','header','footer','main','aside','details','summary','p','br','strong','b','em','i','u','s','ul','ol','li','a','blockquote','hr','div','span','h1','h2','h3','h4','h5','h6','table','caption','thead','tbody','tfoot','tr','th','td','img'}
+    void={'br','hr','img'}
     blocked_tags={'script','style','iframe','object','embed','svg','math','template'}
     def __init__(self):
         super().__init__(convert_charrefs=True);self.out=[];self.blocked=0
@@ -38,10 +38,22 @@ class ContentSanitizer(HTMLParser):
             if key in {'class','id','title','lang','dir','aria-label','aria-labelledby','aria-describedby','role'} and value:safe.append((key,value))
             elif tag=='details' and key=='open':safe.append(('open',''))
             elif tag in {'td','th'} and key in {'colspan','rowspan'} and re.fullmatch(r'[1-9]\d?',value or ''):safe.append((key,value))
+            elif tag=='img' and key in {'src','alt','title','loading'}:
+                if key=='src':
+                    match=re.fullmatch(r'{{\\s*media\\.([a-f0-9-]{36})\\s*}}',value or '',re.I)
+                    item=config.get('mediaLibrary',{}).get(match.group(1),{}) if match else {}
+                    if item.get('type')=='image' and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',item.get('data','')):safe.append(('src',item['data']))
+                elif key=='alt' and value is not None:safe.append(('alt',value[:300]))
+                elif key=='title' and value:safe.append(('title',value[:200]))
+                elif key=='loading':safe.append(('loading','lazy'))
             elif tag=='a' and key=='href':
                 href=(value or '').strip()
                 if '{{company.email}}' in href:href='mailto:{{company.email}}'
-                if re.match(r'^(https?://|mailto:|tel:|/(?!/))',href) and '\\' not in href:safe.extend([('href',href),('rel','noopener noreferrer')])
+                match=re.fullmatch(r'{{\\s*media\\.([a-f0-9-]{36})\\s*}}',href,re.I)
+                item=config.get('mediaLibrary',{}).get(match.group(1),{}) if match else {}
+                if item.get('type')=='pdf' and re.fullmatch(r'data:application/pdf;base64,[A-Za-z0-9+/=]+',item.get('data','')):
+                    safe.extend([('href',item['data']),('rel','noopener noreferrer'),('target','_blank')])
+                elif re.match(r'^(https?://|mailto:|tel:|/(?!/))',href) and '\\\\' not in href:safe.extend([('href',href),('rel','noopener noreferrer')])
         self.out.append('<'+tag+''.join(' '+k+'="'+html.escape(v,quote=True)+'"' for k,v in safe)+'>')
     def handle_endtag(self,tag):
         if tag in self.blocked_tags:self.blocked=max(0,self.blocked-1);return

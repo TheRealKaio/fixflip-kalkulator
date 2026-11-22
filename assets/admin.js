@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const S=window.NICSettings,$=id=>document.getElementById(id),form=$('settingsForm');let favicon='',appleTouchIcon='',websiteLogo='',sharingImage='',dirty=false,contentSectionCatalog=[],importedBase=null;
+const S=window.NICSettings,$=id=>document.getElementById(id),form=$('settingsForm');let favicon='',appleTouchIcon='',websiteLogo='',sharingImage='',dirty=false,contentSectionCatalog=[],importedBase=null,mediaLibrary={};
 function status(message,error=false){$('saveStatus').textContent=message;$('saveStatus').classList.toggle('error',error);}
 function markDirty(){dirty=true;$('saveState').textContent='Ungespeicherte Änderungen';status(window.NICAccess?.enabled?'Noch nicht global gespeichert.':'Noch nicht im Browser gespeichert.');}
 function field(parent,id,label,type='text',hint=''){
@@ -116,51 +116,13 @@ function buildPage(group,route){
  if(route==='website')buildWebsiteFields(page);
  group.append(page);
 }
-function addContentLayoutButtons(input){
- const tools=document.createElement('div');
- tools.className='content-layout-tools';
- const title=field(tools,input.id+'-layout-title','Abschnittstitel (optional)');
- title.maxLength=240;
- const actions=document.createElement('div');
- actions.className='content-layout-actions';
- const notice=document.createElement('span');
- notice.className='helper';
- notice.setAttribute('role','status');
- for(const count of [2,3]){
-  const button=document.createElement('button');
-  button.type='button';
-  button.className='button';
-  button.textContent=count+' Spalten';
-  button.addEventListener('click',()=>{
-   const start=input.selectionStart,end=input.selectionEnd;
-   const selected=input.value.slice(start,end);
-   const heading=document.createElement('h3');
-   heading.textContent=title.value.trim();
-   const titleMarkup=heading.textContent?heading.outerHTML+'\n':'';
-   const firstColumn=selected||'<p></p>';
-   const opening='\n<section class="nic-content-section">\n'+titleMarkup+
-    '<div class="nic-content-columns nic-content-columns-'+count+'">\n<div>';
-   const markup=opening+firstColumn+'</div>\n'+
-    '<div><p></p></div>\n'.repeat(count-1)+'</div>\n</section>\n';
-   if(input.value.length-selected.length+markup.length>input.maxLength){
-    notice.textContent='Der Abschnitt überschreitet das Zeichenlimit für den Seiteninhalt.';
-    return;
-   }
-   input.setRangeText(markup,start,end,'end');
-   const caret=start+opening.length+(selected?selected.length:3);
-   input.focus();
-   input.setSelectionRange(caret,caret);
-   title.value='';
-   notice.textContent='Abschnitt mit '+count+' Spalten eingefügt.';
-   input.dispatchEvent(new Event('input',{bubbles:true}));
-  });
-  actions.append(button);
- }
- // The title is an insertion aid and does not change saved settings on its own.
- title.addEventListener('input',event=>event.stopPropagation());
- tools.append(actions,notice);
- input.parentElement.before(tools);
-}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function renderMediaLibrary(){const list=$('contentMediaList');if(!list)return;list.replaceChildren();const values=Object.values(mediaLibrary);if(!values.length){const e=document.createElement('p');e.className='helper';e.textContent='Noch keine Dateien hochgeladen.';list.append(e);}for(const item of values){const row=document.createElement('div');row.className='content-media-item';const label=document.createElement('span');label.textContent=(item.type==='pdf'?'PDF · ':'Bild · ')+item.name;const del=document.createElement('button');del.type='button';del.className='button content-media-remove';del.textContent='Entfernen';del.addEventListener('click',()=>{if(!confirm('„'+item.name+'“ aus der Medienbibliothek entfernen? Bereits gespeicherte Content-Links werden dadurch ungültig.'))return;delete mediaLibrary[item.id];renderMediaLibrary();markDirty();updatePreview();});row.append(label,del);list.append(row);}refreshMediaChoices();}
+function refreshMediaChoices(){document.querySelectorAll('[data-content-media-select]').forEach(select=>{const value=select.value;select.replaceChildren();const first=document.createElement('option');first.value='';first.textContent='Medium auswählen …';select.append(first);for(const item of Object.values(mediaLibrary)){const option=document.createElement('option');option.value=item.id;option.textContent=(item.type==='pdf'?'PDF · ':'Bild · ')+item.name;select.append(option);}if(mediaLibrary[value])select.value=value;});}
+function buildMediaLibraryPanel(){const panel=document.createElement('div');panel.className='form-card content-media-panel';panel.innerHTML='<h3>Medien für Content-Seiten</h3><p class="helper">Bilder und PDFs hier hochladen und anschließend im jeweiligen Contentfeld einfügen. Die Dateien werden mit den Website-Einstellungen gespeichert.</p><label class="content-media-upload-label" for="contentMediaFiles">Bilder oder PDFs auswählen</label><input id="contentMediaFiles" type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" multiple><p class="helper">PNG, JPG, WebP oder PDF. Bilder werden bei Bedarf verkleinert. PDFs bis 500 KB; Medienbibliothek insgesamt bis 1 MB.</p><div id="contentMediaList" class="content-media-list"></div><p id="contentMediaStatus" class="helper" role="status"></p>';const tools=$('panel-layout').querySelector('.configuration-tools');if(tools)tools.before(panel);else $('panel-layout').append(panel);$('contentMediaFiles').addEventListener('change',async e=>{try{for(const file of Array.from(e.target.files||[])){let item={id:crypto.randomUUID(),name:file.name.slice(0,120)};if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){if(file.size>500000)throw Error('PDFs dürfen höchstens 500 KB groß sein: '+file.name);item.type='pdf';item.data=await readMediaData(file);}else{if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw Error('Nicht unterstütztes Format: '+file.name);item.type='image';item.data=await optimizeContentImage(file);}const current=Object.values(mediaLibrary).reduce((n,x)=>n+Math.ceil(x.data.length*3/4),0),size=Math.ceil(item.data.length*3/4);if(current+size>1000000)throw Error('Die Medienbibliothek darf insgesamt 1 MB groß sein.');mediaLibrary[item.id]=item;}renderMediaLibrary();markDirty();updatePreview();$('contentMediaStatus').textContent='Datei(en) vorbereitet. Bitte anschließend global speichern.';}catch(err){$('contentMediaStatus').textContent=err.message;$('contentMediaStatus').classList.add('error');}finally{e.target.value='';}});}
+function readMediaData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(Error('Datei konnte nicht gelesen werden.'));r.readAsDataURL(file);});}
+async function optimizeContentImage(file){if(file.size<=300000)return readMediaData(file);const url=URL.createObjectURL(file);try{const img=new Image();img.src=url;await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Bild konnte nicht gelesen werden.'));});const canvas=document.createElement('canvas'),scale=Math.min(1,1600/img.naturalWidth,1600/img.naturalHeight);canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);for(let quality=.86;quality>=.42;quality-=.08){const data=canvas.toDataURL('image/jpeg',quality);if(data.length<=420000)return data;}throw Error('Bild ist auch verkleinert noch zu groß.');}finally{URL.revokeObjectURL(url);}}
+function addContentLayoutButtons(input){const tools=document.createElement('div');tools.className='content-layout-tools';const title=field(tools,input.id+'-layout-title','Abschnittstitel (optional)');title.maxLength=240;const actions=document.createElement('div');actions.className='content-layout-actions';const notice=document.createElement('span');notice.className='helper';notice.setAttribute('role','status');for(const count of [2,3]){const b=document.createElement('button');b.type='button';b.className='button content-layout-button';b.textContent=count+' Spalten';b.addEventListener('click',()=>{const start=input.selectionStart,end=input.selectionEnd,selected=input.value.slice(start,end),h=document.createElement('h3');h.textContent=title.value.trim();const titleMarkup=h.textContent?h.outerHTML+'\\n':'',opening='\\n<section class="nic-content-section">\\n'+titleMarkup+'<div class="nic-content-columns nic-content-columns-'+count+'">\\n<div>',markup=opening+(selected||'<p></p>')+'</div>\\n'+'<div><p></p></div>\\n'.repeat(count-1)+'</div>\\n</section>\\n';if(input.value.length-selected.length+markup.length>input.maxLength){notice.textContent='Der Abschnitt überschreitet das Zeichenlimit.';return;}input.setRangeText(markup,start,end,'end');const caret=start+opening.length+(selected?selected.length:3);input.focus();input.setSelectionRange(caret,caret);title.value='';notice.textContent='Abschnitt mit '+count+' Spalten eingefügt.';input.dispatchEvent(new Event('input',{bubbles:true}));});actions.append(b);}const select=document.createElement('select');select.className='content-media-select';select.dataset.contentMediaSelect='true';select.setAttribute('aria-label','Medium zum Einfügen auswählen');const insert=document.createElement('button');insert.type='button';insert.className='button content-layout-button';insert.textContent='Medium einfügen';insert.addEventListener('click',()=>{const item=mediaLibrary[select.value];if(!item){notice.textContent='Bitte zuerst ein Medium auswählen.';return;}const start=input.selectionStart,end=input.selectionEnd,markup=item.type==='image'?'\\n<img src="{{media.'+item.id+'}}" alt="'+escapeHtml(item.name.replace(/\\.[^.]+$/,''))+'" loading="lazy">\\n':'\\n<a href="{{media.'+item.id+'}}" target="_blank" rel="noopener">PDF ansehen: '+escapeHtml(item.name)+'</a>\\n';if(input.value.length-(end-start)+markup.length>input.maxLength){notice.textContent='Der Eintrag überschreitet das Zeichenlimit.';return;}input.setRangeText(markup,start,end,'end');input.focus();input.dispatchEvent(new Event('input',{bubbles:true}));notice.textContent=(item.type==='image'?'Bild':'PDF-Link')+' eingefügt.';});title.addEventListener('input',event=>event.stopPropagation());tools.append(actions,select,insert,notice);input.parentElement.before(tools);refreshMediaChoices();}
 function buildPageContent(page,key,defaults){
  const card=document.createElement('fieldset');
  card.className='content-editor-card';
@@ -225,6 +187,7 @@ function updateContentPreview(s){
 }
 function build(){
  buildContent();
+ buildMediaLibraryPanel();
  buildLegal();
  for(const [key,title] of [['websiteLogo','Webseiten-Logo'],['favicon','Favicon'],['appleTouchIcon','Apple Touch Icon'],['sharing','Vorschaubild beim Teilen']]){const target=$(key==='sharing'?'sharingText':key+'File').closest(key==='sharing'?'.form-card':'div');field(target,'alt-'+key,'Alt-Text: '+title,'text',key==='favicon'||key==='appleTouchIcon'?'Bildbeschreibung für die Vorschau. Browser- und Home-Bildschirm-Icons besitzen kein HTML-Alt-Attribut.':'Beschreibe kurz den Bildinhalt für Screenreader und unterstützte Link-Vorschauen.').maxLength=300;}
 
@@ -272,7 +235,7 @@ function buildNavigationControls(){
 function collect(){
  const raw=JSON.parse(JSON.stringify(importedBase||S.current||{version:1}));
  raw.version=1;raw.seoIndexing={...(raw.seoIndexing||{})};for(const key of Object.keys(S.seoRouteDefaults))raw.seoIndexing[key]=(key==='admin'||key==='login')?false:!$('seo-index-'+key).checked;raw.company={...(raw.company||{})};raw.layout={...(raw.layout||{})};raw.social={...(raw.social||{})};raw.meta={...(raw.meta||{})};raw.content={...(raw.content||{})};
- raw.favicon=favicon;raw.appleTouchIcon=appleTouchIcon;raw.websiteLogo=websiteLogo;
+ raw.favicon=favicon;raw.appleTouchIcon=appleTouchIcon;raw.websiteLogo=websiteLogo;raw.mediaLibrary=mediaLibrary;
  raw.navigationVisibility={};for(const section of S.navigationSections){raw.navigationVisibility[section]={};for(const screen of ['mobile','desktop']){raw.navigationVisibility[section][screen]={};for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)raw.navigationVisibility[section][screen][key]=$('nic-navigation-'+section+'-'+screen+'-'+key).checked;}}
  S.companyFields.forEach(([k])=>raw.company[k]=$('company-'+k).value);Object.keys(S.layoutDefaults).forEach(k=>raw.layout[k]=$('layout-'+k).value);S.portals.forEach(([k])=>raw.social[k]=$('social-'+k).value);
  S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>raw.meta[k]={...(raw.meta[k]||{}),title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:k==='website'?$('meta-website-googleTag').value:(raw.meta[k]?.googleTag||'')});
@@ -296,7 +259,7 @@ function collect(){
  raw.meta.immobilienABC=window.NICABCAdmin.serialize();
  return S.normalize(raw);
 }
-function fill(s){for(const section of S.navigationSections)for(const screen of ['mobile','desktop'])for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)$('nic-navigation-'+section+'-'+screen+'-'+key).checked=s.navigationVisibility[section][screen][key];for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle','lowerDescription']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
+function fill(s){mediaLibrary={...(s.mediaLibrary||{})};renderMediaLibrary();for(const section of S.navigationSections)for(const screen of ['mobile','desktop'])for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)$('nic-navigation-'+section+'-'+screen+'-'+key).checked=s.navigationVisibility[section][screen][key];for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle','lowerDescription']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
  if(key==='welcome')continue;
  for(const [setting,legacy] of [['seoTitle','title'],['metaDescription','description']]){
   const input=$('content-'+key+'-'+setting);
