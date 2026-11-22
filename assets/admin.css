@@ -256,3 +256,5 @@ body.nic-admin .legal-html-preview img{
   flex:0 1 auto;
  }
 }
+
+.nic-tile-code-card{display:grid;gap:12px}.nic-tile-code-card h3,.nic-tile-code-card p{margin:0}.nic-tile-code-card select{max-width:420px}.nic-tile-code-card textarea{width:100%;min-height:320px;resize:vertical;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:2}.nic-tile-code-layout{display:grid;grid-template-columns:repeat(2,minmax(0,220px));gap:12px}.nic-tile-code-layout>.admin-field{min-width:0}.nic-tile-code-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;overflow:hidden;max-width:none;padding:16px;background:#f8fafc;border-radius:8px}.nic-tile-code-preview .nic-copy-tile{width:100%}@media(max-width:700px){.nic-tile-code-layout{grid-template-columns:minmax(0,1fr)}.nic-tile-code-preview{grid-template-columns:minmax(0,1fr)}}

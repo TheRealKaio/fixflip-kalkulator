@@ -66,32 +66,25 @@ function showContent(key,refresh=false){
  const main=document.querySelector('.app>main.section');if(!main)return;
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
+ if(key==='settlement')main.querySelector(':scope > .nic-explanation-card')?.remove();
  let panel=document.getElementById('nicContentView');
- if(key==='settlement'){
-   if(!panel){panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card nic-settlement-start';const explanation=main.querySelector(':scope > .nic-explanation-card');if(explanation)explanation.after(panel);else main.prepend(panel);}
-   const settings=window.NICSettings.current,c=settings.content.settlement;
-   const signature=JSON.stringify([c.lowerDescription,settings.company]);
-   if(panel.dataset.signature!==signature){
-    panel.classList.add('nic-settlement-start');
-    const actions=document.createElement('div');actions.className='nic-settlement-actions';actions.setAttribute('aria-label','Erfassungsart auswählen');
-    for(const [action,label] of [['upload','WEG-Abrechnung hochladen'],['manual','Manuelle Erfassung']]){const button=document.createElement('button');button.type='button';button.className='nic-settlement-action';button.dataset.nicSettlementAction=action;button.textContent=label;actions.append(button);}
-    const lower=document.createElement('div');lower.className='nic-settlement-lower';
-    lower.append(window.NICSettings.contentFragment(c.lowerDescription||'<h3>So funktioniert die Mieterabrechnung</h3><p>Wähle die gewünschte Erfassung und ergänze fehlende Daten.</p>',settings));
-    panel.replaceChildren(actions,lower);panel.dataset.signature=signature;
-   }
-   active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();return;
-  }
  if(!panel){
   panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
   const explanation=main.querySelector(':scope > .nic-explanation-card');
   if(explanation)explanation.after(panel);else main.prepend(panel);
  }
  const settings=window.NICSettings.current,c=settings.content[key];
- const signature=JSON.stringify([key,c.description,settings.company]);
- if(panel.dataset.signature!==signature){panel.replaceChildren(window.NICSettings.contentFragment(c.description,settings));panel.dataset.signature=signature;}
+ const signature=JSON.stringify([key,c.description,settings.company,key==='settlement'?c.boxTitle:null]);
+ if(panel.dataset.signature!==signature){
+  const body=window.NICSettings.contentFragment(c.description,settings);
+  if(key==='settlement'){const title=document.createElement('h2');title.textContent=c.boxTitle||c.title;panel.replaceChildren(title,body);}
+  else panel.replaceChildren(body);
+  panel.dataset.signature=signature;
+ }
  active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;
  if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();
 }
+
 function pushRoute(key,previousURL){
  const path=Object.keys(routes).find(p=>routes[p]===key);
  history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',routeHref(path)+location.search);
@@ -106,7 +99,7 @@ window.NICCalculators=Object.freeze({
 });
 let active=null,financeHost=null,bypass=false;
 function select(key,push=false){
- window.NICExplanations.show(key);
+ if(key!=='settlement')window.NICExplanations.show(key);
 
  if(key==='home'||contentRoutes[key]){
   const previousURL=location.href;

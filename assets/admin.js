@@ -77,6 +77,7 @@ function buildPage(group,route){
  summary.append(title);
  page.append(summary);
  if(defaults)buildPageContent(page,key,defaults);
+ if(route==='settlement')buildSettlementTileCode(page);
 
  const meta=document.createElement('fieldset');
  const legend=document.createElement('legend');
@@ -176,7 +177,6 @@ function buildPageContent(page,key,defaults){
   }
   const title=field(card,'content-'+key+'-title','Überschrift auf der Seite','text','Überschrift im Inhaltsbereich der Seite.');title.maxLength=240;title.value=defaults.title;
   if(key==='settlement')field(card,'content-'+key+'-boxTitle','Überschrift der Contentbox','text').maxLength=240;
-  if(key==='settlement'){const lower=field(card,'content-settlement-lowerDescription','Unterer Informationstext (HTML möglich)','textarea','Erscheint unter den zwei Buttons bis zum Footer. Dieser Text kann jederzeit geändert werden.');lower.maxLength=S.CONTENT_HTML_LIMIT;lower.rows=9;lower.parentElement.classList.add('wide');}
   const description=field(card,'content-'+key+'-description','Inhalt der Box (HTML möglich)','textarea','Text für den Inhaltsbereich. Du kannst HTML-Absätze, Listen und Links verwenden.');description.maxLength=S.CONTENT_HTML_LIMIT;description.value=defaults.description;description.parentElement.classList.add('wide');description.rows=18;description.spellcheck=false;
   addContentLayoutButtons(description);
   const contentCounter=document.createElement('span');contentCounter.className='counter';contentCounter.dataset.contentCounter=key;description.parentElement.append(contentCounter);
@@ -186,6 +186,38 @@ function buildPageContent(page,key,defaults){
   bodyPreview.id='content-'+key+'-body-preview';
   card.append(Object.assign(document.createElement('strong'),{textContent:'Textvorschau'}),bodyPreview);
   page.append(card);
+}
+function buildSettlementTileCode(parent){
+ const card=document.createElement('section');card.className='form-card nic-tile-code-card';
+ const heading=document.createElement('h3');heading.textContent='Kachel-Buttons zum Kopieren';
+ const intro=document.createElement('p');intro.className='helper';intro.textContent='Die Vorschau entspricht dem hellen Kacheldesign der Website. Farben, Schrift und Eckenradius orientieren sich an den gemeinsamen Website-Einstellungen.';
+ const label=document.createElement('label');label.htmlFor='settlementTileCodeType';label.textContent='Kachel';
+ const select=document.createElement('select');select.id='settlementTileCodeType';select.innerHTML='<option value="settlement">Nebenkostenabrechnung</option><option value="weg">WEG-Abrechnung hochladen</option><option value="manual">Manuelle Erfassung</option>';
+ const layout=document.createElement('div');layout.className='nic-tile-code-layout';
+ const columns=field(layout,'settlementTileColumns','Desktop- und Tabletspalten','number','Mobil wird automatisch auf eine Spalte gewechselt.');columns.min=1;columns.max=4;columns.step=1;columns.value='2';
+ const gap=field(layout,'settlementTileGap','Mindestabstand zwischen Kacheln (px)','number','CSS Grid gap: gleicher Abstand waagerecht und senkrecht.');gap.min=0;gap.max=80;gap.step=1;gap.value='16';
+ const preview=document.createElement('div');preview.className='nic-tile-code-preview nic-copy-tile-grid';preview.setAttribute('aria-label','Vorschau mit zwei Kacheln');
+ const previewStyles=document.createElement('style');
+ const code=document.createElement('textarea');code.id='settlementTileCode';code.readOnly=true;code.rows=20;code.spellcheck=false;code.setAttribute('aria-label','Kopierbarer HTML- und CSS-Code');
+ const copy=document.createElement('button');copy.type='button';copy.className='button primary';copy.textContent='Kachel-Code kopieren';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code.value);}catch(_){code.focus();code.select();document.execCommand('copy');}copy.textContent='Kopiert';setTimeout(()=>copy.textContent='Kachel-Code kopieren',1400);});
+ const help=document.createElement('p');help.className='helper';help.textContent='Für mehrere nebeneinander stehende Kacheln: Verwende im Inhalt einmal <div class="nic-copy-tile-grid"> … </div> als gemeinsamen Rahmen und setze die einzelnen <a class="nic-copy-tile">…</a>-Kacheln hinein. Spaltenzahl und Mindestabstand stellst du oben ein.';
+ card.append(heading,intro,label,select,layout,preview,previewStyles,code,copy,help);parent.append(card);
+ const tiles={
+  settlement:{title:'Nebenkostenabrechnung',description:'Betriebskosten erfassen und versenden',href:'/nebenkostenabrechnung/',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M8 12h8M8 16h8"/>'},
+  weg:{title:'WEG-Abrechnung hochladen',description:'Fertige Jahresabrechnung automatisch einlesen',href:'/nebenkostenabrechnung/',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M12 19v-8m-3 3 3-3 3 3"/>'},
+  manual:{title:'Manuelle Erfassung',description:'Betriebskosten selbst eintragen',href:'/nebenkostenabrechnung/',icon:'<path d="M12 20h9"/><path d="m16 4 4 4-12 12-4 1 1-4L17 5a2.12 2.12 0 0 1 3 3"/>'}
+ };
+ function styles(cols,space){return '<style>\n.nic-copy-tile-grid{display:grid;grid-template-columns:repeat('+cols+',minmax(0,1fr));gap:'+space+'px;min-width:0}\n.nic-copy-tile{display:grid;grid-template-rows:auto auto auto;justify-items:center;align-content:center;align-items:center;min-width:0;min-height:128px;box-sizing:border-box;padding:16px;border:1px solid #dce8e2;border-radius:var(--nic-menu-radius,16px);background:linear-gradient(#fff,#faf7f1);color:#172e2b!important;font-family:var(--nic-body-font-family,system-ui,sans-serif);text-align:center;text-decoration:none!important;box-shadow:0 2px 4px #33230d12;transition:border-color .16s ease,transform .16s ease}\n.nic-copy-tile:hover{border-color:var(--nic-green-bg,#075c55);transform:translateY(-1px)}\n.nic-copy-tile:focus-visible{outline:3px solid var(--nic-green-bg,#075c55);outline-offset:3px}\n.nic-copy-tile svg{grid-row:1;width:28px;height:28px;margin:0 0 7px;fill:none;stroke:#075c55;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}\n.nic-copy-tile__title{grid-row:2;display:block;width:100%;font-size:var(--nic-body-font-size,16px);font-weight:700;line-height:1.3;color:#172e2b!important}\n.nic-copy-tile__description{grid-row:3;display:block;width:100%;margin-top:8px;font-size:var(--nic-subtext-font-size,14px);font-weight:400;line-height:1.45;color:#425b62!important}\n@media(max-width:700px){.nic-copy-tile-grid{grid-template-columns:minmax(0,1fr)}.nic-copy-tile{min-height:116px}}\n</style>';}
+ function markup(item){return '<a class="nic-copy-tile" href="'+item.href+'" aria-label="'+item.title+': '+item.description+'">\n  <svg viewBox="0 0 24 24" aria-hidden="true">'+item.icon+'</svg>\n  <strong class="nic-copy-tile__title">'+item.title+'</strong>\n  <small class="nic-copy-tile__description">'+item.description+'</small>\n</a>';}
+ function render(){
+  const item=tiles[select.value],cols=Math.max(1,Math.min(4,Number(columns.value)||2)),space=Math.max(0,Math.min(80,Number(gap.value)||0));
+  columns.value=String(cols);gap.value=String(space);
+  const css=styles(cols,space);
+  previewStyles.textContent=css.replace(/^<style>\n|\n<\/style>$/g,'');
+  code.value=css+'\n\n<div class="nic-copy-tile-grid">\n'+markup(item)+'\n</div>';
+  preview.style.gridTemplateColumns='repeat('+Math.min(2,cols)+',minmax(0,1fr))';preview.style.gap=space+'px';preview.innerHTML=markup(item)+markup(tiles[select.value==='manual'?'weg':'manual']);
+ }
+ select.addEventListener('change',render);columns.addEventListener('input',render);gap.addEventListener('input',render);render();
 }
 function buildWebsiteFields(page){
  const grid=document.createElement('fieldset');
@@ -274,7 +306,7 @@ function collect(){
  raw.navigationVisibility={};for(const section of S.navigationSections){raw.navigationVisibility[section]={};for(const screen of ['mobile','desktop']){raw.navigationVisibility[section][screen]={};for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)raw.navigationVisibility[section][screen][key]=$('nic-navigation-'+section+'-'+screen+'-'+key).checked;}}
  S.companyFields.forEach(([k])=>raw.company[k]=$('company-'+k).value);Object.keys(S.layoutDefaults).forEach(k=>raw.layout[k]=$('layout-'+k).value);S.portals.forEach(([k])=>raw.social[k]=$('social-'+k).value);
  S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>raw.meta[k]={...(raw.meta[k]||{}),title:$('meta-'+k+'-title').value,description:$('meta-'+k+'-description').value,googleTag:k==='website'?$('meta-website-googleTag').value:(raw.meta[k]?.googleTag||'')});
- Object.keys(S.contentPageDefaults).forEach(k=>raw.content[k]={...(raw.content[k]||{}),headerTitle:$('content-'+k+'-headerTitle').value,headerDescription:$('content-'+k+'-headerDescription').value,title:$('content-'+k+'-title').value,description:$('content-'+k+'-description').value,...(k==='settlement'?{boxTitle:$('content-'+k+'-boxTitle').value,lowerDescription:$('content-'+k+'-lowerDescription').value}:{})});
+ Object.keys(S.contentPageDefaults).forEach(k=>raw.content[k]={...(raw.content[k]||{}),headerTitle:$('content-'+k+'-headerTitle').value,headerDescription:$('content-'+k+'-headerDescription').value,title:$('content-'+k+'-title').value,description:$('content-'+k+'-description').value,...(k==='settlement'?{boxTitle:$('content-'+k+'-boxTitle').value}:{})});
  for(const key of Object.keys(S.contentPageDefaults)){
   if(key==='welcome')continue;
   for(const [setting,legacy] of [['seoTitle','title'],['metaDescription','description']]){
@@ -294,7 +326,7 @@ function collect(){
  raw.meta.immobilienABC=window.NICABCAdmin.serialize();
  return S.normalize(raw);
 }
-function fill(s){mediaLibrary={...(s.mediaLibrary||{})};renderMediaLibrary();for(const section of S.navigationSections)for(const screen of ['mobile','desktop'])for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)$('nic-navigation-'+section+'-'+screen+'-'+key).checked=s.navigationVisibility[section][screen][key];for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle','lowerDescription']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
+function fill(s){mediaLibrary={...(s.mediaLibrary||{})};renderMediaLibrary();for(const section of S.navigationSections)for(const screen of ['mobile','desktop'])for(const key of section.startsWith('dropdown')?['dropdown']:S.navigationItems)$('nic-navigation-'+section+'-'+screen+'-'+key).checked=s.navigationVisibility[section][screen][key];for(const key of Object.keys(S.seoRouteDefaults)){const index=$('seo-index-'+key);if(index)index.checked=!s.seoIndexing[key];}for(const key of ['registrationBlocked','loginBlocked','calculators','pdfDownload','pdfShare'])$('access-'+key).checked=s.access[key];for(const item of contentSectionCatalog){const rule=s.contentSections[item.key]||{};$('content-visible-'+item.key).checked=rule.visible!==false;$('content-guest-'+item.key).checked=rule.guestAllowed===false;}legalStored={...s.legal};fillLegal(s);Object.keys(S.imageAltDefaults).forEach(k=>$('alt-'+k).value=s.imageAlts[k]);S.companyFields.forEach(([k])=>$('company-'+k).value=s.company[k]||'');Object.keys(S.layoutDefaults).forEach(k=>{ $('layout-'+k).value=s.layout[k];if($('color-'+k))$('color-'+k).value=s.layout[k];});S.portals.forEach(([k])=>$('social-'+k).value=s.social[k]||'');S.pages.filter(([k])=>!calculatorPages.includes(k)).forEach(([k])=>{['title','description'].forEach(p=>$('meta-'+k+'-'+p).value=s.meta[k][p]||'');});Object.keys(S.contentPageDefaults).forEach(k=>{for(const p of ['headerTitle','headerDescription','title','description',...(k==='settlement'?['boxTitle']:[])])$('content-'+k+'-'+p).value=s.content[k][p]||'';for(const p of ['headerTitle','headerDescription']){const input=$('content-'+k+'-'+p);$('content-'+k+'-'+p+'-count').textContent=input.value.length+' / '+input.maxLength+' Zeichen';}});for(const key of Object.keys(S.contentPageDefaults)){
  if(key==='welcome')continue;
  for(const [setting,legacy] of [['seoTitle','title'],['metaDescription','description']]){
   const input=$('content-'+key+'-'+setting);

@@ -180,12 +180,8 @@ for key,path in content_routes.items():
     body=ContentSanitizer().fragment(content.get('description',''))
     standard_header=True
     if key=='settlement':
-        lower=ContentSanitizer().fragment(content.get('lowerDescription','') or '<h3>So funktioniert die Mieterabrechnung</h3><p>Starte mit einer WEG-Abrechnung oder erfasse die Betriebskosten selbst.</p>')
-        article=('<article class="nic-content-card nic-settlement-start">'
-                 '<div class="nic-settlement-actions" aria-label="Erfassungsart auswählen">'
-                 '<button type="button" class="nic-settlement-action" data-nic-settlement-action="upload">WEG-Abrechnung hochladen</button>'
-                 '<button type="button" class="nic-settlement-action" data-nic-settlement-action="manual">Manuelle Erfassung</button>'
-                 '</div><div class="nic-settlement-lower">'+lower+'</div></article>')
+        heading=html.escape(str(content.get('boxTitle') or title))
+        article='<article id="nicContentView" class="nic-content-card"><h2>'+heading+'</h2><div>'+body+'</div></article>'
     else:
         article='<article class="nic-content-card">'+('' if standard_header else '<h1>'+title+'</h1>')+'<div>'+body+'</div></article>'
     def replace_existing_content_container(match):
