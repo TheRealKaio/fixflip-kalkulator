@@ -431,11 +431,20 @@ function nic_run(): void {
         if(!is_int($revision)||$revision<1)nic_fail('Versionsnummer fehlt.');
         nic_media_table($db);
         $db->beginTransaction();
+        $previousPayload = nic_query($db, 'SELECT payload FROM nic_settings WHERE id=1 AND revision=? FOR UPDATE', [$revision])->fetchColumn();
+        if ($previousPayload === false) {
+            $db->rollBack();
+            nic_fail('Die Einstellungen wurden inzwischen geändert. Bitte neu laden.', 409);
+        }
+        $previousSettings = json_decode($previousPayload, true, 512, JSON_THROW_ON_ERROR);
         $changed=nic_query($db,'UPDATE nic_settings SET payload=?,revision=revision+1,updated_by=?,updated_at=? WHERE id=1 AND revision=?',[json_encode($s,JSON_THROW_ON_ERROR),$admin['id'],nic_now(),$revision]);
         if(!$changed->rowCount()){$db->rollBack();nic_fail('Die Einstellungen wurden inzwischen geändert. Bitte neu laden.',409);}
-        $mediaIds=array_keys($s['mediaLibrary']);
-        if(!$mediaIds)nic_query($db,'DELETE FROM nic_media',[]);
-        else{$marks=implode(',',array_fill(0,count($mediaIds),'?'));nic_query($db,'DELETE FROM nic_media WHERE id NOT IN ('.$marks.')',$mediaIds);}
+        // Remove only previously published IDs explicitly omitted from this revision.
+        $removedIds = array_keys(array_diff_key($previousSettings['mediaLibrary'] ?? [], $s['mediaLibrary']));
+        if ($removedIds) {
+            $marks = implode(',', array_fill(0, count($removedIds), '?'));
+            nic_query($db, 'DELETE FROM nic_media WHERE id IN (' . $marks . ')', $removedIds);
+        }
         nic_audit($db,$admin['id'],'settings');$db->commit();nic_reply(['ok'=>true,'revision'=>$revision+1,'settings'=>$s]);
     }
     if ($route==='users' && $method==='GET') {
