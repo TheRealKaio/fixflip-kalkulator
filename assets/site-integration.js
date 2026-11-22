@@ -17,7 +17,75 @@ function syncAboutContent(s){
  container.replaceChildren(S.contentFragment(description,s));
  renderedAboutDescription=description;
 }
-function apply(){if(!S.current)return;S.apply(S.current,activePage);syncAboutContent(S.current);syncCalculatorMenu();window.NICShell?.refresh(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
+
+const settlementStyle=`
+html[data-nic-page="settlement"] .nic-settlement-intro{min-width:0}
+html[data-nic-page="settlement"] .nic-settlement-intro>p:first-child{margin-top:0}
+html[data-nic-page="settlement"] .nic-settlement-more summary{cursor:pointer;color:var(--nic-green-bg,#075c55);font-weight:700;margin:10px 0}
+html[data-nic-page="settlement"] .nic-settlement-more summary:focus-visible,html[data-nic-page="settlement"] .nic-settlement-entry:focus-visible{outline:3px solid #b98b17;outline-offset:3px}
+html[data-nic-page="settlement"] .nic-settlement-entry-title{text-align:center;margin:28px 0 15px;font-size:var(--nic-body-font-size,18px)}
+html[data-nic-page="settlement"] .nic-settlement-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+html[data-nic-page="settlement"] .nic-settlement-entry{display:flex;align-items:center;gap:14px;min-width:0;min-height:104px;padding:18px;cursor:pointer;text-align:left;box-sizing:border-box;border:1px solid #dce7e4;border-radius:var(--nic-menu-radius,16px);background:#fff;color:var(--ink,#172033);font-family:inherit;box-shadow:0 3px 10px rgba(15,23,42,.05)}
+html[data-nic-page="settlement"] .nic-settlement-entry:hover{border-color:var(--nic-green-bg,#075c55);background:#f4faf7}
+html[data-nic-page="settlement"] .nic-settlement-entry svg{width:32px;height:32px;flex:none;color:var(--nic-green-bg,#075c55);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+html[data-nic-page="settlement"] .nic-settlement-entry span{min-width:0}
+html[data-nic-page="settlement"] .nic-settlement-entry strong{display:block;font-size:var(--nic-body-font-size,18px);line-height:1.3;overflow-wrap:anywhere}
+html[data-nic-page="settlement"] .nic-settlement-entry small{display:block;margin-top:6px;font-size:var(--nic-subtext-font-size,14px);font-weight:400;line-height:1.45;color:#52636b}
+html[data-nic-page="settlement"] .nic-settlement-steps{text-align:center;color:#52636b;font-size:var(--nic-subtext-font-size,14px)}
+html[data-nic-page="settlement"] .nic-settlement-lower{margin-top:28px;padding-top:15px;border-top:1px solid #e2e9e5}
+html[data-nic-page="settlement"] .nic-settlement-dialog{max-width:min(430px,calc(100% - 32px));border:1px solid #dce7e4;border-radius:16px;padding:28px;color:var(--ink,#172033);box-shadow:0 16px 60px #0003}
+html[data-nic-page="settlement"] .nic-settlement-dialog::backdrop{background:#14252b99}
+html[data-nic-page="settlement"] .nic-settlement-dialog h2{margin:0 0 12px}
+html[data-nic-page="settlement"] .nic-settlement-dialog button{margin-top:14px;padding:11px 20px;border:0;border-radius:12px;background:var(--nic-green-bg,#075c55);color:#fff;cursor:pointer}
+@media(max-width:640px){html[data-nic-page="settlement"] .nic-settlement-actions{grid-template-columns:1fr}html[data-nic-page="settlement"] .nic-settlement-entry{min-height:94px}}
+`;
+function syncSettlementContent(s){
+ if(document.documentElement.dataset.nicPage!=='settlement')return;
+ const container=document.querySelector('main.nic-content-main > article.nic-content-card > div');
+ if(!container)return;
+ const data=s.content?.settlement||{};
+ const signature=JSON.stringify([data.description,data.lowerDescription]);
+ if(container.dataset.nicSettlementSignature===signature)return;
+ if(!document.getElementById('nic-settlement-styles')){const sheet=document.createElement('style');sheet.id='nic-settlement-styles';sheet.textContent=settlementStyle;document.head.append(sheet);}
+ const fragment=S.contentFragment(String(data.description||''),s);
+ const nodes=Array.from(fragment.childNodes);
+ const intro=document.createElement('section');intro.className='nic-settlement-intro';
+ const first=nodes.find(node=>node.nodeType===1&&node.tagName==='P');
+ if(first){
+   while(nodes.length){const node=nodes.shift();intro.append(node);if(node===first)break;}
+   if(nodes.length){
+     const details=document.createElement('details');details.className='nic-settlement-more';
+     const summary=document.createElement('summary');summary.textContent='Weiterlesen';
+     details.append(summary,...nodes);intro.append(details);
+   }
+ }else intro.append(fragment);
+ const heading=document.createElement('h2');heading.className='nic-settlement-entry-title';heading.textContent='Wie möchtest du starten?';
+ const actions=document.createElement('div');actions.className='nic-settlement-actions';
+ const options=[
+  {key:'weg',title:'WEG-Abrechnung hochladen',subtitle:'Fertige Jahresabrechnung automatisch einlesen',icon:'<path d="M6 2h9l4 4v16H5V2Z"/><path d="M14 2v5h5M12 19v-8m-3 3 3-3 3 3"/>'},
+  {key:'manual',title:'Manuelle Erfassung',subtitle:'Betriebskosten selbst eintragen',icon:'<path d="M12 20h9"/><path d="m16 4 4 4-12 12-4 1 1-4L17 5a2.12 2.12 0 0 1 3 3"/>'}
+ ];
+ const dialog=document.createElement('dialog');dialog.className='nic-settlement-dialog';
+ const dialogTitle=document.createElement('h2');dialogTitle.textContent='Demnächst verfügbar';
+ const message=document.createElement('p');
+ const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.addEventListener('click',()=>dialog.close());
+ dialog.append(dialogTitle,message,close);dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+ for(const opt of options){
+   const b=document.createElement('button');b.type='button';b.className='nic-settlement-entry';b.dataset.settlementEntry=opt.key;
+   b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+opt.icon+'</svg>';
+   const text=document.createElement('span'),title=document.createElement('strong'),sub=document.createElement('small');
+   title.textContent=opt.title;sub.textContent=opt.subtitle;text.append(title,sub);b.append(text);
+   b.addEventListener('click',()=>{message.textContent=opt.key==='weg'?'Der automatische WEG-Import befindet sich derzeit in Entwicklung.':'Die manuelle Kostenerfassung befindet sich derzeit in Entwicklung.';dialog.showModal();});
+   actions.append(b);
+ }
+ const note=document.createElement('p');note.className='nic-settlement-steps';note.textContent='In vier einfachen Schritten zur Mieterabrechnung';
+ const lower=document.createElement('section');lower.className='nic-settlement-lower';
+ lower.append(S.contentFragment(String(data.lowerDescription||S.contentPageDefaults.settlement.lowerDescription||''),s));
+ container.replaceChildren(intro,heading,actions,note,lower,dialog);
+ container.dataset.nicSettlementSignature=signature;
+}
+
+function apply(){if(!S.current)return;S.apply(S.current,activePage);syncAboutContent(S.current);syncSettlementContent(S.current);syncCalculatorMenu();window.NICShell?.refresh(S.current);company(S.current);if(adminOpen)document.title=(location.hash==='#account'?'Deine Nutzerdaten':'Admin-Bereich')+' | Neustart ImmoCheck';window.NICLegal?.refresh();}
 // A single route-based selection for every navigation card, including financing.
 function syncCalculatorMenu(){
  S.syncCalculatorMenu(activePage);
