@@ -49,7 +49,20 @@ function showContent(key,refresh=false){
  document.body.classList.remove('nic-home-active','nic-finance-active');
  document.body.classList.add('nic-content-active','nic-standard-header-page');
  let panel=document.getElementById('nicContentView');
- if(key==='settlement'){panel?.remove();active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();return;}
+ if(key==='settlement'){
+   if(!panel){panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card nic-settlement-start';const explanation=main.querySelector(':scope > .nic-explanation-card');if(explanation)explanation.after(panel);else main.prepend(panel);}
+   const settings=window.NICSettings.current,c=settings.content.settlement;
+   const signature=JSON.stringify([c.lowerDescription,settings.company]);
+   if(panel.dataset.signature!==signature){
+    panel.classList.add('nic-settlement-start');
+    const actions=document.createElement('div');actions.className='nic-settlement-actions';actions.setAttribute('aria-label','Erfassungsart auswählen');
+    for(const [action,label] of [['upload','WEG-Abrechnung hochladen'],['manual','Manuelle Erfassung']]){const button=document.createElement('button');button.type='button';button.className='nic-settlement-action';button.dataset.nicSettlementAction=action;button.textContent=label;actions.append(button);}
+    const lower=document.createElement('div');lower.className='nic-settlement-lower';
+    lower.append(window.NICSettings.contentFragment(c.lowerDescription||'<h3>So funktioniert die Mieterabrechnung</h3><p>Wähle die gewünschte Erfassung und ergänze fehlende Daten.</p>',settings));
+    panel.replaceChildren(actions,lower);panel.dataset.signature=signature;
+   }
+   active=key;document.documentElement.dataset.calculator=key;document.body.dataset.calculator=key;if(!refresh)setPage(key);applyHeader(key);window.NICHeader?.refresh();return;
+  }
  if(!panel){
   panel=document.createElement('article');panel.id='nicContentView';panel.className='nic-content-card';
   const explanation=main.querySelector(':scope > .nic-explanation-card');
@@ -116,6 +129,8 @@ function select(key,push=false){
  window.scrollTo({top:y,left:0,behavior:'instant'});
 }
 document.addEventListener('click',event=>{
+ const starter=event.target.closest('[data-nic-settlement-action]');
+ if(starter){event.preventDefault();window.alert(starter.dataset.nicSettlementAction==='upload'?'Der WEG-Import wird noch entwickelt.':'Die manuelle Kostenerfassung wird noch entwickelt.');return;}
  if(bypass||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  const link=event.target.closest('a[href]');
  if(link&&document.querySelector('.deal-type-card')){
