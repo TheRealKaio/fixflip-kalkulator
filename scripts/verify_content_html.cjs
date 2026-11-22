@@ -44,6 +44,24 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await editor.inputValue(),source,'Paste keeps full long HTML');
    await editor.evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
    const why=page.locator('[data-admin-page="why"]');
+   const tools=why.locator('.content-layout-tools');
+   assert.equal(await tools.locator('.content-column-row').count(),1,'Column insertion has its own row');
+   assert.equal(await tools.locator('.content-media-row').count(),1,'Media insertion has its own row');
+   const titleInput=tools.locator('.content-column-row > .admin-field input');
+   const mediaSelect=tools.locator('.content-media-row > select');
+   const columnButton=tools.getByRole('button',{name:'2 Spalten',exact:true});
+   const mediaButton=tools.getByRole('button',{name:'Medium einfügen',exact:true});
+   const dims=await Promise.all([titleInput.evaluate(el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,bottom:r.bottom};}),mediaSelect.evaluate(el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,bottom:r.bottom};}),columnButton.evaluate(el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y};}),mediaButton.evaluate(el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y};})]);
+   if(width>=640){
+    const rowWidth=await tools.locator('.content-column-row').evaluate(el=>el.getBoundingClientRect().width);
+    assert(Math.abs(dims[0].width-dims[1].width)<=1,'Title input and media selector have equal widths');
+    assert(Math.abs(dims[0].width/rowWidth-.5)<.03,'Each tool input takes half of the available row');
+    assert(dims[2].x>dims[0].x,'Column buttons follow the title input');
+    assert(dims[3].x>dims[1].x,'Media insert button follows the selector');
+   }else{
+    assert(dims[2].y>=dims[0].bottom,'Column buttons wrap below their input at mobile width');
+    assert(dims[3].y>=dims[1].bottom,'Media insert button wraps below its selector at mobile width');
+   }
    await why.getByLabel('Abschnittstitel (optional)').fill('Ein Titel <mit Zeichen>');
    await why.getByRole('button',{name:'2 Spalten',exact:true}).click();
    await editor.evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
