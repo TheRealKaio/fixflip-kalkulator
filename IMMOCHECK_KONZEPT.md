@@ -99,3 +99,27 @@ Anforderungen ausdrücklich in drei Domänen trennen:
 Jede neue verbindliche Vereinbarung versioniert in dieser Datei oder verlinkten Spezifikationen festhalten. Konflikte mit bisherigen Beschlüssen sichtbar dokumentieren und erst nach Entscheidung ändern.
 
 **Offene technische/rechtliche Prüfungen:** konkrete WEG-Dokumentlayouts, notwendige Eingabefelder für zulässige Heizkostenfälle, mietvertragliche Schlüssel/Abweichungen, jährliche Nutzer- und Geräteprozesse, sichere OCR-Betriebsumgebung und DSGVO-Prüfung. Diese sind **nicht** stillschweigend als entschieden oder implementiert zu behandeln.
+
+## 10. Startseite und Schrittführung (Ergänzung 22.11.2026)
+
+**Startseite (vor Prozessbeginn):**
+- Die bestehende Seite „Mieterabrechnung starten“ in ImmoCheck als Ausgangspunkt verwenden; vorhandenen oberen Einleitungstext beibehalten.
+- In der Mitte **genau zwei primäre Schaltflächen**: „WEG-Abrechnung hochladen“ und „Manuelle Erfassung“. Keine weiteren primären Startaktionen.
+- Unter den Schaltflächen einen zusätzlichen, über den Adminbereich pflegbaren Informationstext vorsehen.
+- Einen knappen Hinweis „In vier einfachen Schritten zur Abrechnung“ auf der Startseite erlauben; konkreten Fortschrittsbalken erst **nach Auswahl** des Weges zeigen.
+- Der Fortschritt sollte auf Desktop und mobil gut erkennbar sein und vier benannte Schritte zeigen.
+
+**WEG-Import – präzisierte UX-Reihenfolge, ohne mehr als vier Schritte:**
+1. WEG-Abrechnung hochladen; Erkennung von Objekt, Wohnung, Eigentümer, Kosten und WEG-Schlüsseln.
+2. Erkannte **Eigentümer-/Vermieterdaten und Wohnungs-/Objektdaten** anzeigen und zur Kontrolle anbieten; Eigentümer als Vermieter vorschlagen, nach Bestätigung übernehmen; IBAN ergänzen; fehlende Mieterdaten/Mietvertrag ergänzen. Unterabschnitte innerhalb **eines** Hauptschritts, kein Aufblähen der Schrittzahl.
+3. Erkannte Kostenpositionen, Zuordnungen, Verteilungsschlüssel und rechtliche Prüfhinweise kontrollieren; nötige Nachträge.
+4. Endkontrolle, Anlagen (z. B. Heizkosten-PDF), Freigabe und Ausgabe.
+- Ob Eigentümer-/Vermieterdaten vor Objektdetails geprüft werden, ist eine **UX-Detailfrage**; beide Prüfungen bleiben im Datenergänzungs-/Prüfschritt, sodass der Ablauf kurz bleibt.
+
+**Platzierung von Verteilungsschlüsseln:**
+- Unter Gebäude-/Wohnungs-Stammdaten: Gesamt- und Wohnungsfläche, Gesamt- und individuelle Miteigentumsanteile sowie vorhandene **Standard-/Defaultschlüssel** und erforderliche Bezugsgrößen.
+- Der tatsächliche, **kostenartbezogene WEG-Schlüssel** gehört zusätzlich an die jeweilige erkannte Kostenposition; der **mietrechtlich anzuwendende Schlüssel** wird separat je Kostenart/Mietverhältnis gespeichert bzw. abgeleitet und geprüft.
+- Der Import matched Begriffsvarianten auf den zentralen normierten Schlüsselkatalog; nicht automatisch ein einziger Objektschlüssel für sämtliche Kosten.
+- Sichtbar einfach halten: Standardwerte vorausfüllen, nur Abweichungen und unklare Zuordnungen zur Eingabe öffnen.
+
+Diese Ergänzung dokumentiert die Startseiten- und Ablaufabsprache als Konzept; sie behauptet keine bereits erfolgte Umsetzung im Code.
