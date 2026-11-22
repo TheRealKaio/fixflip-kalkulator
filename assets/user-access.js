@@ -11,13 +11,15 @@ async function api(route,body,query=''){
  return data;
 }
 async function uploadMedia(file,id){
+ if(!await init())throw Error('Medienuploads sind in dieser Vorschau deaktiviert. Die Datei wurde nicht übertragen.');
  if(!await requireAdmin())throw Error('Admin-Anmeldung erforderlich.');
  if(!(file instanceof File)||file.size>5*1024*1024)throw Error('Dateien dürfen höchstens 5 MB groß sein.');
  const url=new URL(config.apiUrl);url.searchParams.set('r','media-upload');
  const form=new FormData();form.append('file',file,file.name);form.append('id',id||crypto.randomUUID());
  const response=await fetch(url,{method:'POST',credentials:'include',headers:{'X-NIC-Request':'1','X-NIC-CSRF':csrf},body:form,cache:'no-store',signal:AbortSignal.timeout(60000)});
  let data;try{data=await response.json();}catch(_){throw Error('Die Schnittstelle liefert keine gültige Antwort.');}
- if(!response.ok)throw Error(data.error||'Upload fehlgeschlagen.');
+ if(!response.ok){const detail=data.error||'Upload fehlgeschlagen.';if([404,405].includes(response.status)||(/(unbekannte|nicht unterstützte|not found).*(route|funktion|endpoint)/i.test(detail)))throw Error('Der STRATO-Server unterstützt den Medienupload noch nicht. Die Upload-API und Medienspeicherung müssen zuerst bereitgestellt werden.');throw Error(detail);}
+ if(!data.media?.id)throw Error('Der Server hat den Upload nicht als gespeichert bestätigt.');
  return data.media;
 }
 function init(){
