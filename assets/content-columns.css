@@ -18,3 +18,15 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
  }
 }
+
+.nic-content-section {
+ min-width: 0;
+ max-width: 100%;
+ overflow-wrap: anywhere;
+}
+.nic-content-columns img {
+ display: block;
+ max-width: 100%;
+ height: auto;
+ object-fit: contain;
+}
