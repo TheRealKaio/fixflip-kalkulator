@@ -152,3 +152,14 @@ Diese Ergänzung dokumentiert die Startseiten- und Ablaufabsprache als Konzept; 
 - Historische Datensätze unverändert nachvollziehbar halten; keine Überschreibung alter Mieter beim Wechsel.
 
 **Beispiel (nicht als starres Monatsraster programmieren):** Mieter A 01.01.–31.03.; Leerstand 01.04.–30.04.; Mieter B 01.05.–30.09.; Mieter C 01.10.–31.12.2026. ImmoCheck zeigt vier nicht überlappende Perioden und getrennte Kostenanteile.
+
+## 13. Startseite Mieterabrechnung – bestehende Content-Darstellung beibehalten (22.11.2026)
+
+**Verbindliche Präzisierung zur UX:**
+- Nur die bestehende Startseite **„Mieterabrechnung starten“** ist betroffen; nicht die globale Startseite der Kalkulatoren.
+- Die vorhandene Content-Seitenlogik (Admin-Editor, Darstellungs-/Weiterlesen-Verhalten) **beibehalten**, nicht durch eine neue freie Zeilen-/Codeverwaltung ersetzen.
+- **Oberer Bereich:** bestehender Admin-Text; ab dem zweiten Absatz wird wie auf den vorhandenen Seiten zunächst gekürzt, mit **„Weiterlesen“** zum Aufklappen des vollständigen Textes. Die genaue technische Implementierung der vorhandenen Logik vor Codeänderungen prüfen und wiederverwenden.
+- **Mittlerer Bereich:** fest implementierte zwei Aktionsbuttons „WEG-Abrechnung hochladen“ und „Manuelle Erfassung“; keine HTML-/Codepflicht für den Administrator.
+- **Unterer Bereich:** neues optionales Admin-Textfeld mit bestehender Content-Formatierung; erscheint **unter den Buttons im normalen Seitenfluss bis oberhalb des Footers**. Nicht künstlich auf eine fixe Höhe beschneiden; kurzer Inhalt muss nicht durch leeren Platz bis zum Footer gestreckt werden. Leeres Feld = Bereich ausblenden.
+- Responsives Layout, unveränderte Footer-Integration; keine Überlagerungen des Footers oder vorhandener Steuerelemente.
+- Diese Notiz dokumentiert eine **Anforderung**, keine bereits implementierte Änderung.
