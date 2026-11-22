@@ -209,7 +209,7 @@ function initResponsiveCalculatorMenu(){
  if(row&&!row.querySelector('[data-calculator="settlement"]')&&
     (navigationAllowed('settlement','mobile','calculator')||navigationAllowed('settlement','desktop','calculator'))){
   const tile=document.createElement('a');tile.className='deal-type-option';
-  tile.dataset.calculator='settlement';tile.dataset.href='/nebenkostenabrechnung/';tile.href='/nebenkostenabrechnung/';
+  tile.dataset.calculator='settlement';tile.dataset.href=contentRoutes.settlement;tile.href=routeHref(contentRoutes.settlement);
   tile.innerHTML='<svg class="nic-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span><strong>Nebenkosten abrechnen</strong><small>Betriebskosten erfassen und abrechnen</small></span>';
   row.append(tile);
  }
@@ -234,7 +234,7 @@ function initResponsiveCalculatorMenu(){
   seenTiles.add(key);
   tile.dataset.calculator=key;
   tile.dataset.href=canonicalTileRoutes[key];
-  if(tile.tagName==='A')tile.setAttribute('href',canonicalTileRoutes[key]);
+  if(tile.tagName==='A')tile.setAttribute('href',routeHref(canonicalTileRoutes[key]));
  }
  // Only the six-button calculator bar gets short, deliberately two-line titles.
  // Homepage tiles and the shared dropdown retain their original labels and subtexts.
@@ -475,7 +475,10 @@ function initWelcome(){
  if(settlement){
   settlement.querySelector('strong').textContent=calculatorTitle('settlement');
   settlement.querySelector('small').textContent=home.settlementButtonText;
-  if(home.settlementButtonUrl){settlement.href=routeHref(home.settlementButtonUrl);settlement.removeAttribute('aria-disabled');}else{settlement.removeAttribute('href');settlement.setAttribute('aria-disabled','true');}
+  // This is an internal application route, not an externally configurable destination.
+  // Always use the canonical route so a stale admin URL cannot send users to 404.
+  settlement.href=routeHref(contentRoutes.settlement);
+  settlement.removeAttribute('aria-disabled');
  }
  const content=window.NICSettings.current.content.welcome;
  const signature=JSON.stringify([content.title,content.description,settings.company]);
