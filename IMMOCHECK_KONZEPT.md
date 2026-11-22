@@ -160,6 +160,34 @@ Diese Ergänzung dokumentiert die Startseiten- und Ablaufabsprache als Konzept; 
 - Die vorhandene Content-Seitenlogik (Admin-Editor, Darstellungs-/Weiterlesen-Verhalten) **beibehalten**, nicht durch eine neue freie Zeilen-/Codeverwaltung ersetzen.
 - **Oberer Bereich:** bestehender Admin-Text; ab dem zweiten Absatz wird wie auf den vorhandenen Seiten zunächst gekürzt, mit **„Weiterlesen“** zum Aufklappen des vollständigen Textes. Die genaue technische Implementierung der vorhandenen Logik vor Codeänderungen prüfen und wiederverwenden.
 - **Mittlerer Bereich:** fest implementierte zwei Aktionsbuttons „WEG-Abrechnung hochladen“ und „Manuelle Erfassung“; keine HTML-/Codepflicht für den Administrator.
-- **Unterer Bereich:** neues optionales Admin-Textfeld mit bestehender Content-Formatierung; erscheint **unter den Buttons im normalen Seitenfluss bis oberhalb des Footers**. Nicht künstlich auf eine fixe Höhe beschneiden; kurzer Inhalt muss nicht durch leeren Platz bis zum Footer gestreckt werden. Leeres Feld = Bereich ausblenden.
+- **Unterer Bereich:** neues Admin-Textfeld mit bestehender Content-Formatierung und einem sinnvollen, pflegbaren **Standard-Informationstext** über Ablauf, benötigte Unterlagen und Funktionen. Der Bereich erscheint **unter den Buttons im normalen Seitenfluss bis oberhalb des Footers**. Kein künstlicher Leerraum, keine fixe Höhe; der Administrator kann den Inhalt bearbeiten. Der Bereich soll auf der Startseite nicht versehentlich komplett fehlen (neue ausdrückliche Entscheidung).
 - Responsives Layout, unveränderte Footer-Integration; keine Überlagerungen des Footers oder vorhandener Steuerelemente.
 - Diese Notiz dokumentiert eine **Anforderung**, keine bereits implementierte Änderung.
+
+## 14. Zwei Einstiegsbuttons – Aktionen jetzt und Zielabläufe später (22.11.2026)
+
+Die Startseite unter der bestehenden Route `/nebenkostenabrechnung/` hat in ihrer Mitte **genau zwei visuell an die bestehenden Auswahlkacheln angelehnte Buttons** mit Icon, Titel und kurzem Untertext. Kein dritter primärer Button.
+
+### Button A: „WEG-Abrechnung hochladen“
+- Icon: Datei/Upload; Untertext: „Fertige Jahresabrechnung einlesen und Daten automatisch übernehmen“.
+- **Jetzt (Startseiten-MVP):** Klick öffnet einen barrierearmen, wieder schließbaren Hinweis „Demnächst verfügbar – der automatische WEG-Import befindet sich in Entwicklung.“ Kein Upload-Dialog, kein vorgetäuschter Import und keine leere oder defekte Zielseite.
+- **Später (Modul angedockt):** expliziter Einstieg `/nebenkostenabrechnung/weg-import/` oder semantisch gleichwertige interne Anwendungsroute (an vorhandenen gemeinsamen Routencontroller anbinden); vier Hauptschritte:
+  1. WEG-Dokument als PDF/Foto hochladen; OCR liest Daten und Quelldetails.
+  2. Erkannte Vermieter-/Eigentümer-, Gebäude-/Wohnungs- und Mieterdaten prüfen und ergänzen (IBAN, mehrere Mieter/Leerstand).
+  3. Kosten, Original-/Standardschlüssel, Umlagefähigkeit, Heizung und Ergebnis prüfen.
+  4. Endkontrolle, externe Heizkosten-PDF-Anlagen, Freigabe, PDF-Ausgabe/Versandvorbereitung.
+
+### Button B: „Manuelle Erfassung“
+- Icon: Stift/Formular; Untertext: „Betriebskosten selbst eintragen – Belege optional erfassen“.
+- **Jetzt (Startseiten-MVP):** Klick zeigt denselben Status-Hinweis, spezifisch „Demnächst verfügbar – die manuelle Kostenerfassung befindet sich in Entwicklung.“ Kein Scheinformular.
+- **Später:** Einstieg `/nebenkostenabrechnung/manuell/` oder semantisch gleichwertige interne Anwendungsroute; vier Hauptschritte:
+  1. Objekt, Wohnung und Abrechnungszeitraum auswählen/neu anlegen.
+  2. Vermieter- und Mieterdaten prüfen und ergänzen; Mieterwechsel und Leerstand.
+  3. Bereits selbst sortierte/summierte Kosten **direkt in feste Kostenartenfelder** eintragen; bei Bedarf optional Einzelbelege per OCR in denselben Kostenbereich übernehmen; Verteilung prüfen.
+  4. Endkontrolle, externe Heizkosten-PDF-Anlagen, Freigabe und PDF-Ausgabe/Versandvorbereitung.
+
+### Gemeinsame technische Integrationsregel
+- Die zwei Einstiegsbuttons bleiben an derselben Stelle; später wird **nur ihre Aktion/Route umgestellt**, nicht die gesamte Startseite ersetzt.
+- Kein Duplikat der Erkennungs-/Kosten-/Abrechnungslogik: beide Wege verwenden denselben zentralen Abrechnungsdienst und Datenstruktur.
+- Status-/Platzhalterverhalten für die Startseite ohne aktivierte Module soll ausgetauscht werden können, idealerweise über eine einzelne konfigurierbare Funktion pro Einstieg.
+- Keine Live-Schaltung, keine vorhandene OCR und keine fertigen Berechnungen behaupten, solange sie nicht implementiert und geprüft sind.
