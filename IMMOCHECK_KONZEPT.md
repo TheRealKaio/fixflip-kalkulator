@@ -204,3 +204,16 @@ Die Startseite unter der bestehenden Route `/nebenkostenabrechnung/` hat in ihre
 - Dateien in geeignetem geschützt bedienbarem Storage/Webspace; Datenbank nur für Metadaten und Verknüpfungen; sichere Authentifizierung und Admin-Autorisierung, Upload- und Größenprüfung **serverseitig**, Dateityp anhand Dateiinhalt prüfen, sichere Dateinamen und Speicherpfade, kein ausführbarer Upload, sichere Ausgabe und DSGVO-konforme Verwaltung.
 - Die bestehende Admin-Content- und Seitenlogik beibehalten; eine neue Medienwahl in den bestehenden Editor integrieren statt einen weiteren separaten Seiteneditor zu entwickeln.
 - **Status:** vereinbartes Feature für späteren separaten Implementierungsschritt. Nicht als bereits funktionierender Upload oder veröffentlichte Medienbibliothek darstellen. Der zuvor begonnene Entwicklungs-Build der Mieterabrechnungs-Startseite ist hiervon unabhängig.
+
+## 16. Verbindliches Mobile-First-Prinzip für Website, Erfassung und spätere Apps (22.11.2026)
+
+**Neue ausdrücklich bestätigte Produktpriorität:** ImmoCheck wird **Mobile First** konzipiert und abgenommen. Smartphones und Touchbedienung (iPhone/iOS, Android) sind primärer Nutzungskontext; Desktop bleibt uneingeschränkt nutzbar, ist aber die adaptive größere Darstellung, keine primäre Vorlage, die auf Mobil nur zusammengedrückt wird.
+
+- Sämtliche künftigen Funktionen, speziell **Mieterabrechnung, vierstufiger Wizard, Admin-Medienbibliothek, Content-Editor und Text-Bild-Bausteine**, zuerst für Smartphone-Hochformat entwickeln und überprüfen; anschließend Querformat, Tablet und Desktop.
+- Einspaltiger Standard und großzügige Touch-Ziele (i. d. R. mindestens 44×44 CSS-Pixel); Bedienelemente stets erreichbar, verständliche Texte, passende Tastaturtypen, nutzbare Dialoge, zugängliche Kontraste und Fokuszustände; kein horizontaler Seiten-Scroll und keine abgeschnittenen Inhalte.
+- Responsiver **Text-Bild-Baustein**: auf Desktop wahlweise Text links/Bild rechts oder gespiegelt; auf Smartphone automatisch geordnet **untereinander**, ausreichend Abstand, Bildgrößen und Alternativtexte. Keine Tabellen für reine Layoutzwecke, da Datentabellen semantisch echte Tabellen bleiben.
+- Medienverwaltung: Mobil-Upload aus Fotomediathek, Kamera/Dateien wo unterstützt; Vorschaubilder und PDF-Verknüpfung, Auswahl und Einfügen in Content auch per Touch bedienbar; serverseitige 5-MB-Grenze und Dateitypprüfung unverändert.
+- Admin-Editor soll nach Möglichkeit fertige Layoutbausteine anbieten, sodass Mobilansichten nicht von frei eingefügtem fehleranfälligem HTML abhängen.
+- Der Aufbau soll eine spätere iOS-/Android-App über wiederverwendbare API-/Daten- und Funktionsschichten ermöglichen; **Responsive Webdesign allein ist noch keine native App**. App-Verpackung/Store-Veröffentlichung ist ein späteres getrenntes Projekt.
+- Mobile Tests verpflichtend vor der Freigabe: u. a. iPhone Safari, Android Chrome, Hoch-/Querformat, verschiedene schmale Breiten, Upload und „Weiterlesen“, beide Einstiegsbuttons, Admin-Editor und Footer-Verhalten.
+- **Priorität der laufenden Arbeiten bleibt unverändert:** zuerst Mieterabrechnungs-Startseite in der Entwicklung vollständig prüfen und freigeben; danach Medienverwaltung. Keine eigenmächtige STRATO-Veröffentlichung.
