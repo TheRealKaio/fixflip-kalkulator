@@ -55,6 +55,7 @@ function buildContent(){
   const heading=document.createElement('h3');
   heading.textContent=label;
   group.append(heading);
+  if(keys.includes('settlement'))buildSettlementTileCode(group);
   for(const key of keys)buildPage(group,key);
   $('contentEditors').append(group);
  }
@@ -66,7 +67,6 @@ function buildPage(group,route){
  const page=document.createElement('details');
  page.className='form-card admin-page';
  page.dataset.adminPage=route;
- page.open=route==='settlement';
  const summary=document.createElement('summary');
  const title=document.createElement('span');
  title.textContent=pageLabels[route]||route;
@@ -142,7 +142,6 @@ function buildPageContent(page,key,defaults){
   bodyPreview.className='legal-html-preview';
   bodyPreview.id='content-'+key+'-body-preview';
   card.append(Object.assign(document.createElement('strong'),{textContent:'Textvorschau'}),bodyPreview);
-  if(key==='settlement')buildSettlementTileCode(page);
   page.append(card);
 }
 function buildSettlementTileCode(page){
