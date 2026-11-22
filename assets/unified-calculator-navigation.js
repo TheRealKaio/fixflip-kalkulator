@@ -11,7 +11,15 @@ for(const [key,path] of Object.entries(contentRoutes)){routes[path]=key;routes[p
 // GitHub Pages hosts the preview below /fixflip-kalkulator/, unlike STRATO at /.
 const previewPrefix=location.hostname.endsWith('.github.io')?'/fixflip-kalkulator':'';
 function routeKey(pathname){const path=pathname.toLowerCase();return routes[previewPrefix&&path.startsWith(previewPrefix+'/')?path.slice(previewPrefix.length):path];}
-function routeHref(path){return previewPrefix+path;}
+function routeHref(path){
+ const value=String(path||'').trim();
+ if(!value)return routeHref('/');
+ // Admin settings may contain a full URL, a relative route, or an already-prefixed preview route.
+ if(/^(?:https?:)?\/\//i.test(value))return value;
+ const absolute=value.startsWith('/')?value:'/'+value;
+ if(previewPrefix&&(absolute===previewPrefix||absolute.startsWith(previewPrefix+'/')))return absolute;
+ return previewPrefix+absolute;
+}
 function setPage(key){
  document.documentElement.dataset.nicPage=key==='home'?'website':key;
  window.dispatchEvent(new CustomEvent('nic-route-changed',{detail:document.documentElement.dataset.nicPage}));
