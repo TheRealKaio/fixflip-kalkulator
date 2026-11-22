@@ -116,6 +116,51 @@ function buildPage(group,route){
  if(route==='website')buildWebsiteFields(page);
  group.append(page);
 }
+function addContentLayoutButtons(input){
+ const tools=document.createElement('div');
+ tools.className='content-layout-tools';
+ const title=field(tools,input.id+'-layout-title','Abschnittstitel (optional)');
+ title.maxLength=240;
+ const actions=document.createElement('div');
+ actions.className='content-layout-actions';
+ const notice=document.createElement('span');
+ notice.className='helper';
+ notice.setAttribute('role','status');
+ for(const count of [2,3]){
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='button';
+  button.textContent=count+' Spalten';
+  button.addEventListener('click',()=>{
+   const start=input.selectionStart,end=input.selectionEnd;
+   const selected=input.value.slice(start,end);
+   const heading=document.createElement('h3');
+   heading.textContent=title.value.trim();
+   const titleMarkup=heading.textContent?heading.outerHTML+'\n':'';
+   const firstColumn=selected||'<p></p>';
+   const opening='\n<section class="nic-content-section">\n'+titleMarkup+
+    '<div class="nic-content-columns nic-content-columns-'+count+'">\n<div>';
+   const markup=opening+firstColumn+'</div>\n'+
+    '<div><p></p></div>\n'.repeat(count-1)+'</div>\n</section>\n';
+   if(input.value.length-selected.length+markup.length>input.maxLength){
+    notice.textContent='Der Abschnitt überschreitet das Zeichenlimit für den Seiteninhalt.';
+    return;
+   }
+   input.setRangeText(markup,start,end,'end');
+   const caret=start+opening.length+(selected?selected.length:3);
+   input.focus();
+   input.setSelectionRange(caret,caret);
+   title.value='';
+   notice.textContent='Abschnitt mit '+count+' Spalten eingefügt.';
+   input.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  actions.append(button);
+ }
+ // The title is an insertion aid and does not change saved settings on its own.
+ title.addEventListener('input',event=>event.stopPropagation());
+ tools.append(actions,notice);
+ input.parentElement.before(tools);
+}
 function buildPageContent(page,key,defaults){
  const card=document.createElement('fieldset');
  card.className='content-editor-card';
@@ -136,6 +181,7 @@ function buildPageContent(page,key,defaults){
   if(key==='settlement')field(card,'content-'+key+'-boxTitle','Überschrift der Contentbox','text').maxLength=240;
   if(key==='settlement'){const lower=field(card,'content-settlement-lowerDescription','Unterer Informationstext (HTML möglich)','textarea','Erscheint unter den zwei Buttons bis zum Footer. Dieser Text kann jederzeit geändert werden.');lower.maxLength=S.CONTENT_HTML_LIMIT;lower.rows=9;lower.parentElement.classList.add('wide');}
   const description=field(card,'content-'+key+'-description','Inhalt der Box (HTML möglich)','textarea','Text für den Inhaltsbereich. Du kannst HTML-Absätze, Listen und Links verwenden.');description.maxLength=S.CONTENT_HTML_LIMIT;description.value=defaults.description;description.parentElement.classList.add('wide');description.rows=18;description.spellcheck=false;
+  addContentLayoutButtons(description);
   const contentCounter=document.createElement('span');contentCounter.className='counter';contentCounter.dataset.contentCounter=key;description.parentElement.append(contentCounter);
   description.addEventListener('input',()=>{contentCounter.textContent=description.value.length+' / '+S.CONTENT_HTML_LIMIT+' Zeichen';});
   const bodyPreview=document.createElement('div');

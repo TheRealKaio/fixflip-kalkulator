@@ -42,20 +42,41 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await editor.getAttribute('maxlength'),'100000');
    await editor.fill(source);
    assert.equal(await editor.inputValue(),source,'Paste keeps full long HTML');
+   await editor.evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
+   const why=page.locator('[data-admin-page="why"]');
+   await why.getByLabel('Abschnittstitel (optional)').fill('Ein Titel <mit Zeichen>');
+   await why.getByRole('button',{name:'2 Spalten',exact:true}).click();
+   await editor.evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
+   await why.getByRole('button',{name:'3 Spalten',exact:true}).click();
+   const editedSource=await editor.inputValue();
+   assert(editedSource.startsWith(source),'Insertion preserves the existing content');
+   async function verifyColumns(container){
+    const sections=container.locator('.nic-content-section');
+    assert.equal(await sections.count(),2);
+    assert.equal(await sections.first().locator('h3').textContent(),'Ein Titel <mit Zeichen>');
+    assert.equal(await sections.last().locator('h3').count(),0);
+    for(const count of [2,3]){
+     const grid=container.locator('.nic-content-columns-'+count);
+     assert.equal(await grid.locator(':scope > div').count(),count);
+     assert.equal(await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),width>700?count:1);
+    }
+   }
    const preview=page.locator('[id$="content-why-body-preview"]');
+   await verifyColumns(preview);
    assert.equal(await preview.locator('details.imc-faq-item').count(),10,'All ten FAQ previews');
    await preview.locator('details.imc-faq-item summary').first().click();
    assert(await preview.locator('.imc-faq-answer').first().isVisible(),'Native FAQ opens');
    await page.locator('[id$="content-why-headerTitle"]').fill('Mein Titel aus dem Adminbereich');
    await page.locator('[id$="content-why-headerDescription"]').fill('Meine Kurzbeschreibung aus dem Adminbereich');
    await page.locator('[id$="saveSettings"]').click();
-   await page.waitForFunction(source=>window.NICSettings.current.content.why.description===source,source);
+   await page.waitForFunction(source=>window.NICSettings.current.content.why.description===source,editedSource);
    await page.goto('http://localhost/fixflip-kalkulator/warum-immocheck/',{waitUntil:'networkidle'});
    const content=page.locator('#nicContentView');
+   await verifyColumns(content);
    await content.locator('section.imc-content').waitFor({state:'visible'});
    assert.equal(await page.locator('#heroTitle').textContent(),'Mein Titel aus dem Adminbereich');
    assert.equal(await page.locator('#heroText').textContent(),'Meine Kurzbeschreibung aus dem Adminbereich');
-   assert.equal(await page.evaluate(()=>window.NICSettings.current.content.why.description),source,'Save/reload is lossless');
+   assert.equal(await page.evaluate(()=>window.NICSettings.current.content.why.description),editedSource,'Save/reload is lossless');
    assert.equal(await page.evaluate(()=>window.NICSettings.current.content.own.seoTitle),'Eigenheim Test');
    assert.equal(await page.evaluate(()=>window.NICSettings.current.seoIndexing.own),false);
    assert.equal(await content.locator('details.imc-faq-item').count(),10);

@@ -63,7 +63,9 @@ if apple:
     (site/'apple-touch-icon.png').write_bytes(data)
 else:
     shutil.copyfile('assets/apple-touch-icon.png',site/'apple-touch-icon.png')
-root=(site/'index.html').read_text()
+columns_css='<link rel="stylesheet" href="/content-columns.css">'
+shutil.copyfile('assets/content-columns.css',site/'content-columns.css')
+root=(site/'index.html').read_text().replace('</head>',columns_css+'</head>',1)
 # The base keeps calculator assets and the service worker on the root scope.
 root=root.replace('<head>','<head>\n<base href="/">',1)
 root_calculators=root
@@ -231,7 +233,7 @@ content=''.join(parts) or '<p>Die Anbieterangaben wurden noch nicht hinterlegt.<
 public='''<!doctype html><html lang="de"><head><base href="/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Neustart ImmoCheck</title><link rel="icon" href="icon.svg"><style>body{margin:0;background:#f5f7fb;color:#172033;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.public-shell{max-width:760px;margin:auto;padding:24px 20px}header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:35px}a{color:#1d4ed8}article{background:white;border:1px solid #e2e8f0;border-radius:20px;padding:28px}h1{font-size:30px;margin:0 0 24px}h2{font-size:18px;margin-top:26px}p{white-space:pre-line;overflow-wrap:anywhere}.public-footer{padding:24px 0;font-size:13px}.nic-social-links{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px}</style><script src="site-settings.js" defer></script><link rel="stylesheet" href="statistics.css"><script src="statistics-core.js" defer></script><script src="statistics.js" defer></script><script src="site-integration.js" defer></script></head><body><div class="public-shell"><header><strong>Neustart ImmoCheck</strong><a href="./">← Zu den Kalkulatoren</a></header><main><article><h1>__TITLE__</h1><div id="companyContent">__CONTENT__</div></article></main><footer class="public-footer"><a href="unternehmen/">Unternehmen</a> · <a href="impressum/">Impressum</a></footer></div></body></html>'''
 for path,title in [('unternehmen/','Unternehmen & Kontakt'),('impressum/','Impressum')]:
     folder=site/path;folder.mkdir(exist_ok=True)
-    s=public.replace('__TITLE__',title).replace('__CONTENT__',content)
+    s=public.replace('</head>',columns_css+'</head>',1).replace('__TITLE__',title).replace('__CONTENT__',content)
     s=customize(s,'company',path)
     if path=='impressum/':
         s=re.sub(r'<meta name="robots" content="[^"]+">','<meta name="robots" content="'+('index,follow' if indexed('impressum') else 'noindex,follow')+'">',s,count=1)
@@ -260,7 +262,7 @@ if download_href not in admin_html:
         raise SystemExit('Admin Layout insertion point missing')
     readme_card='<div class="form-card"><h3>Projektdokumentation</h3><p class="helper">Formeln, Berechnungsregeln, Standardwerte und der aktuelle Projektstand als PDF.</p><a class="button primary" href="/docs/README-Projektdokumentation.pdf" download="README-Projektdokumentation.pdf">README als PDF herunterladen</a></div>'
     admin_html=admin_html[:layout_end]+readme_card+admin_html[layout_end:]
-admin.write_text(admin_html)
+admin.write_text(admin_html.replace('</head>',columns_css+'</head>',1))
 
 
 # Bundle verified Bundesbank monthly data on this same origin as a fallback for browsers

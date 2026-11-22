@@ -154,3 +154,23 @@ body.nic-admin .configuration-tools .tool-row>.text-button{padding:0 2px;height:
 }
 .nic-navigation-admin-head{font-size:14px}
 @media(max-width:480px){.nic-navigation-admin-row{grid-template-columns:minmax(0,1.8fr) 54px 80px;gap:5px;font-size:12px}}
+
+.content-layout-tools {
+ display: flex;
+ flex-wrap: wrap;
+ align-items: end;
+ gap: 8px 12px;
+ margin-block: 8px;
+}
+.content-layout-tools > .admin-field {
+ flex: 1 1 13rem;
+ min-width: 0;
+}
+.content-layout-actions {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 8px;
+}
+.content-layout-tools > [role="status"]:empty {
+ display: none;
+}

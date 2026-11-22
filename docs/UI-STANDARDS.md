@@ -486,3 +486,8 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Änderungen bleiben zunächst auf `develop`. Vor einem Live-Release sind Vorschau, mobile/desktop Browserprüfungen, Server-Konfiguration, HTML-Auslieferung und alle vorhandenen Build-Checks abzunehmen.
 
 - Ausgeblendete Kacheln geben ihre Breite an die verbleibenden frei. Leere Startseiten-Gruppen werden versteckt. Veraltete `Sanierung`/Immobilien-ABC-Verknüpfungen dürfen nie in der sechsfachen Rechnerleiste stehen.
+
+## Spaltenabschnitte im Content-Editor
+
+- Direkt über dem Inhaltsfeld stehen kompakte Buttons für zwei und drei Spalten sowie ein optionaler Abschnittstitel. Jeder Klick fügt an der Auswahlposition einen eigenständigen Abschnitt ein. Markierter HTML-Inhalt wird in die erste Spalte übernommen.
+- Leere Titel erzeugen keine Überschrift. Die Vorschau und die öffentliche Inhaltsseite nutzen dieselben Rasterregeln. Bis 700 px stehen die Spalten untereinander.
