@@ -183,7 +183,7 @@ function nic_clean_settings(mixed $raw): array {
         if ($depth > 5) nic_fail('Einstellungen zu tief verschachtelt.');
         if (is_array($v)) { if(count($v)>100)nic_fail('Zu viele Einstellungsfelder.'); foreach ($v as $k=>$item) {if (!is_string($k) || strlen($k)>100)nic_fail('Ungültiges Einstellungsfeld.');$check($item,$depth+1);} }
         elseif (!is_string($v) && !is_bool($v) && !is_int($v) && !is_float($v) && $v !== null) nic_fail('Ungültiger Einstellungswert.');
-        elseif (is_string($v) && (strlen($v)>400000 || !preg_match('//u',$v))) nic_fail('Einstellungswert zu lang oder ungültig.');
+        elseif (is_string($v) && (strlen($v)>700000 || !preg_match('//u',$v))) nic_fail('Einstellungswert zu lang oder ungültig.');
     };
     $check($s);
     if (strlen(json_encode($s, JSON_THROW_ON_ERROR)) > 4000000) nic_fail('Einstellungen zu groß.');

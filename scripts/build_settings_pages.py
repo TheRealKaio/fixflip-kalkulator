@@ -40,7 +40,7 @@ class ContentSanitizer(HTMLParser):
             elif tag in {'td','th'} and key in {'colspan','rowspan'} and re.fullmatch(r'[1-9]\d?',value or ''):safe.append((key,value))
             elif tag=='img' and key in {'src','alt','title','loading'}:
                 if key=='src':
-                    match=re.fullmatch(r'{{\\s*media\\.([a-f0-9-]{36})\\s*}}',value or '',re.I)
+                    match=re.fullmatch(r'{{\s*media\.([a-f0-9-]{36})\s*}}',value or '',re.I)
                     item=config.get('mediaLibrary',{}).get(match.group(1),{}) if match else {}
                     if item.get('type')=='image' and re.fullmatch(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+',item.get('data','')):safe.append(('src',item['data']))
                 elif key=='alt' and value is not None:safe.append(('alt',value[:300]))
@@ -49,7 +49,7 @@ class ContentSanitizer(HTMLParser):
             elif tag=='a' and key=='href':
                 href=(value or '').strip()
                 if '{{company.email}}' in href:href='mailto:{{company.email}}'
-                match=re.fullmatch(r'{{\\s*media\\.([a-f0-9-]{36})\\s*}}',href,re.I)
+                match=re.fullmatch(r'{{\s*media\.([a-f0-9-]{36})\s*}}',href,re.I)
                 item=config.get('mediaLibrary',{}).get(match.group(1),{}) if match else {}
                 if item.get('type')=='pdf' and re.fullmatch(r'data:application/pdf;base64,[A-Za-z0-9+/=]+',item.get('data','')):
                     safe.extend([('href',item['data']),('rel','noopener noreferrer'),('target','_blank')])
