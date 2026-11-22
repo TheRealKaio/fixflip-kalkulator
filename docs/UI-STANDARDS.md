@@ -486,3 +486,11 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Änderungen bleiben zunächst auf `develop`. Vor einem Live-Release sind Vorschau, mobile/desktop Browserprüfungen, Server-Konfiguration, HTML-Auslieferung und alle vorhandenen Build-Checks abzunehmen.
 
 - Ausgeblendete Kacheln geben ihre Breite an die verbleibenden frei. Leere Startseiten-Gruppen werden versteckt. Veraltete `Sanierung`/Immobilien-ABC-Verknüpfungen dürfen nie in der sechsfachen Rechnerleiste stehen.
+
+## Mobile-First-Felder, deutsche Silbentrennung und Textausrichtung (22. November 2026)
+
+- Smartphone zuerst: Eingabezeilen und kurze Feldbezeichnungen möglichst einzeilig; zu schmale nebeneinander liegende Felder im responsiven Raster untereinander stapeln. Keine Überlappungen, abgeschnittenen Zahlen, zu kleinen Schriften oder horizontalen Scrollbereiche.
+- Kurze Titel und Beschriftungen möglichst nicht umbrechen; bei nötigem Umbruch durch `lang="de"` und `hyphens:auto` deutsche Silbentrennung unterstützen, mit geeignetem `overflow-wrap`-Fallback.
+- Deutsche längere Fließtexte dürfen Blocksatz mit Silbentrennung verwenden, sofern Wortabstände und Lesbarkeit gut bleiben. Sehr schmale Ansichten gegebenenfalls linksbündig; Kurztexte, Feldlabels, Buttons, Listen und Zahlen nicht pauschal im Blocksatz.
+- Lesbarkeit und Touchbedienbarkeit gehen einer erzwungenen Einzeiligkeit vor. Testfälle: lange zusammengesetzte Wörter, Browserzoom, erhöhte Admin-Schriftgrößen, 320–430px Smartphonebreite, Hoch-/Querformat, iOS Safari und Android Chrome.
+- Neue Content-Bausteine für Text/Bild verwenden responsive Layoutcontainer, nicht HTML-Tabellen für reine Gestaltung.
