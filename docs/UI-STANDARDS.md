@@ -165,6 +165,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   (`hyphens: auto`, Safari zusätzlich `-webkit-hyphens: auto`). Wörter nicht
   willkürlich mit `word-break: break-all` trennen. Keine festen Zeilenumbrüche
   zur Korrektur einer einzelnen Bildschirmbreite.
+- Sanierungsaufteilung, Modernisierung und monatliche Budgetausgaben zeigen je einen
+  grünen Button „Vorschläge übernehmen“ in Grundschriftgröße und ein kleines rotes X.
+  Der Button wächst bei Textumbruch. Das X setzt die Werte der geöffneten Maske
+  nach Bestätigung zurück.
 - Inhalte wachsen mit der eingestellten Schriftgröße. Überschriften, Buttons
   und Untertexte weder abschneiden noch auf feste Texthöhen begrenzen.
 - Sichtbare Bezeichnungen: „Mieterabrechnung“, „Warum ImmoCheck?“ sowie am

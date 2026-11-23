@@ -170,8 +170,9 @@ body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar){
 body:not(.nic-admin) :is(.reno-head-actions,.budget-expenses-toolbar)
 :is(#applyTradeSuggestions,#rentApplyTradeSuggestions,#budgetApplySuggestions){
  flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
- margin:0!important;white-space:nowrap!important;overflow-wrap:normal!important;
- line-height:1.2!important;box-sizing:border-box!important;
+ margin:0!important;white-space:normal!important;overflow-wrap:anywhere!important;
+ height:auto!important;min-height:40px!important;max-height:none!important;
+ font-size:var(--nic-body-font-size)!important;line-height:1.2!important;box-sizing:border-box!important;
 }
 body:not(.nic-admin) .reno-head-actions{flex:1 1 auto!important;min-width:0!important}
 body:not(.nic-admin) .budget-expenses-toolbar>:is(button,.nic-clear-reno):not(#budgetApplySuggestions){

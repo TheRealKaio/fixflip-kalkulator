@@ -184,7 +184,6 @@ for page in SITE.rglob("*.html"):
    green.style.setProperty('flex','1 1 auto','important');
    green.style.setProperty('width','auto','important');
    green.style.setProperty('min-width','0','important');
-   green.style.setProperty('white-space','nowrap','important');
    Array.from(group.children).filter(el=>el!==green&&el.tagName==='BUTTON').forEach(el=>{
      el.style.setProperty('flex','0 0 36px','important');
      el.style.setProperty('width','36px','important');
