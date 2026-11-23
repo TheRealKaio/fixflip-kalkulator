@@ -4,8 +4,9 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
-  for(const width of [1440,390]){
-   const page=await browser.newPage({viewport:{width,height:900},serviceWorkers:'block'}),errors=[];
+  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:844,height:390}]){
+   const {width}=viewport,mobile=width<1000;
+   const page=await browser.newPage({viewport,serviceWorkers:'block'}),errors=[];
    let admin=false,saves=0;
    let settings=JSON.parse(fs.readFileSync('assets/site-settings.json','utf8'));
    Object.assign(settings.layout,{font:'verdana',bodySize:20,h2:24,h3:22});
@@ -24,7 +25,35 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
     return route.fulfill({body:fs.readFileSync(file),contentType:({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream'});
    });
-   const heights=[];
+   const heights=[],mobileIntros=[];
+   async function measureMobileIntro(card){
+    const intro=card.locator(':scope > .nic-mobile-intro');
+    await intro.waitFor({state:'visible'});
+    return intro.evaluate(el=>{
+     const card=el.parentElement,style=getComputedStyle(el);
+     const lines=Number(style.webkitLineClamp),lineHeight=parseFloat(style.lineHeight);
+     const clippedHeight=el.getBoundingClientRect().height,cardHeight=card.getBoundingClientRect().height;
+     el.classList.add('nic-mobile-intro-probe');
+     const fullLines=Math.round(el.getBoundingClientRect().height/lineHeight);
+     el.classList.remove('nic-mobile-intro-probe');
+     return {lines,lineHeight,clippedHeight,cardHeight,fullLines};
+    });
+   }
+   await page.goto('http://localhost/',{waitUntil:'networkidle'});
+   if(await page.locator('#nicConsentDialog[open]').count())await page.getByRole('button',{name:'Ablehnen',exact:true}).click();
+   const home=page.locator('#nic-home-intro .nic-home-copy');
+   const homeSummary=home.locator(':scope > details > summary'),homeText=home.locator('[data-home-description]');
+   if(mobile){
+    mobileIntros.push(await measureMobileIntro(home));
+    assert.equal(await homeText.isVisible(),false,'Home starts with the first paragraph preview');
+    await homeSummary.click();
+    assert(await homeText.isVisible(),'Home opens its full introduction');
+    await homeSummary.click();
+    assert.equal(await homeText.isVisible(),false,'Home can collapse again');
+   }else{
+    assert(await homeText.isVisible(),'Desktop home shows its full introduction');
+    assert.equal(await homeSummary.isVisible(),false,'Desktop home does not show the disclosure');
+   }
    for(const [key,slug]of Object.entries(routes)){
     const source=fs.readFileSync('_site/'+slug+'/index.html','utf8');
     if(key!=='settlement')assert(source.includes('data-nic-explanation="'+key+'"'),'Direct HTML contains complete route explanation');
@@ -54,25 +83,28 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     const details=card.locator('details'),summary=card.locator('summary'),rest=card.locator('.nic-explanation-rest');
     assert.equal(await card.locator('.nic-explanation-intro').count(),1,'First paragraph exists');
     assert.equal(await card.locator('.nic-explanation-teaser p').count(),1,'Second paragraph visible before disclosure');
-    assert(await card.locator('.nic-explanation-intro').isVisible(),'First paragraph visible');
-    assert(await card.locator('.nic-explanation-teaser p').isVisible(),'Second paragraph visible');
-    if(width===390){
+    if(mobile){
+     mobileIntros.push(await measureMobileIntro(card));
+     assert.equal(await card.locator('.nic-explanation-intro').isVisible(),false,'Full first paragraph is reserved for expansion');
+     assert.equal(await card.locator('.nic-explanation-teaser p').isVisible(),false,'Second paragraph starts hidden');
      assert.equal(await details.evaluate(e=>e.open),false,'Mobile starts collapsed');
      assert.equal(await summary.innerText(),'weiterlesen');assert.equal(await rest.isVisible(),false);
      if(key!=='settlement'){
-      assert.equal(await card.locator('.nic-explanation-intro').isVisible(),true,'First introductory paragraph remains visible on mobile');
       const teaser=await card.evaluate(e=>{const h=e.querySelector('h2'),style=getComputedStyle(h);const siblings=[...e.parentElement.children].filter(x=>x!==e&&x.getBoundingClientRect().height&&getComputedStyle(x).display!=='none');return {height:h.getBoundingClientRect().height,line:parseFloat(style.lineHeight),clamp:style.webkitLineClamp,first:siblings.every(x=>e.getBoundingClientRect().top<=x.getBoundingClientRect().top)};});
       assert.equal(teaser.clamp,'2');assert(teaser.height<=teaser.line*2+1,'Only two title lines');assert(teaser.first,'Teaser is visually before calculator inputs');
      }
      const corner=await card.evaluate(e=>{const a=e.getBoundingClientRect(),b=e.querySelector('summary').getBoundingClientRect();return {right:a.right-b.right,bottom:a.bottom-b.bottom};});
      assert(corner.right>=0&&corner.right<30&&corner.bottom>=0&&corner.bottom<30,'Read more at bottom right');
      await summary.click();assert.equal(await details.evaluate(e=>e.open),true);assert(await rest.isVisible());
-     assert(await card.locator('.nic-explanation-intro').isVisible(),'Opening preserves both teaser paragraphs');
+     assert(await card.locator('.nic-explanation-intro').isVisible(),'Opening shows the full first paragraph');
+     assert(await card.locator('.nic-explanation-teaser p').isVisible(),'Opening shows the full second paragraph');
      assert(await card.evaluate(e=>e.getBoundingClientRect().height)>geometry.height,'Open box grows naturally');
      await summary.click();assert.equal(await details.evaluate(e=>e.open),false);
      await summary.focus();await page.keyboard.press('Enter');assert.equal(await details.evaluate(e=>e.open),true,'Keyboard opens explanation');
      await page.keyboard.press('Enter');assert.equal(await details.evaluate(e=>e.open),false);
     }else{
+     assert(await card.locator('.nic-explanation-intro').isVisible(),'First paragraph visible on desktop');
+     assert(await card.locator('.nic-explanation-teaser p').isVisible(),'Second paragraph visible on desktop');
      assert.equal(await details.evaluate(e=>e.open),false,'Desktop also starts collapsed');
      assert.equal(await summary.isVisible(),true,'Desktop read-more link is visible');
      assert.equal(await rest.isVisible(),false,'Desktop hides the remaining text');
@@ -83,9 +115,24 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
      assert.equal(await details.evaluate(e=>e.open),false,'Desktop read-more collapses again');
     }
    }
-   // Desktop cards share a measured minimum height. Mobile portrait cards are
-   // content-sized so they do not reserve unnecessary space before the calculator.
-   if(width!==390)assert(Math.max(...heights)-Math.min(...heights)<=1,'Equal desktop card heights at '+width+': '+heights.join(','));
+   if(mobile){
+    const shortest=Math.min(...mobileIntros.map(intro=>intro.fullLines));
+    for(const intro of mobileIntros){
+     assert.equal(intro.lines,shortest,'Shortest first paragraph determines the common preview line count');
+     assert(Math.abs(intro.clippedHeight-shortest*intro.lineHeight)<=1,'Preview occupies exactly the shared number of lines');
+     assert(Math.abs(intro.cardHeight-mobileIntros[0].cardHeight)<=1,'Preview cards have equal height: '+JSON.stringify(mobileIntros));
+    }
+    await page.evaluate(()=>NICCalculatorNavigation.select('home'));
+    await homeSummary.click();
+    await page.evaluate(()=>{NICCalculatorNavigation.select('budget');NICCalculatorNavigation.select('home');});
+    assert.equal(await homeText.isVisible(),false,'Home collapses again when returning from a calculator');
+    await homeSummary.click();
+    await page.setViewportSize({width:viewport.height,height:viewport.width});
+    assert(await homeText.isVisible(),'Rotation preserves the open mobile introduction');
+    await homeSummary.click();
+    await measureMobileIntro(home);
+    await page.setViewportSize(viewport);
+   }else assert(Math.max(...heights)-Math.min(...heights)<=1,'Equal desktop card heights at '+width+': '+heights.join(','));
    for(const key of [...Object.keys(routes),'home','why','own','budget']){
     await page.evaluate(k=>NICCalculatorNavigation.select(k),key);
     await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
@@ -105,7 +152,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0,'No forced read-more disclosure');
     assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),'Settlement has no horizontal overflow');
    }
-   await page.setViewportSize({width,height:900});
+   await page.setViewportSize(viewport);
    admin=true;
    await page.goto('http://localhost/#admin-content',{waitUntil:'networkidle'});
    await page.locator('#settingsForm').waitFor({state:'visible'});
@@ -130,6 +177,6 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert.equal(await page.locator('[data-nic-explanation] h2').innerText(),'Mein Budgettext','Another box survives save and full reload');
    assert.deepEqual(errors,[]);await page.close();
   }
-  console.log('Six explanations passed: static HTML, equal sizes, admin typography, two visible paragraphs, read-more/keyboard and route cleanup.');
+  console.log('Six explanations passed: static HTML, equal sizes, admin typography, equal mobile previews on home and calculators, read-more/keyboard and route cleanup.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
