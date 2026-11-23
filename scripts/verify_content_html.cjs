@@ -121,6 +121,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     return [style.fontSize,style.getPropertyValue('--nic-subtext-font-size').trim()||'14px'];
    });
    assert.equal(subtextSize,configuredSize,'Previously copied tiles use the configured subtext size');
+   assert.deepEqual(await tile.evaluate(el=>{
+    const style=getComputedStyle(el);
+    return [style.padding,style.minHeight];
+   }),['12px 8px','78px'],'Saved tiles use homepage spacing');
+   if(width>=900){
+    await tile.scrollIntoViewIfNeeded();
+    const before=await tile.boundingBox();
+    await tile.hover();
+    assert.equal(await tile.evaluate(el=>getComputedStyle(el).transform),'none','Saved hover CSS cannot move the tile');
+    assert.deepEqual(await tile.boundingBox(),before,'Hover keeps the tile in place');
+   }
    await checkTileOrientation(width<900);
    if(width===390){
     await page.setViewportSize({width:844,height:390});
