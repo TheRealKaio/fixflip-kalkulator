@@ -491,6 +491,7 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Spaltenabschnitte im Content-Editor
 
 - Direkt über dem Inhaltsfeld stehen kompakte Buttons für zwei und drei Spalten sowie ein optionaler Abschnittstitel. Jeder Klick fügt an der Auswahlposition einen eigenständigen Abschnitt ein. Markierter HTML-Inhalt wird in die erste Spalte übernommen.
+- Beide Spalten-Schaltflächen schreiben echte Zeilenumbrüche. Die Darstellung bereinigt sichtbare Zeilenumbruchzeichen aus älteren Spaltenabschnitten. Direkt aufeinanderfolgende, separat kopierte Kachelraster werden gemeinsam angeordnet. Für WEG-Upload und manuelle Erfassung kann ein gemeinsamer Code kopiert werden.
 - Leere Titel erzeugen keine Überschrift. Die Vorschau und die öffentliche Inhaltsseite nutzen dieselben Rasterregeln. Bis 700 px stehen die Spalten untereinander.
 
 

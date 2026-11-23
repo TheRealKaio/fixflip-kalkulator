@@ -134,8 +134,8 @@ function addContentLayoutButtons(input){
   button.addEventListener('click',()=>{
    const start=input.selectionStart,end=input.selectionEnd,selected=input.value.slice(start,end),heading=document.createElement('h3');
    heading.textContent=title.value.trim();
-   const titleMarkup=heading.textContent?heading.outerHTML+'\\n':'',opening='\\n<section class="nic-content-section">\\n'+titleMarkup+'<div class="nic-content-columns nic-content-columns-'+count+'">\\n<div>';
-   const markup=opening+(selected||'<p></p>')+'</div>\\n'+'<div><p></p></div>\\n'.repeat(count-1)+'</div>\\n</section>\\n';
+   const titleMarkup=heading.textContent?heading.outerHTML+'\n':'',opening='\n<section class="nic-content-section">\n'+titleMarkup+'<div class="nic-content-columns nic-content-columns-'+count+'">\n<div>';
+   const markup=opening+(selected||'<p></p>')+'</div>\n'+'<div><p></p></div>\n'.repeat(count-1)+'</div>\n</section>\n';
    if(input.value.length-selected.length+markup.length>input.maxLength){notice.textContent='Der Abschnitt überschreitet das Zeichenlimit.';return;}
    input.setRangeText(markup,start,end,'end');
    const caret=start+opening.length+(selected?selected.length:3);input.focus();input.setSelectionRange(caret,caret);title.value='';
@@ -192,7 +192,7 @@ function buildSettlementTileCode(parent){
  const heading=document.createElement('h3');heading.textContent='Kachel-Buttons zum Kopieren';
  const intro=document.createElement('p');intro.className='helper';intro.textContent='Die Vorschau entspricht dem hellen Kacheldesign der Website. Farben, Schrift und Eckenradius orientieren sich an den gemeinsamen Website-Einstellungen.';
  const label=document.createElement('label');label.htmlFor='settlementTileCodeType';label.textContent='Kachel';
- const select=document.createElement('select');select.id='settlementTileCodeType';select.innerHTML='<option value="settlement">Nebenkostenabrechnung</option><option value="weg">WEG-Abrechnung hochladen</option><option value="manual">Manuelle Erfassung</option>';
+ const select=document.createElement('select');select.id='settlementTileCodeType';select.innerHTML='<option value="settlement">Nebenkostenabrechnung</option><option value="weg">WEG-Abrechnung hochladen</option><option value="manual">Manuelle Erfassung</option><option value="both">WEG-Upload und manuelle Erfassung</option>';
  const layout=document.createElement('div');layout.className='nic-tile-code-layout';
  const columns=field(layout,'settlementTileColumns','Desktop- und Tabletspalten','number','Bis 700 px steht eine Kachel pro Zeile. Im mobilen Querformat nutzt eine einzelne Kachel die volle Breite.');columns.min=1;columns.max=4;columns.step=1;columns.value='2';
  const gap=field(layout,'settlementTileGap','Mindestabstand zwischen Kacheln (px)','number','CSS Grid gap: gleicher Abstand waagerecht und senkrecht.');gap.min=0;gap.max=80;gap.step=1;gap.value='16';
@@ -229,13 +229,15 @@ function buildSettlementTileCode(parent){
  function styles(cols,space){return '<style>\n.nic-copy-tile-grid{display:grid;grid-template-columns:repeat('+cols+',minmax(0,1fr));gap:'+space+'px;min-width:0}\n.nic-copy-tile{display:grid;grid-template-rows:auto auto auto;justify-items:center;align-content:center;align-items:center;min-width:0;min-height:78px;box-sizing:border-box;container-type:inline-size;padding:12px 8px;border:1px solid #dce8e2;border-radius:var(--nic-menu-radius,16px);background:linear-gradient(#fff,#faf7f1);color:#172e2b!important;font-family:var(--nic-body-font-family,system-ui,sans-serif);text-align:center;text-decoration:none!important;box-shadow:0 2px 4px #33230d12;transition:border-color .16s ease}\n.nic-copy-tile:hover{border-color:var(--nic-green-bg,#075c55)}\n.nic-copy-tile:focus-visible{outline:3px solid var(--nic-green-bg,#075c55);outline-offset:3px}\n.nic-copy-tile svg{grid-row:1;width:28px;height:28px;margin:0 0 7px;fill:none;stroke:#075c55;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}\n.nic-copy-tile__title{grid-row:2;display:block;min-width:0;width:100%;overflow-wrap:anywhere;font-size:var(--nic-body-font-size,18px)!important;font-size:min(var(--nic-body-font-size,18px),5.6cqi)!important;font-weight:700;line-height:1.2;letter-spacing:-.025em;color:#172e2b!important}\n.nic-copy-tile__description{grid-row:3;display:block;width:100%;margin-top:8px;font-size:var(--nic-subtext-font-size,14px)!important;font-weight:400;line-height:1.3;color:#425b62!important}\n@media(max-width:700px){.nic-copy-tile-grid{grid-template-columns:minmax(0,1fr)}}\n@media(orientation:landscape) and (max-width:1023px) and (max-height:500px){.nic-copy-tile-grid > .nic-copy-tile:only-child{grid-column:1 / -1}}\n</style>';}
  function markup(item){return '<a class="nic-copy-tile" href="'+item.href+'" aria-label="'+item.title+': '+item.description+'">\n  <svg viewBox="0 0 24 24" aria-hidden="true">'+item.icon+'</svg>\n  <strong class="nic-copy-tile__title">'+item.title+'</strong>\n  <small class="nic-copy-tile__description">'+item.description+'</small>\n</a>';}
  function render(){
-  const item=tiles[select.value],cols=Math.max(1,Math.min(4,Number(columns.value)||2)),space=Math.max(0,Math.min(80,Number(gap.value)||0));
+  const items=select.value==='both'?[tiles.weg,tiles.manual]:[tiles[select.value]];
+  const cols=Math.max(1,Math.min(4,Number(columns.value)||2)),space=Math.max(0,Math.min(80,Number(gap.value)||0));
   columns.value=String(cols);gap.value=String(space);
   const css=styles(cols,space);
   previewStyles.textContent=css.replace(/^<style>\n|\n<\/style>$/g,'');
-  code.value=css+'\n\n<div class="nic-copy-tile-grid">\n'+markup(item)+'\n</div>';
-  preview.style.gridTemplateColumns='minmax(0,1fr)';
-  preview.innerHTML=markup(item);
+  const tilesHtml=items.map(markup).join('\n');
+  code.value=css+'\n\n<div class="nic-copy-tile-grid">\n'+tilesHtml+'\n</div>';
+  preview.style.gridTemplateColumns=items.length===1?'minmax(0,1fr)':'';
+  preview.innerHTML=tilesHtml;
  }
  select.addEventListener('change',render);columns.addEventListener('input',render);gap.addEventListener('input',render);render();
 }

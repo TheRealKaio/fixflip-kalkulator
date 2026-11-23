@@ -77,6 +77,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await why.getByRole('button',{name:'3 Spalten',exact:true}).click();
    await editor.fill((await editor.inputValue())+savedTileHtml);
    const editedSource=await editor.inputValue();
+   assert(!editedSource.slice(source.length).includes('\\n'),'Column inserts use real newlines');
    assert(editedSource.startsWith(source),'Insertion preserves the existing content');
    async function verifyColumns(container){
     const sections=container.locator('.nic-content-section');
@@ -101,6 +102,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await page.goto('http://localhost/fixflip-kalkulator/warum-immocheck/',{waitUntil:'networkidle'});
    const content=page.locator('#nicContentView');
    await verifyColumns(content);
+   const recovered=await page.evaluate(source=>{
+    const section='<section class="nic-content-section">\\n<div class="nic-content-columns">\\n<div><p></p></div>\\n</div>\\n</section>';
+    const fragment=window.NICSettings.contentFragment('<p>Einleitung.\\n</p>'+section+'\\n'+source+'\n'+source,window.NICSettings.current);
+    return [fragment.querySelectorAll('.nic-copy-tile-grid').length,fragment.querySelectorAll('.nic-copy-tile').length,fragment.textContent.includes('\\n'),fragment.querySelectorAll('.nic-content-section').length];
+   },tileHtml);
+   assert.deepEqual(recovered,[1,2,false,0],'Legacy column leftovers disappear and adjacent tile grids combine');
    const tile=content.locator('a.nic-copy-tile');
    const icon=tile.locator('svg'), label=tile.locator('strong'), description=tile.locator('small');
    assert(await icon.locator('path[d]').count()>0,'Copied tile retains its icon paths');

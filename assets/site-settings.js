@@ -85,8 +85,31 @@
         }catch(_){}
       }
     }
+    const legacySections=[...tpl.content.querySelectorAll('.nic-content-section')]
+      .filter(section=>[...section.childNodes].some(node=>node.nodeType===3&&/^(?:\s|\\n)+$/.test(node.textContent)&&node.textContent.includes('\\n')));
     const walker=document.createTreeWalker(tpl.content,4);let node;
-    while((node=walker.nextNode()))node.textContent=node.textContent.replace(/{{\s*company\.(\w+)\s*}}/g,(token,k)=>Object.hasOwn(s.company,k)?s.company[k]:token);
+    while((node=walker.nextNode())){
+      if(legacySections.length&&(!node.textContent.replace(/\\n/g,'').trim()||
+        /\\n\s*$/.test(node.textContent)&&!node.nextSibling)){
+        node.textContent=node.textContent.replace(/\\n/g,'\n');
+      }
+      node.textContent=node.textContent.replace(/{{\s*company\.(\w+)\s*}}/g,(token,k)=>Object.hasOwn(s.company,k)?s.company[k]:token);
+    }
+    for(const section of legacySections){
+      if(!section.textContent.trim()&&!section.querySelector('img,svg,a,hr,table'))section.remove();
+    }
+    for(const grid of tpl.content.querySelectorAll('.nic-copy-tile-grid')){
+      if(!grid.parentNode||!grid.children.length||!Array.from(grid.children).every(tile=>tile.matches('a.nic-copy-tile')))continue;
+      let next=grid.nextSibling;
+      while(next?.nodeType===3&&!next.textContent.trim())next=next.nextSibling;
+      while(next?.matches?.('.nic-copy-tile-grid')&&next.children.length&&
+        Array.from(next.children).every(tile=>tile.matches('a.nic-copy-tile'))){
+        grid.append(...next.childNodes);
+        next.remove();
+        next=grid.nextSibling;
+        while(next?.nodeType===3&&!next.textContent.trim())next=next.nextSibling;
+      }
+    }
     if(css.length){
       const wrapper=document.createElement('div');wrapper.className='nic-html-content';
       const scope='nic-content-'+(++contentScope);wrapper.dataset.nicHtmlScope=scope;
