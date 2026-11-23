@@ -56,7 +56,7 @@ window.NICExplanations=(()=>{
   const text=introText(card===homeCard?'welcome':card.dataset.nicExplanation);
   if(!text){preview.remove();return;}
   preview.className='nic-mobile-intro nic-mobile-intro-probe';
-  card.querySelector(':scope > h2').after(preview);
+  card.insertBefore(preview,card.querySelector(':scope > .nic-explanation-details'));
   let lines=Infinity;
   for(const key of ['welcome',...Object.keys(explanationTemplates).filter(key=>key!=='settlement')]){
    const paragraph=introText(key);
