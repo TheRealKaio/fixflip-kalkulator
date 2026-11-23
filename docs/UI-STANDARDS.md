@@ -491,10 +491,12 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 ## Spaltenabschnitte im Content-Editor
 
 - Direkt über dem Inhaltsfeld stehen kompakte Buttons für zwei und drei Spalten sowie ein optionaler Abschnittstitel. Jeder Klick fügt an der Auswahlposition einen eigenständigen Abschnitt ein. Markierter HTML-Inhalt wird in die erste Spalte übernommen.
+- Beide Spalten-Schaltflächen schreiben echte Zeilenumbrüche. Die Darstellung bereinigt sichtbare Zeilenumbruchzeichen aus älteren Spaltenabschnitten. Direkt aufeinanderfolgende, separat kopierte Kachelraster werden gemeinsam angeordnet. Für WEG-Upload und manuelle Erfassung kann ein gemeinsamer Code kopiert werden.
 - Leere Titel erzeugen keine Überschrift. Die Vorschau und die öffentliche Inhaltsseite nutzen dieselben Rasterregeln. Bis 700 px stehen die Spalten untereinander.
 
 
 - Eingefügte Kachel-Buttons verwenden die Schriftgrößen der Startseiten-Kacheln: Fließtextgröße mit responsiver Begrenzung für den Titel und die zentrale Untertextgröße für die Beschreibung. Das gilt für die Admin-Vorschau sowie für neue und bereits gespeicherte Kacheln.
+- Startseiten-Kacheln, Admin-Vorschau und eingefügte Kacheln verwenden 12 px vertikalen und 8 px horizontalen Innenabstand sowie 78 px Mindesthöhe. Der Hover einer eingefügten Kachel ändert die Rahmenfarbe bei fester Position.
 - Bei bis zu 700 px Breite stehen die Kacheln untereinander. Im Querformat bis 1023 px Breite und 500 px Höhe füllt eine einzelne Kachel das gesamte Raster. Bei mehreren Kacheln gilt dafür weiterhin die konfigurierte Spaltenzahl. Im Hochformat steht das Symbol links neben dem Titel, im Querformat darüber. Die Beschreibung steht jeweils darunter.
 
 ## Content-Medien im Admin (22. November 2026, aktualisiert)
