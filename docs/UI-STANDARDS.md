@@ -493,6 +493,9 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Leere Titel erzeugen keine Überschrift. Die Vorschau und die öffentliche Inhaltsseite nutzen dieselben Rasterregeln. Bis 700 px stehen die Spalten untereinander.
 
 
+- Eingefügte Kachel-Buttons verwenden die Schriftgrößen der Startseiten-Kacheln: Fließtextgröße mit responsiver Begrenzung für den Titel und die zentrale Untertextgröße für die Beschreibung. Das gilt für die Admin-Vorschau sowie für neue und bereits gespeicherte Kacheln.
+- Bei bis zu 700 px Breite stehen die Kacheln untereinander. Im Querformat bis 1023 px Breite und 500 px Höhe füllt eine einzelne Kachel das gesamte Raster. Bei mehreren Kacheln gilt dafür weiterhin die konfigurierte Spaltenzahl. Im Hochformat steht das Symbol links neben dem Titel, im Querformat darüber. Die Beschreibung steht jeweils darunter.
+
 ## Content-Medien im Admin (22. November 2026, aktualisiert)
 - Admin → Layout enthält eine Medienbibliothek für Content-Bilder und PDFs.
 - Unterstützt PNG/JPG/WebP und PDF bis 5 MB je Datei. Dateien liegen separat von den Website-Einstellungen und werden erst öffentlich abrufbar, wenn sie in der gespeicherten Medienbibliothek geführt sind.

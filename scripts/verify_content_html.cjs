@@ -32,6 +32,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await settlementPage.locator(':scope > summary').click();
    await settlementPage.locator('#settlementTileCodeType').selectOption('weg');
    const tileHtml=await settlementPage.locator('#settlementTileCode').inputValue();
+   // Model old copied HTML whose style block predates the shared fix.
+   const savedTileHtml=tileHtml
+    .replace(/font-size:var\(--nic-subtext-font-size,14px\)!important/g,'font-size:var(--nic-subtext-font-size,14px)')
+    .replace(/^@media\(orientation:landscape\).*\n/m,'');
    await settlementPage.locator(':scope > summary').click();
    const own=page.locator('[data-admin-page="own"]');
    await own.locator('summary').click();
@@ -71,7 +75,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await why.getByRole('button',{name:'2 Spalten',exact:true}).click();
    await editor.evaluate(el=>el.setSelectionRange(el.value.length,el.value.length));
    await why.getByRole('button',{name:'3 Spalten',exact:true}).click();
-   await editor.fill((await editor.inputValue())+tileHtml);
+   await editor.fill((await editor.inputValue())+savedTileHtml);
    const editedSource=await editor.inputValue();
    assert(editedSource.startsWith(source),'Insertion preserves the existing content');
    async function verifyColumns(container){
@@ -112,10 +116,27 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
      assert(i.y+i.height<=t.y+1&&t.y+t.height<=d.y+1,'Landscape stacks icon, title and description');
     }
    }
+   const [subtextSize,configuredSize]=await description.evaluate(el=>{
+    const style=getComputedStyle(el);
+    return [style.fontSize,style.getPropertyValue('--nic-subtext-font-size').trim()||'14px'];
+   });
+   assert.equal(subtextSize,configuredSize,'Previously copied tiles use the configured subtext size');
    await checkTileOrientation(width<900);
    if(width===390){
     await page.setViewportSize({width:844,height:390});
     await checkTileOrientation(false);
+    const [singleWidth,multipleWidth,gridWidth]=await tile.evaluate(el=>{
+     const grid=el.parentElement;
+     const gridWidth=grid.getBoundingClientRect().width;
+     const singleWidth=el.getBoundingClientRect().width;
+     const secondTile=el.cloneNode(true);
+     grid.append(secondTile);
+     const multipleWidth=el.getBoundingClientRect().width;
+     secondTile.remove();
+     return [singleWidth,multipleWidth,gridWidth];
+    });
+    assert(Math.abs(singleWidth-gridWidth)<=1,'A lone tile spans the grid on mobile landscape');
+    assert(multipleWidth<gridWidth/2,'Two tiles retain two columns on mobile landscape');
     await page.setViewportSize({width:390,height:900});
     await checkTileOrientation(true);
    }
