@@ -145,7 +145,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    if(['budget','own','flip'].includes(key))assert.equal(await page.evaluate(()=>currentDealType()),key,'Menu selection retains actual calculation mode after header measurement');
    if(width<=700)assert.equal(await page.locator('#nicMobileCalculatorSelect').inputValue(),key,'Portrait dropdown reflects active calculator');
    const stickyGap=await page.locator('.nic-actions-above-footer').evaluate(el=>({position:getComputedStyle(el).position,bottom:getComputedStyle(el).bottom}));
-   assert.equal(stickyGap.position,'sticky','Calculator action row remains sticky');
+   assert.equal(stickyGap.position,width<=700?'fixed':'sticky','Calculator action row uses the expected viewport positioning');
    assert.equal(stickyGap.bottom,'5px','Sticky calculator action row stays five pixels above the viewport edge');
    assert.equal(await page.evaluate(()=>performance.timeOrigin),origin,'calculator changes must keep same document');
    assert.equal(await page.locator('.nic-tile-active').count(),1);
