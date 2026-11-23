@@ -538,6 +538,7 @@ function initWelcome(){
  document.body.classList.remove('nic-finance-active');
  document.body.classList.add('nic-home-active');
  active='home';
+ window.NICExplanations.showHome(intro.querySelector('.nic-home-copy'));
  document.documentElement.dataset.calculator='home';document.body.dataset.calculator='home';
  // The real calculator menu becomes visible again when a calculator opens.
  if(menu){menu.hidden=false;menu.removeAttribute('aria-hidden');}

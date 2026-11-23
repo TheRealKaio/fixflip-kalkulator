@@ -1,9 +1,9 @@
 /* Complete route copy is also rendered in the initial HTML for crawlers. */
 /* EXPLANATION_TEMPLATES */
 window.NICExplanations=(()=>{
- const compactPortrait=matchMedia('(max-width:700px) and (orientation:portrait)');
+ const compact=matchMedia('(max-width:700px), (max-width:1024px) and (max-height:600px) and (orientation:landscape)');
  const bound=new WeakSet(),observed=new WeakSet();
- let active=null,queued=false,lastSignature='';
+ let active=null,homeCard=null,homeCompact=null,queued=false,lastSignature='';
  function markup(key){
   const settings=window.NICSettings?.current,content=settings?.content?.[key];
   if(!content)return explanationTemplates[key];
@@ -31,7 +31,7 @@ window.NICExplanations=(()=>{
  }
 
  function bind(card){
-  const details=card.querySelector('details'),summary=details.querySelector('summary');
+  const details=card.querySelector(':scope > details'),summary=details.querySelector(':scope > summary');
   if(!bound.has(details)){
    bound.add(details);
    details.addEventListener('toggle',()=>{
@@ -40,11 +40,41 @@ window.NICExplanations=(()=>{
   }
   return details;
  }
+ function introText(key){
+  const settings=window.NICSettings?.current;
+  const content=settings?.content?.[key];
+  if(content){
+   const body=window.NICSettings.contentFragment(content.description,settings);
+   return (body.querySelector('p')?.textContent??body.textContent).trim();
+  }
+  const template=document.createElement('template');
+  template.innerHTML=explanationTemplates[key]||'';
+  return template.content.querySelector('.nic-explanation-intro')?.textContent.trim()||'';
+ }
+ function measureMobile(card){
+  const preview=card.querySelector(':scope > .nic-mobile-intro')||document.createElement('p');
+  const text=introText(card===homeCard?'welcome':card.dataset.nicExplanation);
+  if(!text){preview.remove();return;}
+  preview.className='nic-mobile-intro nic-mobile-intro-probe';
+  card.querySelector(':scope > h2').after(preview);
+  let lines=Infinity;
+  for(const key of ['welcome',...Object.keys(explanationTemplates).filter(key=>key!=='settlement')]){
+   const paragraph=introText(key);
+   if(!paragraph)continue;
+   preview.textContent=paragraph;
+   const lineHeight=parseFloat(getComputedStyle(preview).lineHeight);
+   lines=Math.min(lines,Math.max(1,Math.round(preview.getBoundingClientRect().height/lineHeight)));
+  }
+  card.style.setProperty('--nic-mobile-intro-lines',String(lines));
+  preview.textContent=text;
+  preview.classList.remove('nic-mobile-intro-probe');
+ }
  function measure(){
   queued=false;
-  const card=document.querySelector('[data-nic-explanation]'),main=card?.parentElement;
-  if(!card||!main)return;
-  if(compactPortrait.matches&&card.dataset.nicExplanation!=='settlement'){main.style.setProperty('--nic-explanation-height','0px');return;}
+  const card=homeCard||document.querySelector('[data-nic-explanation]'),main=card?.closest('main');
+  if(!card||!main||!card.getBoundingClientRect().width)return;
+  if(compact.matches){measureMobile(card);main.style.removeProperty('--nic-explanation-height');return;}
+  if(card===homeCard)return;
   const rect=card.getBoundingClientRect(),style=getComputedStyle(card),width=parseFloat(style.width);
   if(!width||!rect.width)return;
   const signature=[width,style.font,getComputedStyle(card.querySelector('h2')).font,getComputedStyle(card.querySelector('h3')||card.querySelector('h2')).font].join('|');
@@ -70,7 +100,21 @@ window.NICExplanations=(()=>{
  }
  function schedule(){if(!queued){queued=true;requestAnimationFrame(measure);}}
  const observer=new ResizeObserver(schedule);
+ function observe(main){
+  if(!observed.has(main)){observer.observe(main);observed.add(main);}
+ }
+ function showHome(card){
+  const details=bind(card);
+  if(homeCard!==card||homeCompact!==compact.matches){
+   homeCard=card;homeCompact=compact.matches;
+   details.open=!homeCompact;
+  }
+  details.querySelector('summary').textContent=details.open?'weniger anzeigen':'weiterlesen';
+  observe(card.closest('main'));
+  schedule();
+ }
  function show(key){
+  if(key!=='home')homeCard=null;
   const main=document.querySelector('.app>main.section');if(!main)return;
   for(const card of main.querySelectorAll('[data-nic-explanation]'))if(card.dataset.nicExplanation!==key)card.remove();
   if(!explanationTemplates[key]){active=null;return;}
@@ -85,17 +129,17 @@ window.NICExplanations=(()=>{
   details.open=active===key&&wasOpen;
   card.querySelector('summary').textContent=details.open?'weniger anzeigen':'weiterlesen';
   active=key;
-  if(!observed.has(main)){observer.observe(main);observed.add(main);}
+  observe(main);
   schedule();
  }
- compactPortrait.addEventListener('change',()=>{lastSignature='';schedule();});
+ compact.addEventListener('change',()=>{lastSignature='';if(homeCard)showHome(homeCard);else schedule();});
  window.addEventListener('nic-settings-updated',()=>{lastSignature='';schedule();});
  window.addEventListener('nic-auth-changed',()=>{lastSignature='';schedule();});
  document.fonts?.ready.then(()=>{lastSignature='';schedule();});
  function clear(){
   const main=document.querySelector('.app>main.section');
   if(main){main.querySelectorAll('[data-nic-explanation]').forEach(card=>card.remove());main.style.removeProperty('--nic-explanation-height');}
-  active=null;lastSignature='';
+  active=null;homeCard=null;lastSignature='';
  }
- return {show,clear,refresh(){lastSignature='';if(active)show(active);else schedule();}};
+ return {show,showHome,clear,refresh(){lastSignature='';if(active)show(active);else schedule();}};
 })();

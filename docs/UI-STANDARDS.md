@@ -236,7 +236,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Die bestehende Server-Schnittstelle speichert die normalisierten Contentdaten kompatibel unter `meta.content`; `content` und `meta.content` referenzieren im Frontend dieselben Daten. Beim Laden werden beide Formate unterstützt. Keine zweite redaktionelle Quelle und keine Änderung an Datenbank, Zugangsdaten oder Serverinstallation.
 - Schriftfamilie sowie Fließtext-, H2- und H3-Größen kommen unverändert aus
   Admin → Layout. Farben und Radius bleiben an die gemeinsamen Variablen gebunden.
-- Auf Desktop, Tablet und Mobil sind zunächst genau die ersten beiden Absätze
+- Auf Desktop und Tablet sind auf den Rechnerseiten zunächst die ersten beiden Absätze
   einschließlich der Überschrift des zweiten Abschnitts sichtbar. Rechts unten
   steht `weiterlesen`. Ein natives `details`/`summary` öffnet den
   verbleibenden Text; `weniger anzeigen` schließt ihn wieder. Beim Wechsel
@@ -440,11 +440,12 @@ Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAY
 - Statisches HTML erhält Texte und FAQ-Struktur; CSS-Quelltext erscheint nicht als sichtbarer Text. Content-CSS wird beim Anwenden der Einstellungen lokal ergänzt.
 - Keine automatische Übernahme von Beispieltext in veröffentlichte Inhalte; nur develop.
 
-## Fünf Rechner: kompakte Contentbox im mobilen Hochformat
-- Bis 700 px im Hochformat steht die Contentbox von Budget, Eigenheim, Vermietung, Fix & Flip und Finanzierung wieder zuerst unter dem Bildheader, vor den Rechnereingaben.
-- Zunächst geschlossen: nur die ersten maximal zwei Titelzeilen plus „weiterlesen“. Der Einleitungsabsatz bleibt geschlossen unsichtbar; keine vom langen Text abgeleitete Mindesthöhe.
-- „weiterlesen“ zeigt den vollständigen Titel, Einleitung und restlichen Text. Erneutes Schließen sowie Tastaturbedienung bleiben erhalten; beim Rechnerwechsel beginnt die Box geschlossen.
-- Mieterabrechnung, Mobil-Querformat, Tablet/Desktop behalten ihre bisherige Darstellung. Alle Texte bleiben im DOM vorhanden und über dieselben Adminfelder bearbeitbar.
+## Startseite und fünf Rechner: mobiles Weiterlesen
+
+- Die Einleitungsbox steht auf der Startseite vor den Kachelgruppen und auf den Rechnerseiten vor den Eingaben. Die mobile Darstellung gilt bis 700 px Breite sowie im Querformat bis 1024 px Breite und 600 px Höhe.
+- Eingeklappt zeigt die Box bis zu zwei Titelzeilen und den Anfang des ersten Absatzes. Bei aktueller Breite und Schriftgröße bestimmt der kürzeste erste Absatz aus Startseite und fünf Rechnern die gemeinsame Zahl der sichtbaren Zeilen. Längere Absätze werden an dieser Grenze mit Auslassungszeichen gekürzt.
+- „weiterlesen“ öffnet den gesamten Text. „weniger anzeigen“ klappt ihn wieder ein. Die Funktion ist mit der Tastatur bedienbar. Beim Seitenwechsel beginnt die Einleitung eingeklappt.
+- Die Startseite zeigt auf größeren Bildschirmen die ganze Einleitung. Die Mieterabrechnung ist eine durchgehende Contentbox in allen Ansichten. Die Texte bleiben im HTML vorhanden und über dieselben Adminfelder bearbeitbar.
 
 ## Nummerierte Rechnerüberschriften auf allen Einstiegswegen
 - Die bestehenden nummerierten Ergebnisüberschriften gelten auf direkten Rechner-URLs ebenso wie beim Einstieg über die Startseite und beim internen Wechsel. Der Build muss die Korrektur auf alle fünf Rechner anwenden, nicht nur index.html.
