@@ -944,9 +944,10 @@ body:not(.nic-embed) .footer-note{padding-top:5px!important}
  body:not(.nic-embed):not(.nic-home-active):not(.nic-content-active):not(.nic-admin-open):not(.nic-legal-open) .app:has(> .nic-actions-above-footer:not([hidden])) {
   padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px)) !important;
  }
- body:not(.nic-embed) .app > .nic-actions-above-footer {
+ :root body:not(.nic-embed) .app > .bottom.nic-actions-above-footer {
   position:fixed !important;
   inset:auto 0 calc(5px + env(safe-area-inset-bottom, 0px)) !important;
   margin:0 auto !important;
+  margin-bottom:0 !important;
  }
 }
