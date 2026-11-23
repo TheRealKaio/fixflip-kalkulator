@@ -166,8 +166,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   willkürlich mit `word-break: break-all` trennen. Keine festen Zeilenumbrüche
   zur Korrektur einer einzelnen Bildschirmbreite.
 - Sanierungsaufteilung, Modernisierung und monatliche Budgetausgaben zeigen je einen
-  grünen Button „Vorschläge übernehmen“ in Grundschriftgröße und ein kleines rotes X.
-  Der Button wächst bei Textumbruch. Das X setzt die Werte der geöffneten Maske
+  grünen Button „Vorschläge übernehmen“ und ein kleines rotes X. Im Mobil-Hochformat
+  nutzt der grüne Button „Untertexte (px)“, sonst die Grundschriftgröße. Reicht die
+  Breite für die Beschriftung nicht aus, wächst der Button mit dem Textumbruch. Das X setzt die Werte der geöffneten Maske
   nach Bestätigung zurück.
 - Inhalte wachsen mit der eingestellten Schriftgröße. Überschriften, Buttons
   und Untertexte weder abschneiden noch auf feste Texthöhen begrenzen.
