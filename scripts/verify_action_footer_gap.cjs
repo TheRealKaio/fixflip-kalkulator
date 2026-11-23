@@ -35,12 +35,18 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
       const a=actions.getBoundingClientRect(),f=footer.getBoundingClientRect(),style=getComputedStyle(bar);
       const zoom=parseFloat(getComputedStyle(document.body).zoom)||1;
       return {gap:f.top-a.bottom,minimum:(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nic-content-footer-gap'))||16)*zoom,
-       margin:parseFloat(style.marginBottom),position:style.position,bottom:style.bottom,barBottom:a.bottom,footerTop:f.top};
+       viewportBottom:innerHeight,footerBottom:f.bottom,margin:parseFloat(style.marginBottom),position:style.position,bottom:style.bottom,barBottom:a.bottom,footerTop:f.top};
      });
-     assert.equal(actual.position,'sticky');
+     const mobile=viewport.width===390||viewport.width===844;
+     assert.equal(actual.position,mobile?'fixed':'sticky');
      assert.equal(actual.bottom,'5px');
+     if(mobile){
+      assert(Math.abs(actual.viewportBottom-actual.barBottom-5)<1,'Mobile actions stay at the viewport bottom: '+JSON.stringify({viewport,slug,position,actual}));
+      if(position==='end')assert(actual.footerBottom<actual.barBottom-48,'Footer can scroll clear of the fixed actions');
+     }else{
      assert(actual.margin>=16,'Missing layout footer margin: '+JSON.stringify({viewport,slug,position,actual}));
      assert(actual.gap>=actual.minimum-.5,'Action bar touches/overlaps footer: '+JSON.stringify({viewport,slug,position,actual}));
+     }
      if(position==='footer')await page.screenshot({path:'tmp/action-footer-'+viewport.width+'-'+viewport.height+'-'+slug+'.png'});
     }
     console.log('PASS action/footer gap',viewport.width,viewport.height,slug);
