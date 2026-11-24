@@ -193,13 +193,13 @@ s=s.replace("service-worker.js?v=8.319","service-worker.js?v=8.320")
 # bereits auf Seite 2. Vor dem Sanierungsblock keinen weiteren Seitenwechsel
 # erzwingen, damit zusammengehörende Zahlen und Werte beisammenbleiben.
 rep(
-'''if(!isOwnUse){
+'''  if(!isOwnUse){
     addPage();
     page2Section("Sanierung", 32);
-} else {''',
-'''if(!isOwnUse){
+  } else {''',
+'''  if(!isOwnUse){
     page2Section("Sanierung", 32);
-} else {''',
+  } else {''',
 "fixflip extra page break"
 )
 
