@@ -95,7 +95,7 @@ startup_new_with_notice = startup_new.replace(
     1,
 )
 source = source.replace(startup_new, startup_new_with_notice, 1)
-notice = '<p id="budgetTransferNotice" class="budget-transfer-notice" role="status" aria-live="polite" hidden>Budgetwerte übernommen. Deine Monatsrate bleibt fix.</p>'
+notice = '<p id="budgetTransferNotice" class="budget-transfer-notice mini" role="status" aria-live="polite" hidden>Budgetwerte übernommen. Deine Monatsrate bleibt fix.</p>'
 if 'id="budgetTransferNotice"' not in source:
     source = source.replace('<section class="card"><h2>1. Finanzierung einstellen</h2>', '<section class="card"><h2>1. Finanzierung einstellen</h2>' + notice, 1)
 finance.write_text(source, encoding="utf-8")
