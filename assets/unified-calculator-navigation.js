@@ -554,17 +554,13 @@ window.addEventListener('DOMContentLoaded',()=>{
  function startDirectRoute(){
   const key=routeKey(location.pathname);
   if(key){
+   if(key===active&&key==='finance'&&!financeHost)active=null;
    if(key===active){
     applyHeader(key);
     window.NICHeader?.refresh();
     window.NICSettings?.syncCalculatorMenu(key);
    }else select(key);
   }
-  initResponsiveCalculatorMenu();
- }
- const initialRoute=routeKey(location.pathname);
- if(calculators.some(item=>item.id===initialRoute)){
-  select(initialRoute);
   initResponsiveCalculatorMenu();
  }
  window.NICSettings.init().then(startDirectRoute,async error=>{
