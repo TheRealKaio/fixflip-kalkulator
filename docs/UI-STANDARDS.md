@@ -189,6 +189,12 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   sich an Zins und Tilgung an. Sondertilgung startet bei null. „Finanzierung neu
   kalkulieren“ löscht den Übernahmestatus und gespeicherte Eingaben und stellt die
   Standardwerte wieder her.
+- Bei der Budgetübernahme entspricht der übertragene Darlehensbetrag dem gerundet
+  angezeigten Budgetbetrag. Die Bestätigung bleibt kurz sichtbar oben im Viewport;
+  nach dem Wechsel zur Finanzierung steht die Seite am Anfang.
+- Website-Buttons und klickbare Startseiten-Kacheln zeigen beim Darüberfahren eine
+  leichte Abdunklung mit stärkerem Schatten und beim Drücken eine sichtbare
+  Rückmeldung. Grundfarben und Formen bleiben unverändert.
 - Inhalte wachsen mit der eingestellten Schriftgröße. Überschriften, Buttons
   und Untertexte weder abschneiden noch auf feste Texthöhen begrenzen.
 - Sichtbare Bezeichnungen: „Mieterabrechnung“, „Warum ImmoCheck?“ sowie am

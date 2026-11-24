@@ -37,10 +37,11 @@ listener = '''
 if($("budgetFinanceTransfer")){
   $("budgetFinanceTransfer").addEventListener("click",()=>{
     const m=budgetModel();
-    const transfer={version:1,monthlyRate:Math.max(0,Number(m.monthlyRate)||0),loan:Math.max(0,Number(m.loan)||0),interest:Number(m.interestPct)*100,repay:Number(m.repaymentPct)*100,extra:0,years:10};
+    const transfer={version:1,monthlyRate:Math.max(0,Number(m.monthlyRate)||0),loan:Math.max(0,Math.round(Number(m.loan)||0)),interest:Number(m.interestPct)*100,repay:Number(m.repaymentPct)*100,extra:0,years:10};
     try{localStorage.setItem("nic_financing_budget_transfer_v1",JSON.stringify(transfer));localStorage.setItem("nic_financing_interest_manual_v1","1");}
     catch(_){try{localStorage.removeItem("nic_financing_budget_transfer_v1");localStorage.removeItem("nic_financing_interest_manual_v1");}catch(__){}alert("Die Budgetwerte konnten nicht für den Finanzierungsrechner übernommen werden.");return;}
     if(window.NICCalculatorNavigation?.select) window.NICCalculatorNavigation.select("finance",true);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"instant"})));
   });
 }
 '''
@@ -48,10 +49,11 @@ listener_old = '''
 if($("budgetFinanceTransfer")){
   $("budgetFinanceTransfer").addEventListener("click",()=>{
     const m=budgetModel();
-    const transfer={version:1,monthlyRate:Math.max(0,Number(m.monthlyRate)||0),loan:Math.max(0,Number(m.loan)||0),interest:Number(m.interestPct)*100,repay:Number(m.repaymentPct)*100,extra:0,years:10};
+    const transfer={version:1,monthlyRate:Math.max(0,Number(m.monthlyRate)||0),loan:Math.max(0,Math.round(Number(m.loan)||0)),interest:Number(m.interestPct)*100,repay:Number(m.repaymentPct)*100,extra:0,years:10};
     try{localStorage.setItem("nic_financing_budget_transfer_v1",JSON.stringify(transfer));}
     catch(_){alert("Die Budgetwerte konnten nicht für den Finanzierungsrechner übernommen werden.");return;}
     if(window.NICCalculatorNavigation?.select) window.NICCalculatorNavigation.select("finance",true);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"instant"})));
   });
 }
 '''
@@ -69,13 +71,20 @@ finance = Path("assets/financing.html")
 source = finance.read_text(encoding="utf-8")
 source = source.replace(
     "const $=id=>document.getElementById(id), K='nic_financing_slots_v1', F='nic_financing_draft_v1';",
-    "const $=id=>document.getElementById(id), K='nic_financing_slots_v1', F='nic_financing_draft_v1', TRANSFER='nic_financing_budget_transfer_v1', FIXED='nic_financing_fixed_monthly_rate_v1';\nlet fixedMonthlyRate=null;try{const stored=localStorage.getItem(FIXED);if(stored!==null&&Number.isFinite(Number(stored))&&Number(stored)>=0)fixedMonthlyRate=Number(stored)}catch(_){}"
+    "const $=id=>document.getElementById(id), K='nic_financing_slots_v1', F='nic_financing_draft_v1', TRANSFER='nic_financing_budget_transfer_v1', FIXED='nic_financing_fixed_monthly_rate_v1';\nlet fixedMonthlyRate=null,preserveImportedLoan=false;try{const stored=localStorage.getItem(FIXED);if(stored!==null&&Number.isFinite(Number(stored))&&Number(stored)>=0)fixedMonthlyRate=Number(stored)}catch(_){}"
+)
+source = source.replace(
+    "let fixedMonthlyRate=null;try{const stored=localStorage.getItem(FIXED);if(stored!==null&&Number.isFinite(Number(stored))&&Number(stored)>=0)fixedMonthlyRate=Number(stored)}catch(_){}",
+    "let fixedMonthlyRate=null,preserveImportedLoan=false;try{const stored=localStorage.getItem(FIXED);if(stored!==null&&Number.isFinite(Number(stored))&&Number(stored)>=0)fixedMonthlyRate=Number(stored)}catch(_){}",
+    1,
 )
 calculate_old = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));const monthly=loan*(interest+repay)/1200,annualExtra=loan*extra/100;"
 calculate_transfer_old = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.round(fixedMonthlyRate*1200/rateFactor*100)/100)):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
-calculate_new = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.floor(fixedMonthlyRate*1200/rateFactor))):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
+calculate_new = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;if(preserveImportedLoan){loan=Math.max(0,Math.min(1e9,Math.round(loan)));preserveImportedLoan=false;}else loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.floor(fixedMonthlyRate*1200/rateFactor))):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
 source = source.replace(calculate_old, calculate_new, 1)
 source = source.replace(calculate_transfer_old, calculate_new, 1)
+calculate_floor_old = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.floor(fixedMonthlyRate*1200/rateFactor))):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
+source = source.replace(calculate_floor_old, calculate_new, 1)
 reset_old = "$('newCalc').addEventListener('click',()=>{try{localStorage.removeItem('nic_financing_interest_manual_v1')}catch(_){}setValues({...defaults,interest:currentRate??defaults.interest});$('loan').focus({preventScroll:false});$('loan').select();});"
 reset_new = "$('newCalc').addEventListener('click',()=>{try{[F,TRANSFER,FIXED,'nic_financing_interest_manual_v1'].forEach(key=>localStorage.removeItem(key));}catch(_){}fixedMonthlyRate=null;setValues({...defaults,interest:currentRate??defaults.interest});$('loan').focus({preventScroll:false});$('loan').select();});"
 if reset_old not in source and reset_new not in source:
@@ -84,17 +93,22 @@ source = source.replace(reset_old, reset_new, 1)
 
 startup_old = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}loadRates();"
 startup_transfer_old = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.removeItem(TRANSFER);setValues({loan:Number(transfer.loan)||0,interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}loadRates();"
-startup_new = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.setItem('nic_financing_interest_manual_v1','1');localStorage.removeItem(TRANSFER);setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}loadRates();"
+startup_new = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.setItem('nic_financing_interest_manual_v1','1');localStorage.removeItem(TRANSFER);preserveImportedLoan=true;setValues({loan:Math.round(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}loadRates();"
 if startup_old not in source and startup_transfer_old not in source and startup_new not in source and "const notice=$('budgetTransferNotice')" not in source:
     raise SystemExit("Financing startup anchor missing")
 source = source.replace(startup_old, startup_new, 1)
 source = source.replace(startup_transfer_old, startup_new, 1)
 startup_new_with_notice = startup_new.replace(
     "setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});",
-    "setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});const notice=$('budgetTransferNotice');if(notice){notice.hidden=false;window.setTimeout(()=>{notice.hidden=true},6500)}",
+    "setValues({loan:Math.round(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});const notice=$('budgetTransferNotice');if(notice){notice.hidden=false;window.setTimeout(()=>{notice.hidden=true},6500)}",
     1,
 )
 source = source.replace(startup_new, startup_new_with_notice, 1)
+source = source.replace(
+    "setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});",
+    "preserveImportedLoan=true;setValues({loan:Math.round(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});",
+    1,
+)
 notice = '<p id="budgetTransferNotice" class="budget-transfer-notice mini" role="status" aria-live="polite" hidden>Budgetwerte übernommen. Deine Monatsrate bleibt fix.</p>'
 if 'id="budgetTransferNotice"' not in source:
     source = source.replace('<section class="card"><h2>1. Finanzierung einstellen</h2>', '<section class="card"><h2>1. Finanzierung einstellen</h2>' + notice, 1)
