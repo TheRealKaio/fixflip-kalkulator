@@ -80,11 +80,17 @@ source = source.replace(
 )
 calculate_old = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));const monthly=loan*(interest+repay)/1200,annualExtra=loan*extra/100;"
 calculate_transfer_old = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.round(fixedMonthlyRate*1200/rateFactor*100)/100)):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
-calculate_new = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;if(preserveImportedLoan){loan=Math.max(0,Math.min(1e9,Math.round(loan)));preserveImportedLoan=false;}else loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.floor(fixedMonthlyRate*1200/rateFactor))):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
+calculate_new = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;if(typeof preserveImportedLoan!=='undefined'&&preserveImportedLoan){loan=Math.max(0,Math.min(1e9,Math.round(loan)));preserveImportedLoan=false;}else loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.floor(fixedMonthlyRate*1200/rateFactor))):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
 source = source.replace(calculate_old, calculate_new, 1)
 source = source.replace(calculate_transfer_old, calculate_new, 1)
 calculate_floor_old = "function calculate(){let {loan,interest,repay,extra,years}=values();loan=Math.max(0,Math.min(1e9,loan));let monthly=loan*(interest+repay)/1200;if(fixedMonthlyRate!==null){const rateFactor=interest+repay;loan=rateFactor>0?Math.max(0,Math.min(1e9,Math.floor(fixedMonthlyRate*1200/rateFactor))):0;monthly=fixedMonthlyRate;$('loan').value=String(loan);$('loan').readOnly=true;}else $('loan').readOnly=false;const annualExtra=loan*extra/100;"
 source = source.replace(calculate_floor_old, calculate_new, 1)
+calculate_new_before_isolated_check = calculate_new.replace(
+    "if(typeof preserveImportedLoan!=='undefined'&&preserveImportedLoan)",
+    "if(preserveImportedLoan)",
+    1,
+)
+source = source.replace(calculate_new_before_isolated_check, calculate_new, 1)
 reset_old = "$('newCalc').addEventListener('click',()=>{try{localStorage.removeItem('nic_financing_interest_manual_v1')}catch(_){}setValues({...defaults,interest:currentRate??defaults.interest});$('loan').focus({preventScroll:false});$('loan').select();});"
 reset_new = "$('newCalc').addEventListener('click',()=>{try{[F,TRANSFER,FIXED,'nic_financing_interest_manual_v1'].forEach(key=>localStorage.removeItem(key));}catch(_){}fixedMonthlyRate=null;setValues({...defaults,interest:currentRate??defaults.interest});$('loan').focus({preventScroll:false});$('loan').select();});"
 if reset_old not in source and reset_new not in source:
