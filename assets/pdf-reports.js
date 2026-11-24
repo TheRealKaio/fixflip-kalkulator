@@ -170,7 +170,7 @@ function wrapFinanceParagraph(doc,text,width){
 }
 
 function drawFinanceSummary(doc,m){
- const x=16,top=50,width=178,padding=10,fontSize=9.3,lineHeightFactor=1.18;
+ const x=16,top=50,width=178,padding=10,fontSize=9,lineHeightFactor=1.18;
  const innerWidth=width-2*padding;
  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);
  doc.text('Zusammenfassung deiner Finanzierung',x,45);
