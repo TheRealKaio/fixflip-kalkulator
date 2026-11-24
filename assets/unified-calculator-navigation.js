@@ -551,8 +551,11 @@ window.addEventListener('DOMContentLoaded',()=>{
  createSiteNavigation();
  // The shared calculator menu may be inserted after DOMContentLoaded by the
  // site build. Initialize only after the direct route has its real menu.
+ function isDirectFinanceRoute(){
+  return routeKey(location.pathname)==='finance'||document.documentElement.dataset.nicPage==='finance';
+ }
  function ensureDirectFinanceRoute(){
-  if(routeKey(location.pathname)!=='finance')return true;
+  if(!isDirectFinanceRoute())return true;
   try{
    initResponsiveCalculatorMenu();
    if(!document.getElementById('nicFinanceModule'))select('finance');
@@ -568,7 +571,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>observer.disconnect(),15000);
  }
  function startDirectRoute(){
-  const key=routeKey(location.pathname);
+  const key=routeKey(location.pathname)||(
+   document.documentElement.dataset.nicPage==='finance'?'finance':null
+  );
   if(key==='finance'){startDirectFinanceWhenMenuExists();return;}
   initResponsiveCalculatorMenu();
   if(key){
