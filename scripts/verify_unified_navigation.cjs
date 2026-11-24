@@ -409,7 +409,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   await page.goto('http://localhost/budget/');
   await page.waitForFunction(()=>window.NICCalculators?.active==='budget'&&window.NICSettings.ready);
   await page.locator('#budgetNetIncome').fill('4000');
-  await page.locator('#budgetAssumptionsToggle').click();
+  const assumptionsToggle=page.locator('#budgetAssumptionsToggle');
+  if(await assumptionsToggle.getAttribute('aria-expanded')!=='true')await assumptionsToggle.click();
   await page.locator('#budgetInterest').fill('6.25');
   const budgetValues=await page.evaluate(()=>{
    const amount=id=>Number((document.getElementById(id).innerText||'').replace(/[^\d]/g,''));

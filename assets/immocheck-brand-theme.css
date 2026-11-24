@@ -549,13 +549,13 @@ body:not(.nic-embed) :where(button,.button,.btn,[role="button"],input[type="butt
  transition:filter .14s ease,box-shadow .14s ease,transform .12s ease;
 }
 body:not(.nic-embed) :where(button,.button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],.deal-type-option,.nic-copy-tile,.nic-settlement-action):not(:disabled):hover{
- filter:brightness(.94);
- box-shadow:0 5px 12px rgba(15,23,42,.16);
+ filter:brightness(.94)!important;
+ box-shadow:0 5px 12px rgba(15,23,42,.16)!important;
 }
 body:not(.nic-embed) :where(button,.button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],.deal-type-option,.nic-copy-tile,.nic-settlement-action):not(:disabled):active{
- transform:translateY(2px);
- filter:brightness(.88);
- box-shadow:0 1px 2px rgba(15,23,42,.16);
+ transform:translateY(2px)!important;
+ filter:brightness(.88)!important;
+ box-shadow:0 1px 2px rgba(15,23,42,.16)!important;
 }
 @media(prefers-reduced-motion:reduce){
  body:not(.nic-embed) :where(button,.button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],.deal-type-option,.nic-copy-tile,.nic-settlement-action){transition:none}
