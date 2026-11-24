@@ -136,7 +136,7 @@ if "function applyBudgetTransfer()" not in source:
         raise SystemExit("Budget transfer import block missing")
     source = source.replace(transfer_apply, "applyBudgetTransfer();", 1)
     source = source.replace("try{const saved=JSON.parse(localStorage.getItem(F)||'null');", transfer_function + "try{const saved=JSON.parse(localStorage.getItem(F)||'null');", 1)
-notice = '<p id="budgetTransferNotice" class="budget-transfer-notice mini" role="status" aria-live="polite" hidden>Budgetwerte übernommen. Deine Monatsrate bleibt fix.</p>'
+notice = '<p id="budgetTransferNotice" class="budget-transfer-notice mini" role="status" aria-live="polite" hidden>Budgetwerte übernommen.<br> Deine Monatsrate bleibt fix.</p>'
 if 'id="budgetTransferNotice"' not in source:
     source = source.replace('<section class="card"><h2>1. Finanzierung einstellen</h2>', '<section class="card"><h2>1. Finanzierung einstellen</h2>' + notice, 1)
 finance.write_text(source, encoding="utf-8")

@@ -193,6 +193,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Bei der Budgetübernahme entspricht der übertragene Darlehensbetrag dem gerundet
   angezeigten Budgetbetrag. Die Bestätigung bleibt kurz sichtbar oben im Viewport;
   nach dem Wechsel zur Finanzierung steht die Seite am Anfang.
+  In der Bestätigung beginnt „Deine Monatsrate bleibt fix.“ auf einer neuen Zeile.
 - Website-Buttons und klickbare Startseiten-Kacheln zeigen beim Darüberfahren eine
   leichte Abdunklung mit stärkerem Schatten und beim Drücken eine sichtbare
   Rückmeldung. Grundfarben und Formen bleiben unverändert.
