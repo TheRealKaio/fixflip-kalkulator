@@ -188,6 +188,21 @@ rep(
 s=s.replace("V8.319","V8.320")
 s=s.replace("service-worker.js?v=8.319","service-worker.js?v=8.320")
 
+
+# Fix & Flip: die Einzelpositionen starten nach dem vereinbarten Umbruch
+# bereits auf Seite 2. Vor dem Sanierungsblock keinen weiteren Seitenwechsel
+# erzwingen, damit zusammengehörende Zahlen und Werte beisammenbleiben.
+rep(
+'''if(!isOwnUse){
+    addPage();
+    page2Section("Sanierung", 32);
+} else {''',
+'''if(!isOwnUse){
+    page2Section("Sanierung", 32);
+} else {''',
+"fixflip extra page break"
+)
+
 required=[
   'y+=4.7;',
   'y += 2.7;',
