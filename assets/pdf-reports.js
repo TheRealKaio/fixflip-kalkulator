@@ -134,20 +134,59 @@ function financeSummaryParagraphs(m){
  }
  return paragraphs;
 }
+// Discretionary breaks for the fixed German copy in financeSummaryParagraphs.
+const financeHyphenation=new Map([
+ 'Dar-le-hen','Zins-bin-dung','an-fäng-li-chen','Son-der-til-gun-gen',
+ 'An-fangs-til-gung','Pro-zent','Ori-en-tie-rung','Ori-en-tie-rungs-wert',
+ 'Rest-schuld','Mo-nats-ra-te','ent-schei-dend','Mo-dell-rech-nung',
+ 'Dar-le-hens-sum-me','Jah-res-en-de','vor-ge-se-he-nen','Ver-trag',
+ 'fi-nan-zi-el-len','Spiel-raum','Ab-schluss','aus-rei-chen-de','Rück-la-ge',
+ 'An-schluss-fi-nan-zie-rung','Sze-na-ri-en','bei-spiel-haft','Zins-sät-zen',
+ 'Kon-di-ti-o-nen','voll-stän-dig','zu-rück-ge-zahlt','An-nah-men',
+ 'er-for-der-lich','ver-ein-barst','lang-fris-tig','Be-din-gun-gen',
+ 'Son-der-til-gung','ur-sprüng-li-chen','kos-ten-frei','recht-zei-tig'
+].map(word=>[word.replace(/-/g,'').toLowerCase(),word.split('-')]));
+
+function wrapFinanceParagraph(doc,text,width){
+ const lines=[];
+ let line='';
+ for(let word of safe(text).split(/\s+/)){
+  const candidate=line?line+' '+word:word;
+  if(doc.getTextWidth(candidate)<=width){line=candidate;continue;}
+  const match=word.match(/^[\p{L}]+/u);
+  const parts=match && financeHyphenation.get(match[0].toLowerCase());
+  let split=0;
+  if(line && parts){
+   for(let i=1,length=0;i<parts.length;i++){
+    length+=parts[i-1].length;
+    if(length>=3 && match[0].length-length>=3 && doc.getTextWidth(line+' '+word.slice(0,length)+'-')<=width)split=length;
+   }
+  }
+  if(line)lines.push(split?line+' '+word.slice(0,split)+'-':line);
+  line=word.slice(split);
+ }
+ if(line)lines.push(line);
+ return lines;
+}
+
 function drawFinanceSummary(doc,m){
+ const x=16,top=50,width=178,padding=10,fontSize=9,lineHeightFactor=1.18;
+ const innerWidth=width-2*padding;
  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);
- doc.text('Zusammenfassung deiner Finanzierung',16,45);
- const paragraphs=financeSummaryParagraphs(m).map(text=>({
-  lines:doc.splitTextToSize(safe(text),172)
- }));
- const lineHeight=3.25,gap=1.6,padTop=5,padBottom=4;
- const boxHeight=padTop+padBottom+paragraphs.reduce((sum,p)=>sum+p.lines.length*lineHeight+gap,0)-gap;
- doc.setFillColor(247,249,252);doc.roundedRect(16,50,178,boxHeight,3,3,'F');
- let y=50+padTop;
- doc.setFont('helvetica','normal');doc.setFontSize(7.6);doc.setTextColor(71,85,105);
- for(const p of paragraphs){doc.text(p.lines,19,y,{lineHeightFactor:1.2});y+=p.lines.length*lineHeight+gap;}
- doc.setTextColor(23,32,51);
- return 50+boxHeight+8;
+ doc.text('Zusammenfassung deiner Finanzierung',x,45);
+ doc.setFont('helvetica','normal');doc.setFontSize(fontSize);doc.setTextColor(45,55,70);
+ const paragraphs=financeSummaryParagraphs(m).map(text=>wrapFinanceParagraph(doc,text,innerWidth));
+ const lineHeight=doc.getFontSize()/doc.internal.scaleFactor*lineHeightFactor;
+ const gap=lineHeight/2;
+ const boxHeight=2*padding+paragraphs.reduce((sum,lines)=>sum+lines.length*lineHeight,0)+(paragraphs.length-1)*gap;
+ doc.setFillColor(239,246,255);doc.setDrawColor(191,219,254);
+ doc.roundedRect(x,top,width,boxHeight,3,3,'FD');
+ let y=top+padding;
+ for(const lines of paragraphs){
+  doc.text(lines,x+padding,y,{align:'justify',maxWidth:innerWidth,baseline:'top',lineHeightFactor});
+  y+=lines.length*lineHeight+gap;
+ }
+ return top+boxHeight+11;
 }
 
 function financeDocument(values){
