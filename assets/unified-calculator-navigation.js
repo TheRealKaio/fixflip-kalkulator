@@ -120,12 +120,12 @@ function select(key,push=false){
   return;
  }
  if(!calculators.some(item=>item.id===key))throw new Error('Unknown calculator: '+key);
- if(active===key&&!(key==='finance'&&!financeHost))return;
+ if(active===key&&!(key==='finance'&&(!financeHost||!financeHost.isConnected)))return;
  document.body.classList.remove('nic-home-active','nic-content-active','nic-standard-header-page');
  document.documentElement.dataset.nicPage=key;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
  const y=scrollY,previousURL=location.href;
- if(key==='finance'&&!financeHost){
+ if(key==='finance'&&(!financeHost||!financeHost.isConnected)){
   const host=document.createElement('div');host.id='nicFinanceModule';host.hidden=true;(calculatorMenuAnchor||menu).after(host);
   financeHost=createFinance(host);
  }
