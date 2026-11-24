@@ -551,24 +551,37 @@ window.addEventListener('DOMContentLoaded',()=>{
  createSiteNavigation();
  // The shared calculator menu may be inserted after DOMContentLoaded by the
  // site build. Initialize only after the direct route has its real menu.
+ function ensureDirectFinanceRoute(){
+  if(routeKey(location.pathname)!=='finance')return true;
+  try{
+   initResponsiveCalculatorMenu();
+   if(!document.getElementById('nicFinanceModule'))select('finance');
+   return !!document.getElementById('nicFinanceModule');
+  }catch(error){console.error(error);return false;}
+ }
+ function startDirectFinanceWhenMenuExists(){
+  if(ensureDirectFinanceRoute())return;
+  const observer=new MutationObserver(()=>{
+   if(ensureDirectFinanceRoute())observer.disconnect();
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  setTimeout(()=>observer.disconnect(),15000);
+ }
  function startDirectRoute(){
-  initResponsiveCalculatorMenu();
   const key=routeKey(location.pathname);
+  if(key==='finance'){startDirectFinanceWhenMenuExists();return;}
+  initResponsiveCalculatorMenu();
   if(key){
-   if(key===active&&!(key==='finance'&&!financeHost)){
+   if(key===active){
     applyHeader(key);
     window.NICHeader?.refresh();
     window.NICSettings?.syncCalculatorMenu(key);
    }else select(key);
   }
  }
- // Ensure direct visits and browser refreshes mount financing immediately,
- // while leaving the other calculators on their settings-aware startup path.
- const initialRoute=routeKey(location.pathname);
- if(initialRoute==='finance'){
-  initResponsiveCalculatorMenu();
-  select(initialRoute);
- }
+ // Start the finance route immediately when its shared calculator menu appears;
+ // settings loading must not leave a direct visit on the default Budget view.
+ startDirectFinanceWhenMenuExists();
  window.NICSettings.init().then(startDirectRoute,async error=>{
   console.error(error);
   try{
