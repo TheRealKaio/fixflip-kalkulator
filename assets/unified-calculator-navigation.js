@@ -562,6 +562,13 @@ window.addEventListener('DOMContentLoaded',()=>{
    }else select(key);
   }
  }
+ // Ensure direct visits and browser refreshes mount financing immediately,
+ // while leaving the other calculators on their settings-aware startup path.
+ const initialRoute=routeKey(location.pathname);
+ if(initialRoute==='finance'){
+  initResponsiveCalculatorMenu();
+  select(initialRoute);
+ }
  window.NICSettings.init().then(startDirectRoute,async error=>{
   console.error(error);
   try{
