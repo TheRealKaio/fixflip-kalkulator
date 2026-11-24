@@ -120,7 +120,7 @@ function select(key,push=false){
   return;
  }
  if(!calculators.some(item=>item.id===key))throw new Error('Unknown calculator: '+key);
- if(active===key)return;
+ if(active===key&&!(key==='finance'&&!financeHost))return;
  document.body.classList.remove('nic-home-active','nic-content-active','nic-standard-header-page');
  document.documentElement.dataset.nicPage=key;
  const menu=document.querySelector('.deal-type-card');if(!menu)return;
@@ -554,17 +554,12 @@ window.addEventListener('DOMContentLoaded',()=>{
  function startDirectRoute(){
   const key=routeKey(location.pathname);
   if(key){
-   if(key===active){
+   if(key===active&&!(key==='finance'&&!financeHost)){
     applyHeader(key);
     window.NICHeader?.refresh();
     window.NICSettings?.syncCalculatorMenu(key);
    }else select(key);
   }
-  initResponsiveCalculatorMenu();
- }
- const initialRoute=routeKey(location.pathname);
- if(calculators.some(item=>item.id===initialRoute)){
-  select(initialRoute);
   initResponsiveCalculatorMenu();
  }
  window.NICSettings.init().then(startDirectRoute,async error=>{
