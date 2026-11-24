@@ -170,6 +170,16 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   nutzt der grüne Button „Untertexte (px)“, sonst die Grundschriftgröße. Reicht die
   Breite für die Beschriftung nicht aus, wächst der Button mit dem Textumbruch. Das X setzt die Werte der geöffneten Maske
   nach Bestätigung zurück.
+- Im Budget-Rechner steht unter Abschnitt 3 ein grüner Button „Mit Budget-Darlehen
+  kalkulieren“ in einer eigenen, mittig ausgerichteten Zeile. Seine Schriftgröße folgt
+  im Mobil-Hochformat „Untertexte (px)“, sonst der Grundschriftgröße. Er überträgt
+  Monatsrate, maximale Darlehenssumme, Sollzins und
+  anfängliche Tilgung in „Finanzierung & Restschuld“ und setzt den Betrachtungszeitraum
+  auf zehn Jahre. Dort bleibt die übernommene Monatsrate fix, während Sollzins,
+  Tilgung und Betrachtungszeitraum verändert werden können; die Darlehenssumme passt
+  sich an Zins und Tilgung an. Sondertilgung startet bei null. „Finanzierung neu
+  kalkulieren“ löscht den Übernahmestatus und gespeicherte Eingaben und stellt die
+  Standardwerte wieder her.
 - Inhalte wachsen mit der eingestellten Schriftgröße. Überschriften, Buttons
   und Untertexte weder abschneiden noch auf feste Texthöhen begrenzen.
 - Sichtbare Bezeichnungen: „Mieterabrechnung“, „Warum ImmoCheck?“ sowie am
