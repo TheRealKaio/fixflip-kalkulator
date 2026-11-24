@@ -57,14 +57,22 @@ if($("budgetFinanceTransfer")){
   });
 }
 '''
-html = html.replace(listener_old, listener, 1)
+html, listener_replaced = re.subn(
+    r'\nif\(\$\("budgetFinanceTransfer"\)\)\{.*?\n\}\n',
+    listener,
+    html,
+    count=1,
+    flags=re.S,
+)
 if 'id="budgetFinanceTransfer"' not in html:
     raise SystemExit("Budget transfer button insertion failed")
-if 'nic_financing_budget_transfer_v1' not in html:
+if listener_replaced == 0 and 'nic_financing_budget_transfer_v1' not in html:
     anchor = 'if($("budgetApplySuggestions")){'
     if anchor not in html:
         raise SystemExit("Budget action listener anchor missing")
     html = html.replace(anchor, listener + anchor, 1)
+elif listener_replaced == 0:
+    raise SystemExit("Existing budget transfer listener could not be updated")
 site.write_text(html, encoding="utf-8")
 
 finance = Path("assets/financing.html")
