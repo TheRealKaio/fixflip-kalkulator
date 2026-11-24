@@ -116,7 +116,7 @@ function financeOutlook(doc,m,values){
 
 function financeSummaryParagraphs(m){
  const paragraphs=[];
- paragraphs.push('Dein Darlehen von '+money(m.loan)+' wird über eine Zinsbindung von '+m.years+' Jahren betrachtet. Bei einem Sollzins von '+percent(m.interest)+' und einer anfänglichen Tilgung von '+percent(m.repay)+' beträgt die monatliche Rate '+money(m.monthly)+'. Sondertilgungen werden zusätzlich angesetzt.');
+ paragraphs.push('Dein Darlehen von '+money(m.loan)+' wird über eine Laufzeit von '+m.years+' Jahren betrachtet. Bei einem Sollzins von '+percent(m.interest)+' und einer anfänglichen Tilgung von '+percent(m.repay)+' beträgt die monatliche Rate '+money(m.monthly)+'. Sondertilgungen werden zusätzlich angesetzt.');
  if(m.repay<2){
   paragraphs.push('Deine gewählte Anfangstilgung liegt unter der häufig genannten Zwei-Prozent-Orientierung. Eine höhere Tilgung senkt die Restschuld bei sonst gleichen Bedingungen schneller, erhöht aber die Monatsrate. Prüfe deshalb, welche Rate dauerhaft in dein Budget passt. Zwei Prozent sind ein Orientierungswert, keine für alle passende Vorgabe.');
  }else{
@@ -128,9 +128,9 @@ function financeSummaryParagraphs(m){
   paragraphs.push('Wenn dein Vertrag Sondertilgungen erlaubt, kannst du damit in Jahren mit zusätzlichem finanziellen Spielraum die Restschuld weiter senken. Prüfe vor Abschluss Höhe, Termin und mögliche Kosten; behalte zugleich eine ausreichende Rücklage.');
  }
  if(m.balance>0.005){
-  paragraphs.push('Am Ende der '+m.years+'-jährigen Zinsbindung verbleibt in dieser Modellrechnung eine Restschuld von '+money(m.balance)+'. Plane rechtzeitig, wie du sie tilgst oder eine Anschlussfinanzierung vereinbarst. Die Szenarien im Bericht zeigen beispielhaft, wie sich die Rate bei anderen Zinssätzen verändern kann. Ein Forward-Darlehen kann Konditionen für später vorab sichern; es bindet dich aber auch, wenn die Zinsen bis dahin fallen. Vergleiche deshalb Laufzeit und Konditionen.');
+  paragraphs.push('Am Ende der '+m.years+'-jährigen Laufzeit verbleibt in dieser Modellrechnung eine Restschuld von '+money(m.balance)+'. Plane rechtzeitig, wie du sie tilgst oder eine Anschlussfinanzierung vereinbarst. Die Szenarien im Bericht zeigen beispielhaft, wie sich die Rate bei anderen Zinssätzen verändern kann. Ein Forward-Darlehen kann Konditionen für später vorab sichern; es bindet dich aber auch, wenn die Zinsen bis dahin fallen. Vergleiche deshalb Laufzeit und Konditionen.');
  }else{
-  paragraphs.push('In dieser Modellrechnung ist das Darlehen bis zum Ende der '+m.years+'-jährigen Zinsbindung vollständig zurückgezahlt. Für dieses Darlehen wäre unter diesen Annahmen keine Anschlussfinanzierung erforderlich; der Hinweis auf ein Forward-Darlehen entfällt.');
+  paragraphs.push('In dieser Modellrechnung ist das Darlehen bis zum Ende der '+m.years+'-jährigen Laufzeit vollständig zurückgezahlt. Für dieses Darlehen wäre unter diesen Annahmen keine Anschlussfinanzierung erforderlich; der Hinweis auf ein Forward-Darlehen entfällt.');
  }
  return paragraphs;
 }
@@ -192,14 +192,14 @@ function drawFinanceSummary(doc,m){
 function financeDocument(values){
  const m=model(values),doc=create({unit:'mm',format:'a4'},'finance'),s=settings(doc);
  doc.setProperties({title:s.meta?.finance?.title||filename('finance').slice(0,-4),subject:s.meta?.finance?.description||'Finanzierung und Restschuld'});
- header(doc,'Finanzierungsrechner - Bericht','Darlehen, Rate, Tilgung und Restschuld am Ende der Zinsbindung');
+ header(doc,'Finanzierungsrechner - Bericht','Darlehen, Rate, Tilgung und Restschuld am Ende der Darlehenslaufzeit');
  const resultsY=drawFinanceSummary(doc,m);
  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);
  doc.text('Wichtigste Ergebnisse auf einen Blick',16,resultsY);
  doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(100,110,125);
- doc.text('Deine Finanzierung und die voraussichtliche Restschuld am Ende der Zinsbindung.',16,resultsY+6);
+ doc.text('Deine Finanzierung und die voraussichtliche Restschuld am Ende der Darlehenslaufzeit.',16,resultsY+6);
  const cardsY=resultsY+11;
- const boxes=[['Darlehenssumme',money(m.loan)],['Mtl. Kreditrate inkl. Tilgung',money(m.monthly)],['Restschuld am Ende der Zinsbindung',money(m.balance)]];
+ const boxes=[['Darlehenssumme',money(m.loan)],['Mtl. Kreditrate inkl. Tilgung',money(m.monthly)],['Restschuld am Ende der Laufzeit',money(m.balance)]];
  boxes.forEach(([label,value],i)=>{const x=16+i*60;doc.setFillColor(247,249,252);doc.roundedRect(x,cardsY,58,26,3,3,'F');doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,110,125);doc.text(doc.splitTextToSize(label,52),x+3,cardsY+7);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(23,32,51);doc.text(value,x+3,cardsY+21);});
  doc.addPage();
  header(doc,'Finanzierungsrechner - Bericht','Übersicht der Einzelpositionen');
@@ -207,14 +207,14 @@ function financeDocument(values){
  const section=title=>{doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text(title,16,y);y+=8;};
  const row=(label,value)=>{doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(100,110,125);doc.text(label,16,y);doc.setFont('helvetica','bold');doc.setTextColor(23,32,51);doc.text(value,194,y,{align:'right'});y+=6;};
  section('1. Deine Finanzierung');
- row('Darlehensbetrag',money(m.loan));row('Sollzins p. a.',percent(m.interest));row('Anfängliche Tilgung p. a.',percent(m.repay));row('Sondertilgung pro Jahr',money(m.annualExtra)+' ('+percent(m.extra)+')');row('Zinsbindung',m.years+' Jahre');
+ row('Darlehensbetrag',money(m.loan));row('Sollzins p. a.',percent(m.interest));row('Anfängliche Tilgung p. a.',percent(m.repay));row('Sondertilgung pro Jahr',money(m.annualExtra)+' ('+percent(m.extra)+')');row('Laufzeit für dein Darlehen',m.years+' Jahre');
  y+=5;section('2. Monatliche Belastung und Ergebnis');
- row('Mtl. Kreditrate inkl. Tilgung',money(m.monthly));row('Zinsen zu Beginn pro Monat',money(m.interestMonthly));row('Tilgung zu Beginn pro Monat',money(m.repayMonthly));row('Gezahlte Zinsen während der Zinsbindung',money(m.interestTotal));row('Getilgter Kreditbetrag inkl. Sondertilgung',money(m.paid));row('Restschuld am Ende der Zinsbindung',money(m.balance));
+ row('Mtl. Kreditrate inkl. Tilgung',money(m.monthly));row('Zinsen zu Beginn pro Monat',money(m.interestMonthly));row('Tilgung zu Beginn pro Monat',money(m.repayMonthly));row('Gezahlte Zinsen während der Laufzeit',money(m.interestTotal));row('Getilgter Kreditbetrag inkl. Sondertilgung',money(m.paid));row('Restschuld am Ende der Zinsbindung',money(m.balance));
  y+=6;section('3. Tilgungsverlauf');
  const top=y+2,bottom=top+34,left=22,right=190;doc.setDrawColor(225,229,236);doc.line(left,top,left,bottom);doc.line(left,bottom,right,bottom);doc.setDrawColor(13,148,136);doc.setLineWidth(.8);
  for(let i=1;i<m.balances.length;i++)doc.line(left+(i-1)/m.years*(right-left),bottom-m.balances[i-1]/Math.max(m.loan,1)*32,left+i/m.years*(right-left),bottom-m.balances[i]/Math.max(m.loan,1)*32);
  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,110,125);doc.text('Start',left,bottom+5);doc.text('Ende der Zinsbindung',right,bottom+5,{align:'right'});
- y=bottom+13;doc.setFontSize(7.4);doc.text(doc.splitTextToSize('Modellrechnung mit konstantem Sollzins und konstanter Monatsrate über die gewählte Zinsbindung. Sondertilgungen werden jeweils am Jahresende angesetzt.',178),16,y,{lineHeightFactor:1.2});
+ y=bottom+13;doc.setFontSize(7.4);doc.text(doc.splitTextToSize('Modellrechnung mit konstantem Sollzins und konstanter Monatsrate über die gewählte Laufzeit. Sondertilgungen werden jeweils am Jahresende angesetzt.',178),16,y,{lineHeightFactor:1.2});
  financeOutlook(doc,m,values);disclaimer(doc);const total=doc.getNumberOfPages();for(let p=1;p<=total;p++){doc.setPage(p);footer(doc,p,total,defaults.version);}return doc;
 }
  
