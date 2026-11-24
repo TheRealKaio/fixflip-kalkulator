@@ -6,7 +6,10 @@ site = Path("_site/index.html")
 html = site.read_text(encoding="utf-8")
 button_id = "budgetFinanceTransfer"
 row = '''
-          <div id="budgetFinanceTransferRow"><button type="button" class="budget-apply-btn" id="budgetFinanceTransfer">Mit Budget-Darlehen kalkulieren</button></div>'''
+          <div id="budgetFinanceTransferRow">
+            <button type="button" class="budget-apply-btn" id="budgetFinanceTransfer">Budget in Finanzierung übernehmen</button>
+            <small id="budgetFinanceTransferHint">Monatsrate, Zinssatz und Tilgung werden übernommen.</small>
+          </div>'''
 if f'id="{button_id}"' in html:
     html, moved = re.subn(r'\s*<div id="budgetFinanceTransferRow">.*?</div>', '', html, count=1, flags=re.S)
     if moved != 1:
@@ -18,9 +21,14 @@ if not match:
 html = html[:match.end(1)] + row + html[match.start(2):]
 
 style = '''<style id="nic-budget-finance-transfer-style">
-#budgetFinanceTransferRow{display:flex;justify-content:center;align-items:center;width:100%;margin:14px 0 2px}
-#budgetFinanceTransfer{display:flex;justify-content:center;align-items:center;box-sizing:border-box;width:max-content;max-width:100%;min-height:44px;padding:10px 18px;font-size:var(--nic-body-font-size,16px)!important;line-height:1.25;white-space:normal;overflow-wrap:anywhere;text-align:center}
+#budgetFinanceTransferRow{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;width:100%;margin:14px 0 2px;text-align:center}
+#budgetFinanceTransferHint{max-width:100%;font-size:var(--nic-hint-font-size,12px);line-height:1.4;color:var(--nic-text-muted,#64748b);text-align:center}
+#budgetFinanceTransfer{display:flex;justify-content:center;align-items:center;box-sizing:border-box;width:max-content;max-width:100%;min-height:44px;padding:10px 18px;font-size:var(--nic-body-font-size,16px)!important;line-height:1.25;white-space:normal;overflow-wrap:anywhere;text-align:center;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease}
+#budgetFinanceTransfer:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.18)}
+#budgetFinanceTransfer:active{transform:translateY(2px) scale(.985);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
+#budgetFinanceTransfer:focus-visible{outline:3px solid #174f4a;outline-offset:3px}
 @media(max-width:700px) and (orientation:portrait){#budgetFinanceTransfer{font-size:var(--nic-subtext-font-size,14px)!important}}
+@media(prefers-reduced-motion:reduce){#budgetFinanceTransfer{transition:none}}
 </style>'''
 if 'id="nic-budget-finance-transfer-style"' not in html:
     html = html.replace("</head>", style + "</head>", 1)
@@ -77,10 +85,19 @@ source = source.replace(reset_old, reset_new, 1)
 startup_old = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}loadRates();"
 startup_transfer_old = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.removeItem(TRANSFER);setValues({loan:Number(transfer.loan)||0,interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}loadRates();"
 startup_new = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.setItem('nic_financing_interest_manual_v1','1');localStorage.removeItem(TRANSFER);setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}loadRates();"
-if startup_old not in source and startup_transfer_old not in source and startup_new not in source:
+if startup_old not in source and startup_transfer_old not in source and startup_new not in source and "const notice=$('budgetTransferNotice')" not in source:
     raise SystemExit("Financing startup anchor missing")
 source = source.replace(startup_old, startup_new, 1)
 source = source.replace(startup_transfer_old, startup_new, 1)
+startup_new_with_notice = startup_new.replace(
+    "setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});",
+    "setValues({loan:Math.floor(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});const notice=$('budgetTransferNotice');if(notice){notice.hidden=false;window.setTimeout(()=>{notice.hidden=true},6500)}",
+    1,
+)
+source = source.replace(startup_new, startup_new_with_notice, 1)
+notice = '<p id="budgetTransferNotice" class="budget-transfer-notice" role="status" aria-live="polite" hidden>Budgetwerte übernommen. Deine Monatsrate bleibt fix.</p>'
+if 'id="budgetTransferNotice"' not in source:
+    source = source.replace('<section class="card"><h2>1. Finanzierung einstellen</h2>', '<section class="card"><h2>1. Finanzierung einstellen</h2>' + notice, 1)
 finance.write_text(source, encoding="utf-8")
 
 print("V8.410 budget-to-finance transfer and fixed monthly rate installed")
