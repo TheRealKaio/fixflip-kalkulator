@@ -176,7 +176,8 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Im Budget-Rechner steht in der Karte „4. Dein monatlich verfügbares Budget“ ein
   grüner Button „Budget in Finanzierung übernehmen“ in einer eigenen, mittig ausgerichteten
   Zeile. Darunter erklärt der Untertext „Monatsrate, Zinssatz und Tilgung werden übernommen.“
-  die Aktion. Der Button zeigt bei Hover, Tastaturfokus und aktivem Klick einen sichtbaren
+  die Aktion. Seine Schriftgröße folgt immer der zentralen Einstellung „Hinweistexte (px)“.
+  Der Button zeigt bei Hover, Tastaturfokus und aktivem Klick einen sichtbaren
   Zustand. Nach erfolgreicher Übernahme erscheint im Finanzierungsrechner eine kurze
   Bestätigung. Die folgenden Ergebnisabschnitte heißen „5. Wieviel Haus kann ich mir leisten?“ und
   „6. Monatliche Tilgung- und Restschuld“.

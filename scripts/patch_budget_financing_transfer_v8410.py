@@ -22,7 +22,7 @@ html = html[:match.end(1)] + row + html[match.start(2):]
 
 style = '''<style id="nic-budget-finance-transfer-style">
 #budgetFinanceTransferRow{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;width:100%;margin:14px 0 2px;text-align:center}
-#budgetFinanceTransferHint{max-width:100%;font-size:var(--nic-hint-font-size,12px);line-height:1.4;color:var(--nic-text-muted,#64748b);text-align:center}
+#budgetFinanceTransferHint{max-width:100%;font-size:var(--nic-hint-font-size,12px)!important;line-height:1.4;color:var(--nic-text-muted,#64748b);text-align:center}
 #budgetFinanceTransfer{display:flex;justify-content:center;align-items:center;box-sizing:border-box;width:max-content;max-width:100%;min-height:44px;padding:10px 18px;font-size:var(--nic-body-font-size,16px)!important;line-height:1.25;white-space:normal;overflow-wrap:anywhere;text-align:center;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease}
 #budgetFinanceTransfer:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.18)}
 #budgetFinanceTransfer:active{transform:translateY(2px) scale(.985);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
@@ -30,7 +30,13 @@ style = '''<style id="nic-budget-finance-transfer-style">
 @media(max-width:700px) and (orientation:portrait){#budgetFinanceTransfer{font-size:var(--nic-subtext-font-size,14px)!important}}
 @media(prefers-reduced-motion:reduce){#budgetFinanceTransfer{transition:none}}
 </style>'''
-if 'id="nic-budget-finance-transfer-style"' not in html:
+transfer_style_pattern = r'<style\b[^>]*id="nic-budget-finance-transfer-style"[^>]*>.*?</style>'
+existing_transfer_styles = re.findall(transfer_style_pattern, html, re.S)
+if len(existing_transfer_styles) > 1:
+    html = re.sub(transfer_style_pattern, '', html, flags=re.S)
+if len(existing_transfer_styles) == 1:
+    html = re.sub(transfer_style_pattern, style, html, count=1, flags=re.S)
+else:
     html = html.replace("</head>", style + "</head>", 1)
 
 listener = '''

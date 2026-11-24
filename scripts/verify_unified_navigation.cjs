@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 (async()=>{
  const browser=await chromium.launch({headless:true});
  for(const width of [1440,390]){
-  const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
+  const page=await browser.newPage({viewport:{width,height:900},hasTouch:width<=700}),errors=[];
   page.on('pageerror',e=>{const details=e.stack||e.message;errors.push(details);console.error('BROWSER PAGE ERROR '+width+' '+page.url()+'\\n'+details);});
   let releaseInitialSettings,settingsRequestCount=0,resolveSettingsRequested;
   const settingsArrival=new Promise(resolve=>{releaseInitialSettings=resolve;});
@@ -86,6 +86,12 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert.equal(await settlement.locator('small').innerText(),'Betriebskosten erfassen und versenden');
   assert((await settlement.locator('small').innerText()).length>0);
   assert.equal(homeHeading,require('../assets/site-settings.json').meta.website.homeTitle);
+  if(width>700){
+   const startTile=page.locator('#nic-home-intro .nic-home-options>.deal-type-option').first();
+   await startTile.hover();
+   const feedback=await startTile.evaluate(el=>({filter:getComputedStyle(el).filter,shadow:getComputedStyle(el).boxShadow}));
+   assert(feedback.filter.includes('brightness(0.94)')&&feedback.shadow!=='none','Homepage buttons show desktop hover feedback: '+JSON.stringify(feedback));
+  }
   for(const key of ['budget','finance','own','rent','flip']){
    await page.locator('#nic-home-intro a[data-calculator="'+key+'"]').click();
    await page.waitForFunction(k=>document.body.dataset.calculator===k,key);
@@ -400,8 +406,46 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert.equal(await page.locator('body').getAttribute('data-calculator'),'finance','Direct finance route must be selected when published settings are unavailable');
   assert(await financeModule.locator('h2').count()>0,'Direct finance module content must be present when published settings are unavailable');
   assert.equal(await financeModule.locator('[data-finance-id="loan"]').inputValue(),'300000','Direct finance keeps the default loan input when published settings are unavailable');
+  await page.goto('http://localhost/budget/');
+  await page.waitForFunction(()=>window.NICCalculators?.active==='budget'&&window.NICSettings.ready);
+  await page.locator('#budgetNetIncome').fill('4000');
+  await page.locator('#budgetAssumptionsToggle').click();
+  await page.locator('#budgetInterest').fill('6.25');
+  const budgetValues=await page.evaluate(()=>{
+   const amount=id=>Number((document.getElementById(id).innerText||'').replace(/[^\d]/g,''));
+   const hint=document.getElementById('budgetFinanceTransferHint');
+   return {loan:amount('budgetLoan'),monthlyRate:amount('budgetRate'),hintSize:getComputedStyle(hint).fontSize,hintSetting:getComputedStyle(document.documentElement).getPropertyValue('--nic-hint-font-size').trim()};
+  });
+  assert(budgetValues.loan>0&&budgetValues.monthlyRate>0,'Budget example must produce a rate and loan amount');
+  assert.equal(budgetValues.hintSize,budgetValues.hintSetting,'Budget transfer subtitle follows central hint text (px) setting');
+  const transferButton=page.locator('#budgetFinanceTransfer');
+  if(width>700){
+   await transferButton.hover();
+   const feedback=await transferButton.evaluate(el=>({filter:getComputedStyle(el).filter,shadow:getComputedStyle(el).boxShadow}));
+   assert(feedback.filter.includes('brightness(0.94)')&&feedback.shadow!=='none','Budget transfer button shows desktop hover feedback: '+JSON.stringify(feedback));
+   await transferButton.click();
+  }else{
+   await transferButton.scrollIntoViewIfNeeded();
+   const box=await transferButton.boundingBox();
+   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
+  }
+  await page.waitForFunction(()=>window.NICCalculators?.active==='finance'&&document.body.dataset.calculator==='finance');
+  await page.locator('#nicFinanceModule [data-finance-id="loan"]').waitFor({state:'visible'});
+  await page.waitForFunction(()=>window.scrollY===0,'',{timeout:5000});
+  const transferred=await page.evaluate(()=>{
+   const root=document.getElementById('nicFinanceModule'),value=id=>root.querySelector('[data-finance-id="'+id+'"]').value,notice=root.querySelector('[data-finance-id="budgetTransferNotice"]');
+   return {loan:Number(value('loan')),interest:Number(value('interest')),repay:Number(value('repay')),extra:Number(value('extra')),years:Number(value('years')),monthlyRate:Number(root.querySelector('[data-finance-id="rate"]').textContent.replace(/[^\d]/g,'')),noticeVisible:!!notice&&!notice.hidden&&getComputedStyle(notice).display!=='none',noticePosition:notice?getComputedStyle(notice).position:null,noticeTop:notice?.getBoundingClientRect().top,scrollY:window.scrollY};
+  });
+  assert.equal(transferred.loan,budgetValues.loan,'Transferred loan equals the displayed rounded budget amount: '+JSON.stringify({budgetValues,transferred}));
+  assert.equal(transferred.interest,6.25,'Budget interest transfers on first activation');
+  assert.equal(transferred.repay,1.5,'Budget repayment transfers on first activation');
+  assert.equal(transferred.extra,0,'Transferred special repayment starts at zero');
+  assert.equal(transferred.years,10,'Transferred observation period starts at ten years');
+  assert.equal(transferred.monthlyRate,budgetValues.monthlyRate,'Transferred monthly rate remains fixed');
+  assert(transferred.noticeVisible&&transferred.noticePosition==='fixed'&&transferred.noticeTop>=0,'Transfer confirmation remains visible at the top of financing: '+JSON.stringify(transferred));
+  assert.equal(transferred.scrollY,0,'Financing opens at the top of the page');
   assert.deepEqual(errors,[]);
-  console.log('Unified navigation passed',width,'same document, all modes, history, direct finance reload');
+  console.log('Unified navigation and budget transfer passed',width,'same document, first activation, fixed rate, visible confirmation');
   await page.close();
  }
  await browser.close();
