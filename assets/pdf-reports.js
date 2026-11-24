@@ -178,27 +178,7 @@ function financeDocument(values){
  y=bottom+13;doc.setFontSize(7.4);doc.text(doc.splitTextToSize('Modellrechnung mit konstantem Sollzins und konstanter Monatsrate über die gewählte Zinsbindung. Sondertilgungen werden jeweils am Jahresende angesetzt.',178),16,y,{lineHeightFactor:1.2});
  financeOutlook(doc,m,values);disclaimer(doc);const total=doc.getNumberOfPages();for(let p=1;p<=total;p++){doc.setPage(p);footer(doc,p,total,defaults.version);}return doc;
 }
- const m=model(values),doc=create({unit:'mm',format:'a4'},'finance'),s=settings(doc);
- doc.setProperties({title:s.meta?.finance?.title||filename('finance').slice(0,-4),subject:s.meta?.finance?.description||'Finanzierung und Restschuld'});
- header(doc,'Finanzierungsrechner - Bericht','Darlehen, monatliche Kreditrate, Tilgung und Restschuld');
- doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('Wichtigste Ergebnisse auf einen Blick',16,45);
- doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(100,110,125);doc.text('Deine Finanzierung und die voraussichtliche Restschuld im Zusammenhang.',16,51);
- const boxes=[['Darlehenssumme',money(m.loan)],['Mtl. Kreditrate inkl. Tilgung',money(m.monthly)],['Restschuld am Ende der Zinsbindung',money(m.balance)]];
- boxes.forEach(([label,value],i)=>{const x=16+i*60;doc.setFillColor(247,249,252);doc.roundedRect(x,56,58,26,3,3,'F');doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,110,125);doc.text(label,x+3,63);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(23,32,51);doc.text(value,x+3,74);});
- let y=94;
- const section=title=>{doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text(title,16,y);y+=8;};
- const row=(label,value)=>{doc.setFont('helvetica','normal');doc.setFontSize(8.2);doc.setTextColor(100,110,125);doc.text(label,16,y);doc.setFont('helvetica','bold');doc.setTextColor(23,32,51);doc.text(value,194,y,{align:'right'});y+=6;};
- section('1. Deine Finanzierung');
- row('Darlehensbetrag',money(m.loan));row('Sollzins p. a.',percent(m.interest));row('Anfängliche Tilgung p. a.',percent(m.repay));row('Sondertilgung pro Jahr',money(m.annualExtra)+' ('+percent(m.extra)+')');row('Zinsbindung',m.years+' Jahre');
- y+=5;section('2. Monatliche Belastung und Ergebnis');
- row('Mtl. Kreditrate inkl. Tilgung',money(m.monthly));row('Zinsen zu Beginn pro Monat',money(m.interestMonthly));row('Tilgung zu Beginn pro Monat',money(m.repayMonthly));row('Gezahlte Zinsen während der Zinsbindung',money(m.interestTotal));row('Getilgter Kreditbetrag inkl. Sondertilgung',money(m.paid));
- y+=6;section('3. Tilgungsverlauf');
- const top=y+2,bottom=top+34,left=22,right=190;doc.setDrawColor(225,229,236);doc.line(left,top,left,bottom);doc.line(left,bottom,right,bottom);doc.setDrawColor(13,148,136);doc.setLineWidth(.8);
- for(let i=1;i<m.balances.length;i++)doc.line(left+(i-1)/m.years*(right-left),bottom-m.balances[i-1]/Math.max(m.loan,1)*32,left+i/m.years*(right-left),bottom-m.balances[i]/Math.max(m.loan,1)*32);
- doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,110,125);doc.text('Start',left,bottom+5);doc.text('Ende der Zinsbindung',right,bottom+5,{align:'right'});
- y=bottom+13;doc.setFontSize(7.4);doc.text(doc.splitTextToSize('Modellrechnung mit konstantem Sollzins und konstanter Monatsrate. Sondertilgungen zusätzlich jeweils am Jahresende. Der gewählte Zeitraum entspricht in dieser Modellrechnung der Zinsbindung.',178),16,y,{lineHeightFactor:1.2});
- financeOutlook(doc,m,values);disclaimer(doc);const total=doc.getNumberOfPages();for(let p=1;p<=total;p++){doc.setPage(p);footer(doc,p,total,defaults.version);}return doc;
-}
+ 
 async function exportFinance(values,download){
  if(window.NICAccess&&!await window.NICAccess.authorize(download?'pdfDownload':'pdfShare'))return;
  await prepare();if(!values.rateSeries?.length){try{const response=await fetch('/mortgage-rates.json',{cache:'no-store'});if(response.ok)values={...values,rateSeries:(await response.json()).series};}catch(err){console.warn('Historische Zinsdaten für den Bericht nicht verfügbar',err);}}const doc=financeDocument(values),name=filename('finance');
