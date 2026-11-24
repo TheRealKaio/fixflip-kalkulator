@@ -6,7 +6,7 @@ site = Path("_site/index.html")
 html = site.read_text(encoding="utf-8")
 button_id = "budgetFinanceTransfer"
 if f'id="{button_id}"' not in html:
-    pattern = r'(<section\b[^>]*>(?:(?!<section\b).)*?<h2>3\. Weitere Annahmen</h2>(?:(?!</section>).)*?)(</section>)'
+    pattern = r'(<section\b[^>]*>(?:(?!<section\b).)*?<h2>3\.(?: Weitere Annahmen| Finanzierung und Nebenkosten)</h2>(?:(?!</section>).)*?)(</section>)'
     match = re.search(pattern, html, re.S)
     if not match:
         raise SystemExit("Budget assumptions section missing")
