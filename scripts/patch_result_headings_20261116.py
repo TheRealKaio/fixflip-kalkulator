@@ -16,10 +16,10 @@ if credit_labels != 1:
 
 # Replace the visible labels without touching their financial formulas.
 labels = [
-    ("Dein monatlich verfügbares Budget", "3. Dein monatlich verfügbares Budget"),
-    ("Wieviel Haus kann ich mir leisten?", "4. Wieviel Haus kann ich mir leisten?"),
+    ("Dein monatlich verfügbares Budget", "4. Dein monatlich verfügbares Budget"),
+    ("Wieviel Haus kann ich mir leisten?", "5. Wieviel Haus kann ich mir leisten?"),
     ("Wo geht das Geld hin?", "5. Wo geht das Geld hin?"),
-    ("Monatliche Tilgung- und Restschuld", "5. Monatliche Tilgung- und Restschuld"),
+    ("Monatliche Tilgung- und Restschuld", "6. Monatliche Tilgung- und Restschuld"),
     ("Szenario - Was wäre wenn?", "6. Szenario - Was wäre wenn?"),
 ]
 for original, desired in labels:

@@ -33,12 +33,15 @@ for(const interest of [0,1,5,9,10]){
  assert.equal($('refinanceRisesInterest').textContent,Math.min(10,interest+2)+' % Sollzins p. a.');
 }
 ctx.fixedMonthlyRate=1400;values={loan:300000,interest:4,repay:2,extra:0,years:10};vm.runInContext('calculate()',ctx);assert.equal($('rate').textContent,whole.format(1400));assert.equal(Number($('loan').value),280000);assert.equal($('loan').readOnly,true);
-values={...values,interest:5};vm.runInContext('calculate()',ctx);assert.equal($('rate').textContent,whole.format(1400));assert.equal(Number($('loan').value),240000);
+values={loan:300000,interest:4.09,repay:1.5,extra:0,years:10};vm.runInContext('calculate()',ctx);assert.equal($('rate').textContent,whole.format(1400));assert.equal(Number($('loan').value),300536);assert.equal(Number.isInteger(Number($('loan').value)),true);
+values={loan:300000,interest:5,repay:2,extra:0,years:10};vm.runInContext('calculate()',ctx);assert.equal($('rate').textContent,whole.format(1400));assert.equal(Number($('loan').value),240000);
 ctx.fixedMonthlyRate=null;values={loan:300000,interest:4,repay:2,extra:5,years:10};
 values={loan:0,interest:4,repay:2,extra:5,years:10};vm.runInContext('calculate()',ctx);for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])assert($(id).textContent.includes(fmt.format(0)));for(const id of ['refinanceFalls','refinanceStays','refinanceRises'])assert.equal($(id).textContent,whole.format(0));
 // Regression: Anschlussfinanzierung begins its own white content card,
  // preserving the full original controls and historical rate chart.
 const financeSource=fs.readFileSync('assets/financing.html','utf8');
+const budgetSource=fs.readFileSync(site+'/budget/index.html','utf8');
+assert(budgetSource.includes('localStorage.setItem("nic_financing_interest_manual_v1","1")'),'budget transfer must protect the imported rate from a later reference-rate update');
 assert(financeSource.includes('</section><section class="card nic-refinance-card" aria-labelledby="nic-refinance-title"><h2 id="nic-refinance-title">3. Anschlussfinanzierung</h2>'));
 assert(html.includes('id="nic-refinance-title"'));
 for(const id of ['refinanceFalls','refinanceStays','refinanceRises','refinanceChange','rateChart','monthPick','pointDetail','dataStatus']){

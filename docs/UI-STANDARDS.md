@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 13418)
+Total output lines: 532
+
 # Verbindliche UI-Standards für Neustart ImmoCheck
 
 Stand: 12. November 2026. Diese Regeln halten die abgestimmte Darstellung fest,
@@ -170,8 +173,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   nutzt der grüne Button „Untertexte (px)“, sonst die Grundschriftgröße. Reicht die
   Breite für die Beschriftung nicht aus, wächst der Button mit dem Textumbruch. Das X setzt die Werte der geöffneten Maske
   nach Bestätigung zurück.
-- Im Budget-Rechner steht unter Abschnitt 3 ein grüner Button „Mit Budget-Darlehen
-  kalkulieren“ in einer eigenen, mittig ausgerichteten Zeile. Seine Schriftgröße folgt
+- Im Budget-Rechner steht in der Karte „4. Dein monatlich verfügbares Budget“ ein
+  grüner Button „Mit Budget-Darlehen kalkulieren“ in einer eigenen, mittig ausgerichteten
+  Zeile. Die folgenden Ergebnisabschnitte heißen „5. Wieviel Haus kann ich mir leisten?“ und
+  „6. Monatliche Tilgung- und Restschuld“.
+  Seine Schriftgröße folgt
   im Mobil-Hochformat „Untertexte (px)“, sonst der Grundschriftgröße. Er überträgt
   Monatsrate, maximale Darlehenssumme, Sollzins und
   anfängliche Tilgung in „Finanzierung & Restschuld“ und setzt den Betrachtungszeitraum
@@ -284,68 +290,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   keine zusätzlichen Serverabfragen oder nachträgliches Verschieben von DOM-Knoten.
   Mit Social-Einträgen gilt das bisherige Raster.
 - Mobil im Hochformat bis 700 px behalten die drei Bereiche ihre vorhandenen Aufklappfunktionen und Abstände. Vor den Überschriften stehen die Symbole Nutzergruppe, Blatt und Brief; die rechtlichen Links bleiben direkt sichtbar und zentriert.
-- Alle anderen Ansichten verwenden nebeneinanderliegende sichtbare Bereiche mit senkrechten Trennlinien. Ohne Social-Einträge stehen „Über uns“ links und „Kontakt“ rechts. Darunter steht ein eigener, zunächst geschlossener Bereich „Rechtliches“ mit Schildsymbol; er enthält dieselben rechtlichen Links und den vorhandenen Cookie-Hinweis. Beim Wechsel zurück zum mobilen Hochformat sind diese Links direkt sichtbar.
-- Sichtbarkeitsregeln, zentrale Farben/Schrift-/Plus-Einstellungen, der äußere Footer-Abstand und alle Linkziele bleiben erhalten.
-- Farben und Typografie kommen aus den gemeinsamen Einstellungen. Deutsche
-  Silbentrennung und normale Umbrüche auch im Footer erhalten.
-- Der gemeinsame Abstand zum Inhalt bleibt 16 px; keine lokale Nullsetzung.
-
-## 7. Zuständigkeiten im Code
-
-| Bereich | Gepflegte Quellen / Build-Schritte |
-| --- | --- |
-| Gemeinsame Routen und aktive Ansicht | `assets/unified-calculator-navigation.js`, `scripts/build_unified_navigation.py` |
-| Erklärboxen / mobiles Weiterlesen | `assets/site-settings.json`, `assets/calculator-explanations.js`, `.css`, `scripts/build_calculator_explanations.py` |
-| Gemeinsame Desktop-Skalierung | `assets/desktop-density.css`, Einbindung über `scripts/build_unified_navigation.py` |
-| Erste stabile Darstellung | `assets/initial-layout.js`, Einbindung über `scripts/build_unified_navigation.py` |
-| Bildheader und Höhenreservierung | `assets/stable-header.js`, `assets/stable-header.css` |
-| Markenleiste, Logo, responsiver Footer | `assets/immocheck-brand-theme.css`, `assets/header-layout.css` |
-| Einstellungen, Meta, Ansichtsanbindung | `assets/site-settings.js`, `assets/site-integration.js` |
-| Startseite und integrierte Informationskarten | `assets/homepage.html`, `assets/homepage.css` |
-| Direkte Inhaltsrouten und gemeinsame Shell | `scripts/build_settings_pages.py`, `scripts/finalize_shared_layout.py` |
-| Gemeinsame Typografie | `scripts/centralize_layout_typography.py` |
-| Verbindlicher Build und vollständige Prüfungen | `.github/actions/build-site/action.yml` |
-| GitHub-Entwicklungsvorschau (`develop`) | `.github/workflows/pages.yml`, `scripts/prepare_github_preview.py` |
-| Aktive STRATO-Veröffentlichung / isolierter Test | `.github/workflows/strato-production.yml`, `.github/workflows/strato-stage.yml` |
-
-Die komprimierte Ausgangsseite und aktive historische Build-Patches werden
-weiter verarbeitet. Deshalb die endgültige generierte Ausgabe prüfen; eine
-Änderung in einem frühen Build-Schritt allein genügt nicht. `_site/` nicht als
-Quellcode bearbeiten oder veröffentlichungsrelevante Änderungen nur dort ablegen.
-
-## 8. Abnahme gemeinsamer UI-Änderungen
-
-1. Startseite, alle fünf Rechner und alle drei Informationsseiten vergleichen.
-2. Desktop und Smartphone prüfen; bei Header-/Footer-Änderungen auch Querformat.
-3. Direkte URLs, interne Wechsel und Browser-Zurück/Vorwärts prüfen: richtige
-   Titel/Metadaten, gemeinsame Headerhöhe, kein sichtbarer fremder Rechnertitel.
-4. Schrift-/Farb-/Radius-Einstellungen aus dem Adminbereich berücksichtigen.
-5. Weiße Inhaltskarte bis Footer prüfen: 16 px Abstand, keine Überlagerung,
-   keine abgeschnittenen Texte oder horizontalen Überläufe.
-6. Die erforderlichen Prüfungen des STRATO-Produktionsworkflows bestehen lassen. Die
-   vorhandenen Browserprüfungen in `scripts/verify_unified_navigation.cjs` und
-   `scripts/verify_calculator_styles.cjs` decken gemeinsame Navigation und Styles ab.
-
-Weiterführende Architektur- und PDF-Beschreibung: [SHARED_LAYOUT.md](SHARED_LAYOUT.md).
-
-## Eigenheim und Eigennutzung
-
-- Die Route `/eigennutzung/` heißt in den Rechnerbuttons „Eigenheim & Eigennutzung“,
-  mit Untertext „Immobilie kaufen und selbst nutzen“.
-- Die H1 lautet „Kannst Du Dir Dein Eigenheim leisten?“. Die Seite erläutert
-  Hauskauf und Eigentumswohnung sowie die manuelle Erfassung laufender Kosten.
-- Der Budgetrechner prüft den allgemeinen Spielraum, der Eigenheim-Rechner eine
-  konkrete Immobilie. Der Einführungstext ist auf der direkten Route im HTML
-  vorhanden und bei internen Wechseln nur im Modus Eigennutzung sichtbar.
-
-## Finanzierung: Prozent-Schieberegler und automatisches Eigenkapital (Development)
-
-- Eigennutzung, Fix & Flip und Vermietung verwenden für das bestehende Finanzierungs-Prozentfeld einen Schieberegler, mit der bestehenden Berechnungs-ID.
-- Der Regler besitzt auf Mobil und Desktop eine eigene Rasterzeile über die volle verfügbare Breite. Die Texte darunter nutzen die Schriftgröße „Hinweistexte (px)“ aus Admin → Layout.
-- Die Skala umfasst mindestens 0–120 %, und bereits vorhandene höhere Werte müssen angezeigt und erhalten werden. Eingaben bleiben mit zwei Dezimalstellen kompatibel.
-- Ohne manuelle Eigenkapitaleingabe folgt das bestehende Eurofeld automatisch dem aus Finanzierungsquote und Projektkosten hergeleiteten Eigenkapitalbedarf. Veränderungen von Kaufpreis und Nebenkosten aktualisieren den automatischen Vorschlag.
-- Hat der Nutzer Eigenkapital selbst eingegeben, bleibt dieser Betrag auch bei Änderungen von Kaufpreis, Notar, Makler und Finanzierungsquote fix; bei einer Eigenkapitaländerung bestimmt er umgekehrt den Finanzierungsprozentsatz. Der manuelle Zustand bleibt getrennt für Eigennutzung, Fix & Flip und Vermietung gespeichert, bis eine erneute Eingabe oder ein bestätigter Rechner-Reset erfolgt.
-- In Fix & Flip zeigen Regler und hellgrauer Hinweis das tatsächliche Darlehen in Prozent des Kaufpreises. Eingetragenes Eigenkapital deckt einen Teil der Projektkosten, das Darlehen deckt den Rest einschließlich Halte- und Zinskosten. Beim Verschieben des Reglers wird das notwendige Eigenkapital ermittelt. Verkaufskosten werden beim Verkauf berücksichtigt. Beim erneuten Aktivieren von „Mitfinanziert“ wird der für Kaufnebenkosten automatisch ergänzte Eigenkapitalbetrag zurückgenommen. Eine zwischenzeitliche manuelle Eingabe hat Vorrang.
+- Alle anderen Ansichten verwenden nebeneinanderliegende sichtbare Bereiche mit senkrechten Trenn…1418 tokens truncated…erneuten Aktivieren von „Mitfinanziert“ wird der für Kaufnebenkosten automatisch ergänzte Eigenkapitalbetrag zurückgenommen. Eine zwischenzeitliche manuelle Eingabe hat Vorrang.
 - Der Regler unterstützt mindestens 0–120 % und besitzt bei 100 % eine Einrastzone von ±1 Prozentpunkt; ein bewusstes Weiterziehen über die Zone hinaus bleibt möglich.
 - Vor Übernahme nach main muss der Browser-Test beide relevanten Layoutbreiten, 0 % / 120 % und manuelle Eingaben prüfen. Keine automatische STRATO-Veröffentlichung auf develop.
 
