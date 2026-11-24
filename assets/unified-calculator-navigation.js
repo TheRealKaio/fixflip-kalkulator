@@ -552,6 +552,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  // The shared calculator menu may be inserted after DOMContentLoaded by the
  // site build. Initialize only after the direct route has its real menu.
  function startDirectRoute(){
+  initResponsiveCalculatorMenu();
   const key=routeKey(location.pathname);
   if(key){
    if(key===active&&!(key==='finance'&&!financeHost)){
@@ -560,7 +561,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     window.NICSettings?.syncCalculatorMenu(key);
    }else select(key);
   }
-  initResponsiveCalculatorMenu();
  }
  window.NICSettings.init().then(startDirectRoute,async error=>{
   console.error(error);
