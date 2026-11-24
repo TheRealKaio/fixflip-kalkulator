@@ -10,7 +10,7 @@ for(const [key,path]of Object.entries({budget:'/budget/',own:'/eigennutzung/',re
 assert.deepEqual(open('/',{},'#admin').replaced,[]);assert.deepEqual(open('/',{},'#datenschutz').replaced,[]);assert.deepEqual(open('/',{},'','?utm_source=test').replaced,[]);
 const html=fs.readFileSync(site+'/finanzierungsrechner/index.html','utf8'),from=html.indexOf('function calculate(){'),to=html.indexOf('\nfunction drawRates',from),els={};const $=id=>els[id]??=( {textContent:'',innerHTML:'',value:'0',setAttribute(){}} );
 let values={loan:300000,interest:4,repay:2,extra:5,years:10};const fmt=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}),whole=new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
-const ctx={getComputedStyle:()=>({getPropertyValue:()=> '14px'}),$: $,values:()=>values,money:x=>fmt.format(x),euro:x=>whole.format(x),pct:x=>x+' %',grid:()=>'',line:()=>'',drawRates(){},localStorage:{setItem(){}},F:'test',Math,refinanceBase:null,refinanceDistance:null};vm.createContext(ctx);vm.runInContext(html.slice(from,to),ctx);vm.runInContext('calculate()',ctx);
+const ctx={getComputedStyle:()=>({getPropertyValue:()=> '14px'}),$: $,values:()=>values,money:x=>fmt.format(x),euro:x=>whole.format(x),pct:x=>x+' %',grid:()=>'',line:()=>'',drawRates(){},localStorage:{setItem(){}},F:'test',Math,refinanceBase:null,refinanceDistance:null,fixedMonthlyRate:null};vm.createContext(ctx);vm.runInContext(html.slice(from,to),ctx);vm.runInContext('calculate()',ctx);
 assert($('monthlyInterestValue').textContent.includes(fmt.format(1000)));assert($('monthlyRepaymentValue').textContent.includes(fmt.format(500)));assert($('annualExtraAmount').textContent.includes(fmt.format(15000)));assert(html.includes('Finanzierung neu kalkulieren'));assert(!html.includes('svg text{font:11px'));assert.equal($('rate').textContent,whole.format(1500));
 let balance=300000;for(let month=1;month<=120;month++){balance=Math.max(0,balance+balance*4/1200-1500);if(month%12===0)balance=Math.max(0,balance-15000);}
 for(const [id,delta] of [['refinanceFalls',-1.5],['refinanceStays',0],['refinanceRises',2]])assert.equal($(id).textContent,whole.format(balance*(4+delta+2)/1200));
@@ -32,6 +32,9 @@ for(const interest of [0,1,5,9,10]){
  assert.equal($('refinanceFallsInterest').textContent,Math.max(0,interest-1.5)+' % Sollzins p. a.');
  assert.equal($('refinanceRisesInterest').textContent,Math.min(10,interest+2)+' % Sollzins p. a.');
 }
+ctx.fixedMonthlyRate=1400;values={loan:300000,interest:4,repay:2,extra:0,years:10};vm.runInContext('calculate()',ctx);assert.equal($('rate').textContent,whole.format(1400));assert.equal(Number($('loan').value),280000);assert.equal($('loan').readOnly,true);
+values={...values,interest:5};vm.runInContext('calculate()',ctx);assert.equal($('rate').textContent,whole.format(1400));assert.equal(Number($('loan').value),240000);
+ctx.fixedMonthlyRate=null;values={loan:300000,interest:4,repay:2,extra:5,years:10};
 values={loan:0,interest:4,repay:2,extra:5,years:10};vm.runInContext('calculate()',ctx);for(const id of ['monthlyInterestValue','monthlyRepaymentValue','annualExtraAmount'])assert($(id).textContent.includes(fmt.format(0)));for(const id of ['refinanceFalls','refinanceStays','refinanceRises'])assert.equal($(id).textContent,whole.format(0));
 // Regression: Anschlussfinanzierung begins its own white content card,
  // preserving the full original controls and historical rate chart.
