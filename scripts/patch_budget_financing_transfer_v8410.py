@@ -60,7 +60,7 @@ source = source.replace(reset_old, reset_new, 1)
 
 startup_old = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}loadRates();"
 startup_new = "try{const saved=JSON.parse(localStorage.getItem(F)||'null');if(saved){setValues({...saved,repay:saved.repay===2?1.5:saved.repay})}else calculate()}catch(e){calculate()}try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.removeItem(TRANSFER);setValues({loan:Number(transfer.loan)||0,interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}loadRates();"
-if startup_old not in source:
+if startup_old not in source and startup_new not in source:
     raise SystemExit("Financing startup anchor missing")
 source = source.replace(startup_old, startup_new, 1)
 finance.write_text(source, encoding="utf-8")
