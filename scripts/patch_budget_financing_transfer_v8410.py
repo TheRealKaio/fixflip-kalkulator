@@ -129,6 +129,13 @@ source = source.replace(
     "preserveImportedLoan=true;setValues({loan:Math.round(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});",
     1,
 )
+transfer_apply = "try{const transfer=JSON.parse(localStorage.getItem(TRANSFER)||'null');if(transfer&&transfer.version===1&&Number.isFinite(Number(transfer.monthlyRate))){fixedMonthlyRate=Math.max(0,Number(transfer.monthlyRate));localStorage.setItem(FIXED,String(fixedMonthlyRate));localStorage.setItem('nic_financing_interest_manual_v1','1');localStorage.removeItem(TRANSFER);preserveImportedLoan=true;setValues({loan:Math.round(Number(transfer.loan)||0),interest:Number(transfer.interest)||0,repay:Number(transfer.repay)||0,extra:0,years:10});const notice=$('budgetTransferNotice');if(notice){notice.hidden=false;window.setTimeout(()=>{notice.hidden=true},6500)}}}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}"
+transfer_function = "function applyBudgetTransfer(){try{" + transfer_apply[len("try{"):-len("}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}")] + "}catch(e){console.error('Budgetwerte konnten nicht übernommen werden.',e)}}window.addEventListener('nic-calculator-changed',event=>{if(event.detail?.id==='finance')applyBudgetTransfer()});"
+if "function applyBudgetTransfer()" not in source:
+    if transfer_apply not in source:
+        raise SystemExit("Budget transfer import block missing")
+    source = source.replace(transfer_apply, "applyBudgetTransfer();", 1)
+    source = source.replace("try{const saved=JSON.parse(localStorage.getItem(F)||'null');", transfer_function + "try{const saved=JSON.parse(localStorage.getItem(F)||'null');", 1)
 notice = '<p id="budgetTransferNotice" class="budget-transfer-notice mini" role="status" aria-live="polite" hidden>Budgetwerte übernommen. Deine Monatsrate bleibt fix.</p>'
 if 'id="budgetTransferNotice"' not in source:
     source = source.replace('<section class="card"><h2>1. Finanzierung einstellen</h2>', '<section class="card"><h2>1. Finanzierung einstellen</h2>' + notice, 1)

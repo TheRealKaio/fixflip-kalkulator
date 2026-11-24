@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 10855)
+Total output lines: 457
+
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 (async()=>{
@@ -214,39 +217,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     assert(factorText.includes('Einfach gesagt')&&factorText.includes('Gut zu wissen'),'Complete Kaufpreisfaktor help is still available');
     await popup.locator('.nic-abc-context-close').click();
     const remainingIcons=await page.locator('.app>main .info-btn[data-info]:visible, .app>main .rent-info-dot[data-info]:visible').count();
-    assert.equal(remainingIcons,0,'Migrated calculator information icons must not remain visible in the rental view');
-    const spacing=await page.evaluate(()=>['rentCashflowKpi','rentFactorKpi'].map(id=>{const card=document.getElementById(id);const info=card?.querySelector('.rent-kpi-info'),badge=card?.querySelector('.rent-kpi-rating');return {infoHidden:!!info?.hidden,hasTerm:!!card?.querySelector('.nic-abc-term'),infoBottom:info?.getBoundingClientRect().bottom,badgeTop:badge?.getBoundingClientRect().top};}));
-    for(const pair of spacing){
-     if(pair.infoHidden)assert(pair.hasTerm,'New inline glossary term replaces hidden KPI information icon');
-     else if(pair.badgeTop!=null)assert(pair.infoBottom!=null&&pair.badgeTop>=pair.infoBottom+4,'Legacy badge has visible spacing below its info icon');
-    }
-   }
-   if(key==='finance'){
-    const geometry=await page.locator('#nicFinanceModule').evaluate(host=>{
-     const cards=[...host.querySelectorAll(':scope > .card')].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};});
-     const menu=document.querySelector('.deal-type-card').getBoundingClientRect();
-     const grids=[...host.querySelectorAll('.grid:has(> .kpi)')].map(grid=>[...grid.children].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};}));
-     return {inMain:host.parentElement.matches('.app>main.section'),menu:{left:menu.left,right:menu.right},cards,grids,hasShadow:!!host.shadowRoot};
-    });
-    assert(geometry.inMain&&!geometry.hasShadow,'Finance must use the shared main DOM and frame');
-    assert(geometry.cards.length>=2,'Financing content must include separate cards');
-    if(width>700)assert(geometry.cards.every(card=>Math.abs(card.left-geometry.menu.left)<2&&Math.abs(card.right-geometry.menu.right)<2),'Finance cards must align with the shared calculator frame');
-    else assert(geometry.cards.every(card=>card.right>card.left&&card.left>=0&&card.right<=width+1),'Financing cards must stay within the portrait viewport');
-    for(let i=1;i<geometry.cards.length;i++)assert(geometry.cards[i].top>=geometry.cards[i-1].bottom-1,'Finance content cards must not overlap');
-    for(const grid of geometry.grids){for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++){const a=grid[i],b=grid[j];const overlap=a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;assert(!overlap,'Finance result boxes must not overlap');}}
-   }
-  }
-  await page.evaluate(async()=>{
-   const root=document.getElementById('nicFinanceModule'),input=root.querySelector('[data-finance-id="interest"]');if(root.shadowRoot)throw Error('Finance must use the shared document DOM');
-   for(const id of ['interest','budgetInterest','rentInterest'])if(Number(document.getElementById(id).value)!==4.09)throw Error('Shared reference missing: '+id);
-   if(Number(input.value)!==4.09)throw Error('Finance must share the reference rate');
-   input.value='5.25';input.dispatchEvent(new Event('input',{bubbles:true}));
-   await initializeReferenceInterest();
-   if(Number(input.value)!==5.25)throw Error('Manual finance rate overwritten');
-  });
-  await page.goBack();await page.waitForFunction(()=>!document.body.classList.contains('nic-finance-active'));
-  await page.goForward();await page.waitForFunction(()=>document.body.classList.contains('nic-finance-active'));
-  await page.reload();await page.waitForSelector('#nicFinanceModule [data-finance-id="loan"]');
+    assert.equal(remaining…855 tokens truncated…waitForSelector('#nicFinanceModule [data-finance-id="loan"]');
   assert.equal(await page.locator('.nic-tile-active').getAttribute('data-calculator'),'finance');
   await page.evaluate(()=>{const root=document.getElementById('nicFinanceModule');root.querySelector('[data-finance-id="newCalc"]').click();if(Number(root.querySelector('[data-finance-id="interest"]').value)!==4.09)throw Error('Finance reset must use shared reference');});
   await page.evaluate(()=>{
