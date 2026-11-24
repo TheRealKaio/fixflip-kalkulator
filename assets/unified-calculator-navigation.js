@@ -553,7 +553,18 @@ window.addEventListener('DOMContentLoaded',()=>{
  // site build. Initialize only after the direct route has its real menu.
  function startDirectRoute(){
   const key=routeKey(location.pathname);
-  if(key)select(key);
+  if(key){
+   if(key===active){
+    applyHeader(key);
+    window.NICHeader?.refresh();
+    window.NICSettings?.syncCalculatorMenu(key);
+   }else select(key);
+  }
+  initResponsiveCalculatorMenu();
+ }
+ const initialRoute=routeKey(location.pathname);
+ if(calculators.some(item=>item.id===initialRoute)){
+  select(initialRoute);
   initResponsiveCalculatorMenu();
  }
  window.NICSettings.init().then(startDirectRoute,async error=>{
