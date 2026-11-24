@@ -89,6 +89,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   if(width>700){
    const startTile=page.locator('#nic-home-intro .nic-home-options>.deal-type-option').first();
    await startTile.hover();
+   await page.waitForTimeout(180);
    const feedback=await startTile.evaluate(el=>({filter:getComputedStyle(el).filter,shadow:getComputedStyle(el).boxShadow}));
    assert(feedback.filter.includes('brightness(0.94)')&&feedback.shadow!=='none','Homepage buttons show desktop hover feedback: '+JSON.stringify(feedback));
   }
