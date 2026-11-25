@@ -524,6 +524,7 @@ runs:
         python scripts/patch_finance_defaults_v8394.py _site/index.html
         python scripts/patch_budget_signed_surplus_v8400.py _site/index.html
         python scripts/patch_field_hint_alignment_v8404.py _site/index.html
+        python scripts/patch_budget_financing_transfer_v8410.py
 
         # One release source for HTML, PDFs, Service Worker and all verifiers.
         python scripts/release_contract.py normalize _site

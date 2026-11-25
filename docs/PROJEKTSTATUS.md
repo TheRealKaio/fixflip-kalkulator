@@ -49,6 +49,7 @@ Die Navigation führt zu den fünf Rechnern Budget, Eigennutzung, Vermietung, Fi
 - Rechnerbereiche haben flexible Grid-Layouts. Bei schmalen Ansichten wechseln Ergebnisboxen und Buttons in eine einspaltige Darstellung.
 - Die Finanzierungs-KPI verwenden `.kpi` als Basis. Die zweite Anschlussfinanzierungsbox („Zinssatz stabil“) erhält einen gelben Hintergrund, die dritte („Zinssatz steigt“) einen roten. Beschriftungen bleiben lesbar; Zahlen verwenden tabellarische Ziffern.
 - `assets/pdf-reports.js` stellt gemeinsame Funktionen für Dokumenterstellung, Header, Footer, Logo und Disclaimer bereit. Kopfbereich dunkelblau (#0F172A), Logo auf weißem Feld, Footer mit Domain, Version und Seitenzahl. Neue PDF-Ausgaben sollen diese gemeinsame Implementierung verwenden.
+- Alle fünf PDF-Berichte zeigen die Zusammenfassung und die Boxen „Wichtigste Ergebnisse auf einen Blick“ vor den Einzelpositionen. Der Abstand vom Zusammenfassungskasten zur Ergebnisse-Überschrift ist einheitlich; nach der letzten Ergebnisbox beginnt die Einzelaufstellung auf einer neuen Seite. Eine vorhandene Checkliste erhält eine eigene Seite direkt vor dem Disclaimer. Der Disclaimer bleibt auf einer eigenen letzten Seite.
 - Die README-PDF wird im Admin-Tab „Layout“ als letzte Karte mit direktem Downloadlink angeboten. Der Build kopiert sie in den veröffentlichten Dokumentationspfad.
 
 ## 4. Formeln und Berechnungsregeln

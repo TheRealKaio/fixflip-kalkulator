@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-flip',finance:'finanzierungsrechner'};
-const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus kann ich mir leisten?','5. Monatliche Tilgung- und Restschuld'],own:['4. Ergebnis Eigennutzung'],rent:['4. Ergebnis Vermietung'],flip:['4. Ergebnis Fix und Flip'],finance:['1. Finanzierung einstellen','2. Finanzierungsergebnis','3. Anschlussfinanzierung']};
+const expected={budget:['4. Dein monatlich verfügbares Budget','5. Wieviel Haus kann ich mir leisten?','6. Monatliche Tilgung- und Restschuld'],own:['4. Ergebnis Eigennutzung'],rent:['4. Ergebnis Vermietung'],flip:['4. Ergebnis Fix und Flip'],finance:['1. Finanzierung einstellen','2. Finanzierungsergebnis','3. Anschlussfinanzierung']};
 (async()=>{
  const browser=await chromium.launch({headless:true});
  try{
@@ -23,6 +23,10 @@ const expected={budget:['3. Dein monatlich verfügbares Budget','4. Wieviel Haus
     const snapshot=await page.locator('main').evaluate(root=>({headings:[...root.querySelectorAll('h1,h2,h3,h4')].filter(el=>el.getBoundingClientRect().height).map(el=>el.textContent.trim()),decisions:[...root.querySelectorAll('[class*="decision"]')].map(el=>({tag:el.tagName,id:el.id,class:el.className,text:el.textContent.trim().slice(0,250),display:getComputedStyle(el).display})),scripts:[...document.scripts].filter(el=>/neutral|result-heading/.test(el.id)).map(el=>el.id)}));
     console.log('RESULT HEADINGS',width,key,entry,JSON.stringify(snapshot));
     for(const title of expected[key])if(!await page.getByRole('heading',{name:title,exact:true}).isVisible())headingFailures.push(key+' '+entry+' must show '+title);
+    if(key==='budget'){
+     const buttonHeading=await page.locator('#budgetFinanceTransfer').evaluate(el=>el.closest('section')?.querySelector('h2')?.textContent.trim());
+     if(buttonHeading!=='4. Dein monatlich verfügbares Budget')headingFailures.push(key+' '+entry+' must place the transfer button in section 4: '+buttonHeading);
+    }
    }
    for(const [key,slug] of Object.entries(routes)){
     await page.goto('http://localhost/'+slug+'/',{waitUntil:'networkidle'});

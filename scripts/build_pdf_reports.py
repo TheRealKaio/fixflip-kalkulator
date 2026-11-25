@@ -44,6 +44,18 @@ shutil.copyfile('assets/pdf-reports.js',site/'pdf-reports.js')
 # Apply PDF viewer changes to generated output only. The archived original is immutable.
 pdf_asset=site/'pdf-reports.js'
 pdf_js=pdf_asset.read_text(encoding='utf-8')
+# Keep the financing results cards on page 1 and move detailed positions to page 2.
+finance_detail_start=''' let y=94;
+ const section=title=>{doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text(title,16,y);y+=8;};'''
+finance_detail_page=''' // Result cards finish page 1; detailed positions always start on page 2.
+ doc.addPage();
+ header(doc,'Finanzierungsrechner - Bericht','Übersicht der Einzelpositionen');
+ let y=45;
+ const section=title=>{doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(23,32,51);doc.text(title,16,y);y+=8;};'''
+if finance_detail_start in pdf_js:
+    pdf_js=pdf_js.replace(finance_detail_start,finance_detail_page,1)
+elif "\n doc.addPage();\n header(doc,'Finanzierungsrechner - Bericht','Übersicht der Einzelpositionen');\n let y=45;" not in pdf_js:
+    raise SystemExit('Financing PDF detail-page anchor missing and page break not already present')
 viewer="""// One PDF viewing path for Budget, Eigennutzung, Vermietung, Fix & Flip and Finanzierung.
 let pendingPdfWindow=null;
 function preparePdfWindow(event){
