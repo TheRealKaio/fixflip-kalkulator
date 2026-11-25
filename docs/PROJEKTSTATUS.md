@@ -11,6 +11,16 @@ Die veröffentlichte App wird im GitHub-Actions-Workflow aus der aufgeteilten gz
 
 ## 1. Aktueller Stand
 
+Stand: 25. November 2026. Auf STRATO ist V8.410 mit dem überarbeiteten PDF-Layout und dem Laufzeitregler live. Der Finanzierungsrechner wurde nach einem Browser-Refresh auf der Live-Domain geprüft. [Produktionslauf](https://github.com/TheRealKaio/fixflip-kalkulator/actions/runs/45561863915).
+
+### Anforderungen für die nächste Bearbeitung
+
+- Das Rechnermenü öffnet den ausgewählten Rechner unter seiner eigenen URL. Direktaufruf und Browser-Refresh müssen die zum Pfad gehörenden Eingaben und Ergebnisse anzeigen.
+- Ohne ausdrücklich gewählte Zinsbindung heißt der Regler „Laufzeit für dein Darlehen“. Er bietet Orientierung bei 5, 10, 15, 20, 25 und 30 Jahren. Jedes einzelne Jahr dazwischen bleibt auswählbar.
+- Die fünf Rechner sind kostenlos. Als Produktziel gilt ein eigener PDF-Bericht je Rechner für 9,90 €. Zusätzliche Inhalte mit eigenständigem Nutzwert werden Bericht für Bericht abgestimmt. Bis dahin bleiben die vereinbarten Berichtsinhalte maßgeblich.
+- PDF-Typografie: Haupttitel H1 und Untertitel H3 im Kopfbereich, Abschnittstitel H2 im Bericht. Bezeichnungen und Werte nutzen die Grundschrift. Zwischenüberschriften sowie Summen mit zugehörigen Werten sind fett. Randinformationen nutzen die Schrift für Untertexte. Logo und Fußzeile folgen der bestehenden Vorlage.
+- Zusammenfassungsboxen sind blau und verwenden einheitliche Innen- und Zeilenabstände. Längere Texte in den Boxen stehen im Blocksatz mit deutscher Silbentrennung. Ein vorhandener wichtigster Tipp beginnt auf einer eigenen Seite. Steht sein Titel im Kopfbereich, entfällt die Wiederholung im Inhalt. Berichte ohne definierten Tipp überspringen diesen Abschnitt.
+
 - Responsive Web-App auf STRATO unter `www.neustart-immocheck.de`; GitHub bleibt Entwicklungs- und Testplattform.
 - Rechner: Budget, Eigennutzung, Vermietung, Fix und Flip sowie Finanzierungsrechner.
 - Die fünf Rechner haben eigene Routen und teilen die Navigation, den stabilisierten Header, Admin-Einstellungen und PDF-Branding.
@@ -217,7 +227,7 @@ Der Finanzierungsrechner verwendet den eingestellten Sollzins. Die historischen 
 | Sollzins p. a. | 4,01 % |
 | Anfangstilgung p. a. | 1,5 % |
 | Sondertilgung p. a. | 0 % |
-| Betrachtungszeitraum | 10 Jahre |
+| Laufzeit für dein Darlehen | 10 Jahre |
 | Budget – persönliche Beispielangaben | Nettoeinkommen, Einkommenskomponenten, Kindergeld und Eigenkapital starten neutral bei 0; Single, 1 Erwachsener, 0 Kinder. Haushaltsausgaben werden aus Vorschlägen vorbelegt. |
 | Budget – Finanzierung | Ort standardmäßig Hamburg; Notar/Grundbuch 2 %, Makler beim Kauf 0 %, sonstige Kosten 5 %, Budgetanteil der Monatsrate 75 %. |
 | Eigennutzung / Fix und Flip – Ort | Hamburg, PLZ/Ort 20095 Hamburg als voreingestellte Ortsangabe. |
@@ -228,7 +238,7 @@ Weitere Felder verwenden die Startwerte in der jeweiligen Quellkomponente. Benut
 
 ## 6. Build, Tests und Veröffentlichung
 
-Der Workflow `.github/workflows/strato-production.yml` läuft bei Änderungen an `main` und manuell. Der gemeinsame Build in `.github/actions/build-site/action.yml` erzeugt die Website und prüft Rechner, PDFs, PHP-Regeln, Browsernavigation, Metadaten und Assets. Anschließend prüfen SFTP-/Rückwegtests sowie Apache-Integration die Auslieferung. Erst danach wird das Frontend auf STRATO veröffentlicht. Assets kommen vor Einstiegsseiten; Sicherungen ermöglichen die automatische Rücknahme bei Fehlern. API, private Konfiguration und Datenbank bleiben erhalten. GitHub Pages veröffentlicht `develop` automatisch als getrennte Vorschau mit Projekt-Unterpfad, noindex und deaktiviertem Backend; erst die Übernahme nach `main` veröffentlicht auf STRATO. Der isolierte Test-Upload `strato-stage.yml` aktiviert keine Website. Details stehen in `server/MIGRATION_WEBSITE_STRATO.md`.
+Der Workflow `.github/workflows/strato-production.yml` läuft bei Änderungen an `main` und manuell. Der gemeinsame Build in `.github/actions/build-site/action.yml` erzeugt die Website und prüft Rechner, PDFs, PHP-Regeln, Browsernavigation, Metadaten und Assets. Anschließend prüfen SFTP-/Rückwegtests sowie Apache-Integration die Auslieferung. Der Workflow lädt das Frontend in ein separates Release-Verzeichnis und prüft es in einer geschützten Vorschau. Anschließend aktiviert er das Release atomar und prüft die öffentliche Website. Schlägt diese Prüfung fehl, aktiviert er das vorherige Release erneut. API, private Konfiguration und Datenbank bleiben erhalten. GitHub Pages veröffentlicht `develop` automatisch als getrennte Vorschau mit Projekt-Unterpfad, noindex und deaktiviertem Backend; erst die Übernahme nach `main` veröffentlicht auf STRATO. Der isolierte Test-Upload `strato-stage.yml` aktiviert keine Website. Der verbindliche Ablauf steht in [STRATO-DEPLOYMENT.md](STRATO-DEPLOYMENT.md).
 
 Für die Anschlussfinanzierung enthält `scripts/verify_finance_updates.js` Prüffälle für Monatsrate, Restschuld, Sondertilgung, Null-Darlehen, Ergebnisfarben, Downloadkarte und PDF-Datei. Ein Prüffall nutzt 300.000 € Darlehen, 4 % Sollzins, 2 % Tilgung und 5 % Sondertilgung über zehn Jahre. Der Release-Vertrag in `scripts/release_contract.py` leitet die sichtbare Versionsnummer aus dem neuesten `scripts/patch*_v8*.py`-Dateinamen ab.
 
