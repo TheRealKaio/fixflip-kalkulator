@@ -23,7 +23,11 @@ body:not(.nic-embed) .footer-version,body:not(.nic-embed) .footer-note .nic-cons
 .deal-type-option>input,.deal-type-option>.rent-radio-dot{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;margin:0!important}
 .nic-menu-icon{display:block;width:20px;height:20px;flex:0 0 20px;align-self:start;color:#075c55;pointer-events:none}
 .deal-type-option:has(input:checked)::after,.deal-type-option[aria-pressed="true"]::after,.deal-type-option.current::after,.deal-type-option[aria-current="page"]::after{content:"";position:absolute;bottom:-7px;left:50%;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:#075c55;border-right:2px solid #fff;border-bottom:2px solid #fff;pointer-events:none}
-.deal-type-option:focus-within,.nic-login-button:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
+.deal-type-option:not(#nic-home-intro .deal-type-option):focus-within,.nic-login-button:focus-visible{outline:3px solid #b37b00;outline-offset:3px}
+/* Home links: no touch/mouse focus ring; retain a visible keyboard focus in brand green. */
+#nic-home-intro .nic-home-options > a.deal-type-option{-webkit-tap-highlight-color:transparent}
+#nic-home-intro .nic-home-options > a.deal-type-option:focus:not(:focus-visible){outline:none!important}
+#nic-home-intro .nic-home-options > a.deal-type-option:focus-visible{outline:3px solid var(--nic-green-bg,#075c55)!important;outline-offset:3px}
 @media(max-width:700px){
   .nic-brand-bar{grid-template-columns:minmax(0,1fr) auto;flex-wrap:wrap;gap:8px;padding:12px}
   .nic-brand-bar .brand-logo{width:165px!important}
