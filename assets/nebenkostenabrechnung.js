@@ -78,13 +78,13 @@ function mount(){
  if(!wired){
   const launches=document.createElement('section');
   launches.className='nic-settle-card nic-settle-launches';
-  launches.innerHTML='<h2>Abrechnung starten</h2><p>Wähle den passenden Einstieg für deine Mieterabrechnung.</p>'+startView();
+  launches.innerHTML='<h3>Abrechnung starten</h3><p>Wähle den passenden Einstieg für deine Mieterabrechnung.</p>'+startView();
   landingView.appendChild(launches);
  }
 }
 function heading(title,description){return '<div class="nic-settle-card"><h2>'+escapeHtml(title)+'</h2><p>'+escapeHtml(description)+'</p></div>'}
 function startView(){
- return '<section class="nic-settle-card"><h2>Jahresabrechnung starten</h2><p>Wähle, wie du die Betriebskosten für deine Wohnung erfassen möchtest.</p><div class="nic-settle-start"><button type="button" class="nic-settle-btn" data-start="weg"><strong>WEG-Abrechnung hochladen</strong><span>Fertige Jahresabrechnung als Beleg hinzufügen</span></button><button type="button" class="nic-settle-btn" data-start="manual"><strong>Manuelle Erfassung</strong><span>Kosten und Verteilung Schritt für Schritt selbst eintragen</span></button></div><p class="nic-settle-note">Deine Abrechnungen werden in dieser Testversion nicht dauerhaft gespeichert. Verwende bitte keine echten Mieterdaten.</p></section>';
+ return '<section class="nic-settle-card"><h3>Jahresabrechnung starten</h3><p>Wähle, wie du die Betriebskosten für deine Wohnung erfassen möchtest.</p><div class="nic-settle-start"><button type="button" class="nic-settle-btn" data-start="weg"><strong>WEG-Abrechnung hochladen</strong><span>Fertige Jahresabrechnung als Beleg hinzufügen</span></button><button type="button" class="nic-settle-btn" data-start="manual"><strong>Manuelle Erfassung</strong><span>Kosten und Verteilung Schritt für Schritt selbst eintragen</span></button></div><p class="nic-settle-note">Deine Abrechnungen werden in dieser Testversion nicht dauerhaft gespeichert. Verwende bitte keine echten Mieterdaten.</p></section>';
 }
 function stepHeader(){
  const labels=['Objekt','Belege','Positionen','Verteilung','Vorschau'];
