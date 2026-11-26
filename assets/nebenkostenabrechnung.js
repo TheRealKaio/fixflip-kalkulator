@@ -212,7 +212,7 @@
     const views=[startView,detailsView,positionsView,previewView];
     root.innerHTML=appHeader()+'<div class="nic-settle-layout">'+sidebar()+'<main class="nic-settle-work"><div class="nic-settle-crumb">Mieterabrechnung&nbsp; / &nbsp;'+esc(headings[state.step])+'</div><div class="nic-settle-title-row"><div><h1>'+esc(headings[state.step])+'</h1><p class="nic-settle-lead">'+esc(descriptions[state.step])+'</p></div><span class="nic-settle-status">Entwurf · leer</span></div>'+progress()+views[state.step]()+'<p class="nic-settle-lead" style="font-size:11px;margin:12px 0 0">Entwicklungsansicht: Eingaben werden nicht dauerhaft gespeichert. Bitte keine echten Mieterdokumente hochladen.</p></main></div>';
   }
-  function updateField(el){if(el.dataset.field)state[el.dataset.field]=el.value;}
+  function updateField(el){if(el.dataset.field){state[el.dataset.field]=el.value;return;}if(el.dataset.pos!==undefined){const i=Number(el.dataset.pos),col=el.dataset.col;if(state.positions[i]&&col)state.positions[i][col]=el.value;}}
   function handleInput(event){updateField(event.target);}
   function handleChange(event){
     const el=event.target;updateField(el);
