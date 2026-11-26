@@ -855,6 +855,22 @@ runs:
                 page.write_text(html, encoding='utf-8')
         print(f'Mobile haptics loaded on {len(pages)} HTML pages')
         PY
+        cp assets/nebenkostenabrechnung.js _site/nebenkostenabrechnung.js
+        node --check _site/nebenkostenabrechnung.js
+        python - <<'PY'
+        from pathlib import Path
+        page = Path('_site/nebenkostenabrechnung/index.html')
+        if not page.exists():
+            raise SystemExit('Missing Nebenkostenabrechnung route')
+        html = page.read_text(encoding='utf-8')
+        tag = '<script defer src="/nebenkostenabrechnung.js"></script>'
+        if tag not in html:
+            if '</head>' not in html:
+                raise SystemExit('Missing head in Nebenkostenabrechnung route')
+            html = html.replace('</head>', tag + '</head>', 1)
+            page.write_text(html, encoding='utf-8')
+        print('Settlement workflow loaded on Nebenkostenabrechnung route')
+        PY
         python scripts/fingerprint_assets.py _site
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_financing_percent_slider.cjs
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_own_flip_rate_width.cjs
