@@ -9,6 +9,7 @@ import base64
 import json
 from pathlib import Path
 import re
+from statistics import median
 import tempfile
 from urllib.parse import urlparse
 from urllib.request import Request, ProxyHandler, build_opener
@@ -37,6 +38,27 @@ def table_warnings(table):
     return False
 
 
+def reading_lines(ocr):
+    """Reconstruct physical lines from OCR boxes, independent of merged HTML cells."""
+    slopes = []
+    for polygon in ocr.get("rec_polys", []):
+        (x1, y1), (x2, y2) = polygon[:2]
+        if x2 - x1 >= 70:
+            slopes.append((y2 - y1) / (x2 - x1))
+    slope = median(slopes) if slopes else 0
+    cells = []
+    for label, box in zip(ocr["rec_texts"], ocr["rec_boxes"]):
+        x, top, right, bottom = map(int, box)
+        if label.strip() and bottom > top:
+            cells.append(((top + bottom - slope * (x + right)) / 2, x, bottom - top, label.strip()))
+    lines = []
+    for y, x, height, label in sorted(cells):
+        if not lines or abs(lines[-1][0] - y) > 0.65 * min(height, lines[-1][1]):
+            lines.append((y, height, []))
+        lines[-1][2].append((x, label))
+    return [" ".join(label for _, label in sorted(cells)) for _, _, cells in lines]
+
+
 def query_qwen(image, endpoint, model):
     url = urlparse(endpoint)
     if url.scheme != "http" or url.hostname not in {"localhost", "127.0.0.1", "::1"}:
@@ -62,9 +84,12 @@ def query_qwen(image, endpoint, model):
     return json.loads(answer)
 
 
+paddle = None
+marker = None
+
+
 def process(paths, qwen_endpoint, qwen_model):
-    paddle = None
-    marker = None
+    global paddle, marker
     for path in paths:
         with fitz.open(path) as document:
             for number, page in enumerate(document, 1):
@@ -103,7 +128,7 @@ def process(paths, qwen_endpoint, qwen_model):
                     pixmap.save(raster)
                     result = next(iter(paddle.predict(str(raster)))).json["res"]
                     output["engine"] = "PaddleOCR"
-                    output["text"] = result["overall_ocr_res"]["rec_texts"]
+                    output["text"] = reading_lines(result["overall_ocr_res"])
                     tables = result.get("table_res_list", [])
                     regions = output["regions"]
                     for table in tables:
