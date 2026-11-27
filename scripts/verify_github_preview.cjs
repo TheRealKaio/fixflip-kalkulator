@@ -367,9 +367,17 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await contacts.getByLabel('Kontaktrolle').selectOption('Mieter/in');
    await contacts.getByLabel('Vorname').fill('Mara');
    await contacts.getByLabel('Nachname / Firmenname').fill('Test');
+   const tenancyGroup=contacts.locator('#tenantDetails details').filter({has:contacts.locator('summary').filter({hasText:'Mietverhältnis'})});
+   const rentGroup=contacts.locator('#tenantDetails details').filter({has:contacts.locator('summary').filter({hasText:'Miete und Vorauszahlungen'})});
+   const historyGroup=contacts.locator('#tenantDetails details').filter({has:contacts.locator('summary').filter({hasText:'Mieterabrechnungen'})});
+   assert.equal(await contacts.locator('#tenantDetails details[open]').count(),0,'Tenant groups start closed');
+   await tenancyGroup.locator('summary').click();
    await contacts.getByLabel('Mietbeginn').fill('2025-01-01');
    await contacts.getByLabel('Mietende').fill('2026-10-31');
-   await contacts.getByLabel('Aktiv').uncheck();
+   assert.equal(await contacts.locator('#tenantActive').count(),0,'Active checkbox removed');
+   await tenancyGroup.locator('summary').click();
+   assert.equal(await contacts.getByLabel('Mietbeginn').isVisible(),false);
+   await rentGroup.locator('summary').click();
    const periods = contacts.locator('.tenant-rent-period');
    for (const [i, validFrom, coldRent, operatingCosts, heatingCosts] of [
     [0,'2025-01-01','690.50','120','80'], [1,'2025-07-01','720','135','90']
@@ -388,7 +396,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await edit.click();
    assert.equal(await contacts.getByLabel('Mietbeginn').inputValue(),'2025-01-01');
    assert.equal(await contacts.getByLabel('Mietende').inputValue(),'2026-10-31');
-   assert.equal(await contacts.getByLabel('Aktiv').isChecked(),false);
+   assert.equal(await contacts.locator('#tenantActive').count(),0);
+   assert.equal(await contacts.locator('#tenantDetails details[open]').count(),0,'Reopened contact starts collapsed');
+   await historyGroup.locator('summary').click();
+   assert.equal(await historyGroup.getByText('Noch keine gespeicherten Mieterabrechnungen.').isVisible(),true);
+   await historyGroup.locator('summary').click();
    assert.equal(await periods.count(),2);
    assert.equal(await periods.nth(1).getByLabel('Gültig ab').inputValue(),'2025-07-01');
    assert.equal(await periods.nth(0).getByLabel('Kaltmiete (€)').inputValue(),'690.50');
