@@ -458,20 +458,24 @@
       label.append(name, input);
       row.append(label);
      }
-     const remove = action('Mietkonditionen entfernen', () => {
+     const remove = action('×', () => {
+      if (!window.confirm('Diese Mietkonditionen entfernen?')) return;
       row.remove();
       if (!rentHistory.childElementCount) addRentPeriod();
+      rentHistory.lastElementChild.append(addPeriod);
       addPeriod.focus();
      });
-     remove.classList.add('full');
+     remove.className = 'contact-delete rent-period-delete';
+     remove.setAttribute('aria-label', 'Mietkonditionen entfernen');
+     remove.title = 'Mietkonditionen entfernen';
      row.append(remove);
      rentHistory.append(row);
+     row.append(addPeriod);
      return row.querySelector('input');
     }
 
     const addPeriod = action('＋ Mietanpassung hinzufügen', () => addRentPeriod().focus());
-    addPeriod.classList.add('settlement-highlight');
-    tenancyPanel.append(addPeriod);
+    addPeriod.className = 'full add-rent-period';
     function syncTenancyPanel() {
      tenancyPanel.hidden = contactRole.value !== 'Mieter/in';
     }
@@ -901,7 +905,27 @@
     exitActions.className = 'settlement-exit';
     exitActions.append(exit);
     root.querySelector('.tabs').before(exitActions);
-    style.textContent += '\n.settlement-exit{padding:10px 20px 0}.settlement-exit-button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:6px 0;color:var(--nic-green);font-size:var(--nic-subtext-font-size);font-weight:650;cursor:pointer}.settlement-exit-button span{font-size:.9em}.settlement-exit-button:hover{text-decoration:underline}.settlement-exit-button:focus-visible{outline:2px solid currentColor;outline-offset:3px}@media(max-width:600px){.settlement-exit{padding-inline:10px}}.tenant-rent-period{border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}.tenant-rent-period legend{font-weight:650;padding:0 4px}#tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#tenantDetails .field,#tenantDetails .field input{min-width:0}#tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}@media(max-width:600px){#tenantDetails .form-grid{grid-template-columns:minmax(0,1fr)}}.tenant-rent-period .btn{justify-self:start}#tenantRentHistory+.btn{margin-top:4px}#tenantActive{width:auto;min-height:0;margin-inline-end:4px}';
+    style.textContent += `
+      .settlement-exit{padding:10px 20px 0}
+      .settlement-exit-button,.add-rent-period{border:0;background:transparent;text-decoration:none;cursor:pointer;text-align:left}
+      .settlement-exit-button{display:inline-flex;align-items:center;gap:8px;padding:6px 0;color:var(--nic-ink);font-size:max(16px,var(--nic-body-font-size));font-weight:700}
+      .settlement-exit-button span{font-size:1.25em;line-height:1}
+      .settlement-exit-button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+      .step-heading h3[tabindex="-1"]:focus{outline:none}
+      #tenantDetails{margin-block-start:16px}
+      #tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      #tenantDetails .field,#tenantDetails .field input{min-width:0}
+      #tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}
+      #tenantActive{width:auto;min-height:0;margin-inline-end:4px}
+      .tenant-rent-period{position:relative;border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}
+      .tenant-rent-period legend{font-weight:650;padding:0 4px}
+      .rent-period-delete{position:absolute;top:-12px;right:8px;background:var(--nic-card,#fff)}
+      .add-rent-period{justify-self:start;padding:6px 0;color:var(--nic-green);font-size:var(--nic-subtext-font-size);font-weight:650}
+      @media(max-width:600px){
+        .settlement-exit{padding-inline:10px}
+        #tenantDetails .form-grid{grid-template-columns:minmax(0,1fr)}
+      }
+    `;
 
     if (!document.getElementById('settlement-print-style')) {
       const printStyle = document.createElement('style');

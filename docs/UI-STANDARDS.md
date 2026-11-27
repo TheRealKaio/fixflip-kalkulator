@@ -31,7 +31,7 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Der Aufruf `/` zeigt die Startseite, auch wenn zuvor ein Rechner verwendet wurde.
 - Die Nebenkostenabrechnung startet mit ihrer Informationsseite und den beiden
   Erfassungswegen. Links über den Menüpunkten führt „Abrechnung verlassen“
-  als rahmenlose Schaltfläche mit kleinem Pfeil nach links zurück zu dieser
+  als gut lesbare, rahmenlose Schaltfläche mit Linkspfeil zurück zu dieser
   Seite. Manuelle Erfassung beginnt bei den Abrechnungsdetails.
 - Kontakte öffnen sich per Klick auf ihren Namen. Die Zeilen werden durch
   eine feine graue Linie getrennt. Ein rotes X löscht den Kontakt nach
@@ -39,7 +39,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Schatten- und Klickanimation wie die übrigen Website-Buttons.
   Das Mietverhältnis enthält Beginn, Ende und Aktivstatus. Mietkonditionen
   werden als Verlauf mit Gültigkeitsdatum, Kaltmiete und getrennten
-  Vorauszahlungen für Betriebs- und Heizkosten erfasst.
+  Vorauszahlungen für Betriebs- und Heizkosten erfasst. Ein rotes X oben
+  rechts entfernt die jeweiligen Mietkonditionen nach Bestätigung.
+  „Mietanpassung hinzufügen“ steht rahmenlos am Ende der letzten Box.
 - Der Footer steht einmal als eigenes Element in `.app`, außerhalb von `main`.
 - Die Anwendung füllt mindestens die Viewporthöhe. Kurze Inhalte wachsen zum
   Footer; lange Inhalte scrollen natürlich. Kein zusätzlicher innerer Seiten-Scrollbereich.
