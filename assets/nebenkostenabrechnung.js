@@ -1456,12 +1456,12 @@
       .contact-edit,.contact-delete{color:var(--nic-ink);background:transparent;border:0;cursor:pointer}
       .contact-edit{min-width:0;padding:6px 4px;text-align:left;font-size:var(--nic-subtext-font-size);font-weight:650;overflow-wrap:anywhere}
       .contact-delete{flex:none;width:32px;height:32px;color:var(--nic-red);font-size:1.3em;line-height:1}
-      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)){transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
-      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)):enabled:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
-      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)):enabled:active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
-      :is(.tab,.contact-edit,.settlement-exit-button):is(:hover,:focus-visible){color:var(--nic-green)}
-      :is(.tab,.contact-delete):is(:hover,:focus-visible){text-shadow:0 -2px 5px color-mix(in srgb,currentColor 35%,transparent)}
-      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)):enabled:active{transform:none}}
+      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle,.back-step)){transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
+      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle,.back-step)):enabled:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
+      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle,.back-step)):enabled:active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
+      :is(.tab,.contact-edit,.settlement-exit-button,.back-step):is(:hover,:focus-visible){color:var(--nic-green)}
+      :is(.tab,.contact-edit,.contact-delete,.settlement-exit-button,.back-step):is(:hover,:focus-visible){text-shadow:0 -2px 5px color-mix(in srgb,currentColor 35%,transparent)}
+      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle,.back-step)):enabled:active{transform:none}}
     `;
     root.innerHTML = markup;
     root.prepend(style);
@@ -1644,6 +1644,10 @@
       .wizard-panel .step-heading{flex-wrap:wrap}
       .step-heading-actions{justify-content:flex-end;flex-wrap:wrap;min-width:0;max-width:100%;margin-inline-start:auto}
       .step-heading-actions .back-step{border:0;background:transparent;box-shadow:none}
+      :is(.step-heading-actions .back-step,.settlement-exit-button):is(:hover,:active){background:transparent;border-color:transparent;box-shadow:none;filter:none;transform:none;text-decoration:none;text-shadow:0 -2px 5px color-mix(in srgb,currentColor 35%,transparent)}
+      .btn.settlement-highlight{background:#f6c944;border-color:#e1b52b;color:#302600}
+      .btn.settlement-highlight:enabled:hover{background:#edbd2f;filter:none}
+
       .step-heading-actions .back-step:focus-visible{outline:2px solid var(--nic-green);outline-offset:2px}
       .wizard-panel .step-heading button[data-next],.wizard-panel .step-heading #showPreview{
         box-sizing:border-box;width:var(--nic-next-width);min-width:0;max-width:100%;flex:0 0 auto;
