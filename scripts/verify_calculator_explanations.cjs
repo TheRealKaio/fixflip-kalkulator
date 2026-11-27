@@ -159,7 +159,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    for(const key of Object.keys(routes))assert.equal(await page.locator('#content-'+key+'-description').count(),1,'Admin editor for '+key);
    await page.locator('[data-admin-page="settlement"] > summary').click();
    await page.locator('#content-settlement-boxTitle').fill('Meine Mieterabrechnung');
-   await page.locator('#content-settlement-description').fill('<p>Meine eigene Einleitung</p><details><summary>Weiterlesen …</summary><h3>Meine Details</h3><p>Weitere Informationen <a href="/vermietung/">Vermietung</a></p></details><script>window.explanationInjected=true</script>');
+   await page.locator('#content-settlement-description').fill('<p>Meine eigene Einleitung</p><div class="nic-copy-tile-grid"><a class="nic-copy-tile" href="/nebenkostenabrechnung/"><strong class="nic-copy-tile__title">WEG-Abrechnung hochladen</strong></a><a class="nic-copy-tile" href="/nebenkostenabrechnung/"><strong class="nic-copy-tile__title">Manuelle Erfassung</strong></a></div><details><summary>Weiterlesen …</summary><h3>Meine Details</h3><p>Weitere Informationen <a href="/vermietung/">Vermietung</a></p></details><script>window.explanationInjected=true</script>');
    await page.locator('[data-admin-page="budget"] > summary').click();
    await page.locator('#content-budget-title').fill('Mein Budgettext');
    await page.locator('#saveSettings').click();
@@ -168,6 +168,11 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert(!settings.content&&settings.meta.content.settlement.boxTitle==='Meine Mieterabrechnung','Legacy API retains the content transport');
    await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
    const edited=page.locator('#nicContentView');
+   assert.equal(await edited.locator(':scope > h2').innerText(),'Meine Mieterabrechnung','Information page uses the edited title');
+   assert((await edited.innerText()).includes('Meine eigene Einleitung'),'Information page uses the edited introduction');
+   assert.equal(await edited.locator('a.nic-copy-tile').count(),2,'Saved editorial tiles are reused');
+   await edited.locator('[data-nic-settlement-action="upload"]').click();
+   await edited.locator('[data-settlement]').getByRole('button',{name:'WEG-Abrechnung hochladen'}).waitFor({state:'visible'});
    assert.equal(await edited.locator(':scope > h2').count(),0,'The editorial title is replaced when the settlement workspace opens');
    assert(await edited.locator('[data-settlement]').getByRole('button',{name:'WEG-Abrechnung hochladen'}).isVisible(),'Customized introduction retains the working settlement wizard');
    assert(!(await edited.innerText()).includes('Meine eigene Einleitung'),'Editorial content stays out of the open settlement workspace');

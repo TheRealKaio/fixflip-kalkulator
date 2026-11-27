@@ -33,10 +33,10 @@
     function setEntryMode(mode){
      entryMode=mode;
      const status=root.getElementById('entryModeState');
+     if (status) status.hidden = mode === 'manual';
      const detailsHint=root.getElementById('detailsModeHint');
      const positionHint=root.getElementById('positionModeHint');
      if(mode==='manual'){
-      if(status)status.textContent='Manuelle Erfassung: Der Upload-Schritt wird übersprungen. Objekt, Zeitraum, Einheit und Kontakt werden im nächsten Schritt ausgewählt.';
       if(detailsHint)detailsHint.textContent='Gib Objekt, Abrechnungsjahr und Wohnung ein. Gehe anschließend zu den Kostenpositionen.';
       if(positionHint)positionHint.textContent='Die Standardpositionen sind vorbereitet. Beträge und Anteile bleiben leer und werden von dir erfasst.';
       setWizardStep(1,true);
@@ -67,7 +67,15 @@
      else setWizardStep(activeWizardStep+1,true);
     }));
     root.querySelectorAll('[data-prev]').forEach(button=>button.addEventListener('click',()=>{
-     if(entryMode==='manual'&&activeWizardStep===1){entryMode='';setWizardStep(0,true);const status=root.getElementById('entryModeState');if(status)status.textContent='Wähle den Start: Beim Upload liest das System den Beleg ein. Bei der manuellen Erfassung überspringst du diesen Schritt.'}
+     if (entryMode === 'manual' && activeWizardStep === 1) {
+      entryMode = '';
+      setWizardStep(0, true);
+      const status = root.getElementById('entryModeState');
+      if (status) {
+       status.hidden = false;
+       status.textContent = 'Wähle den Start: Beim Upload liest das System den Beleg ein. Bei der manuellen Erfassung überspringst du diesen Schritt.';
+      }
+     }
      else setWizardStep(activeWizardStep-1,true);
     }));
     const standardSections=[
@@ -635,15 +643,56 @@
     return startManual;
   }
 
+  const entryActions = [
+    {action: 'upload', mode: 'upload', title: 'WEG-Abrechnung hochladen', description: 'Fertige Jahresabrechnung automatisch einlesen'},
+    {action: 'manual', mode: 'manuell', title: 'Manuelle Erfassung', description: 'Betriebskosten selbst eintragen'}
+  ];
+
+  function prepareLanding(host) {
+    const fallback = document.createElement('div');
+    fallback.className = 'nic-settlement-actions nic-copy-tile-grid';
+    for (const {action, mode, title, description} of entryActions) {
+      const existing = host.querySelector('[data-nic-settlement-action="' + action + '"]') ||
+        [...host.querySelectorAll('a.nic-copy-tile')].find(link =>
+          link.querySelector('.nic-copy-tile__title')?.textContent.trim() === title
+        );
+      const control = existing || document.createElement('a');
+      control.dataset.nicSettlementAction = action;
+      if (control.matches('a')) {
+        const destination = new URL(location.href);
+        destination.searchParams.set('modus', mode);
+        destination.hash = '';
+        control.href = destination.href;
+      }
+      if (!existing) {
+        control.className = 'nic-copy-tile';
+        const label = document.createElement('strong');
+        label.className = 'nic-copy-tile__title';
+        label.textContent = title;
+        const subtitle = document.createElement('small');
+        subtitle.className = 'nic-copy-tile__description';
+        subtitle.textContent = description;
+        control.append(label, subtitle);
+        fallback.append(control);
+      }
+    }
+    if (fallback.childElementCount) host.append(fallback);
+  }
+
   let savedWorkspace;
   function placeWorkspace(host, workspace) {
     host.replaceChildren(workspace);
   }
   function mount() {
-    if (!/\/nebenkostenabrechnung\/?$/.test(location.pathname)) return;
+    if (!/\/nebenkostenabrechnung(?:\/index\.html|\/)?$/.test(location.pathname)) return;
     // The direct route can render before the shared navigation finishes loading its settings.
     const host = document.getElementById('nicContentView');
     if (!host) return;
+    const mode = new URLSearchParams(location.search).get('modus');
+    if (!entryActions.some(action => action.mode === mode)) {
+      prepareLanding(host);
+      return;
+    }
     if (host.querySelector('[data-settlement]')) return;
     if (savedWorkspace) {
       placeWorkspace(host, savedWorkspace);
@@ -657,6 +706,21 @@
     style.textContent = styles;
     root.innerHTML = markup;
     root.prepend(style);
+    const exit = document.createElement('button');
+    exit.type = 'button';
+    exit.className = 'btn';
+    exit.textContent = 'Abrechnung verlassen';
+    exit.addEventListener('click', () => {
+      const landing = new URL(location.href);
+      landing.searchParams.delete('modus');
+      landing.hash = '';
+      location.assign(landing.href);
+    });
+    const exitActions = document.createElement('div');
+    exitActions.className = 'settlement-exit';
+    exitActions.append(exit);
+    root.querySelector('.tabs').before(exitActions);
+    style.textContent += '\n.settlement-exit{display:flex;justify-content:flex-end;padding:14px 20px 0}';
 
     if (!document.getElementById('settlement-print-style')) {
       const printStyle = document.createElement('style');
@@ -689,7 +753,7 @@
     });
     savedWorkspace = workspace;
     placeWorkspace(host, workspace);
-    if (new URLSearchParams(location.search).get('modus') === 'manuell') startManual();
+    if (mode === 'manuell') startManual();
   }
   function boot() {
     mount();

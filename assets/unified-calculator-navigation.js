@@ -98,7 +98,9 @@ function showContent(key,refresh=false){
 
 function pushRoute(key,previousURL){
  const path=Object.keys(routes).find(p=>routes[p]===key);
- history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',routeHref(path)+location.search);
+ const previous=new URL(previousURL);
+ if(routeKey(previous.pathname)==='settlement'&&key!=='settlement')previous.searchParams.delete('modus');
+ history.replaceState(history.state,'',previousURL);history.pushState({calculator:key},'',routeHref(path)+previous.search);
  // Close native admin/legal views before rendering the destination header.
  if(new URL(previousURL).hash)window.dispatchEvent(new HashChangeEvent('hashchange',{oldURL:previousURL,newURL:location.href}));
 }
@@ -164,12 +166,11 @@ document.addEventListener('click',event=>{
  const starter=event.target.closest('[data-nic-settlement-action]');
  if(starter){
   const action=starter.dataset.nicSettlementAction;
-  if(action!=='manual'&&action!=='upload')return;
+  if((action!=='manual'&&action!=='upload')||event.defaultPrevented||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
   event.preventDefault();
   const url=new URL(routeHref(contentRoutes.settlement),location.href);
   url.search=location.search;
-  if(action==='manual')url.searchParams.set('modus','manuell');
-  else url.searchParams.delete('modus');
+  url.searchParams.set('modus',action==='manual'?'manuell':'upload');
   location.assign(url.href);
   return;
  }

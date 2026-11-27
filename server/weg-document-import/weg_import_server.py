@@ -18,8 +18,7 @@ def main():
     asset = args.asset.read_bytes()
     landing = """<!doctype html><meta charset="utf-8"><title>ImmoCheck Importtest</title>
     <script>window.nicWegImportEndpoint='/ocr';</script>
-    <main id="nicContentView"><h1>Nebenkostenabrechnung</h1>
-    <button>WEG-Abrechnung hochladen</button><button>Manuelle Erfassung</button></main>
+    <main id="nicContentView"><h1>Nebenkostenabrechnung</h1></main>
     <script src="/nebenkostenabrechnung.js"></script>""".encode()
 
     class Handler(BaseHTTPRequestHandler):

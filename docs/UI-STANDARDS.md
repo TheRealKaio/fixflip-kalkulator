@@ -29,6 +29,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Direkte URLs bleiben aufrufbar und enthalten bereits passende Überschrift,
   Beschreibung, Inhaltsmarkup und SEO-Metadaten. Sie starten die gemeinsame Anwendung.
 - Der Aufruf `/` zeigt die Startseite, auch wenn zuvor ein Rechner verwendet wurde.
+- Die Nebenkostenabrechnung startet mit ihrer Informationsseite und den beiden
+  Erfassungswegen. „Abrechnung verlassen“ führt aus dem Arbeitsbereich zurück
+  zu dieser Seite. Manuelle Erfassung beginnt bei den Abrechnungsdetails.
 - Der Footer steht einmal als eigenes Element in `.app`, außerhalb von `main`.
 - Die Anwendung füllt mindestens die Viewporthöhe. Kurze Inhalte wachsen zum
   Footer; lange Inhalte scrollen natürlich. Kein zusätzlicher innerer Seiten-Scrollbereich.
