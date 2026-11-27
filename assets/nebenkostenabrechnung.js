@@ -506,7 +506,29 @@
     byId('showReceipts').addEventListener('click',()=>{
      archivePanel.hidden=false;archiveContent.replaceChildren();
      const heading=document.createElement('h3');heading.textContent='Gespeicherte Abrechnungen';archiveContent.append(heading);
-     renderArchiveLinks(archiveContent,settlementArchive);archivePanel.scrollIntoView({block:'start'});
+     const objectSelect=document.createElement('select'),yearInput=document.createElement('input'),statusSelect=document.createElement('select');
+     setObjectOptions(objectSelect,'Alle Objekte','');yearInput.type='number';yearInput.value=byId('wizardYear').value||String(new Date().getFullYear()-1);
+     for(const [v,t] of [['','Alle Status'],['Offen','Offen'],['Entwurf','Entwurf'],['Gespeicherte Vorschau','Gespeicherte Vorschau']])statusSelect.add(new Option(t,v));
+     const filters=document.createElement('div');filters.className='table-import-filters';
+     for(const [title,el] of [['Objekt',objectSelect],['Abrechnungsjahr',yearInput],['Status',statusSelect]]){const label=document.createElement('label');label.className='field';label.textContent=title;label.append(el);filters.append(label);}
+     const results=document.createElement('div');archiveContent.append(filters,results);
+     const draw=()=>{
+      results.replaceChildren();const year=yearInput.value;if(!/^\d{4}$/.test(year))return;
+      const records=savedLeases.filter(l=>l.start<=year+'-12-31'&&(!l.end||l.end>=year+'-01-01')).flatMap(l=>{
+       const unit=savedUnits.find(u=>u.id===l.unitId),o=savedObjects.find(x=>x.id===unit?.objectId);if(!o||objectSelect.value&&objectSelect.value!==o.id)return [];
+       const archive=settlementArchive.find(r=>r.leaseId===l.id&&String(r.year)===year&&r.periodStart===year+'-01-01'&&r.periodEnd===year+'-12-31');
+       const draft=!archive&&String(byId('wizardYear').value)===year&&objectByName(byId('objectName').value)?.id===o.id&&canonical(byId('reviewUnit').value)===canonical(unit.name)&&byId('tenantContact').value===String(l.tenantId);
+       return [{l,unit,o,archive,status:archive?'Gespeicherte Vorschau':draft?'Entwurf':'Offen'}];
+      });
+      const summary=document.createElement('p');summary.textContent=records.length+' erforderlich · '+records.filter(r=>r.status==='Offen').length+' offen · '+records.filter(r=>r.status==='Entwurf').length+' Entwurf · '+records.filter(r=>r.archive).length+' gespeicherte Vorschau';results.append(summary);
+      for(const r of records.filter(r=>!statusSelect.value||r.status===statusSelect.value)){
+       const c=contacts[Number(r.l.tenantId)],label=[r.o.fields.propertyName,r.unit.name,c?.slice(1,3).join(' '),r.status].filter(Boolean).join(' · ');
+       const link=action(label,()=>{if(r.archive){showArchivedSettlement(r.archive);return;}if(!window.confirm('Aktuelle Abrechnung durch dieses Mietverhältnis ersetzen?'))return;for(const [source,target] of objectFields)byId(target).value=r.o.fields[source]||'';byId('reviewUnit').value=r.unit.name;byId('unitLocation').value=r.unit.floor||'';byId('billingUnitArea').value=r.unit.area||'';byId('billingUnitShare').value=r.unit.share||'';byId('tenantContact').value=String(r.l.tenantId);byId('wizardYear').value=year;for(const id of ['wizardFrom','wizardTo','tenantFrom','tenantTo'])delete byId(id).dataset.userEdited;syncBillingPeriodFields();byId('tenantFrom').value=r.l.start>year+'-01-01'?r.l.start:year+'-01-01';byId('tenantTo').value=r.l.end&&r.l.end<year+'-12-31'?r.l.end:year+'-12-31';renderStandardTemplate();refreshBillingChoices();renderBillingContacts();archivePanel.hidden=true;root.querySelector('[data-page="abrechnung"]').click();setWizardStep(1,true);});
+       link.className='contact-edit archive-link';results.append(link);
+      }
+      const old=settlementArchive.filter(r=>!r.leaseId&&String(r.year)===year);if(old.length){const h=document.createElement('h4');h.textContent='Frühere Vorschauen ohne eindeutige Zuordnung';results.append(h);renderArchiveLinks(results,old);}
+     };
+     for(const el of [objectSelect,yearInput,statusSelect])el.addEventListener('change',draw);draw();archivePanel.scrollIntoView({block:'start'});
     });
 
     function addRentPeriod(values = {}) {
@@ -1033,7 +1055,7 @@
 
     // Local table import: CSV and unencrypted OOXML XLSX; no external service.
     const importTargets=[
-     ['','Nicht importieren',[]],['objectName','Objektbezeichnung',['objekt','objektbezeichnung','liegenschaft']],['objectStreet','Straße',['straße','strasse','anschrift']],['houseNumber','Hausnummer',['hausnummer','hausnr']],['objectPostal','Postleitzahl',['plz','postleitzahl']],['objectCity','Ort',['ort','stadt']],
+     ['','Nicht importieren',[]],['objectName','Objektbezeichnung',['objekt','objektbezeichnung','liegenschaft']],['objectUnits','Anzahl Wohneinheiten (Objekt)',['anzahl wohneinheiten','anzahl einheiten','wohneinheiten gesamt']],['objectStreet','Straße',['straße','strasse','anschrift']],['houseNumber','Hausnummer',['hausnummer','hausnr']],['objectPostal','Postleitzahl',['plz','postleitzahl']],['objectCity','Ort',['ort','stadt']],
      ['reviewUnit','Bezeichnung der Wohnungseinheit',['einheit','wohnung','wohnungsnummer','bezeichnung der wohnungseinheit']],['unitLocation','Etage / Lagezusatz',['etage','lage','geschoss']],['billingUnitArea','Wohnfläche',['wohnfläche','wohnflaeche','wohnungsfläche']],['billingUnitShare','Eigentumsanteil',['mea','eigentumsanteil','miteigentumsanteil']],['rooms','Anzahl Zimmer',['anzahl zimmer','zimmer']],['gardenArea','Garten-Nutzfläche',['garten-nutzfläche','gartenfläche']],['tenantName','Mietername',['mietername','mieter','name des mieters']],['firstName','Vorname',['vorname']],['lastName','Nachname / Firmenname',['nachname','firmenname']],['phone','Telefon',['telefon','telefonnummer']],['email','E-Mail',['e-mail','email']],['start','Mietbeginn',['mietbeginn','vertragsbeginn','einzug']],['end','Mietende',['mietende','vertragsende','auszug']],['validFrom','Gültig ab',['letzte mietänderung','gültig ab']],['coldRent','Kaltmiete',['kaltmiete (netto)','kaltmiete','nettokaltmiete','grundmiete']],['operatingCosts','Betriebskosten',['betriebskosten (netto)','betriebskosten','betriebskostenvorauszahlung']],['heatingCosts','Heizkosten',['heizkosten (netto)','heizkosten','heizkostenvorauszahlung']],['wizardYear','Abrechnungsjahr',['abrechnungsjahr']],['position','Kostenposition',['kostenposition','position','kostenart']],['key','Verteilerschlüssel',['verteilerschlüssel','umlagenschlüssel']],['money','Verteilungsrelevanter Betrag',['gesamtbetrag','verteilungsrelevanter betrag']],['base','Gesamtverteiler',['gesamtverteiler']],['share','Ihr Anteil',['ihr anteil','wohnungsanteil']],['result','Ihr Betrag',['ihr betrag','wohnungsbetrag']]
     ];
     const normImport=v=>String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
@@ -1176,7 +1198,7 @@
      const used=st.mapping.filter(Boolean);if(new Set(used).size!==used.length){status.textContent='Bitte jedes Zielfeld nur einmal zuordnen.';return;}
      const data=chosen.map(i=>Object.fromEntries(st.mapping.flatMap((key,j)=>key?[[key,st.rows[i][j]||'']]:[])));
      const positions=data.every(d=>d.position);
-     if(!positions&&data.length!==1){status.textContent='Aktuell kann je Abrechnung eine Wohnung mit einem Mietverhältnis übernommen werden. Bitte einen Datensatz auswählen.';return;}
+
      if(positions){
       if(!data.every(d=>d.position&&d.money&&validReviewNumber(importNumber(d.money).replace('.',',')))){status.textContent='Kostenposition und gültiger Betrag sind erforderlich.';return;}
       for(const d of data){
@@ -1190,25 +1212,54 @@
        recalculateReviewRow(row);
       }updateSubtotals();importPanel.hidden=true;setWizardStep(2,true);return;
      }
-     const d=data[0];
-     if(!d.objectName||!d.reviewUnit||!(d.tenantName||d.firstName||d.lastName)){status.textContent='Objekt, Einheit und Mietername müssen zugeordnet sein.';return;}
-     for(const key of ['start','end','validFrom'])if(d[key]&&!importDate(d[key])){status.textContent='Ungültiges Datum: '+key;return;}
-     if(d.start&&d.end&&importDate(d.end)<importDate(d.start)){status.textContent='Mietende liegt vor Mietbeginn.';return;}
-     const parts=String(d.tenantName||'').trim().split(/\s+/),first=d.firstName||parts.slice(0,-1).join(' '),last=d.lastName||parts.at(-1)||'';
-     const existing=contacts.findIndex(c=>c?.[0]==='Mieter/in'&&c[1]===first&&c[2]===last);
-     if(existing>=0){const tenancy=contacts[existing][contactFields.length];if((d.start&&tenancy?.start!==importDate(d.start))||(d.end&&tenancy?.end!==importDate(d.end))){status.textContent='Gleichnamiger Kontakt mit abweichendem Mietverhältnis vorhanden. Bitte manuell prüfen.';return;}}
-     const previous=contacts;
-     let index=existing;
-     if(index<0){
-      index=contacts.length;const contact=['Mieter/in',first,last,d.phone||'',d.email||'','','','','','','',''];
+     // Validate the complete batch before committing any master data.
+     if(modelBlocked){status.textContent='Altdatenkonflikt: Import gesperrt.';return;}
+     const oldContacts=contacts,oldObjects=savedObjects,oldUnits=savedUnits,oldLeases=savedLeases;
+     contacts=structuredClone(contacts);savedObjects=structuredClone(savedObjects);savedUnits=structuredClone(savedUnits);savedLeases=structuredClone(savedLeases);
+     const fail=message=>{contacts=oldContacts;savedObjects=oldObjects;savedUnits=oldUnits;savedLeases=oldLeases;status.textContent=message;};
+     let added=0,firstImported=null;
+     for(const [i,d] of data.entries()){
+      const prefix='Datensatz '+(chosen[i]+1)+': ';
+      if(!d.objectName||!d.reviewUnit||!(d.tenantName||d.firstName||d.lastName)||!importDate(d.start)){fail(prefix+'Objekt, Einheit, Mieter und Mietbeginn sind erforderlich.');return;}
+      if(d.end&&!importDate(d.end)||d.validFrom&&!importDate(d.validFrom)){fail(prefix+'Ungültiges Datum.');return;}
+      let o=objectByName(d.objectName);
+      if(!o){
+       const max=Number(d.objectUnits);
+       if(!Number.isInteger(max)||max<1){fail(prefix+'Neues Objekt benötigt die tatsächliche Anzahl Wohneinheiten. Bitte Objekt vorher anlegen oder Spalte zuordnen.');return;}
+       const fields={propertyName:d.objectName,propertyStreet:[d.objectStreet,d.houseNumber].filter(Boolean).join(' '),propertyPostal:d.objectPostal||'',propertyCity:d.objectCity||'',propertyUnits:String(max)};
+       o={id:modelId(),fields};savedObjects.push(o);
+      }
+      if(d.objectUnits&&Number(d.objectUnits)!==Number(o.fields.propertyUnits)){fail(prefix+'Abweichende Anzahl Wohneinheiten.');return;}
+      let unit=savedUnits.find(u=>u.objectId===o.id&&canonical(u.name)===canonical(d.reviewUnit));
+      if(!unit){unit={id:modelId(),objectId:o.id,name:d.reviewUnit,floor:d.unitLocation||'',area:importNumber(d.billingUnitArea).replace('.',','),share:d.billingUnitShare||'',rooms:importNumber(d.rooms),gardenArea:importNumber(d.gardenArea),tenant:''};savedUnits.push(unit);}
+      else if(d.billingUnitArea&&unit.area&&importNumber(unit.area)!==importNumber(d.billingUnitArea)){fail(prefix+'Abweichende Wohnfläche. Bitte Stammdaten prüfen.');return;}
+      const parts=String(d.tenantName||'').trim().split(/\s+/),first=d.firstName||parts.slice(0,-1).join(' '),last=d.lastName||parts.at(-1)||'';
+      const start=importDate(d.start),end=importDate(d.end);
+      const matched=savedLeases.filter(x=>x.unitId===unit.id&&x.start===start&&x.end===end&&canonical(contacts[Number(x.tenantId)]?.[1])===canonical(first)&&canonical(contacts[Number(x.tenantId)]?.[2])===canonical(last));
       const period={validFrom:importDate(d.validFrom||d.start),coldRent:importNumber(d.coldRent),operatingCosts:importNumber(d.operatingCosts),heatingCosts:importNumber(d.heatingCosts)};
-      contact.push({start:importDate(d.start),end:importDate(d.end),periods:period.validFrom&&[period.coldRent,period.operatingCosts,period.heatingCosts].every(v=>v!==''&&Number.isFinite(Number(v)))?[period]:[]});contacts=[...contacts,contact];
+      const hasRent=['coldRent','operatingCosts','heatingCosts'].some(k=>d[k]!==undefined&&d[k]!=='');
+      if(matched.length===1){
+       const existing=matched[0];
+       if(hasRent){const previous=existing.periods.find(p=>p.validFrom===period.validFrom);if(previous&&['coldRent','operatingCosts','heatingCosts'].some(k=>Number(previous[k])!==Number(period[k]))){fail(prefix+'Abweichende Mietkonditionen zum selben Datum.');return;}if(!previous)existing.periods.push(period);}
+       if(!firstImported)firstImported={o,unit,lease:existing};continue;
+      }
+      // Do not identify a person solely by their name. An existing email must also match.
+      let index=d.email?contacts.findIndex(c=>c?.[0]==='Mieter/in'&&canonical(c[1])===canonical(first)&&canonical(c[2])===canonical(last)&&canonical(c[4])===canonical(d.email)):-1;
+      if(index<0){index=contacts.length;contacts.push(['Mieter/in',first,last,d.phone||'',d.email||'','','','','','','','',{start,end,periods:hasRent?[period]:[]}]);}
+      const lease={id:modelId(),unitId:unit.id,tenantId:String(index),start,end,periods:hasRent?[period]:[]};
+      const error=leaseError(lease,savedLeases);if(error){fail(prefix+error);return;}
+      savedLeases.push(lease);added++;if(!firstImported)firstImported={o,unit,lease};
      }
-     const updates={objectName:d.objectName,objectStreet:[d.objectStreet,d.houseNumber].filter(Boolean).join(' '),objectPostal:d.objectPostal,objectCity:d.objectCity,reviewUnit:d.reviewUnit,unitLocation:d.unitLocation,billingUnitArea:importNumber(d.billingUnitArea).replace('.',','),billingUnitShare:d.billingUnitShare,wizardYear:d.wizardYear||st.year};
-     const oldValues={};for(const [key,value] of Object.entries(updates))if(value){oldValues[key]=byId(key).value;byId(key).value=value;}
-     updateContacts();byId('tenantContact').value=String(index);renderBillingContacts();syncBillingPeriodFields();
-     if(!saveDraft(status,'')){contacts=previous;for(const [key,value] of Object.entries(oldValues))byId(key).value=value;updateContacts();return;}
-     renderContacts();importPanel.hidden=true;setWizardStep(1,true);
+     const error=modelError(savedObjects,savedUnits,savedLeases);if(error){fail(error);return;}
+     if(!saveDraft(status,'')){fail('Import konnte nicht gespeichert werden. Keine Datensätze übernommen.');return;}
+     updateContacts();renderContacts();renderUnits();
+     if(data.length===1&&firstImported){
+      const {o,unit,lease}=firstImported;
+      for(const [source,target] of objectFields)byId(target).value=o.fields[source]||'';
+      for(const [id,value] of Object.entries({reviewUnit:unit.name,unitLocation:unit.floor,billingUnitArea:unit.area,billingUnitShare:unit.share,tenantContact:lease.tenantId}))byId(id).value=value||'';
+      if(st.year)byId('wizardYear').value=st.year;syncBillingPeriodFields();refreshBillingChoices();renderBillingContacts();
+      importPanel.hidden=true;setWizardStep(1,true);
+     }else{status.textContent=added+' neue Mietverhältnisse übernommen. Bestehende Datensätze wurden geprüft.';st.selected.clear();}
     }
     importFile.addEventListener('change',async()=>{
      const file=importFile.files[0];importFile.value='';if(!file)return;
@@ -1317,7 +1368,12 @@
      landlordMode=false;fillPreview();
      const doc=previewOverlay.querySelector('.tenant-doc');
      const blocks=[...doc.children].map(node=>node.innerText||node.textContent);
-     const record={id:crypto.randomUUID?.()||String(Date.now()),tenantId,tenantName:tenant.slice(1,3).filter(Boolean).join(' '),year,unit,savedAt:new Date().toISOString(),blocks};
+     const o=objectByName(byId('objectName').value),u=savedUnits.find(x=>x.objectId===o?.id&&canonical(x.name)===canonical(unit));
+     const periodStart=byId('wizardFrom').value,periodEnd=byId('wizardTo').value;
+     if(periodEnd<periodStart){archiveStatus.textContent='Abrechnungsperiode ist ungültig.';return;}
+     const lease=savedLeases.find(x=>x.unitId===u?.id&&String(x.tenantId)===tenantId&&overlaps(x,{start:periodStart,end:periodEnd}));
+     if(lease&&settlementArchive.some(x=>x.leaseId===lease.id&&x.periodStart===periodStart&&x.periodEnd===periodEnd)){archiveStatus.textContent='Für dieses Mietverhältnis und diese Periode existiert bereits eine Vorschau.';return;}
+     const record={id:modelId(),tenantId,tenantName:tenant.slice(1,3).filter(Boolean).join(' '),year,unit,objectId:o?.id,unitId:u?.id,leaseId:lease?.id,periodStart,periodEnd,savedAt:new Date().toISOString(),blocks};
      try{const next=[...settlementArchive,record];localStorage.setItem(archiveKey,JSON.stringify(next));settlementArchive=next;archiveStatus.textContent='Abrechnungsvorschau lokal gespeichert.';renderTenantSettlementHistory(editingContact);}
      catch{archiveStatus.textContent='Die Abrechnung konnte nicht gespeichert werden.';}
     });
