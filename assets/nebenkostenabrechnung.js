@@ -984,9 +984,9 @@
       .settlement-exit-button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
       #abrechnung .wizard-panel{height:auto;min-height:0}
       .billing-group{border:1px solid var(--nic-border);border-radius:12px;padding:0 12px;margin-bottom:10px;min-width:0}
-      .billing-group summary{display:flex;align-items:center;gap:8px;width:fit-content;list-style:none;padding:10px 0;font-weight:700;cursor:pointer}
+      .billing-group summary{display:flex;align-items:center;gap:8px;width:100%;list-style:none;padding:10px 0;font-weight:700;cursor:pointer}
       .billing-group summary::-webkit-details-marker{display:none}
-      .billing-group summary::after{content:'+';margin-left:2px;color:var(--nic-green)}
+      .billing-group summary::after{content:'+';margin-inline-start:auto;flex:none;color:var(--nic-green)}
       .billing-group[open] summary::after{content:'−'}
       .billing-group > :not(summary){margin-bottom:12px}
       .billing-group .field{min-width:0}
@@ -1016,6 +1016,39 @@
         .preview-toolbar > div,.preview-modes{display:flex;gap:8px;flex-wrap:wrap}
         .a4-page{max-width:100%;overflow:visible;overflow-wrap:anywhere}
         .a4-table .num{white-space:normal}
+      }
+      /* Shared control dimensions, including native iOS Safari selects. */
+      :host{--nic-field-height:max(46px,calc(1.5em + 22px));--nic-review-field-height:40px;--nic-next-width:19em}
+      .field input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),.field select,.object-switcher select,
+      #abrechnung .wizard-panel[data-panel="1"] .field input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),
+      #abrechnung .wizard-panel[data-panel="1"] .field select{
+        box-sizing:border-box;height:var(--nic-field-height);min-height:var(--nic-field-height);padding:10px 12px;
+        font:inherit;line-height:1.5;min-width:0;
+      }
+      select.field,.field select,.object-switcher select,select.review-input{
+        appearance:none;-webkit-appearance:none;
+        background-color:#fff;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23596674' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat:no-repeat;background-position:right 10px center;background-size:16px;
+        padding-inline-end:32px;
+      }
+      #abrechnung .wizard-panel[data-panel="1"] .field select{padding-inline-end:32px}
+      .review-input{box-sizing:border-box;height:var(--nic-review-field-height);min-height:var(--nic-review-field-height);line-height:1.5}
+      select.review-input{padding-inline-end:30px}
+      .wizard-panel .step-heading{flex-wrap:wrap}
+      .step-heading-actions{justify-content:flex-end;flex-wrap:wrap;min-width:0;max-width:100%;margin-inline-start:auto}
+      .wizard-panel .step-heading button[data-next],.wizard-panel .step-heading #showPreview{
+        box-sizing:border-box;width:var(--nic-next-width);min-width:0;max-width:100%;flex:0 0 auto;
+        min-height:44px;margin-inline-start:auto;align-self:flex-end;white-space:normal;
+      }
+      @container (max-width:900px){
+        .step-heading-actions{width:100%}
+        .wizard-panel .step-heading button[data-next],.wizard-panel .step-heading #showPreview{width:min(100%,var(--nic-next-width))}
+      }
+      @media(max-width:600px){
+        .field input:not([type=checkbox]):not([type=radio]):not([type=file]),.field select,.object-switcher select,.review-input,
+        #abrechnung .wizard-panel[data-panel="1"] .field input:not([type=checkbox]):not([type=radio]):not([type=file]),
+        #abrechnung .wizard-panel[data-panel="1"] .field select{font-size:16px}
       }
       .step-heading h3[tabindex="-1"]:focus{outline:none}
       #tenantDetails{margin-block-start:16px}
