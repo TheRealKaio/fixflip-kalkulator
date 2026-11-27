@@ -861,17 +861,24 @@
       container.replaceChildren();
       const index = byId(selectId).value;
       const contact = index === '' ? null : contacts[Number(index)];
-      const entries = contactFields.map((field,i) => [field.previousElementSibling.textContent,contact?.[i]]);
+      for (const [title,indices] of [['Name',[1,2]],['Anschrift',[5,6,7]],['Kontakt',[3,4]],['Bankverbindung',[8,9,10,11]]]) {
+       const group = document.createElement('section');
+       group.className = 'billing-contact-group';
+       const heading = document.createElement('h4');
+       heading.className = 'section-title';
+       heading.textContent = title;
+       group.append(heading);
+       appendBillingDetails(group,indices.map(i => [contactFields[i].previousElementSibling.textContent,contact?.[i]]));
+       container.append(group);
+      }
       if (selectId === 'tenantContact') {
        const tenancy = contact?.[contactFields.length];
-       entries.push(['Mietbeginn',tenancy?.start?.split('-').reverse().join('.')],['Mietende',tenancy?.end?.split('-').reverse().join('.')],
-        ['Aktiv',tenancy && (tenancy.active ? 'Ja' : 'Nein')]);
-       appendBillingDetails(container,entries);
+       appendBillingDetails(container,[['Mietbeginn',tenancy?.start?.split('-').reverse().join('.')],['Mietende',tenancy?.end?.split('-').reverse().join('.')]]);
        for (const period of tenancy?.periods ?? []) {
         appendBillingDetails(container,rentFields.map(([key,label]) => [label,key === 'validFrom' ?
          period[key].split('-').reverse().join('.') : period[key] && germanMoney(Number(period[key]))]));
        }
-      } else appendBillingDetails(container,entries);
+      }
      }
     }
     for (const id of ['tenantContact','billingLandlord']) byId(id).addEventListener('change',renderBillingContacts);
@@ -1159,6 +1166,10 @@
       .billing-contact-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:10px 0;overflow-wrap:anywhere}
       .billing-contact-fields dt{font-size:var(--nic-subtext-font-size);color:var(--nic-muted)}
       .billing-contact-fields dd{margin:0}
+      .billing-contact-group{margin-top:12px;min-width:0}
+      .billing-contact-group > .section-title{margin:0 0 6px}
+      .billing-contact-group > .billing-contact-fields{margin:0}
+      .billing-contact-group:nth-child(2) .billing-contact-fields > div:first-child{grid-column:1/-1}
       #abrechnung .wizard-panel[data-panel="2"] .position-table-wrap{overflow:visible;max-height:none;container-type:inline-size}
       .position-table{min-width:0}
       .position-table th{overflow-wrap:anywhere;font-size:var(--nic-subtext-font-size)}
