@@ -336,11 +336,6 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    }
    assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Information menu must retain the document');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
-   if(slug==='nebenkostenabrechnung'){
-    const module=page.locator('#nicContentView > [data-settlement]');
-    await module.locator('#wegUploadButton').waitFor({state:'visible'});
-    assert.equal(await module.locator('iframe, header, .footer').count(),0,'Settlement uses the outer header and footer');
-   }
    assert(await page.locator(slug==='nebenkostenabrechnung'?'#nicContentView':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
    if(width<=700){
@@ -356,6 +351,14 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
   assert.equal(await page.locator('#heroTitle').innerText(),require('../assets/site-settings.json').content.why.headerTitle);
   await page.goBack();await page.goBack();await page.goBack();await page.waitForURL('http://localhost/');
   assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Browser history returns home within the shared application');
+  await page.locator('[data-home-settlement]').click();
+  await page.waitForURL('http://localhost/nebenkostenabrechnung/');
+  const settlementModule=page.locator('#nicContentView > [data-settlement]');
+  await settlementModule.locator('#wegUploadButton').waitFor({state:'visible'});
+  assert.equal(await settlementModule.locator('iframe, header, .footer').count(),0,'Settlement uses the outer header and footer');
+  assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Settlement opens in the shared application');
+  await page.goBack();
+  await page.waitForURL('http://localhost/');
   for(const routeName of ['preise','warum-immocheck','nebenkostenabrechnung','ueber-uns','kontakt']){
    await page.goto('http://localhost/'+routeName+'/');
    await page.locator(routeName==='nebenkostenabrechnung'?'#nicContentView':'.nic-content-card').waitFor({state:'visible'});
