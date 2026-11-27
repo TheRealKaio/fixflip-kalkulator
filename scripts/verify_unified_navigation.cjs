@@ -379,6 +379,13 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
      await module.locator('[data-step="4"]').click();
      await module.locator('#showPreview').click();
      await module.locator('#printPreview').waitFor({state:'visible'});
+     await page.evaluate(()=>{window.print=()=>{};});
+     await module.locator('#printPreviewButton').click();
+     await page.emulateMedia({media:'print'});
+     assert.equal(await page.evaluate(()=>getComputedStyle(document.body,'::before').display),'none','The settlement PDF suppresses the generic browser print warning');
+     assert.equal(await module.locator('#printPreview').evaluate(e=>getComputedStyle(e).visibility),'visible','Print preview remains visible in the PDF');
+     await page.emulateMedia({media:'screen'});
+     await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));
      await module.locator('#closePreview').click();
      await module.locator('#printPreview').waitFor({state:'hidden'});
     }

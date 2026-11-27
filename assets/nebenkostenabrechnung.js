@@ -601,11 +601,13 @@
       printStyle.textContent = `
         @media print {
           @page { size: A4 portrait; margin: 0; }
+          body.settlement-printing::before { display:none!important; content:none!important; }
           body.settlement-printing :is(body, body *):has([data-settlement]) > :not([data-settlement]):not(:has([data-settlement])),
           body.settlement-printing > :not([data-settlement]):not(:has([data-settlement])) { display:none!important; }
           body.settlement-printing :has([data-settlement]), body.settlement-printing [data-settlement] {
             margin:0!important; padding:0!important; width:auto!important; max-width:none!important;
             min-height:0!important; overflow:visible!important; border:0!important; box-shadow:none!important;
+            visibility:visible!important;
           }
         }
       `;
