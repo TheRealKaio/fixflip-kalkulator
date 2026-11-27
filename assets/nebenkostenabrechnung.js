@@ -1190,7 +1190,100 @@
       st.visible=visible.map(x=>x.i);const sample=visible[0]?.row||[];examples.forEach((el,i)=>el.textContent=sample[i]||'');
      }refresh();
     }
-    function applyImport(st,status){
+    function importObjectKey(d){return JSON.stringify([d.objectName,d.objectPostal,d.objectCity,d.objectStreet,d.houseNumber].map(canonical));}
+    function importUnitKey(d){return canonical(d.reviewUnit);}
+    function chooseImportTargets(st,data,chosen){
+     const dialog=document.createElement('dialog');dialog.className='card import-assignment-dialog';
+     const title=makeImportEl('h3','Objekte und Einheiten zuordnen');
+     const intro=makeImportEl('p','Prüfe die Vorschläge. Vorhandene Stammdaten werden nicht überschrieben. Erst nach der Zuordnung wird die Anzahl der Einheiten geprüft.','muted');
+     const content=makeImportEl('div'),error=makeImportEl('p');error.setAttribute('role','status');
+     const actions=makeImportEl('div',undefined,'foot-actions');
+     const cancel=action('Zurück',()=>dialog.close()),confirm=action('Zuordnung bestätigen',validate);confirm.classList.add('settlement-highlight');
+     actions.append(cancel,confirm);dialog.append(title,intro,content,error,actions);root.append(dialog);
+     dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+     const groups=new Map();
+     for(const d of data){const key=importObjectKey(d);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(d);}
+     const controls=[];
+     const address=o=>[o.fields.propertyStreet,o.fields.propertyPostal,o.fields.propertyCity].filter(Boolean).join(', ');
+     const addrMatch=(d,o)=>{
+      const postal=canonical(d.objectPostal),city=canonical(d.objectCity),street=canonical([d.objectStreet,d.houseNumber].filter(Boolean).join(' '));
+      const p=canonical(o.fields.propertyPostal),c=canonical(o.fields.propertyCity),s=canonical(o.fields.propertyStreet);
+      if(postal&&p&&postal!==p||city&&c&&city!==c||street&&s&&street!==s)return -1;
+      return (postal&&postal===p?2:0)+(city&&city===c?2:0)+(street&&street===s?5:0)+(canonical(d.objectName)===canonical(o.fields.propertyName)?4:0);
+     };
+     function field(parent,label,el){const wrap=makeImportEl('label',label,'field');wrap.append(el);parent.append(wrap);return el;}
+     for(const [key,rows] of groups){
+      const d=rows[0],section=makeImportEl('section',undefined,'import-assignment-group');
+      section.append(makeImportEl('h4',d.objectName||'Objekt aus Datei'),makeImportEl('p',[d.objectStreet,d.houseNumber,d.objectPostal,d.objectCity].filter(Boolean).join(' '),'muted'));
+      const select=document.createElement('select');select.add(new Option('Bitte Objekt auswählen',''));
+      const ranked=savedObjects.map(o=>({o,score:addrMatch(d,o)})).sort((a,b)=>b.score-a.score);
+      for(const {o,score} of ranked)select.add(new Option((score>=4?'Vorschlag: ':'')+o.fields.propertyName+' · '+address(o),o.id));
+      select.add(new Option('Neues Objekt anlegen','__new__'));
+      const top=ranked.filter(x=>x.score>=4);
+      if(top.length===1)select.value=top[0].o.id;else if(!savedObjects.length)select.value='__new__';
+      field(section,'Vorhandenes oder neues Objekt',select);
+      const newFields=makeImportEl('div',undefined,'form-grid');
+      const name=document.createElement('input');name.value=d.objectName||'';field(newFields,'Objektbezeichnung',name);
+      const max=document.createElement('input');max.type='number';max.min='1';max.step='1';max.value=d.objectUnits||'';field(newFields,'Tatsächliche Anzahl Wohneinheiten',max);
+      section.append(newFields);
+      const unitsArea=makeImportEl('div');section.append(unitsArea);content.append(section);
+      const control={key,rows,select,name,max,units:[]};controls.push(control);
+      function renderUnitChoices(){
+       newFields.hidden=select.value!=='__new__';unitsArea.replaceChildren();control.units=[];
+       if(!select.value)return;
+       const unique=new Map();for(const row of rows){const k=importUnitKey(row);if(!unique.has(k))unique.set(k,row);}
+       for(const [k,row] of unique){
+        const unitSelect=document.createElement('select');unitSelect.add(new Option('Bitte Einheit auswählen',''));
+        const candidates=savedUnits.filter(u=>u.objectId===select.value);
+        const exact=candidates.filter(u=>canonical(u.name)===k);
+        for(const u of candidates)unitSelect.add(new Option(u.name+(u.floor?' · '+u.floor:'')+(u.area?' · '+u.area+' m²':''),u.id));
+        unitSelect.add(new Option('Neue Einheit anlegen','__new__'));
+        if(exact.length===1)unitSelect.value=exact[0].id;else if(!candidates.length)unitSelect.value='__new__';
+        const rowBox=makeImportEl('div',undefined,'form-grid');
+        field(rowBox,'Einheit aus Datei: '+(row.reviewUnit||'Nicht erkannt'),unitSelect);
+        const unitName=document.createElement('input');unitName.value=row.reviewUnit||'';field(rowBox,'Bezeichnung der neuen Einheit',unitName);
+        const sync=()=>{unitName.parentElement.hidden=unitSelect.value!=='__new__';};unitSelect.addEventListener('change',sync);sync();
+        unitsArea.append(rowBox);control.units.push({key:k,select:unitSelect,name:unitName});
+       }
+      }
+      select.addEventListener('change',renderUnitChoices);renderUnitChoices();
+     }
+     function validate(){
+      error.textContent='';const objects=new Map(),units=new Map(),newNames=new Set();
+      for(const c of controls){
+       if(!c.select.value){error.textContent='Bitte jedes Objekt zuordnen.';return;}
+       const d=c.rows[0],create=c.select.value==='__new__';
+       let target;
+       if(create){
+        const name=c.name.value.trim(),max=Number(c.max.value);
+        if(!name||!Number.isInteger(max)||max<1){error.textContent='Bitte Objektbezeichnung und tatsächliche Anzahl Wohneinheiten eingeben.';return;}
+        if(objectByName(name)||newNames.has(canonical(name))){error.textContent='Objektbezeichnung bereits vorhanden. Bitte vorhandenes Objekt auswählen oder eindeutige Bezeichnung verwenden.';return;}
+        newNames.add(canonical(name));target={id:modelId(),create:true,fields:{propertyName:name,propertyStreet:[d.objectStreet,d.houseNumber].filter(Boolean).join(' '),propertyPostal:d.objectPostal||'',propertyCity:d.objectCity||'',propertyUnits:String(max)}};
+       }else{target=savedObjects.find(o=>o.id===c.select.value);if(!target){error.textContent='Objekt nicht mehr vorhanden.';return;}}
+       objects.set(c.key,target);
+       for(const u of c.units){
+        if(!u.select.value){error.textContent='Bitte jede Einheit zuordnen.';return;}
+        let unit;
+        if(u.select.value==='__new__'){
+         const name=u.name.value.trim();if(!name){error.textContent='Bitte Bezeichnung der neuen Einheit eingeben.';return;}
+         const existing=savedUnits.find(x=>x.objectId===target.id&&canonical(x.name)===canonical(name));
+         if(existing){error.textContent='Einheit bereits vorhanden. Bitte vorhandene Einheit auswählen.';return;}
+         const duplicate=[...units.values()].find(x=>x.objectId===target.id&&canonical(x.name)===canonical(name));
+         unit=duplicate||{id:modelId(),objectId:target.id,name,create:true};
+        }else{unit=savedUnits.find(x=>x.id===u.select.value&&x.objectId===target.id);if(!unit){error.textContent='Einheit gehört nicht zum gewählten Objekt.';return;}}
+        units.set(JSON.stringify([c.key,u.key]),unit);
+       }
+      }
+      for(const target of objects.values()){
+       const count=savedUnits.filter(u=>u.objectId===target.id).length+new Set([...units.values()].filter(u=>u.objectId===target.id&&u.create).map(u=>u.id)).size;
+       const max=Number(target.fields.propertyUnits);
+       if(!Number.isInteger(max)||max<1||count>max){error.textContent=target.fields.propertyName+': '+count+' Einheiten nach Import, maximal '+(max||'nicht hinterlegt')+'. Bitte Zuordnung oder Objektstammdaten korrigieren.';return;}
+      }
+      dialog.close();applyImport(st,st.assignmentStatus,{objects,units,chosen});
+     }
+     dialog.showModal();
+    }
+    function applyImport(st,status,assignment=null){
      const chosen=st.visible.filter(i=>st.selected.has(i));
      if(!chosen.length){status.textContent='Wähle mindestens einen Datensatz aus.';return;}
      const used=st.mapping.filter(Boolean);if(new Set(used).size!==used.length){status.textContent='Bitte jedes Zielfeld nur einmal zuordnen.';return;}
@@ -1210,6 +1303,8 @@
        recalculateReviewRow(row);
       }updateSubtotals();importPanel.hidden=true;setWizardStep(2,true);return;
      }
+     if(!assignment){st.assignmentStatus=status;chooseImportTargets(st,data,chosen);return;}
+     if(JSON.stringify(chosen)!==JSON.stringify(assignment.chosen)){status.textContent='Auswahl wurde geändert. Bitte erneut zuordnen.';return;}
      // Validate the complete batch before committing any master data.
      if(modelBlocked){status.textContent='Altdatenkonflikt: Import gesperrt.';return;}
      const oldContacts=contacts,oldObjects=savedObjects,oldUnits=savedUnits,oldLeases=savedLeases;
@@ -1218,18 +1313,14 @@
      let added=0,firstImported=null;
      for(const [i,d] of data.entries()){
       const prefix='Datensatz '+(chosen[i]+1)+': ';
-      if(!d.objectName||!d.reviewUnit||!(d.tenantName||d.firstName||d.lastName)||!importDate(d.start)){fail(prefix+'Objekt, Einheit, Mieter und Mietbeginn sind erforderlich.');return;}
+      if(!(d.tenantName||d.firstName||d.lastName)||!importDate(d.start)){fail(prefix+'Objekt, Einheit, Mieter und Mietbeginn sind erforderlich.');return;}
       if(d.end&&!importDate(d.end)||d.validFrom&&!importDate(d.validFrom)){fail(prefix+'Ungültiges Datum.');return;}
-      let o=objectByName(d.objectName);
-      if(!o){
-       const max=Number(d.objectUnits);
-       if(!Number.isInteger(max)||max<1){fail(prefix+'Neues Objekt benötigt die tatsächliche Anzahl Wohneinheiten. Bitte Objekt vorher anlegen oder Spalte zuordnen.');return;}
-       const fields={propertyName:d.objectName,propertyStreet:[d.objectStreet,d.houseNumber].filter(Boolean).join(' '),propertyPostal:d.objectPostal||'',propertyCity:d.objectCity||'',propertyUnits:String(max)};
-       o={id:modelId(),fields};savedObjects.push(o);
-      }
-      if(d.objectUnits&&Number(d.objectUnits)!==Number(o.fields.propertyUnits)){fail(prefix+'Abweichende Anzahl Wohneinheiten.');return;}
-      let unit=savedUnits.find(u=>u.objectId===o.id&&canonical(u.name)===canonical(d.reviewUnit));
-      if(!unit){unit={id:modelId(),objectId:o.id,name:d.reviewUnit,floor:d.unitLocation||'',area:importNumber(d.billingUnitArea).replace('.',','),share:d.billingUnitShare||'',rooms:importNumber(d.rooms),gardenArea:importNumber(d.gardenArea),tenant:''};savedUnits.push(unit);}
+      const target=assignment.objects.get(importObjectKey(d)),unitTarget=assignment.units.get(JSON.stringify([importObjectKey(d),importUnitKey(d)]));
+      if(!target||!unitTarget){fail(prefix+'Zuordnung fehlt.');return;}
+      let o=savedObjects.find(x=>x.id===target.id);
+      if(!o){if(!target.create){fail(prefix+'Objekt nicht mehr vorhanden.');return;}o={id:target.id,fields:{...target.fields}};savedObjects.push(o);}
+      let unit=savedUnits.find(u=>u.id===unitTarget.id&&u.objectId===o.id);
+      if(!unit){if(!unitTarget.create){fail(prefix+'Einheit nicht mehr vorhanden.');return;}unit={id:unitTarget.id,objectId:o.id,name:unitTarget.name,floor:d.unitLocation||'',area:importNumber(d.billingUnitArea).replace('.',','),share:d.billingUnitShare||'',rooms:importNumber(d.rooms),gardenArea:importNumber(d.gardenArea),tenant:''};savedUnits.push(unit);}
       else if(d.billingUnitArea&&unit.area&&importNumber(unit.area)!==importNumber(d.billingUnitArea)){fail(prefix+'Abweichende Wohnfläche. Bitte Stammdaten prüfen.');return;}
       const parts=String(d.tenantName||'').trim().split(/\s+/),first=d.firstName||parts.slice(0,-1).join(' '),last=d.lastName||parts.at(-1)||'';
       const start=importDate(d.start),end=importDate(d.end);
@@ -1647,6 +1738,13 @@
       :is(.step-heading-actions .back-step,.settlement-exit-button):is(:hover,:active){background:transparent;border-color:transparent;box-shadow:none;filter:none;transform:none;text-decoration:none;text-shadow:0 -2px 5px color-mix(in srgb,currentColor 35%,transparent)}
       .btn.settlement-highlight{background:#f6c944;border-color:#e1b52b;color:#302600}
       .btn.settlement-highlight:enabled:hover{background:#edbd2f;filter:none}
+      .import-assignment-dialog{width:min(760px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--nic-border);border-radius:12px;background:white;color:var(--nic-ink);padding:20px}
+      .import-assignment-dialog::backdrop{background:rgba(15,23,42,.35)}
+      .import-assignment-group{border-top:1px solid var(--nic-border);padding:12px 0;display:grid;gap:10px}
+      .import-assignment-group [hidden]{display:none!important}
+      .import-assignment-dialog .foot-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+      .import-assignment-dialog [role=status]{color:var(--nic-red)}
+
 
       .step-heading-actions .back-step:focus-visible{outline:2px solid var(--nic-green);outline-offset:2px}
       .wizard-panel .step-heading button[data-next],.wizard-panel .step-heading #showPreview{
