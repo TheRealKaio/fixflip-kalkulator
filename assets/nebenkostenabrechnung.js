@@ -991,6 +991,204 @@
       return true;
      } catch { status.textContent = 'Der Browser konnte die Angaben nicht speichern.'; return false; }
     }
+
+    // Local table import: CSV and unencrypted OOXML XLSX; no external service.
+    const importTargets=[
+     ['','Nicht importieren',[]],['objectName','Objektbezeichnung',['objekt','objektbezeichnung','liegenschaft']],['objectStreet','Straße',['straße','strasse','anschrift']],['houseNumber','Hausnummer',['hausnummer','hausnr']],['objectPostal','Postleitzahl',['plz','postleitzahl']],['objectCity','Ort',['ort','stadt']],
+     ['reviewUnit','Bezeichnung der Wohnungseinheit',['einheit','wohnung','wohnungsnummer','bezeichnung der wohnungseinheit']],['unitLocation','Etage / Lagezusatz',['etage','lage','geschoss']],['billingUnitArea','Wohnfläche',['wohnfläche','wohnflaeche','wohnungsfläche']],['billingUnitShare','Eigentumsanteil',['mea','eigentumsanteil','miteigentumsanteil']],['rooms','Anzahl Zimmer',['anzahl zimmer','zimmer']],['gardenArea','Garten-Nutzfläche',['garten-nutzfläche','gartenfläche']],['tenantName','Mietername',['mietername','mieter','name des mieters']],['firstName','Vorname',['vorname']],['lastName','Nachname / Firmenname',['nachname','firmenname']],['phone','Telefon',['telefon','telefonnummer']],['email','E-Mail',['e-mail','email']],['start','Mietbeginn',['mietbeginn','vertragsbeginn','einzug']],['end','Mietende',['mietende','vertragsende','auszug']],['validFrom','Gültig ab',['letzte mietänderung','gültig ab']],['coldRent','Kaltmiete',['kaltmiete (netto)','kaltmiete','nettokaltmiete','grundmiete']],['operatingCosts','Betriebskosten',['betriebskosten (netto)','betriebskosten','betriebskostenvorauszahlung']],['heatingCosts','Heizkosten',['heizkosten (netto)','heizkosten','heizkostenvorauszahlung']],['wizardYear','Abrechnungsjahr',['abrechnungsjahr']],['position','Kostenposition',['kostenposition','position','kostenart']],['key','Verteilerschlüssel',['verteilerschlüssel','umlagenschlüssel']],['money','Verteilungsrelevanter Betrag',['gesamtbetrag','verteilungsrelevanter betrag']],['base','Gesamtverteiler',['gesamtverteiler']],['share','Ihr Anteil',['ihr anteil','wohnungsanteil']],['result','Ihr Betrag',['ihr betrag','wohnungsbetrag']]
+    ];
+    const normImport=v=>String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
+    const importGuess=v=>importTargets.find(t=>t[2].includes(normImport(v)))?.[0]||'';
+    const xmlNodes=(node,name)=>Array.from(node.getElementsByTagNameNS('*',name));
+    async function readXlsx(file){
+     const bytes=new Uint8Array(await file.arrayBuffer()), view=new DataView(bytes.buffer), files=new Map();
+     let end=bytes.length-22;
+     while(end>=Math.max(0,bytes.length-65557)&&view.getUint32(end,true)!==0x06054b50)end--;
+     if(end<0||view.getUint32(end,true)!==0x06054b50)throw Error('Keine gültige XLSX-Datei.');
+     let offset=view.getUint32(end+16,true), count=view.getUint16(end+10,true);
+     if(count>3000)throw Error('Zu viele Excel-Dateibestandteile.');
+     for(let n=0;n<count;n++){
+      if(view.getUint32(offset,true)!==0x02014b50)throw Error('Ungültiges Excel-Archiv.');
+      const method=view.getUint16(offset+10,true), size=view.getUint32(offset+20,true), rawSize=view.getUint32(offset+24,true), nameSize=view.getUint16(offset+28,true), extra=view.getUint16(offset+30,true), comment=view.getUint16(offset+32,true), loc=view.getUint32(offset+42,true);
+      const name=new TextDecoder().decode(bytes.slice(offset+46,offset+46+nameSize));
+      if(rawSize>20000000)throw Error('Excel-Datei zu groß.');
+      files.set(name,{method,size,loc});offset+=46+nameSize+extra+comment;
+     }
+     async function read(name){
+      const f=files.get(name);if(!f)return '';
+      const at=f.loc+30+view.getUint16(f.loc+26,true)+view.getUint16(f.loc+28,true);
+      const data=bytes.slice(at,at+f.size);
+      if(f.method===0)return new TextDecoder().decode(data);
+      if(f.method!==8||typeof DecompressionStream==='undefined')throw Error('Excel-Entpacken wird in diesem Browser nicht unterstützt. Bitte CSV verwenden.');
+      return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+     }
+     const parse=t=>new DOMParser().parseFromString(t,'application/xml');
+     const shared=xmlNodes(parse(await read('xl/sharedStrings.xml')),'si').map(si=>xmlNodes(si,'t').map(t=>t.textContent).join(''));
+     const workbook=parse(await read('xl/workbook.xml')), sheet=xmlNodes(workbook,'sheet')[0];
+     const rid=sheet?.getAttribute('r:id');
+     const rel=xmlNodes(parse(await read('xl/_rels/workbook.xml.rels')),'Relationship').find(x=>x.getAttribute('Id')===rid);
+     const target=rel?.getAttribute('Target')||'worksheets/sheet1.xml';
+     const path=target.startsWith('/')?target.slice(1):'xl/'+target;
+     const doc=parse(await read(path));
+     if(!xmlNodes(doc,'sheetData').length)throw Error('Kein lesbares Tabellenblatt gefunden.');
+     return xmlNodes(doc,'row').map(row=>{
+      const vals=[];
+      for(const cell of xmlNodes(row,'c')){
+       const ref=cell.getAttribute('r')||'', letters=ref.match(/^[A-Z]+/)?.[0]||'A';
+       const index=[...letters].reduce((n,c)=>n*26+c.charCodeAt(0)-64,0)-1;
+       if(index>500)throw Error('Zu viele Spalten.');
+       const raw=xmlNodes(cell,'v')[0]?.textContent||'', type=cell.getAttribute('t');
+       vals[index]=type==='s'?shared[Number(raw)]||'':type==='inlineStr'?xmlNodes(cell,'t').map(x=>x.textContent).join(''):raw;
+      }return Array.from(vals,v=>v??'');
+     });
+    }
+    function parseCsv(input){
+     const src=input.replace(/^\uFEFF/,'');
+     function split(delimiter){
+      let rows=[],row=[],value='',quoted=false;
+      for(let i=0;i<src.length;i++){
+       const c=src[i];
+       if(c==='"'){if(quoted&&src[i+1]==='"'){value+='"';i++;}else quoted=!quoted;}
+       else if(!quoted&&c===delimiter){row.push(value);value='';}
+       else if(!quoted&&(c==='\n'||c==='\r')){if(c==='\r'&&src[i+1]==='\n')i++;row.push(value);rows.push(row);row=[];value='';}
+       else value+=c;
+      }if(quoted)throw Error('CSV enthält ein nicht geschlossenes Anführungszeichen.');
+      row.push(value);rows.push(row);return rows;
+     }
+     return [';',',','\t'].map(split).sort((a,b)=>Math.max(...b.slice(0,20).map(r=>r.length))-Math.max(...a.slice(0,20).map(r=>r.length)))[0];
+    }
+    function importDate(v){
+     const t=String(v||'').trim(),m=t.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+     if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+     if(/^\d{4}-\d{2}-\d{2}$/.test(t))return t;
+     if(/^\d{5}(?:\.\d+)?$/.test(t))return new Date(Date.UTC(1899,11,30)+Math.floor(Number(t))*86400000).toISOString().slice(0,10);
+     return '';
+    }
+    const importNumber=v=>String(v??'').trim().replace(/\s*€$/,'').replace(/\s/g,'').replace(/\.(?=\d{3}(?:[.,]|$))/g,'').replace(',','.');
+    const importFile=document.createElement('input');importFile.type='file';importFile.accept='.xlsx,.csv';importFile.hidden=true;
+    const importButton=action('Import Excel/CSV',()=>importFile.click());importButton.classList.add('settlement-highlight');
+    const importManualButton=action('Import Excel/CSV',()=>importFile.click());importManualButton.classList.add('settlement-highlight');
+    byId('wegUploadButton').after(importButton,importFile);
+    wizardPanels[1].querySelector('.step-heading-actions').prepend(importManualButton);
+    const importPanel=document.createElement('section');importPanel.className='card table-import-panel';importPanel.hidden=true;
+    wizardPanels[0].append(importPanel);
+    let importState=null;
+    function makeImportEl(tag,txt,cls){const el=document.createElement(tag);if(txt!==undefined)el.textContent=txt;if(cls)el.className=cls;return el;}
+    function drawImport(){
+     const st=importState;if(!st)return;
+     importPanel.replaceChildren();
+     const heading=makeImportEl('div',undefined,'split');heading.append(makeImportEl('h3','Import Excel / CSV'),makeImportEl('span',st.filename,'muted'));importPanel.append(heading);
+     const filters=makeImportEl('div',undefined,'table-import-filters'), filterDefs=[['objectName','Objekt'],['status','Mietstatus'],['reviewUnit','Einheit']];
+     function indexFor(key){return key==='status'?st.headers.findIndex(h=>normImport(h)==='mietstatus'):st.mapping.indexOf(key);}
+     const filterControls=[];
+     for(const [key,label] of filterDefs){
+      const index=indexFor(key);if(index<0)continue;
+      const field=makeImportEl('label',label,'field'),sel=document.createElement('select');sel.add(new Option('Alle',''));
+      for(const val of [...new Set(st.rows.map(r=>r[index]).filter(Boolean))].sort())sel.add(new Option(val,val));
+      sel.value=st.filters[key]||'';sel.addEventListener('change',()=>{st.filters[key]=sel.value;refresh();});field.append(sel);filters.append(field);filterControls.push([key,index,sel]);
+     }
+     const yearField=makeImportEl('label','Abrechnungsjahr','field'),year=document.createElement('input');year.type='number';year.placeholder='Alle Jahre';year.value=st.year||'';year.addEventListener('input',()=>{st.year=year.value;refresh();});yearField.append(year);filters.append(yearField);
+     const searchField=makeImportEl('label','Suchen','field'),search=document.createElement('input');search.type='search';search.value=st.search||'';search.addEventListener('input',()=>{st.search=search.value;refresh();});searchField.append(search);filters.append(searchField);
+     importPanel.append(filters);
+     const stats=makeImportEl('p',undefined,'muted');importPanel.append(stats);
+     const rowsBox=makeImportEl('div',undefined,'table-import-rows');importPanel.append(rowsBox);
+     const mapTable=makeImportEl('table',undefined,'table table-import-map');
+     const head=mapTable.createTHead().insertRow();for(const label of ['Tabellenfeld','Beispielwert','ImmoCheck-Feld','Status'])head.append(makeImportEl('th',label));
+     const body=mapTable.createTBody(), examples=[];
+     st.headers.forEach((label,i)=>{
+      const tr=body.insertRow();tr.insertCell().textContent=label;
+      const sample=tr.insertCell();examples.push(sample);
+      const sel=document.createElement('select');sel.setAttribute('aria-label','Zuordnung '+label);
+      for(const [key,title] of importTargets)sel.add(new Option(title,key));
+      sel.value=st.mapping[i];tr.insertCell().append(sel);
+      const state=tr.insertCell();const update=()=>{state.textContent=sel.value?'Zugeordnet':'Nicht importiert';state.className=sel.value?'import-mapped':'muted';};
+      sel.addEventListener('change',()=>{st.mapping[i]=sel.value;update();drawImport();});update();
+     });
+     importPanel.append(mapTable,makeImportEl('p','Nicht erkannte Felder werden angezeigt, aber nicht importiert. Die Zuordnung kann manuell geändert werden.','muted'));
+     const status=makeImportEl('p','');status.setAttribute('role','status');
+     const actions=makeImportEl('div',undefined,'foot-actions');
+     const cancel=action('Abbrechen',()=>{importPanel.hidden=true;importState=null;});
+     const reset=action('Zurücksetzen',()=>{st.mapping=st.headers.map(importGuess);st.filters={};st.year='';st.search='';st.selected.clear();drawImport();});
+     const template=action('Zuordnung speichern',()=>{try{localStorage.setItem('nic-import-map-v1:'+JSON.stringify(st.headers),JSON.stringify(st.mapping));status.textContent='Zuordnung lokal gespeichert.';}catch{status.textContent='Zuordnung konnte nicht gespeichert werden.';}});
+     const apply=action('Import übernehmen',()=>applyImport(st,status));apply.classList.add('settlement-highlight');actions.append(cancel,reset,template,apply);importPanel.append(actions,status);
+     function refresh(){
+      const visible=st.rows.map((row,i)=>({row,i})).filter(({row})=>{
+       if(filterControls.some(([key,index,sel])=>sel.value&&row[index]!==sel.value))return false;
+       if(st.search&&!row.some(v=>normImport(v).includes(normImport(st.search))))return false;
+       if(/^\d{4}$/.test(st.year||'')){
+        const from=importDate(row[indexFor('start')]),to=importDate(row[indexFor('end')]),yi=indexFor('wizardYear');
+        if(yi>=0&&row[yi]&&row[yi]!==st.year)return false;
+        if(from&&from>st.year+'-12-31'||to&&to<st.year+'-01-01')return false;
+       }return true;
+      });
+      stats.textContent=st.rows.length+' Datensätze erkannt · '+st.excluded+' Zeilen ausgeschlossen · '+visible.length+' sichtbar · '+visible.filter(x=>st.selected.has(x.i)).length+' ausgewählt';
+      rowsBox.replaceChildren();
+      const all=makeImportEl('label',' Sichtbare auswählen','import-row-select'),cb=document.createElement('input');cb.type='checkbox';cb.checked=!!visible.length&&visible.every(x=>st.selected.has(x.i));cb.addEventListener('change',()=>{for(const x of visible)cb.checked?st.selected.add(x.i):st.selected.delete(x.i);refresh();});all.prepend(cb);rowsBox.append(all);
+      for(const {row,i} of visible){
+       const label=makeImportEl('label', [row[indexFor('objectName')],row[indexFor('reviewUnit')],row[indexFor('tenantName')],row[indexFor('position')]].filter(Boolean).join(' · ')||'Datensatz '+(i+1),'import-row-select');
+       const check=document.createElement('input');check.type='checkbox';check.checked=st.selected.has(i);check.addEventListener('change',()=>{check.checked?st.selected.add(i):st.selected.delete(i);refresh();});label.prepend(check);rowsBox.append(label);
+      }
+      st.visible=visible.map(x=>x.i);const sample=visible[0]?.row||[];examples.forEach((el,i)=>el.textContent=sample[i]||'');
+     }refresh();
+    }
+    function applyImport(st,status){
+     const chosen=st.visible.filter(i=>st.selected.has(i));
+     if(!chosen.length){status.textContent='Wähle mindestens einen Datensatz aus.';return;}
+     const used=st.mapping.filter(Boolean);if(new Set(used).size!==used.length){status.textContent='Bitte jedes Zielfeld nur einmal zuordnen.';return;}
+     const data=chosen.map(i=>Object.fromEntries(st.mapping.flatMap((key,j)=>key?[[key,st.rows[i][j]||'']]:[])));
+     const positions=data.every(d=>d.position);
+     if(!positions&&data.length!==1){status.textContent='Aktuell kann je Abrechnung eine Wohnung mit einem Mietverhältnis übernommen werden. Bitte einen Datensatz auswählen.';return;}
+     if(positions){
+      if(!data.every(d=>d.position&&d.money&&validReviewNumber(importNumber(d.money).replace('.',',')))){status.textContent='Kostenposition und gültiger Betrag sind erforderlich.';return;}
+      for(const d of data){
+       const matches=reviewRows().filter(row=>normalizedLabel(valuesOf(row)[0])===normalizedLabel(d.position));
+       if(matches.length!==1){status.textContent='Unbekannte oder nicht eindeutige Kostenposition: '+d.position+'. Bitte zuerst manuell anlegen.';return;}
+       if(d.key&&!allocationKeys.includes(d.key)){status.textContent='Unbekannter Verteilerschlüssel: '+d.key;return;}
+      }
+      for(const d of data){
+       const row=reviewRows().find(row=>normalizedLabel(valuesOf(row)[0])===normalizedLabel(d.position));
+       for(const key of ['key','money','base','share','result'])if(d[key])row.querySelector('.review-'+key).value=key==='key'?d[key]:importNumber(d[key]).replace('.',',');
+       recalculateReviewRow(row);
+      }updateSubtotals();importPanel.hidden=true;setWizardStep(2,true);return;
+     }
+     const d=data[0];
+     if(!d.objectName||!d.reviewUnit||!(d.tenantName||d.firstName||d.lastName)){status.textContent='Objekt, Einheit und Mietername müssen zugeordnet sein.';return;}
+     for(const key of ['start','end','validFrom'])if(d[key]&&!importDate(d[key])){status.textContent='Ungültiges Datum: '+key;return;}
+     if(d.start&&d.end&&importDate(d.end)<importDate(d.start)){status.textContent='Mietende liegt vor Mietbeginn.';return;}
+     const parts=String(d.tenantName||'').trim().split(/\s+/),first=d.firstName||parts.slice(0,-1).join(' '),last=d.lastName||parts.at(-1)||'';
+     const existing=contacts.findIndex(c=>c?.[0]==='Mieter/in'&&c[1]===first&&c[2]===last);
+     if(existing>=0){const tenancy=contacts[existing][contactFields.length];if((d.start&&tenancy?.start!==importDate(d.start))||(d.end&&tenancy?.end!==importDate(d.end))){status.textContent='Gleichnamiger Kontakt mit abweichendem Mietverhältnis vorhanden. Bitte manuell prüfen.';return;}}
+     const previous=contacts;
+     let index=existing;
+     if(index<0){
+      index=contacts.length;const contact=['Mieter/in',first,last,d.phone||'',d.email||'','','','','','','',''];
+      const period={validFrom:importDate(d.validFrom||d.start),coldRent:importNumber(d.coldRent),operatingCosts:importNumber(d.operatingCosts),heatingCosts:importNumber(d.heatingCosts)};
+      contact.push({start:importDate(d.start),end:importDate(d.end),periods:period.validFrom&&[period.coldRent,period.operatingCosts,period.heatingCosts].every(v=>v!==''&&Number.isFinite(Number(v)))?[period]:[]});contacts=[...contacts,contact];
+     }
+     const updates={objectName:d.objectName,objectStreet:[d.objectStreet,d.houseNumber].filter(Boolean).join(' '),objectPostal:d.objectPostal,objectCity:d.objectCity,reviewUnit:d.reviewUnit,unitLocation:d.unitLocation,billingUnitArea:importNumber(d.billingUnitArea).replace('.',','),billingUnitShare:d.billingUnitShare,wizardYear:d.wizardYear||st.year};
+     const oldValues={};for(const [key,value] of Object.entries(updates))if(value){oldValues[key]=byId(key).value;byId(key).value=value;}
+     updateContacts();byId('tenantContact').value=String(index);renderBillingContacts();syncBillingPeriodFields();
+     if(!saveDraft(status,'')){contacts=previous;for(const [key,value] of Object.entries(oldValues))byId(key).value=value;updateContacts();return;}
+     renderContacts();importPanel.hidden=true;setWizardStep(1,true);
+    }
+    importFile.addEventListener('change',async()=>{
+     const file=importFile.files[0];importFile.value='';if(!file)return;
+     setEntryMode('upload');importPanel.hidden=false;importPanel.textContent='Datei wird eingelesen …';
+     try{
+      if(file.size>10000000)throw Error('Datei ist größer als 10 MB.');
+      const rows=/\.xlsx$/i.test(file.name)?await readXlsx(file):/\.csv$/i.test(file.name)?parseCsv(await file.text()):null;
+      if(!rows||!rows.length)throw Error('Bitte XLSX oder CSV auswählen.');
+      const ranked=rows.slice(0,25).map((row,i)=>({i,score:row.filter(v=>importGuess(v)).length,width:row.filter(Boolean).length})).sort((a,b)=>b.score-a.score||b.width-a.width);
+      const hi=ranked[0].i,headers=rows[hi].map((v,i)=>String(v||'Spalte '+(i+1)));
+      if(headers.length<2)throw Error('Keine Tabellenüberschriften erkannt.');
+      const obj=headers.findIndex(h=>importGuess(h)==='objectName'),unit=headers.findIndex(h=>importGuess(h)==='reviewUnit');
+      const candidates=rows.slice(hi+1).filter(row=>row.some(v=>String(v).trim()));
+      const data=candidates.filter(row=>!(/^(summe|gesamt|total)\b/i.test(String(row[0]||'')))&&!(obj>=0&&unit>=0&&!row[obj]&&!row[unit]));
+      if(data.length>5000)throw Error('Bitte maximal 5.000 Datensätze pro Datei importieren.');
+      let mapping=headers.map(importGuess);try{const saved=JSON.parse(localStorage.getItem('nic-import-map-v1:'+JSON.stringify(headers))||'null');if(Array.isArray(saved)&&saved.length===headers.length&&saved.every(v=>importTargets.some(t=>t[0]===v)))mapping=saved;}catch{}
+      importState={filename:file.name,headers,rows:data,excluded:candidates.length-data.length,mapping,filters:{},selected:new Set(),year:'',search:''};drawImport();
+     }catch(error){importPanel.replaceChildren(makeImportEl('p',error.message||'Datei konnte nicht eingelesen werden.'),action('Schließen',()=>{importPanel.hidden=true;}));}
+    });
     const saveDraftButton = action('Entwurf lokal speichern', () => saveDraft(notes, 'Entwurf in diesem Browser gespeichert.'));
     saveDraftButton.id = 'saveSettlementDraft';
     byId('showReceipts').after(saveDraftButton);
@@ -1212,6 +1410,19 @@
       .billing-group[open] summary::after{content:'−'}
       .billing-group > :not(summary){margin-bottom:12px}
       .billing-group .field{min-width:0}
+      .table-import-panel{margin-top:16px;min-width:0}
+      .table-import-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px;margin:14px 0}
+      .table-import-filters .field{min-width:0}
+      .table-import-rows{display:grid;gap:5px;margin:12px 0}
+      .import-row-select{display:flex;align-items:center;gap:8px;overflow-wrap:anywhere}
+      .import-row-select input{width:16px;height:16px;flex:none}
+      .table-import-map{width:100%;table-layout:fixed}
+      .table-import-map td,.table-import-map th{overflow-wrap:anywhere;vertical-align:top}
+      .table-import-map select{width:100%;min-width:0}
+      .import-mapped{color:var(--nic-green)}
+      .table-import-panel .foot-actions{flex-wrap:wrap;gap:8px}
+      @container(max-width:520px){.table-import-map,.table-import-map tbody,.table-import-map tr,.table-import-map td{display:block;width:100%}.table-import-map thead{display:none}.table-import-map tr{padding:8px 0;border-bottom:1px solid var(--nic-border)}}
+
       .archive-link{display:block;text-align:left;margin:8px 0;overflow-wrap:anywhere}
       .archive-block{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
       .settlement-archive{margin-top:16px}
