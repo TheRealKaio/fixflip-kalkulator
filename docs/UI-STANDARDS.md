@@ -30,8 +30,9 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Beschreibung, Inhaltsmarkup und SEO-Metadaten. Sie starten die gemeinsame Anwendung.
 - Der Aufruf `/` zeigt die Startseite, auch wenn zuvor ein Rechner verwendet wurde.
 - Die Nebenkostenabrechnung startet mit ihrer Informationsseite und den beiden
-  Erfassungswegen. „Abrechnung verlassen“ führt aus dem Arbeitsbereich zurück
-  zu dieser Seite. Manuelle Erfassung beginnt bei den Abrechnungsdetails.
+  Erfassungswegen. Links über den Menüpunkten führt „Abrechnung verlassen“
+  als rahmenlose Schaltfläche mit kleinem Pfeil nach links zurück zu dieser
+  Seite. Manuelle Erfassung beginnt bei den Abrechnungsdetails.
 - Mieterkontakte können aus der Kontaktliste geöffnet und bearbeitet werden.
   Das Mietverhältnis enthält Beginn, Ende und Aktivstatus. Mietkonditionen
   werden als Verlauf mit Gültigkeitsdatum, Kaltmiete und getrennten

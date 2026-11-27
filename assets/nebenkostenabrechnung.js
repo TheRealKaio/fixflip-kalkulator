@@ -846,8 +846,8 @@
     root.prepend(style);
     const exit = document.createElement('button');
     exit.type = 'button';
-    exit.className = 'btn';
-    exit.textContent = 'Abrechnung verlassen';
+    exit.className = 'settlement-exit-button';
+    exit.innerHTML = '<span aria-hidden="true">←</span> Abrechnung verlassen';
     exit.addEventListener('click', () => {
       const landing = new URL(location.href);
       landing.searchParams.delete('modus');
@@ -858,7 +858,7 @@
     exitActions.className = 'settlement-exit';
     exitActions.append(exit);
     root.querySelector('.tabs').before(exitActions);
-    style.textContent += '\n.settlement-exit{display:flex;justify-content:flex-end;padding:14px 20px 0}.tenant-rent-period{border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}.tenant-rent-period legend{font-weight:650;padding:0 4px}#tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#tenantDetails .field,#tenantDetails .field input{min-width:0}#tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}@media(max-width:600px){#tenantDetails .form-grid{grid-template-columns:minmax(0,1fr)}}.tenant-rent-period .btn{justify-self:start}#tenantRentHistory+.btn{margin-top:4px}#tenantActive{width:auto;min-height:0;margin-inline-end:4px}';
+    style.textContent += '\n.settlement-exit{padding:10px 20px 0}.settlement-exit-button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:6px 0;color:var(--nic-green);font-size:var(--nic-subtext-font-size);font-weight:650;cursor:pointer}.settlement-exit-button span{font-size:.9em}.settlement-exit-button:hover{text-decoration:underline}.settlement-exit-button:focus-visible{outline:2px solid currentColor;outline-offset:3px}@media(max-width:600px){.settlement-exit{padding-inline:10px}}.tenant-rent-period{border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}.tenant-rent-period legend{font-weight:650;padding:0 4px}#tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#tenantDetails .field,#tenantDetails .field input{min-width:0}#tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}@media(max-width:600px){#tenantDetails .form-grid{grid-template-columns:minmax(0,1fr)}}.tenant-rent-period .btn{justify-self:start}#tenantRentHistory+.btn{margin-top:4px}#tenantActive{width:auto;min-height:0;margin-inline-end:4px}';
 
     if (!document.getElementById('settlement-print-style')) {
       const printStyle = document.createElement('style');
