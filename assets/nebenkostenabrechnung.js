@@ -48,7 +48,8 @@
      }
     }
     root.getElementById('wegUploadButton')?.addEventListener('click',()=>{setEntryMode('upload');root.getElementById('wegUploadInput')?.click()});
-    root.getElementById('startManual')?.addEventListener('click',()=>setEntryMode('manual'));
+    const startManual = () => setEntryMode('manual');
+    root.getElementById('startManual')?.addEventListener('click',startManual);
     root.getElementById('wegUploadInput')?.addEventListener('change',event=>{
      const files=[...event.target.files];
      const label=root.getElementById('uploadSelection');
@@ -571,6 +572,7 @@
         controls[0].focus();
       }
     });
+    return startManual;
   }
 
   let savedWorkspace;
@@ -619,13 +621,14 @@
       `;
       document.head.append(printStyle);
     }
-    initialize(root, () => {
+    const startManual = initialize(root, () => {
       document.body.classList.add('settlement-printing');
       window.addEventListener('afterprint', () => document.body.classList.remove('settlement-printing'), {once:true});
       window.print();
     });
     savedWorkspace = workspace;
     placeWorkspace(host, workspace);
+    if (new URLSearchParams(location.search).get('modus') === 'manuell') startManual();
   }
   function boot() {
     mount();
