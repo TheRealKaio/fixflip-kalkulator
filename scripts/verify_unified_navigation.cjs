@@ -336,6 +336,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
    }
    assert.equal(await page.evaluate(()=>performance.timeOrigin),sharedOrigin,'Information menu must retain the document');
    assert(await headerNode.evaluate(el=>el===document.querySelector('.app>.hero')),'Header DOM must be retained');
+   if(slug==='nebenkostenabrechnung'){
+    const module=page.locator('#nicContentView > [data-settlement]');
+    await module.locator('#wegUploadButton').waitFor({state:'visible'});
+    assert.equal(await module.locator('iframe, header, .footer').count(),0,'Settlement uses the outer header and footer');
+   }
    assert(await page.locator(slug==='nebenkostenabrechnung'?'#nicContentView':'#nicContentView').evaluate(el=>el.parentElement.matches('.app>main.section')),'Information uses the calculator main container');
    const h=await page.locator('.app>.hero').evaluate(el=>el.getBoundingClientRect().height);
    if(width<=700){
@@ -364,6 +369,16 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
     assert(await page.locator('.app>.hero').isVisible(),'Standard image header missing on '+routeName);
     assert(await page.locator('.app>.hero h1').isVisible(),'Standard heading missing on '+routeName);
     assert.equal(await page.locator('.nic-content-card h1').count(),0,'Content title must not be duplicated');
+    if(key==='settlement'){
+     const module=page.locator('#nicContentView > [data-settlement]');
+     await module.locator('#startManual').click();
+     await module.locator('#wizardYear').fill('2025');
+     await module.locator('[data-step="4"]').click();
+     await module.locator('#showPreview').click();
+     await module.locator('#printPreview').waitFor({state:'visible'});
+     await module.locator('#closePreview').click();
+     await module.locator('#printPreview').waitFor({state:'hidden'});
+    }
     assert.equal(await page.locator('link[href*="calculator-typography"]').count(),1,'Shared typography missing on '+routeName);
     await page.waitForFunction(()=>NICSettings.ready&&document.querySelector('.hero.nic-fixed-header'));
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
