@@ -410,6 +410,7 @@
     const contactTitle = contactCard.querySelector('h3');
     const contactRole = contactFields[0];
     const tenancyPanel = document.createElement('section');
+    tenancyPanel.id = 'tenantDetails';
     tenancyPanel.hidden = true;
     tenancyPanel.innerHTML = `<h4 class="section-title">Mietverhältnis</h4>
      <div class="form-grid">
@@ -857,7 +858,7 @@
     exitActions.className = 'settlement-exit';
     exitActions.append(exit);
     root.querySelector('.tabs').before(exitActions);
-    style.textContent += '\n.settlement-exit{display:flex;justify-content:flex-end;padding:14px 20px 0}.tenant-rent-period{border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}.tenant-rent-period legend{font-weight:650;padding:0 4px}.tenant-rent-period .field{min-width:0}.tenant-rent-period input{width:100%;min-width:0}.tenant-rent-period .btn{justify-self:start}#tenantRentHistory+.btn{margin-top:4px}#tenantActive{width:auto;min-height:0;margin-inline-end:4px}';
+    style.textContent += '\n.settlement-exit{display:flex;justify-content:flex-end;padding:14px 20px 0}.tenant-rent-period{border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}.tenant-rent-period legend{font-weight:650;padding:0 4px}#tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#tenantDetails .field,#tenantDetails .field input{min-width:0}#tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}@media(max-width:600px){#tenantDetails .form-grid{grid-template-columns:minmax(0,1fr)}}.tenant-rent-period .btn{justify-self:start}#tenantRentHistory+.btn{margin-top:4px}#tenantActive{width:auto;min-height:0;margin-inline-end:4px}';
 
     if (!document.getElementById('settlement-print-style')) {
       const printStyle = document.createElement('style');
