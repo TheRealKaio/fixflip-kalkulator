@@ -999,13 +999,13 @@
     style.textContent += `
       #abrechnung > .page-head{display:flex;flex-direction:row;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px 16px}
       #abrechnung > .page-head > div:first-child{flex:1 1 210px;min-width:0}
-      #abrechnung > .page-head .actions{display:flex;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end;align-items:center;margin-inline-start:auto;max-width:100%;gap:8px}
-      #abrechnung > .page-head .actions > .btn{flex:0 0 auto;width:204px;min-width:0;max-width:100%;min-height:38px;white-space:normal;text-align:center}
+      #abrechnung > .page-head .actions{display:flex;flex:0 1 416px;flex-wrap:nowrap;justify-content:flex-end;align-items:center;margin-inline-start:auto;min-width:0;max-width:100%;gap:8px}
+      #abrechnung > .page-head .actions > .btn{flex:1 1 0;width:204px;min-width:0;max-width:204px;min-height:38px;white-space:nowrap;text-align:center}
       .settlement-draft-status{color:var(--nic-muted);font-size:var(--nic-subtext-font-size);text-align:right;margin:0 0 10px}
       .settlement-draft-status:empty{display:none}
-      @container (max-width:480px){
-        #abrechnung > .page-head .actions{width:100%}
-        #abrechnung > .page-head .actions > .btn{width:min(204px,100%)}
+      @container (max-width:520px){
+        #abrechnung > .page-head .actions{width:100%;flex:0 1 100%;gap:4px}
+        #abrechnung > .page-head .actions > .btn{width:auto;padding-inline:4px;font-size:clamp(10px,2.7cqi,13px)}
       }
       .settlement-exit{padding:10px 20px 0}
       .settlement-exit-button,.add-rent-period{border:0;background:transparent;text-decoration:none;cursor:pointer;text-align:left}
