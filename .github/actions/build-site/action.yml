@@ -865,7 +865,7 @@ runs:
         tag = '<script defer src="/nebenkostenabrechnung.js"></script>'
         for page in root.rglob('*.html'):
             html = page.read_text(encoding='utf-8')
-            if 'unified-calculator-navigation.js' not in html or tag in html:
+            if 'calculator-navigation.js' not in html or tag in html:
                 continue
             if '</head>' not in html:
                 raise SystemExit(f'Missing head in {page}')
