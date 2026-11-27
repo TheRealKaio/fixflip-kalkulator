@@ -264,11 +264,24 @@
     function normalizedLabel(value) {
      return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
     }
+    function cleanWegPositionName(value) {
+     let name=String(value??'').trim();
+     // Remove detached account / cost-centre / sequence codes, not numbers within a description.
+     const leadingCode=/^\d+(?:[._/]\d+)*(?:[.)])?(?:\s+[/|:–—-]\s*|\s*[:|–—]\s*|\s+|\.(?=\p{L}))/u;
+     while(leadingCode.test(name)){
+      // Preserve numeric compounds and meaningful leading quantities (e.g. 24 Stunden, 2 Aufzüge).
+      if(/^\d+\s+(?:stunden?|tage?|monate?|jahre?|aufzüge?|aufzuege?|wohnungen?|einheiten?|personen?|mal|m²|m2|kg|liter)\b/iu.test(name))break;
+      const next=name.replace(leadingCode,'').trim();
+      if(!next||!/\p{L}/u.test(next))break;
+      name=next;
+     }
+     return name;
+    }
     function extractRows(text) {
      let category = '';
      const rows = [];
      for (const line of text.split(/\r?\n/)) {
-      const heading = normalizedLabel(line).replace(/^\d+/, '');
+      const heading = normalizedLabel(cleanWegPositionName(line)).replace(/^\d+/, '');
       if (/^nichtumlag/.test(heading)) { category = 'nicht_umlagefaehig'; continue; }
       if (/^(?:ublicherweise)?umlag/.test(heading)) { category = 'umlagefaehig'; continue; }
       if (/^(?:zufuhrungzurerhaltungsrucklage|beitragezurrucklage)$/.test(heading)) { category = 'ruecklage'; continue; }
@@ -282,9 +295,8 @@
       const amount = /(?:^|\s)([-−]?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2})\s*$/;
       const first = cells[0].match(amount);
       const last = cells.length >= 3 ? cells.at(-2).match(amount) : null;
-      const name = cells[0].slice(0, first?.index ?? cells[0].length)
-       .replace(/^\s*\d{4,}[\s_]+0[\s_.]+/, '')
-       .replace(/\s+(?:m[²2^]+\s+)?Wohnfläche\s+ges\.?\s*$/i,'').trim();
+      const name = cleanWegPositionName(cells[0].slice(0, first?.index ?? cells[0].length)
+       .replace(/\s+(?:m[²2^]+\s+)?Wohnfläche\s+ges\.?\s*$/i,''));
       if (!first || !/[a-zäöü]{3}/i.test(name)) continue;
       const candidates = standardSections.filter(section => section.positions.some(label => normalizedLabel(label) === normalizedLabel(name)));
       const block = category || (candidates.length === 1 ? candidates[0].id : '');
