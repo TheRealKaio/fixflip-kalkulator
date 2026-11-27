@@ -1218,6 +1218,8 @@
       select.review-input{padding-inline-end:30px}
       .wizard-panel .step-heading{flex-wrap:wrap}
       .step-heading-actions{justify-content:flex-end;flex-wrap:wrap;min-width:0;max-width:100%;margin-inline-start:auto}
+      .step-heading-actions .back-step{border:0;background:transparent;box-shadow:none}
+      .step-heading-actions .back-step:focus-visible{outline:2px solid var(--nic-green);outline-offset:2px}
       .wizard-panel .step-heading button[data-next],.wizard-panel .step-heading #showPreview{
         box-sizing:border-box;width:var(--nic-next-width);min-width:0;max-width:100%;flex:0 0 auto;
         min-height:44px;margin-inline-start:auto;align-self:flex-end;white-space:normal;
