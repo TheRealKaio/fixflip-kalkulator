@@ -94,14 +94,27 @@
      }
      return tr;
     }
+    function setPositionSectionExpanded(sectionId, expanded){
+     const body=root.getElementById('positionTemplateBody');
+     if(!body)return;
+     body.classList.toggle('collapsed-'+sectionId,!expanded);
+     const toggle=body.querySelector('[data-toggle-position-section="'+sectionId+'"]');
+     if(toggle)toggle.setAttribute('aria-expanded',String(expanded));
+    }
     function renderStandardTemplate(){
      const body=root.getElementById('positionTemplateBody');if(!body)return;body.innerHTML='';
      standardSections.forEach(section=>{
-      const heading=document.createElement('tr');heading.className='group-row';heading.innerHTML='<td colspan="7">'+section.title+'</td>';body.appendChild(heading);
+      const heading=document.createElement('tr');heading.className='group-row';
+      const cell=heading.insertCell();cell.colSpan=7;
+      const toggle=document.createElement('button');toggle.type='button';toggle.className='position-section-toggle';toggle.dataset.togglePositionSection=section.id;
+      const title=document.createElement('span');title.textContent=section.title;
+      const symbol=document.createElement('span');symbol.className='position-section-symbol';symbol.setAttribute('aria-hidden','true');
+      toggle.append(title,symbol);cell.append(toggle);body.appendChild(heading);
+      setPositionSectionExpanded(section.id,false);
       section.positions.forEach(label=>body.appendChild(makePositionRow(section.id,label)));
       const subtotal=document.createElement('tr');subtotal.className='subtotal-row';subtotal.dataset.subtotal=section.id;
       subtotal.innerHTML='<td colspan="2">Zwischensumme · '+section.title+'</td><td class="subtotal-total">—</td><td></td><td></td><td class="subtotal-share">—</td><td class="position-action-cell"></td>';body.appendChild(subtotal);
-      const add=document.createElement('tr');add.className='add-row';add.innerHTML='<td colspan="7"><button class="btn soft" type="button" data-add-position="'+section.id+'">＋ Position zu diesem Block hinzufügen</button></td>';body.appendChild(add);
+      const add=document.createElement('tr');add.className='add-row';add.dataset.positionSection=section.id;add.innerHTML='<td colspan="7"><button class="btn soft" type="button" data-add-position="'+section.id+'">＋ Position zu diesem Block hinzufügen</button></td>';body.appendChild(add);
      });
      const grand=document.createElement('tr');grand.className='subtotal-row grand-total-row';grand.innerHTML='<td colspan="2">Summe aller erfassten Positionen · Abgleich mit dem WEG-Beleg</td><td class="grand-total">—</td><td></td><td></td><td class="grand-share">—</td><td class="position-action-cell"></td>';body.appendChild(grand);
      updateSubtotals();
@@ -156,10 +169,13 @@
     });
     root.getElementById('unitReviewTable')?.addEventListener('change',updateSubtotals);
     root.getElementById('unitReviewTable')?.addEventListener('click',event=>{
+     const sectionToggle=event.target.closest('[data-toggle-position-section]');
+     if(sectionToggle){setPositionSectionExpanded(sectionToggle.dataset.togglePositionSection,sectionToggle.getAttribute('aria-expanded')!=='true');return}
      const removeButton=event.target.closest('.remove-position');
      if(removeButton){removeButton.closest('.review-position-row')?.remove();updateSubtotals();return}
      const button=event.target.closest('[data-add-position]');if(!button)return;
-     const sectionId=button.dataset.addPosition;const rows=reviewRows().filter(row=>row.dataset.category===sectionId);
+     const sectionId=button.dataset.addPosition;
+     setPositionSectionExpanded(sectionId,true);
      const row=makePositionRow(sectionId,'',true);root.querySelector('[data-subtotal="'+sectionId+'"]').before(row);row.querySelector('.review-position').focus();
     });
     function syncReviewToPreview(){
@@ -953,12 +969,12 @@
       .contact-edit,.contact-delete{color:var(--nic-ink);background:transparent;border:0;cursor:pointer}
       .contact-edit{min-width:0;padding:6px 4px;text-align:left;font-size:var(--nic-subtext-font-size);font-weight:650;overflow-wrap:anywhere}
       .contact-delete{flex:none;width:32px;height:32px;color:var(--nic-red);font-size:1.3em;line-height:1}
-      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete)){transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
-      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete)):enabled:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
-      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete)):enabled:active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
+      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)){transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
+      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)):enabled:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
+      button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)):enabled:active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
       :is(.tab,.contact-edit,.settlement-exit-button):is(:hover,:focus-visible){color:var(--nic-green)}
       :is(.tab,.contact-delete):is(:hover,:focus-visible){text-shadow:0 -2px 5px color-mix(in srgb,currentColor 35%,transparent)}
-      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete)):enabled:active{transform:none}}
+      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(:is(.tab,.contact-edit,.settlement-exit-button,.contact-delete,.position-section-toggle)):enabled:active{transform:none}}
     `;
     root.innerHTML = markup;
     root.prepend(style);
@@ -996,6 +1012,17 @@
       #abrechnung .wizard-panel[data-panel="2"] .position-table-wrap{overflow:visible;max-height:none;container-type:inline-size}
       .position-table{min-width:0}
       .position-table th{overflow-wrap:anywhere}
+      .position-table .group-row td{padding:0;background:#eef0f2}
+      .position-section-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:12px 10px;cursor:pointer;box-shadow:none}
+      .position-section-toggle span:first-child{min-width:0;overflow-wrap:anywhere}
+      .position-section-symbol{margin-inline-start:auto;flex:none;font-size:1.2em;line-height:1;color:var(--nic-green)}
+      .position-section-symbol::before{content:'+'}
+      .position-section-toggle[aria-expanded="true"] .position-section-symbol::before{content:'−'}
+      .position-section-toggle:focus-visible{outline:2px solid var(--nic-green);outline-offset:-2px}
+      #positionTemplateBody.collapsed-umlagefaehig > :is([data-category="umlagefaehig"],[data-subtotal="umlagefaehig"],[data-position-section="umlagefaehig"]),
+      #positionTemplateBody.collapsed-nicht_umlagefaehig > :is([data-category="nicht_umlagefaehig"],[data-subtotal="nicht_umlagefaehig"],[data-position-section="nicht_umlagefaehig"]),
+      #positionTemplateBody.collapsed-ruecklage > :is([data-category="ruecklage"],[data-subtotal="ruecklage"],[data-position-section="ruecklage"]),
+      #positionTemplateBody.collapsed-einnahmen > :is([data-category="einnahmen"],[data-subtotal="einnahmen"],[data-position-section="einnahmen"]){display:none!important}
       .position-table thead th{position:static}
       .position-table .review-input{max-width:100%}
       @container (max-width:720px){
