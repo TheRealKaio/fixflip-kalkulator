@@ -30,7 +30,7 @@
       heading.scrollIntoView({block:'center'});
      }
     }
-    function setEntryMode(mode){
+    function setEntryMode(mode, moveFocus = true){
      entryMode=mode;
      const status=root.getElementById('entryModeState');
      if (status) status.hidden = mode === 'manual';
@@ -39,7 +39,7 @@
      if(mode==='manual'){
       if(detailsHint)detailsHint.textContent='Gib Objekt, Abrechnungsjahr und Wohnung ein. Gehe anschließend zu den Kostenpositionen.';
       if(positionHint)positionHint.textContent='Die Standardpositionen sind vorbereitet. Beträge und Anteile bleiben leer und werden von dir erfasst.';
-      setWizardStep(1,true);
+      setWizardStep(1,moveFocus);
      }else{
       if(status)status.textContent='Belegerfassung: Der WEG-Beleg wird zuerst eingelesen. Danach bestätigst du die erkannten Angaben und prüfst die Positionen.';
       if(detailsHint)detailsHint.textContent='Nach dem Einlesen werden eindeutig erkannte Angaben vorgeschlagen. Eine unsichere Wohnungszuordnung wird zur Bestätigung angezeigt; weitere Einheiten werden nicht angelegt.';
@@ -48,8 +48,8 @@
      }
     }
     root.getElementById('wegUploadButton')?.addEventListener('click',()=>{setEntryMode('upload');root.getElementById('wegUploadInput')?.click()});
-    const startManual = () => setEntryMode('manual');
-    root.getElementById('startManual')?.addEventListener('click',startManual);
+    const startManual = (moveFocus = true) => setEntryMode('manual', moveFocus);
+    root.getElementById('startManual')?.addEventListener('click', () => startManual());
     root.getElementById('wegUploadInput')?.addEventListener('change',event=>{
      const files=[...event.target.files];
      const label=root.getElementById('uploadSelection');
@@ -753,7 +753,14 @@
     });
     savedWorkspace = workspace;
     placeWorkspace(host, workspace);
-    if (mode === 'manuell') startManual();
+    if (mode === 'manuell') {
+      const layoutReady = window.NICInitialLayout?.ready;
+      startManual(!layoutReady);
+      // The shared shell is hidden until its settings and layout have been applied.
+      layoutReady?.then(() => {
+        if (workspace.isConnected && document.activeElement === document.body) startManual();
+      });
+    }
   }
   function boot() {
     mount();
