@@ -36,9 +36,11 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Kontakte öffnen sich per Klick auf ihren Namen. Die Zeilen werden durch
   eine feine graue Linie getrennt. Ein rotes X löscht den Kontakt nach
   Bestätigung. Die Schaltflächen im Arbeitsbereich verwenden dieselbe
-  Schatten- und Klickanimation wie die übrigen Website-Buttons. Menüpunkte,
-  Kontaktnamen und „Abrechnung verlassen“ heben beim Darüberfahren nur die
-  Textfarbe hervor. Eine grüne Linie kennzeichnet den aktiven Menüpunkt.
+  Schatten- und Klickanimation wie die übrigen Website-Buttons. Menüpunkte
+  erhalten beim Darüberfahren grüne Schrift mit einem dezenten Textschatten.
+  Die roten Löschzeichen erhalten denselben Textschatten in Rot.
+  Kontaktnamen und „Abrechnung verlassen“ wechseln dabei die Textfarbe.
+  Eine grüne Linie kennzeichnet den aktiven Menüpunkt.
   Das Mietverhältnis enthält Beginn, Ende und Aktivstatus. Mietkonditionen
   werden als Verlauf mit Gültigkeitsdatum, Kaltmiete und getrennten
   Vorauszahlungen für Betriebs- und Heizkosten erfasst. Ein rotes X oben
