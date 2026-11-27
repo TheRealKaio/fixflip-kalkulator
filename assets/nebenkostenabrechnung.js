@@ -116,7 +116,7 @@
       subtotal.innerHTML='<td colspan="2">Zwischensumme · '+section.title+'</td><td class="subtotal-total">—</td><td></td><td></td><td class="subtotal-share">—</td><td class="position-action-cell"></td>';body.appendChild(subtotal);
       const add=document.createElement('tr');add.className='add-row';add.dataset.positionSection=section.id;add.innerHTML='<td colspan="7"><button class="btn soft" type="button" data-add-position="'+section.id+'">＋ Position zu diesem Block hinzufügen</button></td>';body.appendChild(add);
      });
-     const grand=document.createElement('tr');grand.className='subtotal-row grand-total-row';grand.innerHTML='<td colspan="2">Summe aller erfassten Positionen · Abgleich mit dem WEG-Beleg</td><td class="grand-total">—</td><td></td><td></td><td class="grand-share">—</td><td class="position-action-cell"></td>';body.appendChild(grand);
+     const grand=document.createElement('tr');grand.className='subtotal-row grand-total-row';grand.innerHTML='<td colspan="2">Summe aller erfassten Positionen</td><td class="grand-total">—</td><td></td><td></td><td class="grand-share">—</td><td class="position-action-cell"></td>';body.appendChild(grand);
      updateSubtotals();
     }
     function parseGermanNumber(value){const normalized=String(value||'').replace(/\./g,'').replace(',','.');const number=Number(normalized);return Number.isFinite(number)?number:0}
@@ -1029,8 +1029,8 @@
       .position-table .group-row td{padding:0;background:#eef0f2;border-radius:12px;overflow:hidden}
       .position-section-toggle{border-radius:12px}
       #abrechnung :is(button[data-add-position],#addReviewPosition){
-        box-sizing:border-box;display:inline-flex;justify-content:center;align-items:center;
-        width:300px;max-width:100%;min-height:42px;white-space:normal;text-align:center;
+        box-sizing:border-box;display:inline-flex;justify-content:flex-start;align-items:center;
+        width:300px;max-width:100%;min-height:42px;white-space:normal;text-align:left;
         background:#f6c944;border-color:#e1b52b;color:#302600;
       }
       #abrechnung :is(button[data-add-position],#addReviewPosition):hover{background:#edbd2f}
