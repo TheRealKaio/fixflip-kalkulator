@@ -830,7 +830,11 @@
       return true;
      } catch { status.textContent = 'Der Browser konnte die Angaben nicht speichern.'; return false; }
     }
-    byId('showReceipts').after(action('Entwurf lokal speichern', () => saveDraft(notes, 'Entwurf in diesem Browser gespeichert.')), notes);
+    const saveDraftButton = action('Entwurf lokal speichern', () => saveDraft(notes, 'Entwurf in diesem Browser gespeichert.'));
+    saveDraftButton.id = 'saveSettlementDraft';
+    byId('showReceipts').after(saveDraftButton);
+    notes.className = 'settlement-draft-status';
+    byId('showReceipts').closest('.page-head').after(notes);
     byId('saveProperty').addEventListener('click', () => {
      for (const field of root.querySelectorAll('#objectDetailPanel input[type="number"]')) {
       if (!field.reportValidity()) return;
@@ -993,6 +997,16 @@
     exitActions.append(exit);
     root.querySelector('.tabs').before(exitActions);
     style.textContent += `
+      #abrechnung > .page-head{display:flex;flex-direction:row;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px 16px}
+      #abrechnung > .page-head > div:first-child{flex:1 1 210px;min-width:0}
+      #abrechnung > .page-head .actions{display:flex;flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end;align-items:center;margin-inline-start:auto;max-width:100%;gap:8px}
+      #abrechnung > .page-head .actions > .btn{flex:0 0 auto;width:204px;min-width:0;max-width:100%;min-height:38px;white-space:normal;text-align:center}
+      .settlement-draft-status{color:var(--nic-muted);font-size:var(--nic-subtext-font-size);text-align:right;margin:0 0 10px}
+      .settlement-draft-status:empty{display:none}
+      @container (max-width:480px){
+        #abrechnung > .page-head .actions{width:100%}
+        #abrechnung > .page-head .actions > .btn{width:min(204px,100%)}
+      }
       .settlement-exit{padding:10px 20px 0}
       .settlement-exit-button,.add-rent-period{border:0;background:transparent;text-decoration:none;cursor:pointer;text-align:left}
       .settlement-exit-button{display:inline-flex;align-items:center;gap:8px;padding:6px 0;color:var(--nic-ink);font-size:max(16px,var(--nic-body-font-size));font-weight:700}
