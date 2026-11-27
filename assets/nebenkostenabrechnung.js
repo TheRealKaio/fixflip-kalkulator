@@ -586,7 +586,7 @@
   }
   function mount() {
     if (!/\/nebenkostenabrechnung\/?$/.test(location.pathname)) return;
-    if (window.NICCalculators && window.NICCalculators.active !== 'settlement') return;
+    // The direct route can render before the shared navigation finishes loading its settings.
     const host = document.getElementById('nicContentView');
     if (!host) return;
     if (host.querySelector('[data-settlement]')) return;
