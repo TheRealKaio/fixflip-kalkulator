@@ -333,9 +333,11 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     }
    }
    await page.goto('http://localhost/fixflip-kalkulator/nebenkostenabrechnung/',{waitUntil:'networkidle'});
-   assert.equal(await page.locator('#nicContentView summary').count(),0,'Settlement content has no forced disclosure');
-   await page.locator('#nicContentView a[href="http://localhost/fixflip-kalkulator/vermietung/"]').click();
-   await page.waitForURL('http://localhost/fixflip-kalkulator/vermietung/');
+   const settlement = page.locator('#nicContentView > [data-settlement]');
+   await settlement.locator('#wegUploadButton').waitFor({state:'visible'});
+   assert.equal(await settlement.locator('iframe, .footer').count(),0,'Settlement uses the shared calculator shell');
+   await settlement.locator('#startManual').click();
+   assert(await settlement.locator('#wizardYear').isVisible(),'Manual settlement starts in the shared frame');
    await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
    const budget=page.locator('a[href="/fixflip-kalkulator/budget/"]').first();
    await budget.click();
