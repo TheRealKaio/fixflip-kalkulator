@@ -1123,7 +1123,7 @@
       .billing-contact-fields dd{margin:0}
       #abrechnung .wizard-panel[data-panel="2"] .position-table-wrap{overflow:visible;max-height:none;container-type:inline-size}
       .position-table{min-width:0}
-      .position-table th{overflow-wrap:anywhere}
+      .position-table th{overflow-wrap:anywhere;font-size:var(--nic-subtext-font-size)}
       .position-table .group-row td{padding:0;background:#eef0f2;border-radius:12px;overflow:hidden}
       .position-table .subtotal-row td:first-child{border-radius:12px 0 0 12px}
       .position-table .subtotal-row td:last-child{border-radius:0 12px 12px 0}
