@@ -46,6 +46,12 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Vorauszahlungen für Betriebs- und Heizkosten erfasst. Ein rotes X oben
   rechts entfernt die jeweiligen Mietkonditionen nach Bestätigung.
   „Mietanpassung hinzufügen“ steht rahmenlos am Ende der letzten Box.
+- „Angaben“ in der Mieterabrechnung gliedert Objekt, Wohnung, Mieter und
+  Vermieter in aufklappbare Bereiche mit Plus rechts neben dem Titel.
+  Gespeicherte Objekt- und Wohnungsdaten können übernommen werden,
+  Kontaktdaten erscheinen zur gewählten Person. Angaben, Positionen,
+  Verteilung und die eingebettete Vorschau wachsen im Dokumentfluss.
+  Der gemeinsame Footer rückt mit und der Arbeitsbereich scrollt nicht separat.
 - Der Footer steht einmal als eigenes Element in `.app`, außerhalb von `main`.
 - Die Anwendung füllt mindestens die Viewporthöhe. Kurze Inhalte wachsen zum
   Footer; lange Inhalte scrollen natürlich. Kein zusätzlicher innerer Seiten-Scrollbereich.

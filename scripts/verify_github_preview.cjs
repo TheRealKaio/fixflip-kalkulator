@@ -342,7 +342,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await settlement.count(),0,'Settlement starts on its information page');
    await manual.click();
    await page.waitForURL('**/nebenkostenabrechnung/?modus=manuell');
-   await settlement.locator('#wizardYear').waitFor({state:'visible'});
+   await settlement.locator('summary').filter({hasText:'1. Objekt'}).click();
    assert.equal(await settlement.locator('#entryModeState').isVisible(),false,'Manual entry omits the upload hint');
    assert.equal(await settlement.locator('iframe, .footer').count(),0,'Settlement uses the shared calculator shell');
    await settlement.locator('#wizardYear').fill('2025');
@@ -360,6 +360,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await settlement.count(),0,'Leaving upload returns to the start page');
    await manual.click();
    await page.waitForURL('**/nebenkostenabrechnung/?modus=manuell');
+   await settlement.locator('summary').filter({hasText:'1. Objekt'}).click();
    assert.equal(await settlement.locator('#wizardYear').inputValue(),'2025','Leaving and reopening keeps the saved draft');
    await settlement.getByRole('button',{name:'1. Kontakte'}).click();
    const contacts = settlement.locator('#kontakte');
