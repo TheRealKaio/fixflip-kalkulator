@@ -338,6 +338,16 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await settlement.locator('iframe, .footer').count(),0,'Settlement uses the shared calculator shell');
    await settlement.locator('#startManual').click();
    assert(await settlement.locator('#wizardYear').isVisible(),'Manual settlement starts in the shared frame');
+   await page.evaluate(()=>{
+    const starter=document.createElement('button');
+    starter.type='button';
+    starter.dataset.nicSettlementAction='manual';
+    starter.textContent='Manuelle Erfassung';
+    document.getElementById('nicContentView').prepend(starter);
+   });
+   await page.locator('#nicContentView > [data-nic-settlement-action="manual"]').click();
+   await page.waitForURL('**/nebenkostenabrechnung/?modus=manuell');
+   await page.locator('#nicContentView > [data-settlement]').locator('#wizardYear').waitFor({state:'visible'});
    await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});
    const budget=page.locator('a[href="/fixflip-kalkulator/budget/"]').first();
    await budget.click();

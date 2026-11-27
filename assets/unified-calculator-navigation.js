@@ -162,7 +162,17 @@ document.addEventListener('click',event=>{
 },true);
 document.addEventListener('click',event=>{
  const starter=event.target.closest('[data-nic-settlement-action]');
- if(starter){event.preventDefault();window.alert(starter.dataset.nicSettlementAction==='upload'?'Der WEG-Import wird noch entwickelt.':'Die manuelle Kostenerfassung wird noch entwickelt.');return;}
+ if(starter){
+  const action=starter.dataset.nicSettlementAction;
+  if(action!=='manual'&&action!=='upload')return;
+  event.preventDefault();
+  const url=new URL(routeHref(contentRoutes.settlement),location.href);
+  url.search=location.search;
+  if(action==='manual')url.searchParams.set('modus','manuell');
+  else url.searchParams.delete('modus');
+  location.assign(url.href);
+  return;
+ }
  if(bypass||event.button||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  const link=event.target.closest('a[href]');
  if(link&&document.querySelector('.deal-type-card')){
