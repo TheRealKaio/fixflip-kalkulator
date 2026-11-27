@@ -884,10 +884,11 @@
       .contact-edit,.contact-delete{color:var(--nic-ink);background:transparent;border:0;cursor:pointer}
       .contact-edit{min-width:0;padding:6px 4px;text-align:left;font-size:var(--nic-subtext-font-size);font-weight:650;overflow-wrap:anywhere}
       .contact-delete{flex:none;width:32px;height:32px;color:var(--nic-red);font-size:1.3em;line-height:1}
-      button{transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
-      button:not(:disabled):hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
-      button:not(:disabled):active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
-      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(:disabled):active{transform:none}}
+      button:not(.tab){transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
+      button:not(.tab):enabled:hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
+      button:not(.tab):enabled:active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
+      .tabs .tab:hover,.tabs .tab:focus-visible{color:var(--nic-green)}
+      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(.tab):enabled:active{transform:none}}
     `;
     root.innerHTML = markup;
     root.prepend(style);
