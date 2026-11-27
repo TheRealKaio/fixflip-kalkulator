@@ -150,7 +150,7 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
     await page.locator('#nicContentView').waitFor({state:'visible'});
     assert.equal(await page.locator('[data-nic-explanation]').count(),0,'Settlement has one content card');
     assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0,'No forced read-more disclosure');
-    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),'Settlement has no horizontal overflow');
+    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),'Settlement has no horizontal overflow at '+viewport.width+'px');
    }
    await page.setViewportSize(viewport);
    admin=true;
@@ -168,7 +168,8 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert(!settings.content&&settings.meta.content.settlement.boxTitle==='Meine Mieterabrechnung','Legacy API retains the content transport');
    await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
    const edited=page.locator('#nicContentView');
-   assert.equal(await edited.locator('h2').innerText(),'Meine Mieterabrechnung');
+   assert.equal(await edited.locator(':scope > h2').innerText(),'Meine Mieterabrechnung');
+   assert(await edited.locator('[data-settlement]').getByRole('button',{name:'WEG-Abrechnung hochladen'}).isVisible(),'Customized introduction retains the working settlement wizard');
    assert((await edited.innerText()).includes('Meine eigene Einleitung'),'Edited settlement description is rendered in the single card');
    assert.equal(await page.evaluate(()=>window.explanationInjected),undefined,'Active HTML is removed');
    assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0);
