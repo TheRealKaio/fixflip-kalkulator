@@ -32,6 +32,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
 - Die Nebenkostenabrechnung startet mit ihrer Informationsseite und den beiden
   Erfassungswegen. „Abrechnung verlassen“ führt aus dem Arbeitsbereich zurück
   zu dieser Seite. Manuelle Erfassung beginnt bei den Abrechnungsdetails.
+- Mieterkontakte können aus der Kontaktliste geöffnet und bearbeitet werden.
+  Das Mietverhältnis enthält Beginn, Ende und Aktivstatus. Mietkonditionen
+  werden als Verlauf mit Gültigkeitsdatum, Kaltmiete und getrennten
+  Vorauszahlungen für Betriebs- und Heizkosten erfasst.
 - Der Footer steht einmal als eigenes Element in `.app`, außerhalb von `main`.
 - Die Anwendung füllt mindestens die Viewporthöhe. Kurze Inhalte wachsen zum
   Footer; lange Inhalte scrollen natürlich. Kein zusätzlicher innerer Seiten-Scrollbereich.

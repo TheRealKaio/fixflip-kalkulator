@@ -361,6 +361,42 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await manual.click();
    await page.waitForURL('**/nebenkostenabrechnung/?modus=manuell');
    assert.equal(await settlement.locator('#wizardYear').inputValue(),'2025','Leaving and reopening keeps the saved draft');
+   await settlement.getByRole('button',{name:'1. Kontakte'}).click();
+   const contacts = settlement.locator('#kontakte');
+   await contacts.getByLabel('Kontaktrolle').selectOption('Mieter/in');
+   await contacts.getByLabel('Vorname').fill('Mara');
+   await contacts.getByLabel('Nachname / Firmenname').fill('Test');
+   await contacts.getByLabel('Mietbeginn').fill('2025-01-01');
+   await contacts.getByLabel('Mietende').fill('2026-10-31');
+   await contacts.getByLabel('Aktiv').uncheck();
+   const periods = contacts.locator('.tenant-rent-period');
+   for (const [i, validFrom, coldRent, operatingCosts, heatingCosts] of [
+    [0,'2025-01-01','690.50','120','80'], [1,'2025-07-01','720','135','90']
+   ]) {
+    if(i) await contacts.getByRole('button',{name:'Mietanpassung hinzufügen'}).click();
+    const period = periods.nth(i);
+    await period.getByLabel('Gültig ab').fill(validFrom);
+    await period.getByLabel('Kaltmiete (€)').fill(coldRent);
+    await period.getByLabel('Betriebskosten (€)').fill(operatingCosts);
+    await period.getByLabel('Heizkosten (€)').fill(heatingCosts);
+   }
+   await contacts.getByRole('button',{name:'Kontakt übernehmen'}).click();
+   await page.reload();
+   await settlement.getByRole('button',{name:'1. Kontakte'}).click();
+   const edit = contacts.getByRole('button',{name:'Mara · Test · Mieter/in bearbeiten'});
+   await edit.click();
+   assert.equal(await contacts.getByLabel('Mietbeginn').inputValue(),'2025-01-01');
+   assert.equal(await contacts.getByLabel('Mietende').inputValue(),'2026-10-31');
+   assert.equal(await contacts.getByLabel('Aktiv').isChecked(),false);
+   assert.equal(await periods.count(),2);
+   assert.equal(await periods.nth(1).getByLabel('Gültig ab').inputValue(),'2025-07-01');
+   assert.equal(await periods.nth(0).getByLabel('Kaltmiete (€)').inputValue(),'690.50');
+   assert.equal(await periods.nth(1).getByLabel('Betriebskosten (€)').inputValue(),'135');
+   assert.equal(await periods.nth(1).getByLabel('Heizkosten (€)').inputValue(),'90');
+   await contacts.getByLabel('Vorname').fill('Maria');
+   await contacts.getByRole('button',{name:'Änderungen speichern'}).click();
+   assert.equal(await edit.count(),0);
+   assert.equal(await contacts.getByRole('button',{name:'Maria · Test · Mieter/in bearbeiten'}).count(),1);
    await exit.click();
    await page.waitForURL('**/nebenkostenabrechnung/');
    await page.goto('http://localhost/fixflip-kalkulator/',{waitUntil:'networkidle'});

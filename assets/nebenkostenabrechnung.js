@@ -382,6 +382,10 @@
     
     const contactCard = root.querySelector('#kontakte .grid article:last-child');
     const contactFields = Array.from(contactCard.querySelectorAll('input,select'));
+    contactFields.forEach((field, index) => {
+     field.id = 'settlementContactField' + index;
+     field.previousElementSibling.htmlFor = field.id;
+    });
     let contacts = [];
     function updateContacts() {
      for (const [id, role] of [['tenantContact','Mieter/in'],['unitTenant','Mieter/in'],['objectLandlord','Vermieter/in'],['objectManager','Verwalter/in']]) {
@@ -403,31 +407,164 @@
      return button;
     }
     const contactList = root.querySelector('#kontakte .grid article:first-child');
+    const contactTitle = contactCard.querySelector('h3');
+    const contactRole = contactFields[0];
+    const tenancyPanel = document.createElement('section');
+    tenancyPanel.hidden = true;
+    tenancyPanel.innerHTML = `<h4 class="section-title">Mietverhältnis</h4>
+     <div class="form-grid">
+      <div class="field"><label for="tenantStart">Mietbeginn</label><input type="date" id="tenantStart"></div>
+      <div class="field"><label for="tenantEnd">Mietende</label><input type="date" id="tenantEnd"></div>
+      <div class="field full"><label><input type="checkbox" id="tenantActive" checked> Aktiv</label></div>
+     </div>
+     <h4 class="section-title">Miete und Vorauszahlungen</h4>
+     <div id="tenantRentHistory"></div>`;
+    contactCard.append(tenancyPanel);
+    const tenantStart = byId('tenantStart');
+    const tenantEnd = byId('tenantEnd');
+    const tenantActive = byId('tenantActive');
+    const rentHistory = byId('tenantRentHistory');
+    const rentFields = [
+     ['validFrom', 'Gültig ab'], ['coldRent', 'Kaltmiete (€)'],
+     ['operatingCosts', 'Betriebskosten (€)'], ['heatingCosts', 'Heizkosten (€)']
+    ];
+    let editingContact = null;
+
+    function addRentPeriod(values = {}) {
+     const row = document.createElement('fieldset');
+     row.className = 'form-grid tenant-rent-period';
+     const legend = document.createElement('legend');
+     legend.textContent = 'Mietkonditionen';
+     row.append(legend);
+     for (const [key, caption] of rentFields) {
+      const label = document.createElement('label');
+      label.className = 'field';
+      const name = document.createElement('span');
+      name.textContent = caption;
+      const input = document.createElement('input');
+      input.name = key;
+      input.type = key === 'validFrom' ? 'date' : 'number';
+      if (input.type === 'number') {
+       input.min = '0';
+       input.step = '0.01';
+       input.inputMode = 'decimal';
+      }
+      input.value = values[key] ?? '';
+      label.append(name, input);
+      row.append(label);
+     }
+     const remove = action('Mietkonditionen entfernen', () => {
+      row.remove();
+      if (!rentHistory.childElementCount) addRentPeriod();
+      addPeriod.focus();
+     });
+     remove.classList.add('full');
+     row.append(remove);
+     rentHistory.append(row);
+     return row.querySelector('input');
+    }
+
+    const addPeriod = action('＋ Mietanpassung hinzufügen', () => addRentPeriod().focus());
+    addPeriod.classList.add('settlement-highlight');
+    tenancyPanel.append(addPeriod);
+    function syncTenancyPanel() {
+     tenancyPanel.hidden = contactRole.value !== 'Mieter/in';
+    }
+    contactRole.addEventListener('change', syncTenancyPanel);
+
+    function openContact(index = null) {
+     editingContact = index;
+     const contact = contacts[index];
+     const tenancy = contact?.[contactFields.length];
+     contactFields.forEach((field, i) => { field.value = contact?.[i] ?? ''; });
+     tenantStart.value = tenancy?.start ?? '';
+     tenantEnd.value = tenancy?.end ?? '';
+     tenantActive.checked = tenancy?.active ?? true;
+     rentHistory.replaceChildren();
+     for (const period of tenancy?.periods?.length ? tenancy.periods : [{}]) addRentPeriod(period);
+     syncTenancyPanel();
+     contactTitle.textContent = index === null ? 'Kontakt erfassen' : 'Kontakt bearbeiten';
+     saveContact.textContent = index === null ? 'Kontakt übernehmen' : 'Änderungen speichern';
+     contactStatus.textContent = '';
+    }
+
+    function readTenancy() {
+     if (!tenantStart.reportValidity() || !tenantEnd.reportValidity()) return null;
+     if (tenantStart.value && tenantEnd.value && tenantEnd.value < tenantStart.value) {
+      contactStatus.textContent = 'Das Mietende darf nicht vor dem Mietbeginn liegen.';
+      tenantEnd.focus();
+      return null;
+     }
+     const periods = [];
+     const dates = new Set();
+     for (const row of rentHistory.children) {
+      const inputs = [...row.querySelectorAll('input')];
+      if (inputs.every(input => !input.value && !input.validity.badInput)) continue;
+      for (const input of inputs) {
+       input.required = true;
+       const valid = input.reportValidity();
+       input.required = false;
+       if (!valid) return null;
+      }
+      const effectiveDate = inputs[0].value;
+      if (dates.has(effectiveDate)) {
+       contactStatus.textContent = 'Für dieses Gültigkeitsdatum gibt es bereits einen Eintrag.';
+       inputs[0].focus();
+       return null;
+      }
+      dates.add(effectiveDate);
+      periods.push(Object.fromEntries(inputs.map(input => [input.name, input.value])));
+     }
+     periods.sort((first, second) => first.validFrom.localeCompare(second.validFrom));
+     return {start: tenantStart.value, end: tenantEnd.value, active: tenantActive.checked, periods};
+    }
+
     const contactActions = document.createElement('div');
     contactActions.className = 'foot-actions';
     const contactStatus = document.createElement('span');
     contactStatus.setAttribute('role', 'status');
     const saveContact = action('Kontakt übernehmen', () => {
+     contactStatus.textContent = '';
      const contact = contactFields.map(field => field.value.trim());
-     if (!contact[0] || !(contact[1] || contact[2])) { contactFields[0].focus(); return; }
-     contacts.push(contact);
-     if (!saveDraft(contactStatus, '')) { contacts.pop(); return; }
-     contactFields.forEach(field => field.value = '');
+     if (!contact[0] || !(contact[1] || contact[2])) { contactRole.focus(); return; }
+     if (contact[0] === 'Mieter/in') {
+      const tenancy = readTenancy();
+      if (!tenancy) return;
+      contact.push(tenancy);
+     }
+     const index = editingContact ?? contacts.length;
+     const previous = contacts;
+     contacts = contacts.slice();
+     contacts[index] = contact;
+     if (!saveDraft(contactStatus, '')) { contacts = previous; return; }
+     openContact(editingContact === null ? null : index);
+     contactStatus.textContent = 'Kontakt gespeichert.';
      updateContacts();
      renderContacts();
+     renderUnits();
     });
     saveContact.classList.add('settlement-highlight');
     contactActions.append(contactStatus, saveContact);
     contactCard.append(contactActions);
-    byId('addContact').addEventListener('click', () => contactFields[0].focus());
+    openContact();
+    byId('addContact').addEventListener('click', () => {
+     openContact();
+     contactRole.focus();
+    });
     function renderContacts() {
      contactList.replaceChildren();
      if (!contacts.length) contactList.textContent = 'Noch keine Kontakte vorhanden';
-     for (const [role, first, last] of contacts) {
+     contacts.forEach(([role, first, last], index) => {
+      const label = [first,last,role].filter(Boolean).join(' · ');
+      const edit = action(label, () => {
+       openContact(index);
+       contactRole.focus();
+      });
+      edit.setAttribute('aria-label', label + ' bearbeiten');
       const line = document.createElement('p');
-      line.textContent = [first,last,role].filter(Boolean).join(' · ');
+      line.append(edit);
       contactList.append(line);
-     }
+     });
     }
     const notes = document.createElement('div');
     notes.setAttribute('role','status');
@@ -611,7 +748,7 @@
      header.querySelector('.a4-meta').textContent = [byId('wizardFrom').value,byId('wizardTo').value].filter(Boolean).join(' – ');
      const footer = previewOverlay.querySelector('.a4-footer');
      footer.children[0].textContent = ['Vermieter/in',...owner.slice(1,8)].filter(Boolean).join(' · ');
-     footer.children[1].textContent = owner.slice(8).some(Boolean) ? ['Bankverbindung',...owner.slice(8)].filter(Boolean).join(' · ') : '';
+     footer.children[1].textContent = owner.slice(8,12).some(Boolean) ? ['Bankverbindung',...owner.slice(8,12)].filter(Boolean).join(' · ') : '';
     }
     previewModes.append(action('Vermietervorschau', () => { landlordMode = true; fillPreview(); }));
     previewModes.firstElementChild.addEventListener('click', () => { landlordMode = false; fillPreview(); });
@@ -720,7 +857,7 @@
     exitActions.className = 'settlement-exit';
     exitActions.append(exit);
     root.querySelector('.tabs').before(exitActions);
-    style.textContent += '\n.settlement-exit{display:flex;justify-content:flex-end;padding:14px 20px 0}';
+    style.textContent += '\n.settlement-exit{display:flex;justify-content:flex-end;padding:14px 20px 0}.tenant-rent-period{border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}.tenant-rent-period legend{font-weight:650;padding:0 4px}.tenant-rent-period .field{min-width:0}.tenant-rent-period input{width:100%;min-width:0}.tenant-rent-period .btn{justify-self:start}#tenantRentHistory+.btn{margin-top:4px}#tenantActive{width:auto;min-height:0;margin-inline-end:4px}';
 
     if (!document.getElementById('settlement-print-style')) {
       const printStyle = document.createElement('style');
