@@ -1113,6 +1113,14 @@
         #abrechnung > .page-head .actions{width:100%;flex:0 1 100%;gap:4px}
         #abrechnung > .page-head .actions > .btn{width:auto;padding-inline:4px;font-size:clamp(10px,2.7cqi,13px)}
       }
+      :is(#kontakte,#objekte) > .page-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px 16px}
+      :is(#kontakte,#objekte) > .page-head > div:first-child{min-width:0}
+      :is(#kontakte,#objekte) > .page-head > .actions{justify-self:end;justify-content:flex-end;flex-wrap:nowrap;margin:0}
+      :is(#addContact,#addObject){white-space:nowrap;min-height:38px}
+      @container (max-width:420px){
+        :is(#kontakte,#objekte) > .page-head{column-gap:8px}
+        :is(#addContact,#addObject){padding-inline:8px;font-size:clamp(11px,3.2cqi,14px)}
+      }
       :is(#einheiten,#schluessel) > .page-head{flex-direction:row;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 16px}
       :is(#einheiten,#schluessel) > .page-head > div:first-child{flex:1 1 180px;min-width:0}
       .object-header-actions{display:flex;flex:0 1 auto;justify-content:flex-end;align-items:center;margin-inline-start:auto;max-width:100%;gap:8px}
