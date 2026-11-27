@@ -1027,6 +1027,11 @@
       .position-table{min-width:0}
       .position-table th{overflow-wrap:anywhere}
       .position-table .group-row td{padding:0;background:#eef0f2;border-radius:12px;overflow:hidden}
+      /* Match the 10px gap between the accordion groups in the details step. */
+      .position-table{border-spacing:0 10px}
+      @container (max-width:720px){
+        .position-table .group-row{margin-bottom:10px}
+      }
       .position-section-toggle{border-radius:12px}
       #abrechnung :is(button[data-add-position],#addReviewPosition){
         box-sizing:border-box;display:inline-flex;justify-content:flex-start;align-items:center;
