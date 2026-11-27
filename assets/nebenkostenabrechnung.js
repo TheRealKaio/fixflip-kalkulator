@@ -603,6 +603,7 @@
       periods.push(Object.fromEntries(inputs.map(input => [input.name, input.value])));
      }
      periods.sort((first, second) => first.validFrom.localeCompare(second.validFrom));
+     if(periods.some(p=>!tenantStart.value||p.validFrom<tenantStart.value||tenantEnd.value&&p.validFrom>tenantEnd.value)){contactStatus.textContent='Mietänderung muss innerhalb des Mietverhältnisses liegen.';return null;}
      return {start: tenantStart.value, end: tenantEnd.value, periods};
     }
 
@@ -620,10 +621,14 @@
       contact.push(tenancy);
      }
      const index = editingContact ?? contacts.length;
-     const previous = contacts;
-     contacts = contacts.slice();
-     contacts[index] = contact;
-     if (!saveDraft(contactStatus, '')) { contacts = previous; return; }
+     const previous=contacts,previousLeases=savedLeases,linked=savedLeases.filter(x=>String(x.tenantId)===String(index));
+     if(linked.length>1){contactStatus.textContent='Mehrere Mietverhältnisse vorhanden. Mietdaten bitte nicht über den Kontakt überschreiben.';return;}
+     if(linked.length&&contact[0]!=='Mieter/in'){contactStatus.textContent='Kontakt ist einem Mietverhältnis zugeordnet.';return;}
+     contacts=contacts.slice();contacts[index]=contact;
+     if(linked.length){const t=contact[contactFields.length];savedLeases=savedLeases.map(x=>x.id===linked[0].id?{...x,start:t.start,end:t.end,periods:t.periods}:x);}
+     const error=modelError(savedObjects,savedUnits,savedLeases);
+     if(error){contacts=previous;savedLeases=previousLeases;contactStatus.textContent=error;return;}
+     if(!saveDraft(contactStatus,'')){contacts=previous;savedLeases=previousLeases;return;}
      openContact(editingContact === null ? null : index);
      updateContacts();
      renderContacts();
@@ -638,6 +643,7 @@
      contactRole.focus();
     });
     function deleteContact(index, name) {
+     if(savedLeases.some(x=>String(x.tenantId)===String(index))||settlementArchive.some(x=>String(x.tenantId)===String(index))){contactStatus.textContent='Kontakt ist mit Mietverhältnissen oder Abrechnungen verknüpft und kann nicht gelöscht werden.';return;}
      if (!window.confirm('Kontakt „' + name + '“ löschen? Zugeordnete Objekte und Wohnungen bleiben bestehen.')) return;
      const previousContact = contacts[index];
      const previousUnits = savedUnits;
@@ -846,42 +852,70 @@
     const draftFields = [...root.querySelectorAll('#abrechnung input[id]:not([type=file]), #abrechnung select[id]:not(#objectMatch,#billingUnit,#billingUnitTenant), #objectDetailPanel input[id], #objectDetailPanel select[id], #schluessel select[id^=objectPositionKey]')];
     const storageKey = 'nic-settlement-draft-v1';
     let savedUnits = [];
+    let savedObjects=[], savedLeases=[];
+    let modelBlocked=false;
+    const modelId=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
+    const canonical=v=>String(v??'').trim().toLowerCase().replace(/\s+/g,' ');
+    const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+    const overlaps=(a,b)=>a.start<=(b.end||'9999-12-31')&&b.start<=(a.end||'9999-12-31');
+    function leaseError(lease,others){
+     if(!lease.start||!/^\d{4}-\d{2}-\d{2}$/.test(lease.start)||lease.end&&lease.end<lease.start)return 'Mietbeginn und Mietende prüfen.';
+     if(others.some(x=>x.id!==lease.id&&x.unitId===lease.unitId&&overlaps(x,lease)))return 'Zeitliche Überschneidung in derselben Einheit.';
+     const seen=new Set();
+     for(const p of lease.periods||[]){
+      if(!p.validFrom||p.validFrom<lease.start||lease.end&&p.validFrom>lease.end||seen.has(p.validFrom))return 'Mietänderung liegt außerhalb des Mietverhältnisses oder ist doppelt.';
+      if(['coldRent','operatingCosts','heatingCosts'].some(k=>p[k]===''||!Number.isFinite(Number(p[k]))||Number(p[k])<0))return 'Mietbeträge müssen vollständig und nicht negativ sein.';
+      seen.add(p.validFrom);
+     }return '';
+    }
+    function currentLease(unitId,date=todayISO()){return savedLeases.find(x=>x.unitId===unitId&&x.start<=date&&(!x.end||x.end>=date));}
+    function objectByName(name){return savedObjects.find(o=>canonical(o.fields.propertyName)===canonical(name));}
+    function modelError(objects,units,leases){
+     for(const o of objects){const max=Number(o.fields.propertyUnits),count=units.filter(u=>u.objectId===o.id).length;if(count&&(!Number.isInteger(max)||max<1||count>max))return 'Einheitenzahl für '+o.fields.propertyName+' fehlt oder ist überschritten.';}
+     for(const u of units)if(!objects.some(o=>o.id===u.objectId))return 'Einheit ohne eindeutiges Objekt.';
+     for(const lease of leases){if(!units.some(u=>u.id===lease.unitId)||!contacts[Number(lease.tenantId)])return 'Mietverhältnis ohne Einheit oder Kontakt.';const error=leaseError(lease,leases);if(error)return error;}
+     return '';
+    }
+    function setObjectOptions(select,placeholder,selected){select.replaceChildren(new Option(placeholder,''));for(const o of savedObjects)select.add(new Option(o.fields.propertyName,o.id));select.value=selected||'';}
+    function propertySnapshot(){return Object.fromEntries([...root.querySelectorAll('#objectDetailPanel input[id],#objectDetailPanel select[id]')].map(f=>[f.id,f.value]));}
+    let editingObjectId='';
+    function editObject(o){editingObjectId=o?.id||'';for(const [id,v] of Object.entries(o?.fields||Object.fromEntries(Object.keys(propertySnapshot()).map(k=>[k,'']))))if(byId(id))byId(id).value=v;byId('objectDetailPanel').style.display='block';}
+    function renderObjects(){
+     const list=root.querySelector('#objekte > article.card');list.replaceChildren();
+     if(!savedObjects.length){list.textContent='Noch keine Objekte vorhanden';return;}
+     for(const o of savedObjects){const link=action(o.fields.propertyName,()=>editObject(o));link.className='contact-edit archive-link';list.append(link);}
+    }
     const objectFields = [
      ['propertyName','objectName'], ['propertyStreet','objectStreet'],
      ['propertyPostal','objectPostal'], ['propertyCity','objectCity'],
      ['propertyArea','billingObjectArea'], ['propertyUnits','billingObjectUnits'],
      ['propertyOwnershipShare','billingObjectShare'], ['objectLandlord','billingObjectLandlord']
     ];
-    function refreshBillingChoices() {
-     const name = byId('propertyName').value.trim();
-     byId('objectMatch').replaceChildren(new Option('Objekt auswählen',''));
-     if (name) byId('objectMatch').add(new Option(name,name));
-     const keySelect=byId('keyObjectSelect');
-     const previousKeyObject=keySelect.value;
-     keySelect.replaceChildren(new Option('Objekt wählen',''));
-     if(name)keySelect.add(new Option(name,name));
-     if(name&&previousKeyObject===name)keySelect.value=name;
-     const unitSelect = byId('billingUnit');
-     unitSelect.replaceChildren(new Option('Wohnung auswählen',''));
-     for (const unit of savedUnits) unitSelect.add(new Option(unit.name,unit.name));
-     unitSelect.value = savedUnits.some(unit => unit.name === byId('reviewUnit').value) ? byId('reviewUnit').value : '';
+    function refreshBillingChoices(){
+     const object=objectByName(byId('objectName').value),keySelect=byId('keyObjectSelect');
+     setObjectOptions(byId('objectMatch'),'Objekt auswählen',object?.id);
+     setObjectOptions(keySelect,'Objekt wählen',keySelect.value);
+     const unitSelect=byId('billingUnit');unitSelect.replaceChildren(new Option('Wohnung auswählen',''));
+     for(const u of savedUnits.filter(u=>u.objectId===object?.id))unitSelect.add(new Option(u.name,u.id));
+     unitSelect.value=savedUnits.find(u=>u.objectId===object?.id&&canonical(u.name)===canonical(byId('reviewUnit').value))?.id||'';
     }
-    byId('objectMatch').addEventListener('change', event => {
-     if (!event.target.value) return;
-     for (const [source,target] of objectFields) byId(target).value = byId(source).value;
-     byId('billingLandlord').value = byId('billingObjectLandlord').value;
-     renderBillingContacts();refreshPositionAllocations();
+    byId('objectMatch').addEventListener('change',event=>{
+     const o=savedObjects.find(x=>x.id===event.target.value);if(!o)return;
+     for(const [source,target] of objectFields)byId(target).value=o.fields[source]||'';
+     byId('billingLandlord').value=byId('billingObjectLandlord').value;
+     for(const id of ['reviewUnit','unitLocation','billingUnitArea','billingUnitShare','tenantContact'])byId(id).value='';
+     refreshBillingChoices();renderBillingContacts();refreshPositionAllocations();
     });
     byId('billingObjectLandlord').addEventListener('change', () => {
      byId('billingLandlord').value = byId('billingObjectLandlord').value;
      renderBillingContacts();
     });
     byId('billingUnit').addEventListener('change', event => {
-     const unit = savedUnits.find(item => item.name === event.target.value);
+     const unit = savedUnits.find(item => item.id === event.target.value);
      if (!unit) return;
      for (const [id,value] of Object.entries({
       reviewUnit:unit.name, unitLocation:unit.floor, billingUnitArea:unit.area,
-      billingUnitShare:unit.share, tenantContact:unit.tenant
+      billingUnitShare:unit.share, tenantContact:currentLease(unit.id,byId('wizardFrom').value||todayISO())?.tenantId||''
      })) byId(id).value = value ?? '';
      renderBillingContacts();refreshPositionAllocations();
     });
@@ -931,29 +965,21 @@
      byId('tenantContact').value = event.target.value;
      renderBillingContacts();
     });
-    function renderUnits() {
-     const objectName = byId('propertyName').value.trim();
-     const rows = byId('unitRows');
-     const unitObjectSelect=byId('unitObjectSelect');
-     const previousUnitObject=unitObjectSelect.value;
-     unitObjectSelect.replaceChildren(new Option('Objekt wählen',''));
-     if(objectName)unitObjectSelect.add(new Option(objectName,objectName));
-     if(objectName&&previousUnitObject===objectName)unitObjectSelect.value=objectName;
+    function renderUnits(){
+     const select=byId('unitObjectSelect'),previous=select.value;
+     setObjectOptions(select,'Objekt wählen',previous);
+     const units=savedUnits.filter(u=>u.objectId===select.value),rows=byId('unitRows');
      rows.replaceChildren();
-     for (const unit of savedUnits) {
-      const row = rows.insertRow();
-      const contact = unit.tenant === '' ? null : contacts[Number(unit.tenant)];
-      for (const value of [unit.name, unit.floor, unit.area ? unit.area + ' m²' : '', unit.share,
-       contact ? [contact[1],contact[2]].filter(Boolean).join(' ') : '']) row.insertCell().textContent = value || '';
+     for(const u of units){
+      const row=rows.insertRow(),lease=currentLease(u.id),contact=lease?contacts[Number(lease.tenantId)]:null;
+      for(const v of [u.name,u.floor,u.area?u.area+' m²':'',u.share,contact?[contact[1],contact[2]].filter(Boolean).join(' '):''])row.insertCell().textContent=v||'';
      }
-     if (!savedUnits.length) {
-      const cell = rows.insertRow().insertCell();
-      cell.colSpan = 5;
-      cell.textContent = 'Noch keine Einheiten erfasst.';
-     }
-     byId('unitCount').textContent = savedUnits.length;
-     refreshBillingChoices();
+     if(!units.length){const cell=rows.insertRow().insertCell();cell.colSpan=5;cell.textContent='Noch keine Einheiten erfasst.';}
+     byId('unitCount').textContent=units.length;byId('rentedCount').textContent=units.filter(u=>currentLease(u.id)).length;
+     renderObjects();refreshBillingChoices();
     }
+    byId('unitObjectSelect').addEventListener('change',renderUnits);
+    byId('addObject').addEventListener('click',()=>editObject(null));
     byId('addUnit').addEventListener('click', () => byId('unitName').focus());
     byId('saveUnit').addEventListener('click', () => {
      const status = byId('unitSaveStatus');
@@ -971,9 +997,20 @@
       byId('unitName').focus();
       return;
      }
-     const previous = savedUnits;
-     savedUnits = [...savedUnits.filter(saved => saved.name !== unit.name), unit];
-     if (!saveDraft(status, '')) { savedUnits = previous; return; }
+     const objectId=byId('unitObjectSelect').value,existing=savedUnits.find(u=>u.objectId===objectId&&canonical(u.name)===canonical(unit.name));
+     const previous=savedUnits,previousLeases=savedLeases;
+     unit.id=existing?.id||modelId();unit.objectId=objectId;
+     if(existing){status.textContent='Einheit bereits vorhanden. Kein automatisches Überschreiben.';return;}
+     let nextLeases=[...savedLeases];
+     if(unit.tenant!==''){
+      const t=contacts[Number(unit.tenant)]?.[contactFields.length];
+      if(!t?.start){status.textContent='Bitte zuerst Mietbeginn beim Kontakt erfassen.';return;}
+      nextLeases.push({id:modelId(),unitId:unit.id,tenantId:unit.tenant,start:t.start,end:t.end||'',periods:t.periods||[]});
+     }
+     savedUnits=[...savedUnits,unit];savedLeases=nextLeases;
+     const error=modelError(savedObjects,savedUnits,savedLeases);
+     if(error){savedUnits=previous;savedLeases=previousLeases;status.textContent=error;return;}
+     if(!saveDraft(status,'')){savedUnits=previous;savedLeases=previousLeases;return;}
      status.hidden = true;
      for (const id of ['unitName', 'unitFloor', 'unitArea', 'unitShare', 'unitTenant','unitRooms','unitGardenArea']) byId(id).value = '';
      for (const id of ['unitBalcony','unitCellar','unitParking']) byId(id).checked = false;
@@ -982,7 +1019,9 @@
     });
     function saveDraft(status, message) {
      try {
+      if(modelBlocked){status.textContent='Altdatenkonflikt: Speicherung gesperrt. Bitte Daten prüfen.';return false;}
       localStorage.setItem(storageKey, JSON.stringify({
+       modelVersion:2, objects:savedObjects, leases:savedLeases,
        fields: Object.fromEntries(draftFields.map(field => [field.id, field.value])),
        references: Object.fromEntries(Object.entries(balanceFields).map(([key, fields]) => [key, fields.map(field => field.input.value)])),
        contacts, units: savedUnits, rows: reviewRows().map(row => [row.dataset.category, valuesOf(row), positionFields.filter(field => row.querySelector(".review-" + field).getAttribute("aria-invalid") === "true")])
@@ -1198,17 +1237,33 @@
      for (const field of root.querySelectorAll('#objectDetailPanel input[type="number"]')) {
       if (!field.reportValidity()) return;
      }
-     if (saveDraft(byId('propertySaveStatus'), '')) renderUnits();
+     const status=byId('propertySaveStatus'),fields=propertySnapshot();
+     if(!fields.propertyName.trim()||!Number.isInteger(Number(fields.propertyUnits))||Number(fields.propertyUnits)<1){status.textContent='Objektbezeichnung und Anzahl Wohneinheiten sind erforderlich.';return;}
+     if(savedObjects.some(o=>o.id!==editingObjectId&&canonical(o.fields.propertyName)===canonical(fields.propertyName))){status.textContent='Objekt bereits vorhanden.';return;}
+     const previous=savedObjects,id=editingObjectId||modelId();
+     savedObjects=[...savedObjects.filter(o=>o.id!==id),{id,fields}];
+     const error=modelError(savedObjects,savedUnits,savedLeases);
+     if(error){savedObjects=previous;status.textContent=error;return;}
+     if(saveDraft(status,'')){editingObjectId=id;renderUnits();}else savedObjects=previous;
     });
     try {
      const saved = JSON.parse(localStorage.getItem(storageKey));
      if (saved) {
       contacts = Array.isArray(saved.contacts) ? saved.contacts : [];
       savedUnits = Array.isArray(saved.units) ? saved.units : [];
+      if(saved.modelVersion===2){savedObjects=Array.isArray(saved.objects)?saved.objects:[];savedLeases=Array.isArray(saved.leases)?saved.leases:[];}
+      else{
+       const backupKey=storageKey+'-backup-v1';
+       if(!localStorage.getItem(backupKey))localStorage.setItem(backupKey,JSON.stringify(saved));
+       const fields=Object.fromEntries(Object.keys(propertySnapshot()).map(id=>[id,saved.fields?.[id]||'']));
+       if(fields.propertyName){const id=modelId();savedObjects=[{id,fields}];savedUnits=savedUnits.map(u=>({...u,id:modelId(),objectId:id}));}
+       for(const u of savedUnits){const t=u.tenant!==''?contacts[Number(u.tenant)]?.[contactFields.length]:null;if(t?.start)savedLeases.push({id:modelId(),unitId:u.id,tenantId:u.tenant,start:t.start,end:t.end||'',periods:t.periods||[]});else if(u.tenant!==''&&u.tenant!==undefined)modelBlocked=true;}
+       if(modelError(savedObjects,savedUnits,savedLeases))modelBlocked=true;
+      }
       for (const [key, fields] of Object.entries(balanceFields)) fields.forEach(({input}, index) => { input.value = saved.references?.[key]?.[index] || ''; });
       updateContacts();
       renderContacts();
-      for (const field of draftFields) field.value = saved.fields[field.id] ?? '';
+      for (const field of draftFields) if(Object.hasOwn(saved.fields,field.id))field.value=saved.fields[field.id]??'';
       if (!Object.hasOwn(saved.fields,'billingLandlord')) byId('billingLandlord').value = byId('objectLandlord').value;
       byId('positionTemplateBody').querySelectorAll('.review-position-row').forEach(row => row.remove());
       for (const [block, values, flagged = []] of saved.rows) {
@@ -1221,6 +1276,7 @@
     } catch { notes.textContent = 'Der gespeicherte Entwurf konnte nicht geladen werden.'; }
     
     renderUnits();
+    if(modelBlocked)notes.textContent='Altdaten enthalten einen Konflikt. Originaldaten wurden gesichert; Änderungen sind gesperrt.';
     renderBillingContacts();
     updateBalance();
     byId('unitReviewTable').addEventListener('input', updateBalance);
