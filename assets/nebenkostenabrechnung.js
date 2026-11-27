@@ -458,24 +458,56 @@
     const tenancyPanel = document.createElement('section');
     tenancyPanel.id = 'tenantDetails';
     tenancyPanel.hidden = true;
-    tenancyPanel.innerHTML = `<h4 class="section-title">Mietverhältnis</h4>
+    tenancyPanel.innerHTML = `<details class="billing-group"><summary>Mietverhältnis</summary>
      <div class="form-grid">
       <div class="field"><label for="tenantStart">Mietbeginn</label><input type="date" id="tenantStart"></div>
       <div class="field"><label for="tenantEnd">Mietende</label><input type="date" id="tenantEnd"></div>
-      <div class="field full"><label><input type="checkbox" id="tenantActive" checked> Aktiv</label></div>
-     </div>
-     <h4 class="section-title">Miete und Vorauszahlungen</h4>
-     <div id="tenantRentHistory"></div>`;
+     </div></details>
+     <details class="billing-group"><summary>Miete und Vorauszahlungen</summary><div id="tenantRentHistory"></div></details>
+     <details class="billing-group"><summary>Mieterabrechnungen</summary><div id="tenantSettlementHistory"></div></details>`;
     contactCard.append(tenancyPanel);
     const tenantStart = byId('tenantStart');
     const tenantEnd = byId('tenantEnd');
-    const tenantActive = byId('tenantActive');
     const rentHistory = byId('tenantRentHistory');
     const rentFields = [
      ['validFrom', 'Gültig ab'], ['coldRent', 'Kaltmiete (€)'],
      ['operatingCosts', 'Betriebskosten (€)'], ['heatingCosts', 'Heizkosten (€)']
     ];
     let editingContact = null;
+    const archiveKey='nic-settlement-archive-v1';
+    let settlementArchive=[];
+    try{const records=JSON.parse(localStorage.getItem(archiveKey)||'[]');if(Array.isArray(records))settlementArchive=records;}catch{}
+    function renderTenantSettlementHistory(index){
+     const container=byId('tenantSettlementHistory');
+     container.replaceChildren();
+     const records=index===null?[]:settlementArchive.filter(record=>String(record.tenantId)===String(index));
+     renderArchiveLinks(container,records);
+    }
+    function renderArchiveLinks(container,records){
+     if(!records.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Noch keine gespeicherten Mieterabrechnungen.';container.append(empty);return;}
+     for(const record of [...records].sort((a,b)=>String(b.year).localeCompare(String(a.year))||String(b.savedAt).localeCompare(String(a.savedAt)))){
+      const link=action('Mieterabrechnung '+record.year+' · '+record.unit+' · '+record.tenantName,()=>showArchivedSettlement(record));
+      link.className='contact-edit archive-link';container.append(link);
+     }
+    }
+    function showArchivedSettlement(record){
+     archivePanel.hidden=false;
+     archiveContent.replaceChildren();
+     const heading=document.createElement('h3');heading.textContent='Mieterabrechnung '+record.year;archiveContent.append(heading);
+     for(const block of record.blocks||[]){
+      const part=document.createElement('div');part.className='archive-block';part.textContent=block;archiveContent.append(part);
+     }
+     archivePanel.scrollIntoView({block:'start'});
+    }
+    const archivePanel=document.createElement('article');archivePanel.className='card settlement-archive';archivePanel.hidden=true;
+    const archiveContent=document.createElement('div');
+    archivePanel.append(action('Schließen',()=>{archivePanel.hidden=true}),archiveContent);
+    root.querySelector('.shell').after(archivePanel);
+    byId('showReceipts').addEventListener('click',()=>{
+     archivePanel.hidden=false;archiveContent.replaceChildren();
+     const heading=document.createElement('h3');heading.textContent='Gespeicherte Abrechnungen';archiveContent.append(heading);
+     renderArchiveLinks(archiveContent,settlementArchive);archivePanel.scrollIntoView({block:'start'});
+    });
 
     function addRentPeriod(values = {}) {
      const row = document.createElement('fieldset');
@@ -530,20 +562,23 @@
      contactFields.forEach((field, i) => { field.value = contact?.[i] ?? ''; });
      tenantStart.value = tenancy?.start ?? '';
      tenantEnd.value = tenancy?.end ?? '';
-     tenantActive.checked = tenancy?.active ?? true;
      rentHistory.replaceChildren();
      for (const period of tenancy?.periods?.length ? tenancy.periods : [{}]) addRentPeriod(period);
      syncTenancyPanel();
+     tenancyPanel.querySelectorAll('details').forEach(group=>group.open=false);
+     renderTenantSettlementHistory(index);
      contactTitle.textContent = index === null ? 'Kontakt erfassen' : 'Kontakt bearbeiten';
      saveContact.textContent = index === null ? 'Kontakt übernehmen' : 'Änderungen speichern';
      contactStatus.textContent = '';
     }
 
     function readTenancy() {
-     if (!tenantStart.reportValidity() || !tenantEnd.reportValidity()) return null;
+     for(const field of [tenantStart,tenantEnd]){
+      if(!field.validity.valid){field.closest('details').open=true;field.reportValidity();return null;}
+     }
      if (tenantStart.value && tenantEnd.value && tenantEnd.value < tenantStart.value) {
       contactStatus.textContent = 'Das Mietende darf nicht vor dem Mietbeginn liegen.';
-      tenantEnd.focus();
+      tenantEnd.closest('details').open=true;tenantEnd.focus();
       return null;
      }
      const periods = [];
@@ -553,6 +588,7 @@
       if (inputs.every(input => !input.value && !input.validity.badInput)) continue;
       for (const input of inputs) {
        input.required = true;
+       if(!input.validity.valid)input.closest('details').open=true;
        const valid = input.reportValidity();
        input.required = false;
        if (!valid) return null;
@@ -560,14 +596,14 @@
       const effectiveDate = inputs[0].value;
       if (dates.has(effectiveDate)) {
        contactStatus.textContent = 'Für dieses Gültigkeitsdatum gibt es bereits einen Eintrag.';
-       inputs[0].focus();
+       inputs[0].closest('details').open=true;inputs[0].focus();
        return null;
       }
       dates.add(effectiveDate);
       periods.push(Object.fromEntries(inputs.map(input => [input.name, input.value])));
      }
      periods.sort((first, second) => first.validFrom.localeCompare(second.validFrom));
-     return {start: tenantStart.value, end: tenantEnd.value, active: tenantActive.checked, periods};
+     return {start: tenantStart.value, end: tenantEnd.value, periods};
     }
 
     const contactActions = document.createElement('div');
@@ -1019,6 +1055,20 @@
     previewModes.append(action('Vermietervorschau', () => { landlordMode = true; fillPreview(); }));
     previewModes.firstElementChild.addEventListener('click', () => { landlordMode = false; fillPreview(); });
     byId('showPreview').addEventListener('click', () => { landlordMode = false; fillPreview(); });
+    const archiveStatus=document.createElement('p');archiveStatus.setAttribute('role','status');
+    const archiveSave=action('Abrechnung lokal speichern',()=>{
+     const tenantId=byId('tenantContact').value,tenant=contacts[Number(tenantId)];
+     const year=byId('wizardYear').value,unit=byId('reviewUnit').value.trim();
+     if(tenantId===''||!tenant||!year||!unit||!byId('objectName').value.trim()||!byId('wizardFrom').value||!byId('wizardTo').value||!reviewRows().some(row=>row.dataset.category==='umlagefaehig'&&validReviewNumber(valuesOf(row)[5]))){archiveStatus.textContent='Bitte Objekt, Wohnung, Mieter, Abrechnungsperiode und Kostenpositionen vervollständigen.';return;}
+     landlordMode=false;fillPreview();
+     const doc=previewOverlay.querySelector('.tenant-doc');
+     const blocks=[...doc.children].map(node=>node.innerText||node.textContent);
+     const record={id:crypto.randomUUID?.()||String(Date.now()),tenantId,tenantName:tenant.slice(1,3).filter(Boolean).join(' '),year,unit,savedAt:new Date().toISOString(),blocks};
+     try{const next=[...settlementArchive,record];localStorage.setItem(archiveKey,JSON.stringify(next));settlementArchive=next;archiveStatus.textContent='Abrechnungsvorschau lokal gespeichert.';renderTenantSettlementHistory(editingContact);}
+     catch{archiveStatus.textContent='Die Abrechnung konnte nicht gespeichert werden.';}
+    });
+    archiveSave.classList.add('settlement-highlight');
+    byId('previewReady').after(archiveSave,archiveStatus);
     root.querySelector('[data-page="abrechnung"]').click();
     setWizardStep(0);
 
@@ -1162,6 +1212,10 @@
       .billing-group[open] summary::after{content:'−'}
       .billing-group > :not(summary){margin-bottom:12px}
       .billing-group .field{min-width:0}
+      .archive-link{display:block;text-align:left;margin:8px 0;overflow-wrap:anywhere}
+      .archive-block{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
+      .settlement-archive{margin-top:16px}
+      #tenantDetails .billing-group{margin-bottom:10px}
       .unit-features{margin-top:16px}
       .unit-features .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .unit-feature-checks{display:flex;flex-direction:row;flex-wrap:wrap;gap:12px 18px;grid-column:1/-1}
@@ -1312,7 +1366,6 @@
       #tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       #tenantDetails .field,#tenantDetails .field input{min-width:0}
       #tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}
-      #tenantActive{width:auto;min-height:0;margin-inline-end:4px}
       .tenant-rent-period{position:relative;border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}
       .tenant-rent-period legend{font-weight:650;padding:0 4px}
       .rent-period-delete{position:absolute;top:-12px;right:8px;background:var(--nic-card,#fff)}
