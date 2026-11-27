@@ -859,17 +859,18 @@ runs:
         node --check _site/nebenkostenabrechnung.js
         python - <<'PY'
         from pathlib import Path
-        page = Path('_site/nebenkostenabrechnung/index.html')
-        if not page.exists():
+        root = Path('_site')
+        if not (root / 'nebenkostenabrechnung/index.html').exists():
             raise SystemExit('Missing Nebenkostenabrechnung route')
-        html = page.read_text(encoding='utf-8')
         tag = '<script defer src="/nebenkostenabrechnung.js"></script>'
-        if tag not in html:
+        for page in root.rglob('*.html'):
+            html = page.read_text(encoding='utf-8')
+            if 'unified-calculator-navigation.js' not in html or tag in html:
+                continue
             if '</head>' not in html:
-                raise SystemExit('Missing head in Nebenkostenabrechnung route')
-            html = html.replace('</head>', tag + '</head>', 1)
-            page.write_text(html, encoding='utf-8')
-        print('Settlement workflow loaded on Nebenkostenabrechnung route')
+                raise SystemExit(f'Missing head in {page}')
+            page.write_text(html.replace('</head>', tag + '</head>', 1), encoding='utf-8')
+        print('Settlement workflow loaded with shared calculator navigation')
         PY
         python scripts/fingerprint_assets.py _site
         NODE_PATH=/tmp/nic-browser/node_modules node scripts/verify_financing_percent_slider.cjs
