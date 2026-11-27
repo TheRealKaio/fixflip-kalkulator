@@ -387,13 +387,17 @@
      field.previousElementSibling.htmlFor = field.id;
     });
     let contacts = [];
+    const contactSelections = [
+     ['tenantContact','Mieter/in'], ['unitTenant','Mieter/in'],
+     ['objectLandlord','Vermieter/in'], ['objectManager','Verwalter/in']
+    ];
     function updateContacts() {
-     for (const [id, role] of [['tenantContact','Mieter/in'],['unitTenant','Mieter/in'],['objectLandlord','Vermieter/in'],['objectManager','Verwalter/in']]) {
+     for (const [id, role] of contactSelections) {
       const select = byId(id);
       const previous = select.value;
       select.replaceChildren(new Option('Kontakt auswählen',''));
       contacts.forEach((contact, index) => {
-       if (contact[0] === role) select.add(new Option([contact[1],contact[2]].filter(Boolean).join(' '),String(index)));
+       if (contact?.[0] === role) select.add(new Option([contact[1],contact[2]].filter(Boolean).join(' '),String(index)));
       });
       select.value = previous;
      }
@@ -539,7 +543,6 @@
      contacts[index] = contact;
      if (!saveDraft(contactStatus, '')) { contacts = previous; return; }
      openContact(editingContact === null ? null : index);
-     contactStatus.textContent = 'Kontakt gespeichert.';
      updateContacts();
      renderContacts();
      renderUnits();
@@ -552,20 +555,50 @@
      openContact();
      contactRole.focus();
     });
+    function deleteContact(index, name) {
+     if (!window.confirm('Kontakt „' + name + '“ löschen? Zugeordnete Objekte und Wohnungen bleiben bestehen.')) return;
+     const previousContact = contacts[index];
+     const previousUnits = savedUnits;
+     const selected = contactSelections.map(([id]) => byId(id)).filter(field => field.value === String(index));
+     for (const field of selected) field.value = '';
+     // The index is referenced by existing records. Keep it vacant so later contacts get new indices.
+     contacts[index] = null;
+     savedUnits = savedUnits.map(unit => unit.tenant === String(index) ? {...unit, tenant: ''} : unit);
+     if (!saveDraft(contactStatus, '')) {
+      contacts[index] = previousContact;
+      savedUnits = previousUnits;
+      for (const field of selected) field.value = String(index);
+      return;
+     }
+     if (editingContact === index) openContact();
+     updateContacts();
+     renderContacts();
+     renderUnits();
+     byId('addContact').focus();
+    }
     function renderContacts() {
      contactList.replaceChildren();
-     if (!contacts.length) contactList.textContent = 'Noch keine Kontakte vorhanden';
-     contacts.forEach(([role, first, last], index) => {
+     contacts.forEach((contact, index) => {
+      if (!contact) return;
+      const [role, first, last] = contact;
+      const name = [first,last].filter(Boolean).join(' ');
       const label = [first,last,role].filter(Boolean).join(' · ');
       const edit = action(label, () => {
        openContact(index);
        contactRole.focus();
       });
+      edit.className = 'contact-edit';
       edit.setAttribute('aria-label', label + ' bearbeiten');
-      const line = document.createElement('p');
-      line.append(edit);
+      const remove = action('×', () => deleteContact(index, name));
+      remove.className = 'contact-delete';
+      remove.setAttribute('aria-label', name + ' löschen');
+      remove.title = 'Kontakt löschen';
+      const line = document.createElement('div');
+      line.className = 'contact-row';
+      line.append(edit, remove);
       contactList.append(line);
      });
+     if (!contactList.childElementCount) contactList.textContent = 'Noch keine Kontakte vorhanden';
     }
     const notes = document.createElement('div');
     notes.setAttribute('role','status');
@@ -706,7 +739,7 @@
     try {
      const saved = JSON.parse(localStorage.getItem(storageKey));
      if (saved) {
-      contacts = saved.contacts;
+      contacts = Array.isArray(saved.contacts) ? saved.contacts : [];
       savedUnits = Array.isArray(saved.units) ? saved.units : [];
       for (const [key, fields] of Object.entries(balanceFields)) fields.forEach(({input}, index) => { input.value = saved.references?.[key]?.[index] || ''; });
       updateContacts();
@@ -841,7 +874,17 @@
     workspace.setAttribute('aria-label', 'Nebenkostenabrechnung');
     const root = workspace.attachShadow({mode: 'open'});
     const style = document.createElement('style');
-    style.textContent = styles;
+    // The workspace uses a shadow root, so the shared page button states need a local rule.
+    style.textContent = styles + `
+      .contact-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--nic-border);padding:4px 0}
+      .contact-edit,.contact-delete{color:var(--nic-ink);background:transparent;border:0;cursor:pointer}
+      .contact-edit{min-width:0;padding:6px 4px;text-align:left;font-size:var(--nic-subtext-font-size);font-weight:650;overflow-wrap:anywhere}
+      .contact-delete{flex:none;width:32px;height:32px;color:var(--nic-red);font-size:1.3em;line-height:1}
+      button{transition:filter .14s ease,box-shadow .14s ease,transform .12s ease}
+      button:not(:disabled):hover{filter:brightness(.94);box-shadow:0 5px 12px rgba(15,23,42,.16)}
+      button:not(:disabled):active{transform:translateY(2px);filter:brightness(.88);box-shadow:0 1px 2px rgba(15,23,42,.16)}
+      @media(prefers-reduced-motion:reduce){button{transition:none}button:not(:disabled):active{transform:none}}
+    `;
     root.innerHTML = markup;
     root.prepend(style);
     const exit = document.createElement('button');

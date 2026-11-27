@@ -33,7 +33,10 @@ Builds sind keine Begründung, erneut eine abweichende Seitenvariante einzuführ
   Erfassungswegen. Links über den Menüpunkten führt „Abrechnung verlassen“
   als rahmenlose Schaltfläche mit kleinem Pfeil nach links zurück zu dieser
   Seite. Manuelle Erfassung beginnt bei den Abrechnungsdetails.
-- Mieterkontakte können aus der Kontaktliste geöffnet und bearbeitet werden.
+- Kontakte öffnen sich per Klick auf ihren Namen. Die Zeilen werden durch
+  eine feine graue Linie getrennt. Ein rotes X löscht den Kontakt nach
+  Bestätigung. Die Schaltflächen im Arbeitsbereich verwenden dieselbe
+  Schatten- und Klickanimation wie die übrigen Website-Buttons.
   Das Mietverhältnis enthält Beginn, Ende und Aktivstatus. Mietkonditionen
   werden als Verlauf mit Gültigkeitsdatum, Kaltmiete und getrennten
   Vorauszahlungen für Betriebs- und Heizkosten erfasst.
