@@ -367,9 +367,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    await contacts.getByLabel('Kontaktrolle').selectOption('Mieter/in');
    await contacts.getByLabel('Vorname').fill('Mara');
    await contacts.getByLabel('Nachname / Firmenname').fill('Test');
-   const tenancyGroup=contacts.locator('#tenantDetails details').filter({has:contacts.locator('summary').filter({hasText:'Mietverhältnis'})});
-   const rentGroup=contacts.locator('#tenantDetails details').filter({has:contacts.locator('summary').filter({hasText:'Miete und Vorauszahlungen'})});
-   const historyGroup=contacts.locator('#tenantDetails details').filter({has:contacts.locator('summary').filter({hasText:'Mieterabrechnungen'})});
+   const tenancyGroup=contacts.locator('#tenantDetails > details:nth-of-type(1)');
+   const rentGroup=contacts.locator('#tenantDetails > details:nth-of-type(2)');
+   const historyGroup=contacts.locator('#tenantDetails > details:nth-of-type(3)');
    assert.equal(await contacts.locator('#tenantDetails details[open]').count(),0,'Tenant groups start closed');
    await tenancyGroup.locator('summary').click();
    await contacts.getByLabel('Mietbeginn').fill('2025-01-01');
