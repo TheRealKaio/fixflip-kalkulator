@@ -39,12 +39,12 @@
      const positionHint=root.getElementById('positionModeHint');
      if(mode==='manual'){
       if(detailsHint)detailsHint.textContent='Gib Objekt, Abrechnungsjahr und Wohnung ein. Gehe anschließend zu den Kostenpositionen.';
-      if(positionHint)positionHint.textContent='Die Standardpositionen sind vorbereitet. Beträge und Anteile bleiben leer und werden von dir erfasst.';
+      if(positionHint){positionHint.textContent='';positionHint.hidden=true;}
       setWizardStep(1,moveFocus);
      }else{
       if(status)status.textContent='Belegerfassung: Der WEG-Beleg wird zuerst eingelesen. Danach bestätigst du die erkannten Angaben und prüfst die Positionen.';
       if(detailsHint)detailsHint.textContent='Nach dem Einlesen werden eindeutig erkannte Angaben vorgeschlagen. Eine unsichere Wohnungszuordnung wird zur Bestätigung angezeigt; weitere Einheiten werden nicht angelegt.';
-      if(positionHint)positionHint.textContent='Erkannte Positionen und Beträge werden in die gleiche Vorlage übernommen. Nicht erkannte Zeilen kannst du ergänzen.';
+      if(positionHint){positionHint.hidden=false;positionHint.textContent='Erkannte Positionen und Beträge werden in die gleiche Vorlage übernommen. Nicht erkannte Zeilen kannst du ergänzen.';}
       setWizardStep(0);
      }
     }
@@ -1026,7 +1026,16 @@
       #abrechnung .wizard-panel[data-panel="2"] .position-table-wrap{overflow:visible;max-height:none;container-type:inline-size}
       .position-table{min-width:0}
       .position-table th{overflow-wrap:anywhere}
-      .position-table .group-row td{padding:0;background:#eef0f2}
+      .position-table .group-row td{padding:0;background:#eef0f2;border-radius:12px;overflow:hidden}
+      .position-section-toggle{border-radius:12px}
+      #abrechnung :is(button[data-add-position],#addReviewPosition){
+        box-sizing:border-box;display:inline-flex;justify-content:center;align-items:center;
+        width:300px;max-width:100%;min-height:42px;white-space:normal;text-align:center;
+        background:#f6c944;border-color:#e1b52b;color:#302600;
+      }
+      #abrechnung :is(button[data-add-position],#addReviewPosition):hover{background:#edbd2f}
+      #abrechnung .position-table .add-row td{padding-inline:0}
+      #abrechnung #positionModeHint[hidden]{display:none!important}
       .position-section-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:12px 10px;cursor:pointer;box-shadow:none}
       .position-section-toggle span:first-child{min-width:0;overflow-wrap:anywhere}
       .position-section-symbol{margin-inline-start:auto;flex:none;font-size:1.2em;line-height:1;color:var(--nic-green)}
