@@ -168,12 +168,12 @@ const routes={budget:'budget',own:'eigennutzung',rent:'vermietung',flip:'fix-fli
    assert(!settings.content&&settings.meta.content.settlement.boxTitle==='Meine Mieterabrechnung','Legacy API retains the content transport');
    await page.goto('http://localhost/nebenkostenabrechnung/',{waitUntil:'networkidle'});
    const edited=page.locator('#nicContentView');
-   assert.equal(await edited.locator(':scope > h2').innerText(),'Meine Mieterabrechnung');
+   assert.equal(await edited.locator(':scope > h2').count(),0,'The editorial title is replaced when the settlement workspace opens');
    assert(await edited.locator('[data-settlement]').getByRole('button',{name:'WEG-Abrechnung hochladen'}).isVisible(),'Customized introduction retains the working settlement wizard');
-   assert((await edited.innerText()).includes('Meine eigene Einleitung'),'Edited settlement description is rendered in the single card');
+   assert(!(await edited.innerText()).includes('Meine eigene Einleitung'),'Editorial content stays out of the open settlement workspace');
    assert.equal(await page.evaluate(()=>window.explanationInjected),undefined,'Active HTML is removed');
    assert.equal(await page.locator('#nicContentView summary').filter({hasText:'Weiterlesen'}).count(),0);
-   assert(await page.getByRole('heading',{name:'Meine Details'}).isVisible(),'Legacy read-more content is visible without a click');
+   assert.equal(await page.getByRole('heading',{name:'Meine Details'}).count(),0,'Editorial details are not shown in the open workspace');
    await page.goto('http://localhost/budget/',{waitUntil:'networkidle'});
    assert.equal(await page.locator('[data-nic-explanation] h2').innerText(),'Mein Budgettext','Another box survives save and full reload');
    assert.deepEqual(errors,[]);await page.close();
