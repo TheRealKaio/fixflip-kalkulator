@@ -1973,6 +1973,8 @@
       .settings-dialog::backdrop{background:rgba(15,23,42,.35)}
       .settings-dialog .entry-heading h2{margin:0}
       .settings-close{font-size:1.5em}
+      .settings-close:is(:focus,:focus-visible,:active){outline:none;box-shadow:none;border-color:transparent}
+      .settings-close:focus-visible{color:var(--nic-green);text-shadow:0 0 4px color-mix(in srgb,currentColor 45%,transparent)}
       .settings-tabs{display:flex;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--nic-border);margin-top:12px}
       .settings-selected{color:var(--nic-green);border-bottom:3px solid var(--nic-green)}
       .settings-dialog .page{display:none;padding:16px 0 0}
