@@ -1956,9 +1956,10 @@
       #tenantDetails .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       #tenantDetails .field,#tenantDetails .field input{min-width:0}
       #tenantDetails .field > span{display:block;font-size:var(--nic-subtext-font-size);color:#596674;margin-bottom:5px}
-      .tenant-rent-period{position:relative;border:1px solid var(--nic-border);border-radius:12px;margin:0 0 12px;padding:12px;min-width:0}
-      .tenant-rent-period legend{font-weight:650;padding:0 4px}
-      .rent-period-delete{position:absolute;top:-12px;right:8px;background:var(--nic-card,#fff)}
+      .tenant-rent-period{position:relative;border:0;border-radius:0;margin:0 0 12px;padding:0;min-width:0;width:100%;box-sizing:border-box}
+      .tenant-rent-period legend{font-weight:650;padding:0 36px 8px 0;max-width:100%;box-sizing:border-box}
+      .tenant-rent-period+.tenant-rent-period{margin-top:16px}
+      .rent-period-delete{position:absolute;top:-24px;right:0;background:transparent}
       .add-rent-period{justify-self:start;padding:6px 0;color:var(--nic-green);font-size:var(--nic-subtext-font-size);font-weight:650}
       @media(max-width:600px){
         .settlement-exit{padding-inline:10px}
