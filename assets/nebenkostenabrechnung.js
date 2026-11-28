@@ -872,7 +872,7 @@
     for(const child of [...contactCard.children])if(child!==contactTitle)contactForm.append(child);
     contactCard.append(contactForm);
     const contactToggle=document.createElement('button');contactToggle.type='button';contactToggle.className='contact-edit entry-toggle';contactToggle.setAttribute('aria-controls','contactEntryBody');
-    const contactHeading=document.createElement('div');contactHeading.className='entry-heading';contactTitle.before(contactHeading);contactHeading.append(contactTitle,contactToggle);
+    const contactHeading=document.createElement('div');contactHeading.className='entry-heading';contactTitle.before(contactHeading);const contactHeadingText=document.createElement('div');const contactHint=document.createElement('div');contactHint.className='muted';contactHint.textContent='Mieterdaten und Verantwortliche';contactHeadingText.append(contactTitle,contactHint);contactHeading.append(contactHeadingText,contactToggle);
     function toggleContactEntry(open){contactForm.hidden=!open;contactToggle.textContent=open?'−':'+';contactToggle.setAttribute('aria-expanded',String(open));contactToggle.setAttribute('aria-label',open?'Kontakterfassung schließen':'Kontakterfassung öffnen');}
     contactToggle.addEventListener('click',()=>toggleContactEntry(contactForm.hidden));
     openContact();toggleContactEntry(false);
@@ -2080,6 +2080,13 @@
       .object-entry-grid.entry-open #objectDetailPanel{grid-column:1/-1}
       #kontakte .grid > article:last-child,#objectDetailPanel,#unitEntryCard{background:#f8fafc}
       .entry-heading h3{margin:0}
+      #kontakte > .grid, .object-entry-grid{align-items:start}
+      #kontakte .grid > article:last-child, #objectDetailPanel{align-self:start}
+      #kontakte .grid > article:last-child > .entry-heading, #objectDetailPanel > .split{min-height:62px;align-items:center}
+      #kontakte .grid > article:last-child > .entry-heading h3, #objectDetailPanel > .split h3{margin:0 0 14px;line-height:1.25}
+      #kontakte .grid > article:last-child > .entry-heading .muted, #objectDetailPanel > .split .muted{line-height:1.5}
+      #kontakte .grid > article:last-child > .entry-heading > div, #objectDetailPanel > .split > div{min-width:0}
+
       #contactEntryBody,#unitEntryBody,#objectEntryBody{padding-top:14px}
       .billing-contact-select-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
       .billing-contact-select-line select{flex:1;min-width:160px}
