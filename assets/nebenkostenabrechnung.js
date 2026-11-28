@@ -54,12 +54,7 @@
     root.getElementById('wegUploadButton')?.addEventListener('click',()=>{setEntryMode('upload');root.getElementById('wegUploadInput')?.click()});
     const startManual = (moveFocus = true) => setEntryMode('manual', moveFocus);
     root.getElementById('startManual')?.addEventListener('click', () => startManual());
-    root.getElementById('wegUploadInput')?.addEventListener('change',event=>{
-     const files=[...event.target.files];
-     const label=root.getElementById('uploadSelection');
-     if(label)label.textContent=files.length?'Ausgewählt: '+files.map(file=>file.name).join(', '):'';
-     if(files.length){setEntryMode('upload');setWizardStep(1);const mode=root.getElementById('detailsModeHint');if(mode)mode.textContent='Beleg ausgewählt. Nach dem Einlesen bestätigst du hier die erkannten Angaben; nicht verfügbare Werte ergänzt du.'}
-    });
+    // The OCR handler alone controls the selected-file lifecycle and wizard navigation.
     root.getElementById('heaterUpload')?.addEventListener('click',()=>root.getElementById('heaterUploadInput')?.click());
     root.getElementById('heaterUploadInput')?.addEventListener('change',event=>{
      const files=[...event.target.files];const label=root.getElementById('heatingSelection');
@@ -401,19 +396,18 @@
      });
      return engineScript;
     }
-    byId('wegUploadInput').addEventListener('change', async event => {
-     event.stopImmediatePropagation();
-     const files = Array.from(event.target.files);
-     event.target.value = '';
+    async function readWegFiles(files){
      if (ocrRunning || !files.length) return;
      if(!confirmReplaceBilling())return;
+     setEntryMode('upload');setWizardStep(0,true);
      clearImportTransient();clearBillingImportDraft();
      const resetStatus=document.createElement('span');if(!saveDraft(resetStatus,'')){importStatus.textContent=resetStatus.textContent;return;}
-     setEntryMode('upload');setWizardStep(0,true);
      ocrRunning = true;
      byId('wegUploadButton').disabled = true;
      importStatus.setAttribute('role','status');
      importStatus.textContent = 'Belege werden gelesen …';
+     // Yield to the browser so the first status is painted before PDF decoding begins.
+     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
      let worker, pdfjs;
      const pages = [], pageStarts=[];
      try {
@@ -525,7 +519,9 @@
       try { await worker?.terminate(); }
       finally { ocrRunning = false; byId('wegUploadButton').disabled = false; }
      }
-    }, true);
+    }
+    byId('wegUploadInput').addEventListener('change',event=>{const files=Array.from(event.target.files);event.target.value='';void readWegFiles(files);});
+    byId('wegUploadInput').addEventListener('nic-weg-files',event=>{void readWegFiles(event.detail);});
     
     byId('addReviewPosition').addEventListener('click', () => {
      const select = root.querySelector('[data-add-position="umlagefaehig"]');
@@ -1851,8 +1847,8 @@
             event.preventDefault();event.stopImmediatePropagation();
             // Mount synchronously within the click so the native picker retains user activation.
             history.pushState(history.state,'',destination.href);mount();
-            const picker=host.querySelector('[data-settlement]')?.shadowRoot?.getElementById('wegUploadInput');
-            if(picker)picker.click();else location.assign(destination.href);
+            // Keep the initial native picker outside the content subtree: route rendering may replace that subtree while the dialog is open.
+            const picker=getLandingUploadPicker();picker.value='';picker.click();
           });
         }
       }
@@ -1871,7 +1867,13 @@
     if (fallback.childElementCount) host.append(fallback);
   }
 
-  let savedWorkspace;
+  let savedWorkspace,landingUploadPicker;
+  function getLandingUploadPicker(){
+    if(landingUploadPicker?.isConnected)return landingUploadPicker;
+    const picker=document.createElement('input');picker.type='file';picker.accept='.pdf,image/*';picker.multiple=true;picker.hidden=true;picker.id='nicLandingWegUpload';
+    picker.addEventListener('change',()=>{const files=Array.from(picker.files||[]);picker.value='';if(!files.length||new URLSearchParams(location.search).get('modus')!=='upload')return;mount();const input=document.querySelector('#nicContentView > [data-settlement]')?.shadowRoot?.getElementById('wegUploadInput');if(input)input.dispatchEvent(new CustomEvent('nic-weg-files',{detail:files}));});
+    document.body.append(picker);landingUploadPicker=picker;return picker;
+  }
   function placeWorkspace(host, workspace) {
     host.replaceChildren(workspace);
   }
