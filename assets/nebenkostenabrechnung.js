@@ -84,7 +84,7 @@
      {id:'umlagefaehig',title:'Umlagefähige Kosten',positions:['Hausmeister','Gartenpflege','Winterdienst','Gebäudereinigung','Glasreinigung','Gebäudeversicherung','Haftpflichtversicherung','Beleuchtung','Breitbandkabelgebühren','Entwässerung','Straßenreinigung','Müllgebühren','Rauchmelderservice','Wartung Rauchabzug','Ungezieferbekämpfung','Heiz- und Wasserkosten']},
      {id:'nicht_umlagefaehig',title:'Nicht umlagefähige Kosten',positions:['Laufende Erhaltung','Erhaltung allgemein','Erhaltung aus Rücklage','Rücklagenentnahme','Verwaltervergütung','Beiratsaufwandsentschädigung','Kontoführungsgebühren','Mahngebühren','Raumkosten Eigentümerversammlung','Gerichts- und Anwaltskosten','Honorare Sachverständige']},
      {id:'ruecklage',title:'Zuführung zur Erhaltungsrücklage',positions:['Zuführung zur Erhaltungsrücklage']},
-     {id:'einnahmen',title:'Einnahmen / Gutschriften · falls im Beleg vorhanden',positions:['Waschgeld / sonstige Einnahmen','Zinsen / Erstattungen']}
+     {id:'einnahmen',title:'Einnahmen / Gutschriften · falls im Beleg vorhanden',positions:['Waschgeld','Zinsen','Zinsen Festgeld','Erstattungen','Sonstige Einnahmen']}
     ];
     function makePositionRow(sectionId,label,canRemove=false){
      const tr=document.createElement('tr');tr.className='review-position-row';tr.dataset.category=sectionId;
@@ -277,36 +277,77 @@
      }
      return name;
     }
+    function selectWegPages(pages,starts=[0]){
+     const selected=[];let active=false;
+     for(let i=0;i<pages.length;i++){
+      if(starts.includes(i))active=false;
+      const text=String(pages[i]??'');
+      const lines=text.split(/\r?\n/).map(normalizedLabel).filter(Boolean);
+      const top=lines.slice(0,14);
+      const individual=top.some(x=>/^(?:weg)?(?:wohngeld|hausgeld|jahres)?einzelabrechnung(?:$|fur|vom|20|der|wohnung|einheit|seite)/.test(x));
+      const other=top.some(x=>/^(?:gesamtjahresabrechnung|gesamtabrechnung|wirtschaftsplan|vermogen(?:sbericht|saufstellung)|heizkostenabrechnung|einzelwirtschaftsplan|kontenblatt|kontoauszug|entwicklungder(?:erhaltungs|instandhaltungs)rucklage)/.test(x));
+      if(other&&!individual){active=false;continue;}
+      if(individual)active=true;
+      const continuation=lines.some(x=>/^(?:einnahmen|ertrage|gutschriften|(?:nicht)?umlagefahige(?:kosten|ausgaben)|kosten(?:nicht)?umlagefahig|(?:erhaltungs|instandhaltungs)rucklage|zufuhrungzur(?:erhaltungs|instandhaltungs)rucklage|ubertrag|seitenubertrag|fortsetzung|summe(?:umlag|nichtumlag|einnahmen))/.test(x)) ||
+       (lines.some(x=>/verteilerschlussel|umlageschlussel|gesamtverteiler/.test(x))&&lines.some(x=>/ihranteil|ihrbetrag|gesamtkosten/.test(x))) ||
+       lines.some(x=>/^(?:4100|4200|4300)\w+/.test(x));
+      if(individual||(active&&continuation))selected.push({index:i,text});
+      else if(active)active=false;
+     }
+     return selected;
+    }
     function extractRows(text) {
      let category = '';
      const rows = [];
+     const moneyPattern=/(?:^|\s)([-−]?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2})\s*$/;
+     const keyPattern=/(?:\b(?:MEA|Miteigentumsanteil(?:e|en)?|Wohnfl(?:äche|aeche|\.?)|(?:Wohn|Nutz)fläche|Wohneinheit(?:en)?|Einheit(?:en)?|Verbrauch|Direktzuordnung|direkt\s+zugeordnet)\b|m²)/iu;
+     function detectKey(value){
+      const match=value.match(keyPattern);if(!match)return '';
+      const v=normalizedLabel(match[0]);
+      if(/^(?:mea|miteigentumsanteil)/.test(v))return 'MEA';
+      if(/^(?:wohnfl|nutzfl|m2)$/.test(v)||/^wohnfl|^nutzfl/.test(v))return 'Wohnfläche';
+      if(/einheit/.test(v))return 'Wohneinheit';
+      if(v==='verbrauch')return 'Verbrauch';
+      return 'Direktzuordnung';
+     }
      for (const line of text.split(/\r?\n/)) {
       const heading = normalizedLabel(cleanWegPositionName(line)).replace(/^\d+/, '');
-      if (/^nichtumlag/.test(heading)) { category = 'nicht_umlagefaehig'; continue; }
-      if (/^(?:ublicherweise)?umlag/.test(heading)) { category = 'umlagefaehig'; continue; }
-      if (/^(?:zufuhrungzurerhaltungsrucklage|beitragezurrucklage)$/.test(heading)) { category = 'ruecklage'; continue; }
-      if (/^(?:einnahmen|gutschriften)$/.test(heading)) { category = 'einnahmen'; continue; }
-      if (/^(?:zwischensumme|summe|abrechnungssumme|saldo|gesamtbetrag|vortrag|kostenumlag|kostennichtumlag)/.test(heading)) {
-       category = '';
-       continue;
+      if (/^(?:zwischensumme|summe|abrechnungssumme|saldo|gesamtbetrag|vortrag|ubertrag|seitenubertrag|gesamtsumme|endbetrag|abrechnungssaldo|gesamtverteiler|kontobezeichnung|kostenbezeichnung)/.test(heading)) continue;
+      const hasAmount=/(?:\d,\d{2})(?:\s*(?:€|EUR))?\s*$/i.test(line);
+      if (/^(?:nichtumlag|kostennichtumlag)/.test(heading)&&!hasAmount) { category = 'nicht_umlagefaehig'; continue; }
+      if (/^(?:(?:ublicherweise)?umlag|kostenumlag)/.test(heading)&&!hasAmount) { category = 'umlagefaehig'; continue; }
+      if (/^(?:erhaltungsrucklage|instandhaltungsrucklage|zufuhrungzur(?:erhaltungs|instandhaltungs)rucklage|beitragezurrucklage|rucklagen)$/.test(heading)) { category = 'ruecklage'; continue; }
+      if (/^(?:einnahmen|ertrage|gutschriften|einnahmenundgutschriften)$/.test(heading)) { category = 'einnahmen'; continue; }
+      const cells=line.split(/€|\bEUR\b/i);
+      let first,last,namePart,distribution='',total='',share='';
+      if(cells.length>=2){
+       first=cells[0].match(moneyPattern);
+       last=cells.length>=3?cells.at(-2).match(moneyPattern):null;
+       if(!first)continue;
+       namePart=cells[0].slice(0,first.index);
+       distribution=last?(cells[1]||'').slice(0,last.index):'';
+       total=first[1];share=last?.[1]||'';
+      }else{
+       // Tables with a currency label in the header instead of each cell.
+       const match=line.match(/^(.*?)\s+([-−]?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2})\s*$/);
+       if(!match||!category)continue;
+       const prefix=match[1];const amounts=[...prefix.matchAll(/(?:^|\s)([-−]?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2})(?=\s|$)/g)];
+       if(!amounts.length)continue;
+       const a=amounts[0];namePart=prefix.slice(0,a.index);distribution=prefix.slice(a.index+a[0].length);total=a[1];share=match[2];
       }
-      const cells = line.split(/€|\bEUR\b/i);
-      if (cells.length < 2) continue;
-      const amount = /(?:^|\s)([-−]?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2})\s*$/;
-      const first = cells[0].match(amount);
-      const last = cells.length >= 3 ? cells.at(-2).match(amount) : null;
-      const name = cleanWegPositionName(cells[0].slice(0, first?.index ?? cells[0].length)
-       .replace(/\s+(?:m[²2^]+\s+)?Wohnfläche\s+ges\.?\s*$/i,''));
-      if (!first || !/[a-zäöü]{3}/i.test(name)) continue;
-      const candidates = standardSections.filter(section => section.positions.some(label => normalizedLabel(label) === normalizedLabel(name)));
-      const block = category || (candidates.length === 1 ? candidates[0].id : '');
-      const context = normalizedLabel(cells[0] + ' ' + (cells[1] || ''));
-      const key = /wohnfl/.test(context) ? 'Wohnfläche' : /\bMEA\b/i.test(line) ? 'MEA' : /\b(?:Wohn)?Einheit(?:en)?\b/i.test(line) ? 'Wohneinheit' : '';
-      const distribution = (cells[1] || '').slice(0,last?.index ?? 0);
-      const quantities = distribution.match(/(?:\d{1,3}(?:\.\d{3})+|\d+),\d{4}(?!\d)/g)
-       || distribution.match(/(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}(?!\d)/g) || [];
-      rows.push({name, block, key, base: quantities[0] || '', part: quantities[1] || '',
-       total: first[1].replace('−','-'), share: last ? last[1].replace('−','-') : ''});
+      const key=detectKey(distribution)||detectKey(namePart);
+      // Remove an allocation-key column at the end of the name, not words inside the actual description.
+      let name=cleanWegPositionName(namePart.replace(/\s+(?:m[²2^]+\s+)?Wohnfläche\s+ges\.?\s*$/i,'').replace(/\s+(?:MEA|Miteigentumsanteil(?:e|en)?|Wohnfl(?:äche|aeche|\.?)|Nutzfläche|Wohneinheit(?:en)?|Einheit(?:en)?|Verbrauch|Direktzuordnung|m²)\s*$/iu,''));
+      if(!/[a-zäöü]{3}/i.test(name))continue;
+      const n=normalizedLabel(name);
+      if(/^(?:summe|zwischensumme|ubertrag|seitenubertrag|vortrag|gesamtsumme|abrechnungssumme|saldo|gesamtbetrag|kostenumlag|kostennichtumlag)/.test(n))continue;
+      if(/^(?:zinsenfestgeld|festgeldzinsen|zinsertragefestgeld)$/.test(n))name='Zinsen Festgeld';
+      else if(/^(?:waschgeld|waschmaschineneinnahmen|waschmaschinengeld)$/.test(n))name='Waschgeld';
+      else if(/^(?:zufuhrungzur(?:erhaltungs|instandhaltungs)rucklage|beitragezur(?:erhaltungs|instandhaltungs)?rucklage)$/.test(n))name='Zuführung zur Erhaltungsrücklage';
+      const candidates=standardSections.filter(section=>section.positions.some(label=>normalizedLabel(label)===normalizedLabel(name)));
+      const block=category||(candidates.length===1?candidates[0].id:'');
+      const quantities=[...distribution.matchAll(/(?:^|\s)(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)(?=\s|$)/g)].map(m=>m[1]);
+      rows.push({name,block,key,base:quantities.length===2?quantities[0]:'',part:quantities.length===2?quantities[1]:'',total:total.replace('−','-'),share:share.replace('−','-')});
      }
      return rows;
     }
@@ -337,7 +378,7 @@
      importStatus.setAttribute('role','status');
      importStatus.textContent = 'Belege werden gelesen …';
      let worker, pdfjs;
-     const pages = [];
+     const pages = [], pageStarts=[];
      try {
       const recognize = async image => {
        if (!worker) {
@@ -349,6 +390,7 @@
       const endpoint = window.nicWegImportEndpoint;
       const proposals = [];
       for (const file of files) {
+       pageStarts.push(pages.length);
        if (endpoint) {
         const url = new URL(endpoint, window.location.href);
         if (url.origin !== window.location.origin) throw new Error('Der OCR-Dienst muss zur selben Website gehören.');
@@ -387,9 +429,11 @@
         pages.push(await recognize(file));
        }
       }
-      const recognized = pages.join('\n\n');
-      ocrText.querySelector('pre').textContent = recognized + (proposals.length ? '\n\nQwen · Vorschläge zur Prüfung\n' + JSON.stringify(proposals, null, 2) : '');
+      const selectedPages=selectWegPages(pages,pageStarts);
+      const recognized=selectedPages.map(p=>p.text).join('\n\n');
+      ocrText.querySelector('pre').textContent = 'Ausgewertete Seiten: '+(selectedPages.map(p=>p.index+1).join(', ')||'keine')+' / '+pages.length+'\n\n'+pages.join('\n\n') + (proposals.length ? '\n\nQwen · Vorschläge zur Prüfung\n' + JSON.stringify(proposals, null, 2) : '');
       ocrText.hidden = false;
+      if(!selectedPages.length){importStatus.textContent='Keine eindeutig erkennbare Einzelabrechnung gefunden. Bitte die relevanten Seiten mit Überschrift hochladen.';return;}
       const extracted = extractRows(recognized);
       const units = Array.from(new Set([...recognized.matchAll(/(?:Wohnungsnummer|Einheit)\s*:\s*([^\n]+)/gi)].map(match => match[1].trim())));
       if (units.length > 1) {
@@ -431,12 +475,13 @@
        imported++;
       }
       updateSubtotals();
-      importStatus.textContent = imported + ' Positionen übernommen. Vergleiche Beträge und Zuordnung mit dem Beleg. ' +
+      importStatus.textContent = selectedPages.length+' von '+pages.length+' Seiten ausgewertet. '+imported + ' Positionen übernommen. Vergleiche Beträge und Zuordnung mit dem Beleg. ' +
        (extracted.length - imported ? (extracted.length - imported) + ' Zeilen ohne eindeutigen Kostenblock stehen im erkannten Belegtext.' : '');
       if(conflicts)importStatus.textContent+=' '+conflicts+' abweichende oder mehrdeutige Verteilerschlüssel bitte prüfen; manuelle Vorgaben bleiben erhalten.';
+      if(imported)readBalanceReferences(recognized);
       if(imported&&selectedObject){const status=document.createElement('span');if(!saveDraft(status,'')){selectedObject.allocationMapping=previousMapping;selectedObject.allocationSources=previousSources;importStatus.textContent+=' Objektzuordnungen konnten nicht gespeichert werden.';}else if(byId('keyObjectSelect').value===selectedObject.id)loadObjectMappings();}
       if(imported&&!selectedObject)importStatus.textContent+=' Kein gespeichertes Objekt ausgewählt: erkannte Schlüssel gelten zunächst nur für diese Abrechnung.';
-      if (imported) { readBalanceReferences(recognized); setWizardStep(2); }
+      if (imported) setWizardStep(2);
      } catch (error) {
       importStatus.textContent = 'Beleg konnte nicht gelesen werden: ' + error.message;
      } finally {
@@ -831,7 +876,7 @@
      if(label==='Heiz- und Wasserkosten')return 'Verbrauch';
      if(['Rauchmelderservice','Breitbandkabelgebühren','Verwaltervergütung'].includes(label))return 'Wohneinheit';
      if(label==='Mahngebühren')return '';
-     if(label==='Waschgeld / sonstige Einnahmen')return '';
+     if(label==='Erstattungen')return ''; // Use the related expense key when known; otherwise review.
      return 'MEA';
     };
     for(const section of standardSections){
