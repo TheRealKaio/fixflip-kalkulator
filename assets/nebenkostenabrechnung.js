@@ -951,8 +951,8 @@
      if(label==='Heiz- und Wasserkosten'||label.endsWith('Verbrauchskosten'))return 'Verbrauch';
      if(label.endsWith('Grundkosten'))return 'Wohnfläche';
      if(['Rauchmelderservice','Breitbandkabelgebühren','Verwaltervergütung'].includes(label))return 'Wohneinheit';
-     if(label==='Mahngebühren')return '';
-     if(label==='Erstattungen')return ''; // Use the related expense key when known; otherwise review.
+     if(label==='Mahngebühren')return 'Direktzuordnung';
+     if(label==='Erstattungen')return 'MEA'; // Provisional WEG default; use the related expense key when known.
      return 'MEA';
     };
     for(const section of standardSections){
@@ -960,18 +960,23 @@
      for(const label of section.positions){
       const field=document.createElement('div');field.className='field';
       const select=document.createElement('select');select.id='objectPositionKey'+objectKeyFields.size;
-      select.add(new Option('Nicht zugeordnet',''));
+      select.add(new Option('Standard wiederherstellen',''));
       for(const key of allocationKeys)select.add(new Option(key,key));
       select.value=suggestedAllocationKey(section.id,label);
       const caption=document.createElement('label');caption.htmlFor=select.id;caption.textContent=label;
       const source=document.createElement('small');source.className='muted';source.textContent='Standard';
-      const timeSelect=document.createElement('select');timeSelect.setAttribute('aria-label','Zeitverteiler '+label);for(const [v,t] of Object.entries(timeMethods))timeSelect.add(new Option(t,v));timeSelect.value=defaultTimeMethod(label);const timeLabel=document.createElement('small');timeLabel.textContent='Zeitliche Verteilung';field.append(caption,select,source,timeLabel,timeSelect);mappingGrid.append(field);
+      const timeSelect=document.createElement('select');timeSelect.setAttribute('aria-label','Zeitverteiler '+label);for(const [v,t] of Object.entries(timeMethods))timeSelect.add(new Option(t,v));timeSelect.value=defaultTimeMethod(label);source.style.display='block';const timeLabel=document.createElement('small');timeLabel.style.display='block';timeLabel.style.marginTop='6px';timeLabel.textContent='Zeitliche Verteilung';field.append(caption,select,source,timeLabel,timeSelect);mappingGrid.append(field);
       const mapKey=section.id+'|'+normalizedLabel(label);objectKeyFields.set(mapKey,select);defaultObjectKeys.set(mapKey,select.value);mappingSources.set(mapKey,source);timeMappingFields.set(mapKey,timeSelect);
       select.addEventListener('change',()=>{mappingTouched.add(mapKey);source.textContent='Manuell · noch nicht gespeichert';});
      }
     }
     const mappingStatus=document.createElement('div');mappingStatus.setAttribute('role','status');
     function defaultMappings(){return Object.fromEntries(defaultObjectKeys);}
+    function repairAllocationDefaults(object){
+     const mapping=object.allocationMapping||{},sources=object.allocationSources||{};
+     for(const [key,value] of defaultObjectKeys){if(!allocationKeys.includes(mapping[key])){mapping[key]=value;delete sources[key];}}
+     object.allocationMapping=mapping;object.allocationSources=sources;
+    }
     function loadObjectMappings(){
      const object=savedObjects.find(o=>o.id===byId('keyObjectSelect').value);
      mappingTouched.clear();
@@ -990,7 +995,7 @@
      object.timeMapping=Object.fromEntries([...timeMappingFields].map(([k,f])=>[k,f.value]));
      object.allocationMapping={...defaultMappings(),...previous};
      object.allocationSources={...previousSources};
-     for(const key of mappingTouched){object.allocationMapping[key]=objectKeyFields.get(key).value;object.allocationSources[key]='manual';}
+     for(const key of mappingTouched){const value=objectKeyFields.get(key).value;if(allocationKeys.includes(value)){object.allocationMapping[key]=value;object.allocationSources[key]='manual';}else{object.allocationMapping[key]=defaultObjectKeys.get(key);delete object.allocationSources[key];}}
      if(!saveDraft(mappingStatus,'Zuordnungen für '+object.fields.propertyName+' gespeichert.')){object.allocationMapping=previous;object.allocationSources=previousSources;object.timeMapping=previousTime;return;}
      loadObjectMappings();mappingStatus.textContent='Zuordnungen für '+object.fields.propertyName+' gespeichert.';
      refreshPositionAllocations();
@@ -1644,8 +1649,9 @@
       for (const field of draftFields) if(!field.id.startsWith('objectPositionKey')&&Object.hasOwn(saved.fields,field.id))field.value=saved.fields[field.id]??'';
       const legacyOwner=objectByName(saved.fields?.propertyName);
       for(const o of savedObjects){
-       if(!o.allocationMapping){o.allocationMapping=defaultMappings();if(o===legacyOwner)for(const [key,field] of objectKeyFields){const v=saved.fields?.[field.id];if(allocationKeys.includes(v)||v==='')o.allocationMapping[key]=v;}}
-       if(!o.allocationSources){o.allocationSources={};for(const [key,value] of Object.entries(o.allocationMapping))if(value!==defaultObjectKeys.get(key))o.allocationSources[key]='manual';}
+       if(!o.allocationMapping){o.allocationMapping=defaultMappings();if(o===legacyOwner)for(const [key,field] of objectKeyFields){const v=saved.fields?.[field.id];if(allocationKeys.includes(v))o.allocationMapping[key]=v;}}
+       if(!o.allocationSources){o.allocationSources={};for(const [key,value] of Object.entries(o.allocationMapping))if(allocationKeys.includes(value)&&value!==defaultObjectKeys.get(key))o.allocationSources[key]='manual';}
+       repairAllocationDefaults(o);
       }
       if (!Object.hasOwn(saved.fields,'billingLandlord')) byId('billingLandlord').value = byId('objectLandlord').value;
       byId('positionTemplateBody').querySelectorAll('.review-position-row').forEach(row => row.remove());
