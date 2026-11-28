@@ -372,6 +372,18 @@
      return rows;
     }
     let ocrRunning = false;
+    let tableImportGeneration=0;
+    function clearImportTransient(){
+     ++tableImportGeneration;importState=null;importPanel.replaceChildren();importPanel.hidden=true;importFile.value='';
+     ocrText.querySelector('pre').textContent='';ocrText.open=false;ocrText.hidden=true;importStatus.textContent='';
+    }
+    function clearBillingImportDraft(){
+     renderStandardTemplate();
+     for(const id of ['objectName','objectStreet','objectPostal','objectCity','billingObjectArea','billingObjectUnits','billingObjectShare','billingObjectLandlord','objectMatch','reviewUnit','unitLocation','billingUnitArea','billingUnitObjectArea','billingUnitShare','billingUnit','tenantContact','billingUnitTenant','billingLandlord','wizardYear','wizardFrom','wizardTo','tenantFrom','tenantTo']){const field=byId(id);field.value='';delete field.dataset.userEdited;}
+     for(const fields of Object.values(balanceFields))for(const {input} of fields)input.value='';
+     byId('heatingSelection').textContent='';byId('billingMasterStatus').textContent='';byId('previewReady').querySelector('strong').textContent='Vorschau noch nicht erstellt';tenantContent.replaceChildren();previewOverlay.classList.remove('open');refreshBillingChoices();renderBillingContacts();updateBalance();
+    }
+    function confirmReplaceBilling(){return !reviewRows().length&&!byId('objectName').value&&!byId('reviewUnit').value&&!byId('wizardYear').value&&!byId('tenantContact').value&&!byId('billingLandlord').value||window.confirm('Die bisherigen Angaben und Positionen des aktuellen Entwurfs werden durch den neuen Beleg ersetzt. Gespeicherte Stammdaten und archivierte Abrechnungen bleiben erhalten. Fortfahren?');}
     const importStatus = byId('uploadSelection');
     const ocrText = document.createElement('details');
     ocrText.innerHTML = '<summary>Erkannten Belegtext ansehen</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>';
@@ -394,6 +406,9 @@
      const files = Array.from(event.target.files);
      event.target.value = '';
      if (ocrRunning || !files.length) return;
+     if(!confirmReplaceBilling())return;
+     clearImportTransient();clearBillingImportDraft();
+     const resetStatus=document.createElement('span');if(!saveDraft(resetStatus,'')){importStatus.textContent=resetStatus.textContent;return;}
      setEntryMode('upload');setWizardStep(0,true);
      ocrRunning = true;
      byId('wegUploadButton').disabled = true;
@@ -418,7 +433,7 @@
         if (url.origin !== window.location.origin) throw new Error('Der OCR-Dienst muss zur selben Website gehören.');
         const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
         importStatus.textContent = 'Beleg wird auf dem eigenen Erkennungsdienst verarbeitet …';
-        const response = await fetch(url, {method:'POST', headers:{'Content-Type':'application/octet-stream','X-Weg-Type':pdf?'pdf':'image'}, body:file});
+        const response = await fetch(url, {method:'POST', headers:{'Content-Type':'application/octet-stream','X-Weg-Type':pdf?'pdf':'image'}, body:file,cache:'no-store'});
         if (!response.ok) throw new Error('Erkennungsdienst: HTTP ' + response.status);
         for (const page of await response.json()) {
          pages.push(Array.isArray(page.text) ? page.text.join('\n') : page.text);
@@ -443,7 +458,7 @@
           canvas.width = Math.ceil(viewport.width);
           canvas.height = Math.ceil(viewport.height);
           await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
-          pages.push(await recognize(canvas));
+          try{pages.push(await recognize(canvas));}finally{canvas.width=0;canvas.height=0;page.cleanup();}
          }
         } finally { await pdf.destroy(); }
        } else {
@@ -1480,7 +1495,7 @@
      importPanel.append(mapTable,makeImportEl('p','Nicht erkannte Felder werden angezeigt, aber nicht importiert. Die Zuordnung kann manuell geändert werden.','muted'));
      const status=makeImportEl('p','');status.setAttribute('role','status');
      const actions=makeImportEl('div',undefined,'foot-actions');
-     const cancel=action('Abbrechen',()=>{importPanel.hidden=true;importState=null;});
+     const cancel=action('Abbrechen',()=>clearImportTransient());
      const reset=action('Zurücksetzen',()=>{st.mapping=st.headers.map(importGuess);st.filters={};st.year='';st.search='';st.selected.clear();drawImport();});
      const template=action('Zuordnung speichern',()=>{try{localStorage.setItem('nic-import-map-v1:'+JSON.stringify(st.headers),JSON.stringify(st.mapping));status.textContent='Zuordnung lokal gespeichert.';}catch{status.textContent='Zuordnung konnte nicht gespeichert werden.';}});
      const apply=action('Import übernehmen',()=>applyImport(st,status));apply.classList.add('settlement-highlight');actions.append(cancel,reset,template,apply);importPanel.append(actions,status);
@@ -1598,6 +1613,7 @@
      dialog.showModal();
     }
     function applyImport(st,status,assignment=null){
+     if(st!==importState)return;
      const chosen=st.visible.filter(i=>st.selected.has(i));
      if(!chosen.length){status.textContent='Wähle mindestens einen Datensatz aus.';return;}
      const used=st.mapping.filter(Boolean);if(new Set(used).size!==used.length){status.textContent='Bitte jedes Zielfeld nur einmal zuordnen.';return;}
@@ -1615,7 +1631,7 @@
        const row=reviewRows().find(row=>normalizedLabel(valuesOf(row)[0])===normalizedLabel(d.position));
        for(const key of ['key','money','base','share','result'])if(d[key])row.querySelector('.review-'+key).value=key==='key'?d[key]:importNumber(d[key]).replace('.',',');
        recalculateReviewRow(row);
-      }updateSubtotals();importPanel.hidden=true;setWizardStep(2,true);return;
+      }updateSubtotals();clearImportTransient();setWizardStep(2,true);return;
      }
      if(!assignment){st.assignmentStatus=status;chooseImportTargets(st,data,chosen);return;}
      if(JSON.stringify(chosen)!==JSON.stringify(assignment.chosen)){status.textContent='Auswahl wurde geändert. Bitte erneut zuordnen.';return;}
@@ -1663,15 +1679,17 @@
       for(const [source,target] of objectFields)byId(target).value=o.fields[source]||'';
       for(const [id,value] of Object.entries({reviewUnit:unit.name,unitLocation:unit.floor,billingUnitArea:unit.area,billingUnitShare:unit.share,tenantContact:lease.tenantId}))byId(id).value=value||'';
       if(st.year)byId('wizardYear').value=st.year;syncBillingPeriodFields();refreshBillingChoices();renderBillingContacts();
-      importPanel.hidden=true;setWizardStep(1,true);
-     }else{status.textContent=added+' neue Mietverhältnisse übernommen. Bestehende Datensätze wurden geprüft.';st.selected.clear();}
+      clearImportTransient();setWizardStep(1,true);
+     }else{clearImportTransient();importStatus.textContent=added+' neue Mietverhältnisse übernommen. Bestehende Datensätze wurden geprüft.';}
     }
     importFile.addEventListener('change',async()=>{
-     const file=importFile.files[0];importFile.value='';if(!file)return;
+     const file=importFile.files[0];importFile.value='';if(!file||ocrRunning)return;
+     clearImportTransient();const generation=tableImportGeneration;
      setEntryMode('upload');importPanel.hidden=false;importPanel.textContent='Datei wird eingelesen …';
      try{
       if(file.size>10000000)throw Error('Datei ist größer als 10 MB.');
       const rows=/\.xlsx$/i.test(file.name)?await readXlsx(file):/\.csv$/i.test(file.name)?parseCsv(await file.text()):null;
+      if(generation!==tableImportGeneration)return;
       if(!rows||!rows.length)throw Error('Bitte XLSX oder CSV auswählen.');
       const ranked=rows.slice(0,25).map((row,i)=>({i,score:row.filter(v=>importGuess(v)).length,width:row.filter(Boolean).length})).sort((a,b)=>b.score-a.score||b.width-a.width);
       const hi=ranked[0].i,headers=rows[hi].map((v,i)=>String(v||'Spalte '+(i+1)));
@@ -1682,7 +1700,7 @@
       if(data.length>5000)throw Error('Bitte maximal 5.000 Datensätze pro Datei importieren.');
       let mapping=headers.map(importGuess);try{const saved=JSON.parse(localStorage.getItem('nic-import-map-v1:'+JSON.stringify(headers))||'null');if(Array.isArray(saved)&&saved.length===headers.length&&saved.every(v=>importTargets.some(t=>t[0]===v)))mapping=saved;}catch{}
       importState={filename:file.name,headers,rows:data,excluded:candidates.length-data.length,mapping,filters:{},selected:new Set(),year:'',search:''};drawImport();
-     }catch(error){importPanel.replaceChildren(makeImportEl('p',error.message||'Datei konnte nicht eingelesen werden.'),action('Schließen',()=>{importPanel.hidden=true;}));}
+     }catch(error){if(generation!==tableImportGeneration)return;importState=null;importPanel.replaceChildren(makeImportEl('p',error.message||'Datei konnte nicht eingelesen werden.'),action('Schließen',()=>{clearImportTransient();}));}
     });
     const saveDraftButton = action('Entwurf lokal speichern', () => saveDraft(notes, 'Entwurf in diesem Browser gespeichert.'));
     saveDraftButton.id = 'saveSettlementDraft';
