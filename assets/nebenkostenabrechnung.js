@@ -805,6 +805,7 @@
     keyPanel.querySelector('p').textContent='Übliche WEG-Verteilerschlüssel sind als Vorschlag vorbelegt. Prüfe sie anhand der WEG-Abrechnung, Beschlüsse und des Mietvertrags. Heiz- und Wasserkosten können mehrere Schlüssel benötigen; ohne Zuordnung bleibt die Objektvorgabe offen.';
     const mappingGrid=document.createElement('div');mappingGrid.className='form-grid';
     const objectKeyFields=new Map();
+    const defaultObjectKeys=new Map();
     const allocationKeys=['Wohnfläche','Wohneinheit','MEA','Verbrauch','Direktzuordnung'];
     // Editable starting suggestions for WEG accounting, not binding allocation rules.
     const suggestedAllocationKey=(section,label)=>{
@@ -824,13 +825,24 @@
       select.value=suggestedAllocationKey(section.id,label);
       const caption=document.createElement('label');caption.htmlFor=select.id;caption.textContent=label;
       field.append(caption,select);mappingGrid.append(field);
-      objectKeyFields.set(section.id+'|'+normalizedLabel(label),select);
+      const mapKey=section.id+'|'+normalizedLabel(label);objectKeyFields.set(mapKey,select);defaultObjectKeys.set(mapKey,select.value);
      }
     }
     const mappingStatus=document.createElement('div');mappingStatus.setAttribute('role','status');
+    function defaultMappings(){return Object.fromEntries(defaultObjectKeys);}
+    function loadObjectMappings(){
+     const object=savedObjects.find(o=>o.id===byId('keyObjectSelect').value);
+     for(const [key,field] of objectKeyFields)field.value=object?.allocationMapping?.[key]??defaultObjectKeys.get(key)??'';
+     mappingStatus.textContent='';
+    }
+    byId('keyObjectSelect').addEventListener('change',loadObjectMappings);
     const mappingSave=action('Zuordnungen speichern',()=>{
-     if(!byId('propertyName').value.trim()){mappingStatus.textContent='Speichere zuerst ein Objekt.';return}
-     saveDraft(mappingStatus,'Zuordnungen gespeichert.');
+     const object=savedObjects.find(o=>o.id===byId('keyObjectSelect').value);
+     if(!object){mappingStatus.textContent='Wähle zuerst ein gespeichertes Objekt.';return;}
+     const previous=object.allocationMapping;
+     object.allocationMapping=Object.fromEntries([...objectKeyFields].map(([key,field])=>[key,field.value]));
+     if(!saveDraft(mappingStatus,'Zuordnungen für '+object.fields.propertyName+' gespeichert.')){object.allocationMapping=previous;return;}
+     refreshPositionAllocations();
     });mappingSave.classList.add('settlement-highlight');
     const mappingActions=document.createElement('div');mappingActions.className='foot-actions';mappingActions.append(mappingStatus,mappingSave);
     keyPanel.querySelector('button').remove();keyPanel.append(mappingGrid,mappingActions);
@@ -866,8 +878,9 @@
     function applyPositionAllocation(row){
      const keyField=row.querySelector('.review-key');
      const label=row.querySelector('.review-position').value;
-     const sameObject=byId('propertyName').value.trim()&&byId('propertyName').value.trim()===byId('objectName').value.trim();
-     const mapped=sameObject?objectKeyFields.get(row.dataset.category+'|'+normalizedLabel(label))?.value:'';
+     const object=objectByName(byId('objectName').value);
+     const mapKey=row.dataset.category+'|'+normalizedLabel(label);
+     const mapped=object?(object.allocationMapping?.[mapKey]??defaultObjectKeys.get(mapKey)??''):'';
      const key=keyField.value==='Objektvorgabe'?mapped:keyField.value;
      const values=allocationValues(key);
      ['base','share'].forEach((name,i)=>{
@@ -953,7 +966,8 @@
     function refreshBillingChoices(){
      const object=objectByName(byId('objectName').value),keySelect=byId('keyObjectSelect');
      setObjectOptions(byId('objectMatch'),'Objekt auswählen',object?.id);
-     setObjectOptions(keySelect,'Objekt wählen',keySelect.value);
+     const selectedKeyObject=keySelect.value||object?.id||(savedObjects.length===1?savedObjects[0].id:'');
+     setObjectOptions(keySelect,'Objekt wählen',selectedKeyObject);loadObjectMappings();
      const unitSelect=byId('billingUnit');unitSelect.replaceChildren(new Option('Wohnung auswählen',''));
      for(const u of savedUnits.filter(u=>u.objectId===object?.id))unitSelect.add(new Option(u.name,u.id));
      unitSelect.value=savedUnits.find(u=>u.objectId===object?.id&&canonical(u.name)===canonical(byId('reviewUnit').value))?.id||'';
@@ -1104,7 +1118,7 @@
       if(modelBlocked){status.textContent='Altdatenkonflikt: Speicherung gesperrt. Bitte Daten prüfen.';return false;}
       localStorage.setItem(storageKey, JSON.stringify({
        modelVersion:2, objects:savedObjects, leases:savedLeases,
-       fields: Object.fromEntries(draftFields.map(field => [field.id, field.value])),
+       fields: Object.fromEntries(draftFields.filter(field=>!field.id.startsWith('objectPositionKey')).map(field => [field.id, field.value])),
        references: Object.fromEntries(Object.entries(balanceFields).map(([key, fields]) => [key, fields.map(field => field.input.value)])),
        contacts, units: savedUnits, rows: reviewRows().map(row => [row.dataset.category, valuesOf(row), positionFields.filter(field => row.querySelector(".review-" + field).getAttribute("aria-invalid") === "true")])
       }));
@@ -1378,7 +1392,7 @@
       const target=assignment.objects.get(importObjectKey(d)),unitTarget=assignment.units.get(JSON.stringify([importObjectKey(d),importUnitKey(d)]));
       if(!target||!unitTarget){fail(prefix+'Zuordnung fehlt.');return;}
       let o=savedObjects.find(x=>x.id===target.id);
-      if(!o){if(!target.create){fail(prefix+'Objekt nicht mehr vorhanden.');return;}o={id:target.id,fields:{...target.fields}};savedObjects.push(o);}
+      if(!o){if(!target.create){fail(prefix+'Objekt nicht mehr vorhanden.');return;}o={id:target.id,fields:{...target.fields},allocationMapping:defaultMappings()};savedObjects.push(o);}
       let unit=savedUnits.find(u=>u.id===unitTarget.id&&u.objectId===o.id);
       if(!unit){if(!unitTarget.create){fail(prefix+'Einheit nicht mehr vorhanden.');return;}unit={id:unitTarget.id,objectId:o.id,name:unitTarget.name,floor:d.unitLocation||'',area:importNumber(d.billingUnitArea).replace('.',','),objectArea:importNumber(d.billingUnitObjectArea).replace('.',','),share:d.billingUnitShare||'',rooms:importNumber(d.rooms),gardenArea:importNumber(d.gardenArea),tenant:''};savedUnits.push(unit);}
       else if(d.billingUnitArea&&unit.area&&importNumber(unit.area)!==importNumber(d.billingUnitArea)){fail(prefix+'Abweichende Wohnfläche. Bitte Stammdaten prüfen.');return;}
@@ -1443,7 +1457,7 @@
      if(!fields.propertyName.trim()||!Number.isInteger(Number(fields.propertyUnits))||Number(fields.propertyUnits)<1){status.textContent='Objektbezeichnung und Anzahl Wohneinheiten sind erforderlich.';return;}
      if(savedObjects.some(o=>o.id!==editingObjectId&&canonical(o.fields.propertyName)===canonical(fields.propertyName))){status.textContent='Objekt bereits vorhanden.';return;}
      const previous=savedObjects,id=editingObjectId||modelId();
-     savedObjects=[...savedObjects.filter(o=>o.id!==id),{id,fields}];
+     savedObjects=[...savedObjects.filter(o=>o.id!==id),{...savedObjects.find(o=>o.id===id),id,fields,allocationMapping:savedObjects.find(o=>o.id===id)?.allocationMapping??defaultMappings()}];
      const error=modelError(savedObjects,savedUnits,savedLeases);
      if(error){savedObjects=previous;status.textContent=error;return;}
      if(saveDraft(status,'')){editingObjectId=id;renderUnits();}else savedObjects=previous;
@@ -1465,7 +1479,12 @@
       for (const [key, fields] of Object.entries(balanceFields)) fields.forEach(({input}, index) => { input.value = saved.references?.[key]?.[index] || ''; });
       updateContacts();
       renderContacts();
-      for (const field of draftFields) if(Object.hasOwn(saved.fields,field.id))field.value=saved.fields[field.id]??'';
+      for (const field of draftFields) if(!field.id.startsWith('objectPositionKey')&&Object.hasOwn(saved.fields,field.id))field.value=saved.fields[field.id]??'';
+      const legacyOwner=objectByName(saved.fields?.propertyName);
+      for(const o of savedObjects)if(!o.allocationMapping){
+       o.allocationMapping=defaultMappings();
+       if(o===legacyOwner)for(const [key,field] of objectKeyFields){const v=saved.fields?.[field.id];if(allocationKeys.includes(v))o.allocationMapping[key]=v;}
+      }
       if (!Object.hasOwn(saved.fields,'billingLandlord')) byId('billingLandlord').value = byId('objectLandlord').value;
       byId('positionTemplateBody').querySelectorAll('.review-position-row').forEach(row => row.remove());
       for (const [block, values, flagged = []] of saved.rows) {
