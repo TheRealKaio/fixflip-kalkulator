@@ -684,7 +684,7 @@
      }
     }
     function showArchivedSettlement(record){
-     archivePanel.hidden=false;
+     archivePanel.hidden=false;toggleArchive(true);
      archiveContent.replaceChildren();
      const header=document.createElement('div');header.className='entry-heading';
      const heading=document.createElement('h3');heading.textContent='Mieterabrechnung '+record.year;
@@ -699,11 +699,15 @@
     }
     const archivePanel=document.createElement('article');archivePanel.className='card settlement-archive';archivePanel.hidden=true;
     const archiveContent=document.createElement('div');
-    archivePanel.append(action('Schließen',()=>{archivePanel.hidden=true}),archiveContent);
+    const archiveHeading=document.createElement('div');archiveHeading.className='entry-heading';
+    const archiveTitle=document.createElement('h3');archiveTitle.textContent='Gespeicherte Abrechnungen';
+    const archiveToggle=action('+',()=>toggleArchive(archiveContent.hidden));archiveToggle.className='contact-edit entry-toggle';
+    archiveContent.id='settlementArchiveContent';archiveToggle.setAttribute('aria-controls',archiveContent.id);
+    function toggleArchive(open){archiveContent.hidden=!open;archiveToggle.textContent=open?'−':'+';archiveToggle.setAttribute('aria-expanded',String(open));archiveToggle.setAttribute('aria-label',open?'Gespeicherte Abrechnungen schließen':'Gespeicherte Abrechnungen öffnen');}
+    archiveHeading.append(archiveTitle,archiveToggle);archivePanel.append(archiveHeading,archiveContent);toggleArchive(false);
     root.querySelector('.shell').after(archivePanel);
     byId('showReceipts').addEventListener('click',()=>{
-     archivePanel.hidden=false;archiveContent.replaceChildren();
-     const heading=document.createElement('h3');heading.textContent='Gespeicherte Abrechnungen';archiveContent.append(heading);
+     archivePanel.hidden=false;toggleArchive(true);archiveContent.replaceChildren();
      const objectSelect=document.createElement('select'),yearInput=document.createElement('input'),statusSelect=document.createElement('select');
      setObjectOptions(objectSelect,'Alle Objekte','');yearInput.type='number';yearInput.value=byId('wizardYear').value||String(new Date().getFullYear()-1);
      for(const [v,t] of [['','Alle Status'],['Offen','Offen'],['Entwurf','Entwurf'],['Gespeicherte Vorschau','Gespeicherte Vorschau']])statusSelect.add(new Option(t,v));
@@ -2114,6 +2118,8 @@
       .archive-link{display:block;text-align:left;margin:8px 0;overflow-wrap:anywhere}
       .archive-block{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
       .settlement-archive{margin-top:16px}
+      #settlementArchiveContent[hidden]{display:none!important}
+      #settlementArchiveContent:not([hidden]){padding-top:12px}
       #tenantDetails .billing-group{margin-bottom:10px}
       .unit-features{margin-top:16px}
       .unit-features .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
