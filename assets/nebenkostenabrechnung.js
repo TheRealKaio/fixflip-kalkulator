@@ -87,10 +87,15 @@
      {id:'ruecklage',title:'Zuführung zur Erhaltungsrücklage',positions:['Zuführung zur Erhaltungsrücklage']},
      {id:'einnahmen',title:'Einnahmen / Gutschriften · falls im Beleg vorhanden',positions:['Waschgeld','Zinsen','Zinsen Festgeld','Erstattungen','Sonstige Einnahmen']}
     ];
-    function makePositionRow(sectionId,label,canRemove=false){
+    let positionSuggestionId=0;
+    function makePositionRow(sectionId,label,canRemove=true){
      const tr=document.createElement('tr');tr.className='review-position-row';tr.dataset.category=sectionId;
      const removeButton=canRemove?'<button class="remove-position" type="button" aria-label="Position löschen" title="Position löschen">−</button>':'';
      tr.innerHTML='<td><input class="review-input review-position" aria-label="Position" value="'+label.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')+'"></td><td><select class="review-input review-key" aria-label="Verteilerschlüssel"><option value="Objektvorgabe" selected>Objektvorgabe</option><option>Wohnfläche</option><option>Wohneinheit</option><option>MEA</option><option>Verbrauch</option><option>Direktzuordnung</option><option>Objektfläche</option><option>Personenanzahl</option><option>Personentage</option><option>Stellplätze</option></select></td><td><input class="review-input review-money" aria-label="Verteilungsrelevanter Betrag" inputmode="decimal"></td><td><input class="review-input review-base" aria-label="Gesamtverteiler" inputmode="decimal"></td><td><input class="review-input review-share" aria-label="Ihr Anteil" inputmode="decimal"></td><td><input class="review-input review-result" aria-label="Ihr Betrag" inputmode="decimal"></td><td class="position-action-cell">'+removeButton+'</td>';
+     const input=tr.querySelector('.review-position');
+     const suggestions=document.createElement('datalist');suggestions.id='position-suggestions-'+(++positionSuggestionId);
+     for(const name of standardSections.find(section=>section.id===sectionId)?.positions||[])suggestions.append(new Option(name,name));
+     input.setAttribute('list',suggestions.id);input.placeholder='Auswählen oder frei eingeben';input.after(suggestions);
      for (const cell of tr.cells) {
       if(cell.querySelector('.review-money,.review-result'))cell.classList.add('position-money-cell');
       cell.dataset.label = cell.firstElementChild?.getAttribute('aria-label') || '';
@@ -114,7 +119,7 @@
       const symbol=document.createElement('span');symbol.className='position-section-symbol';symbol.setAttribute('aria-hidden','true');
       toggle.append(title,symbol);cell.append(toggle);body.appendChild(heading);
       setPositionSectionExpanded(section.id,false);
-      section.positions.forEach(label=>body.appendChild(makePositionRow(section.id,label)));
+      // Standard positions are available as suggestions instead of empty rows.
       const subtotal=document.createElement('tr');subtotal.className='subtotal-row';subtotal.dataset.subtotal=section.id;
       subtotal.innerHTML='<td colspan="2">Zwischensumme · '+section.title+'</td><td class="subtotal-total"></td><td></td><td></td><td class="subtotal-share"></td><td class="position-action-cell"></td>';body.appendChild(subtotal);
       const add=document.createElement('tr');add.className='add-row';add.dataset.positionSection=section.id;add.innerHTML='<td colspan="7"><button class="btn soft" type="button" data-add-position="'+section.id+'">Position hinzufügen</button></td>';body.appendChild(add);
@@ -268,6 +273,7 @@
     }
     function cleanWegPositionName(value) {
      let name=String(value??'').trim();
+     name=name.replace(/^(?:(?:[©®™•●▪◦*|]+|[A-Za-z][0-9]+|[0-9][A-Za-z])\s+)+/u,'').trim();
      // Remove detached account / cost-centre / sequence codes, not numbers within a description.
      const leadingCode=/^\d+(?:[._/]\d+)*(?:[.)])?(?:\s+[/|:–—-]\s*|\s*[:|–—]\s*|\s+|\.(?=\p{L}))/u;
      while(leadingCode.test(name)){
@@ -346,9 +352,9 @@
        if(!amounts.length)continue;
        const a=amounts[0];namePart=prefix.slice(0,a.index);distribution=prefix.slice(a.index+a[0].length);total=a[1];share=match[2];
       }
-      const key=detectKey(distribution)||detectKey(namePart);
+      const key=detectKey(distribution)||detectKey(namePart)||(/\s+m[?²2]\s*$/iu.test(namePart)?'Wohnfläche':'');
       // Remove an allocation-key column at the end of the name, not words inside the actual description.
-      let name=cleanWegPositionName(namePart.replace(/\s+(?:m[²2^]+\s+)?Wohnfläche\s+ges\.?\s*$/i,'').replace(/\s+(?:MEA|Miteigentumsanteil(?:e|en)?|Wohnfl(?:äche|aeche|\.?)|Nutzfläche|Objektfläche|Gesamtfläche|Personentage|Personenanzahl|Personen|Stellplätze|Stellplatz|Garagen|Wohneinheit(?:en)?|Einheit(?:en)?|Verbrauch|Direktzuordnung|m²)\s*$/iu,''));
+      let name=cleanWegPositionName(namePart.replace(/\s+m[?²2]\s*$/iu,'').replace(/\s+(?:m[²2^]+\s+)?Wohnfläche\s+ges\.?\s*$/i,'').replace(/\s+(?:MEA|Miteigentumsanteil(?:e|en)?|Wohnfl(?:äche|aeche|\.?)|Nutzfläche|Objektfläche|Gesamtfläche|Personentage|Personenanzahl|Personen|Stellplätze|Stellplatz|Garagen|Wohneinheit(?:en)?|Einheit(?:en)?|Verbrauch|Direktzuordnung|m²)\s*$/iu,''));
       if(!/[a-zäöü]{3}/i.test(name))continue;
       const n=normalizedLabel(name);
       if(/^(?:summe|zwischensumme|ubertrag|seitenubertrag|vortrag|gesamtsumme|abrechnungssumme|saldo|gesamtbetrag|kostenumlag|kostennichtumlag)/.test(n))continue;
@@ -356,6 +362,8 @@
       else if(/^(?:waschgeld|waschmaschineneinnahmen|waschmaschinengeld)$/.test(n))name='Waschgeld';
       else if(/^(?:zufuhrungzur(?:erhaltungs|instandhaltungs)rucklage|beitragezur(?:erhaltungs|instandhaltungs)?rucklage)$/.test(n))name='Zuführung zur Erhaltungsrücklage';
       const candidates=standardSections.filter(section=>section.positions.some(label=>normalizedLabel(label)===normalizedLabel(name)));
+      const canonicalSection=standardSections.find(section=>section.id===category)|| (candidates.length===1?candidates[0]:null);
+      const canonicalName=canonicalSection?.positions.find(label=>normalizedLabel(label)===normalizedLabel(name));if(canonicalName)name=canonicalName;
       const block=category||(candidates.length===1?candidates[0].id:'');
       const quantities=[...distribution.matchAll(/(?:^|\s)(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)(?=\s|$)/g)].map(m=>m[1]);
       rows.push({name,block,key,base:quantities.length===2?quantities[0]:'',part:quantities.length===2?quantities[1]:'',total:total.replace('−','-'),share:share.replace('−','-')});
@@ -1664,6 +1672,7 @@
       if (!Object.hasOwn(saved.fields,'billingLandlord')) byId('billingLandlord').value = byId('objectLandlord').value;
       byId('positionTemplateBody').querySelectorAll('.review-position-row').forEach(row => row.remove());
       for (const [block, values, flagged = [], timing = {}] of saved.rows) {
+       if(!values.slice(2).some(v=>String(v??'').trim())&&standardSections.find(section=>section.id===block)?.positions.includes(values[0]))continue;
        const row = insertPosition(block, '');
        positionFields.forEach((name, i) => row.querySelector('.review-' + name).value = values[i]);
        row.dataset.timeBasis=timing.basis||'';row.dataset.timeMethod=timing.method||'';
