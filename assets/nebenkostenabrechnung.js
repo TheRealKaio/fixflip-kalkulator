@@ -564,11 +564,24 @@
      const records=index===null?[]:settlementArchive.filter(record=>String(record.tenantId)===String(index));
      renderArchiveLinks(container,records);
     }
-    function renderArchiveLinks(container,records){
+    function deleteArchivedSettlement(record,redraw){
+     if(!window.confirm('Gespeicherte Mieterabrechnung '+record.year+' · '+record.unit+' wirklich löschen? Kunden-, Objekt-, Einheiten- und Mietvertragsdaten bleiben erhalten.'))return;
+     const next=settlementArchive.filter(r=>r.id!==record.id);
+     try{localStorage.setItem(archiveKey,JSON.stringify(next));settlementArchive=next;}
+     catch{window.alert('Die Abrechnung konnte nicht gelöscht werden.');return;}
+     renderTenantSettlementHistory(editingContact);
+     if(redraw)redraw();else if(!archivePanel.hidden)byId('showReceipts').click();
+    }
+    function appendArchiveRow(container,link,record,redraw){
+     const row=document.createElement('div');row.className='contact-row settlement-archive-row';
+     row.append(link);if(record)row.append(recordRemoveButton('Mieterabrechnung '+record.year,()=>deleteArchivedSettlement(record,redraw)));
+     container.append(row);
+    }
+    function renderArchiveLinks(container,records,redraw){
      if(!records.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Noch keine gespeicherten Mieterabrechnungen.';container.append(empty);return;}
      for(const record of [...records].sort((a,b)=>String(b.year).localeCompare(String(a.year))||String(b.savedAt).localeCompare(String(a.savedAt)))){
       const link=action('Mieterabrechnung '+record.year+' · '+record.unit+' · '+record.tenantName,()=>showArchivedSettlement(record));
-      link.className='contact-edit archive-link';container.append(link);
+      link.className='contact-edit archive-link';appendArchiveRow(container,link,record,redraw);
      }
     }
     function showArchivedSettlement(record){
@@ -604,10 +617,10 @@
       const summary=document.createElement('p');summary.textContent=records.length+' erforderlich · '+records.filter(r=>r.status==='Offen').length+' offen · '+records.filter(r=>r.status==='Entwurf').length+' Entwurf · '+records.filter(r=>r.archive).length+' gespeicherte Vorschau';results.append(summary);
       for(const r of records.filter(r=>!statusSelect.value||r.status===statusSelect.value)){
        const c=contacts[Number(r.l.tenantId)],label=[r.o.fields.propertyName,r.unit.name,c?.slice(1,3).join(' '),r.status].filter(Boolean).join(' · ');
-       const link=action(label,()=>{if(r.archive){showArchivedSettlement(r.archive);return;}if(!window.confirm('Aktuelle Abrechnung durch dieses Mietverhältnis ersetzen?'))return;for(const [source,target] of objectFields)byId(target).value=r.o.fields[source]||'';byId('reviewUnit').value=r.unit.name;byId('unitLocation').value=r.unit.floor||'';byId('billingUnitArea').value=r.unit.area||'';byId('billingUnitObjectArea').value=r.unit.objectArea||'';byId('billingUnitShare').value=r.unit.share||'';byId('tenantContact').value=String(r.l.tenantId);byId('wizardYear').value=year;for(const id of ['wizardFrom','wizardTo','tenantFrom','tenantTo'])delete byId(id).dataset.userEdited;syncBillingPeriodFields();byId('tenantFrom').value=r.l.start>year+'-01-01'?r.l.start:year+'-01-01';byId('tenantTo').value=r.l.end&&r.l.end<year+'-12-31'?r.l.end:year+'-12-31';renderStandardTemplate();refreshBillingChoices();renderBillingContacts();archivePanel.hidden=true;root.querySelector('[data-page="abrechnung"]').click();setWizardStep(1,true);});
-       link.className='contact-edit archive-link';results.append(link);
+       const link=action(label,()=>{if(r.archive){showArchivedSettlement(r.archive);return;}if(r.status==='Entwurf'){if(!window.confirm('Ausgewählten Abrechnungs-Entwurf jetzt bearbeiten?'))return;archivePanel.hidden=true;root.querySelector('[data-page="abrechnung"]').click();setWizardStep(1,true);return;}if(!window.confirm('Neue Abrechnung für dieses Mietverhältnis erstellen?'))return;for(const [source,target] of objectFields)byId(target).value=r.o.fields[source]||'';byId('reviewUnit').value=r.unit.name;byId('unitLocation').value=r.unit.floor||'';byId('billingUnitArea').value=r.unit.area||'';byId('billingUnitObjectArea').value=r.unit.objectArea||'';byId('billingUnitShare').value=r.unit.share||'';byId('tenantContact').value=String(r.l.tenantId);byId('wizardYear').value=year;for(const id of ['wizardFrom','wizardTo','tenantFrom','tenantTo'])delete byId(id).dataset.userEdited;syncBillingPeriodFields();byId('tenantFrom').value=r.l.start>year+'-01-01'?r.l.start:year+'-01-01';byId('tenantTo').value=r.l.end&&r.l.end<year+'-12-31'?r.l.end:year+'-12-31';renderStandardTemplate();refreshBillingChoices();renderBillingContacts();archivePanel.hidden=true;root.querySelector('[data-page="abrechnung"]').click();setWizardStep(1,true);});
+       link.className='contact-edit archive-link';appendArchiveRow(results,link,r.archive,draw);
       }
-      const old=settlementArchive.filter(r=>!r.leaseId&&String(r.year)===year);if(old.length){const h=document.createElement('h4');h.textContent='Frühere Vorschauen ohne eindeutige Zuordnung';results.append(h);renderArchiveLinks(results,old);}
+      const listed=new Set(records.map(r=>r.archive?.id).filter(Boolean));const old=settlementArchive.filter(r=>!listed.has(r.id)&&String(r.year)===year&&(!objectSelect.value||r.objectId===objectSelect.value)&&(!statusSelect.value||statusSelect.value==='Gespeicherte Vorschau'));if(old.length){const h=document.createElement('h4');h.textContent='Weitere gespeicherte Vorschauen';results.append(h);renderArchiveLinks(results,old,draw);}
      };
      for(const el of [objectSelect,yearInput,statusSelect])el.addEventListener('change',draw);draw();archivePanel.scrollIntoView({block:'start'});
     });
