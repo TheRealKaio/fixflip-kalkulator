@@ -956,7 +956,9 @@
      return 'MEA';
     };
     for(const section of standardSections){
-     const title=document.createElement('h4');title.className='full';title.textContent=section.title;mappingGrid.append(title);
+     const group=document.createElement('details');group.className='billing-group full allocation-mapping-group';
+     const title=document.createElement('summary');title.textContent=section.title;group.append(title);
+     const fields=document.createElement('div');fields.className='form-grid';group.append(fields);mappingGrid.append(group);
      for(const label of section.positions){
       const field=document.createElement('div');field.className='field';
       const select=document.createElement('select');select.id='objectPositionKey'+objectKeyFields.size;
@@ -965,7 +967,7 @@
       select.value=suggestedAllocationKey(section.id,label);
       const caption=document.createElement('label');caption.htmlFor=select.id;caption.textContent=label;
       const source=document.createElement('small');source.className='muted';source.textContent='Standard';
-      const timeSelect=document.createElement('select');timeSelect.setAttribute('aria-label','Zeitverteiler '+label);for(const [v,t] of Object.entries(timeMethods))timeSelect.add(new Option(t,v));timeSelect.value=defaultTimeMethod(label);source.style.display='block';const timeLabel=document.createElement('small');timeLabel.style.display='block';timeLabel.style.marginTop='6px';timeLabel.textContent='Zeitliche Verteilung';field.append(caption,select,source,timeLabel,timeSelect);mappingGrid.append(field);
+      const timeSelect=document.createElement('select');timeSelect.setAttribute('aria-label','Zeitverteiler '+label);for(const [v,t] of Object.entries(timeMethods))timeSelect.add(new Option(t,v));timeSelect.value=defaultTimeMethod(label);source.style.display='block';const timeLabel=document.createElement('small');timeLabel.style.display='block';timeLabel.style.marginTop='6px';timeLabel.textContent='Zeitliche Verteilung';field.append(caption,select,source,timeLabel,timeSelect);fields.append(field);
       const mapKey=section.id+'|'+normalizedLabel(label);objectKeyFields.set(mapKey,select);defaultObjectKeys.set(mapKey,select.value);mappingSources.set(mapKey,source);timeMappingFields.set(mapKey,timeSelect);
       select.addEventListener('change',()=>{mappingTouched.add(mapKey);source.textContent='Manuell · noch nicht gespeichert';});
      }
@@ -1859,6 +1861,9 @@
       .billing-group{border:1px solid var(--nic-border);border-radius:12px;padding:0 12px;margin-bottom:10px;min-width:0}
       .billing-group summary{display:flex;align-items:center;gap:8px;width:100%;list-style:none;padding:10px 0;font-weight:700;cursor:pointer}
       .billing-group summary::-webkit-details-marker{display:none}
+      .allocation-mapping-group{min-width:0;grid-column:1/-1}
+      .allocation-mapping-group > .form-grid{padding-top:8px;min-width:0}
+      .allocation-mapping-group > summary:hover{ text-shadow:0 -2px 5px color-mix(in srgb,currentColor 35%,transparent);box-shadow:none;background:transparent }
       .billing-group summary::after{content:'+';margin-inline-start:auto;flex:none;color:var(--nic-green)}
       .billing-group[open] summary::after{content:'−'}
       .billing-group > :not(summary){margin-bottom:12px}
