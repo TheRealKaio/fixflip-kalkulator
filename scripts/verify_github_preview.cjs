@@ -364,6 +364,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
    assert.equal(await settlement.locator('#wizardYear').inputValue(),'2025','Leaving and reopening keeps the saved draft');
    await settlement.getByRole('button',{name:'1. Kontakte'}).click();
    const contacts = settlement.locator('#kontakte');
+   assert.equal(await contacts.getByLabel('Kontaktrolle').isVisible(),false,'Contact entry starts collapsed');
+   await contacts.getByRole('button',{name:'Kontakterfassung öffnen'}).click();
+   assert(await contacts.getByLabel('Kontaktrolle').isVisible(),'Contact entry opens');
+   await contacts.getByRole('button',{name:'Kontakterfassung schließen'}).click();
+   assert.equal(await contacts.getByLabel('Kontaktrolle').isVisible(),false,'Contact entry closes');
+   await contacts.getByRole('button',{name:'Kontakterfassung öffnen'}).click();
    await contacts.getByLabel('Kontaktrolle').selectOption('Mieter/in');
    await contacts.getByLabel('Vorname').fill('Mara');
    await contacts.getByLabel('Nachname / Firmenname').fill('Test');
