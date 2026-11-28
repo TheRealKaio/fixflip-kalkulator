@@ -664,7 +664,7 @@
      heatingRecords().then(items=>{if(!docs.isConnected)return;appendHeatingDocuments(docs,items.filter(x=>x.tenantId===String(index)),()=>renderTenantSettlementHistory(index));}).catch(()=>{docs.textContent='Heizkostenanlagen konnten nicht geladen werden.';});
     }
     function deleteArchivedSettlement(record,redraw){
-     if(!window.confirm('Gespeicherte Mieterabrechnung '+record.year+' · '+record.unit+' wirklich löschen? Kunden-, Objekt-, Einheiten- und Mietvertragsdaten bleiben erhalten.'))return;
+     if(!window.confirm('Gespeicherte Mieterabrechnung '+record.year+' · '+record.unit+' wirklich löschen? Kontakte, Objekte, Einheiten, Mietverhältnisse und separat gespeicherte Heizkosten-PDFs bleiben erhalten.'))return;
      const next=settlementArchive.filter(r=>r.id!==record.id);
      try{localStorage.setItem(archiveKey,JSON.stringify(next));settlementArchive=next;}
      catch{window.alert('Die Abrechnung konnte nicht gelöscht werden.');return;}
@@ -686,7 +686,10 @@
     function showArchivedSettlement(record){
      archivePanel.hidden=false;
      archiveContent.replaceChildren();
-     const heading=document.createElement('h3');heading.textContent='Mieterabrechnung '+record.year;archiveContent.append(heading);
+     const header=document.createElement('div');header.className='entry-heading';
+     const heading=document.createElement('h3');heading.textContent='Mieterabrechnung '+record.year;
+     const remove=recordRemoveButton('Abrechnungsvorschau '+record.year,()=>deleteArchivedSettlement(record,()=>byId('showReceipts').click()));
+     header.append(heading,remove);archiveContent.append(header);
      for(const block of record.blocks||[]){
       const part=document.createElement('div');part.className='archive-block';part.textContent=block;archiveContent.append(part);
      }
