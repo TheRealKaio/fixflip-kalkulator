@@ -2140,7 +2140,7 @@
       printStyle.id = 'settlement-print-style';
       printStyle.textContent = `
         @media screen {
-          body:has(#nicContentView > [data-settlement]) :is(footer,.footer):not(:has([data-settlement])) {display:none!important}
+          body:has(#nicContentView > [data-settlement]) :is(footer,.footer,.app > .footer-note):not(:has([data-settlement])) {display:none!important}
           #nicContentView:has(> [data-settlement]) {
             background: #fff;
             min-height: max(520px, calc(100dvh - var(--settlement-top, 360px)));
