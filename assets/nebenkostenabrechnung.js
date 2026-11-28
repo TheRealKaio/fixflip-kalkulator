@@ -399,18 +399,33 @@
       if (units.length === 1 && !byId('reviewUnit').value) byId('reviewUnit').value = units[0];
       const year = recognized.match(/01\.01\.(20\d{2})\s*[-–]\s*31\.12\.\1/);
       if (year && !byId('wizardYear').value) { byId('wizardYear').value = year[1]; syncBillingPeriodFields(); }
-      let imported = 0;
+      let imported = 0, conflicts=0;
+      // Only persist OCR mappings when the bill has an explicitly selected saved object.
+      const selectedObject=objectByName(byId('objectName').value);
+      const previousMapping=selectedObject?.allocationMapping,previousSources=selectedObject?.allocationSources;
+      const ocrKeys=new Map(),ambiguous=new Set();
+      for(const item of extracted){if(!item.block||!allocationKeys.includes(item.key))continue;const key=item.block+'|'+normalizedLabel(item.name);if(ocrKeys.has(key)&&ocrKeys.get(key)!==item.key)ambiguous.add(key);ocrKeys.set(key,item.key);}
+      if(selectedObject){selectedObject.allocationMapping={...defaultMappings(),...previousMapping};selectedObject.allocationSources={...previousSources};}
       for (const item of extracted) {
        if (!item.block) continue;
        const existing = reviewRows().find(row => row.dataset.category === item.block &&
         normalizedLabel(valuesOf(row)[0]) === normalizedLabel(item.name) && !valuesOf(row)[2] && !valuesOf(row)[5]);
        const row = existing || insertPosition(item.block, item.name);
-       if (item.key) row.querySelector('.review-key').value = item.key;
-       row.querySelector('.review-base').value = item.base;
-       row.querySelector('.review-share').value = item.part;
+       const mapKey=item.block+'|'+normalizedLabel(item.name);
+       const manual=selectedObject?.allocationSources?.[mapKey]==='manual';
+       const conflict=manual&&item.key&&selectedObject.allocationMapping[mapKey]!==item.key;
+       const uncertain=ambiguous.has(mapKey);
+       if(selectedObject&&objectKeyFields.has(mapKey)&&allocationKeys.includes(item.key)&&!manual&&!uncertain){selectedObject.allocationMapping[mapKey]=item.key;selectedObject.allocationSources[mapKey]='ocr';}
+       const effective=manual?selectedObject.allocationMapping[mapKey]:(!uncertain&&item.key)||selectedObject?.allocationMapping?.[mapKey]||defaultObjectKeys.get(mapKey)||'';
+       const keyField=row.querySelector('.review-key');keyField.value=effective||'Objektvorgabe';
+       const reviewNeeded=conflict||uncertain||(effective&&item.key!==effective);
+       if(conflict||uncertain){conflicts++;keyField.title='Abweichender Belegschlüssel: '+(item.key||'unbekannt')+'. Bitte prüfen.';flagReviewField(keyField);}
+       row.querySelector('.review-base').value = reviewNeeded?'':item.base;
+       row.querySelector('.review-share').value = reviewNeeded?'':item.part;
        row.querySelector('.review-money').value = item.total;
-       row.querySelector('.review-result').value = item.share;
-       for (const [field, value] of [['key',item.key],['base',item.base],['share',item.part],['result',item.share]]) {
+       row.querySelector('.review-result').value = reviewNeeded?'':item.share;
+       if(reviewNeeded)applyPositionAllocation(row);
+       for (const [field, value] of [['key',effective],['base',row.querySelector('.review-base').value],['share',row.querySelector('.review-share').value],['result',row.querySelector('.review-result').value]]) {
         if (!value) flagReviewField(row.querySelector('.review-' + field));
        }
        imported++;
@@ -418,6 +433,9 @@
       updateSubtotals();
       importStatus.textContent = imported + ' Positionen übernommen. Vergleiche Beträge und Zuordnung mit dem Beleg. ' +
        (extracted.length - imported ? (extracted.length - imported) + ' Zeilen ohne eindeutigen Kostenblock stehen im erkannten Belegtext.' : '');
+      if(conflicts)importStatus.textContent+=' '+conflicts+' abweichende oder mehrdeutige Verteilerschlüssel bitte prüfen; manuelle Vorgaben bleiben erhalten.';
+      if(imported&&selectedObject){const status=document.createElement('span');if(!saveDraft(status,'')){selectedObject.allocationMapping=previousMapping;selectedObject.allocationSources=previousSources;importStatus.textContent+=' Objektzuordnungen konnten nicht gespeichert werden.';}else if(byId('keyObjectSelect').value===selectedObject.id)loadObjectMappings();}
+      if(imported&&!selectedObject)importStatus.textContent+=' Kein gespeichertes Objekt ausgewählt: erkannte Schlüssel gelten zunächst nur für diese Abrechnung.';
       if (imported) { readBalanceReferences(recognized); setWizardStep(2); }
      } catch (error) {
       importStatus.textContent = 'Beleg konnte nicht gelesen werden: ' + error.message;
@@ -806,6 +824,7 @@
     const mappingGrid=document.createElement('div');mappingGrid.className='form-grid';
     const objectKeyFields=new Map();
     const defaultObjectKeys=new Map();
+    const mappingSources=new Map(),mappingTouched=new Set();
     const allocationKeys=['Wohnfläche','Wohneinheit','MEA','Verbrauch','Direktzuordnung'];
     // Editable starting suggestions for WEG accounting, not binding allocation rules.
     const suggestedAllocationKey=(section,label)=>{
@@ -824,27 +843,45 @@
       for(const key of allocationKeys)select.add(new Option(key,key));
       select.value=suggestedAllocationKey(section.id,label);
       const caption=document.createElement('label');caption.htmlFor=select.id;caption.textContent=label;
-      field.append(caption,select);mappingGrid.append(field);
-      const mapKey=section.id+'|'+normalizedLabel(label);objectKeyFields.set(mapKey,select);defaultObjectKeys.set(mapKey,select.value);
+      const source=document.createElement('small');source.className='muted';source.textContent='Standard';
+      field.append(caption,select,source);mappingGrid.append(field);
+      const mapKey=section.id+'|'+normalizedLabel(label);objectKeyFields.set(mapKey,select);defaultObjectKeys.set(mapKey,select.value);mappingSources.set(mapKey,source);
+      select.addEventListener('change',()=>{mappingTouched.add(mapKey);source.textContent='Manuell · noch nicht gespeichert';});
      }
     }
     const mappingStatus=document.createElement('div');mappingStatus.setAttribute('role','status');
     function defaultMappings(){return Object.fromEntries(defaultObjectKeys);}
     function loadObjectMappings(){
      const object=savedObjects.find(o=>o.id===byId('keyObjectSelect').value);
-     for(const [key,field] of objectKeyFields)field.value=object?.allocationMapping?.[key]??defaultObjectKeys.get(key)??'';
+     mappingTouched.clear();
+     for(const [key,field] of objectKeyFields){
+      field.value=object?.allocationMapping?.[key]??defaultObjectKeys.get(key)??'';
+      mappingSources.get(key).textContent=({manual:'Manuell',ocr:'KI/OCR',standard:'Standard'})[object?.allocationSources?.[key]||'standard'];
+     }
      mappingStatus.textContent='';
     }
     byId('keyObjectSelect').addEventListener('change',loadObjectMappings);
     const mappingSave=action('Zuordnungen speichern',()=>{
      const object=savedObjects.find(o=>o.id===byId('keyObjectSelect').value);
      if(!object){mappingStatus.textContent='Wähle zuerst ein gespeichertes Objekt.';return;}
-     const previous=object.allocationMapping;
-     object.allocationMapping=Object.fromEntries([...objectKeyFields].map(([key,field])=>[key,field.value]));
-     if(!saveDraft(mappingStatus,'Zuordnungen für '+object.fields.propertyName+' gespeichert.')){object.allocationMapping=previous;return;}
+     const previous=object.allocationMapping,previousSources=object.allocationSources;
+     object.allocationMapping={...defaultMappings(),...previous};
+     object.allocationSources={...previousSources};
+     for(const key of mappingTouched){object.allocationMapping[key]=objectKeyFields.get(key).value;object.allocationSources[key]='manual';}
+     if(!saveDraft(mappingStatus,'Zuordnungen für '+object.fields.propertyName+' gespeichert.')){object.allocationMapping=previous;object.allocationSources=previousSources;return;}
+     loadObjectMappings();mappingStatus.textContent='Zuordnungen für '+object.fields.propertyName+' gespeichert.';
      refreshPositionAllocations();
     });mappingSave.classList.add('settlement-highlight');
-    const mappingActions=document.createElement('div');mappingActions.className='foot-actions';mappingActions.append(mappingStatus,mappingSave);
+    const mappingReset=action('Standard wiederherstellen',()=>{
+     const object=savedObjects.find(o=>o.id===byId('keyObjectSelect').value);
+     if(!object){mappingStatus.textContent='Wähle zuerst ein gespeichertes Objekt.';return;}
+     if(!window.confirm('Alle Verteilerschlüssel für dieses Objekt auf Standard zurücksetzen? Der manuelle Schutz entfällt.'))return;
+     const previous=object.allocationMapping,previousSources=object.allocationSources;
+     object.allocationMapping=defaultMappings();object.allocationSources={};
+     if(!saveDraft(mappingStatus,'')){object.allocationMapping=previous;object.allocationSources=previousSources;return;}
+     loadObjectMappings();mappingStatus.textContent='Standard wiederhergestellt.';refreshPositionAllocations();
+    });
+    const mappingActions=document.createElement('div');mappingActions.className='foot-actions';mappingActions.append(mappingStatus,mappingReset,mappingSave);
     keyPanel.querySelector('button').remove();keyPanel.append(mappingGrid,mappingActions);
     function decimalFromMaster(value,htmlNumber=false){
      const v=String(value??'').trim();
@@ -1481,9 +1518,9 @@
       renderContacts();
       for (const field of draftFields) if(!field.id.startsWith('objectPositionKey')&&Object.hasOwn(saved.fields,field.id))field.value=saved.fields[field.id]??'';
       const legacyOwner=objectByName(saved.fields?.propertyName);
-      for(const o of savedObjects)if(!o.allocationMapping){
-       o.allocationMapping=defaultMappings();
-       if(o===legacyOwner)for(const [key,field] of objectKeyFields){const v=saved.fields?.[field.id];if(allocationKeys.includes(v))o.allocationMapping[key]=v;}
+      for(const o of savedObjects){
+       if(!o.allocationMapping){o.allocationMapping=defaultMappings();if(o===legacyOwner)for(const [key,field] of objectKeyFields){const v=saved.fields?.[field.id];if(allocationKeys.includes(v)||v==='')o.allocationMapping[key]=v;}}
+       if(!o.allocationSources){o.allocationSources={};for(const [key,value] of Object.entries(o.allocationMapping))if(value!==defaultObjectKeys.get(key))o.allocationSources[key]='manual';}
       }
       if (!Object.hasOwn(saved.fields,'billingLandlord')) byId('billingLandlord').value = byId('objectLandlord').value;
       byId('positionTemplateBody').querySelectorAll('.review-position-row').forEach(row => row.remove());
