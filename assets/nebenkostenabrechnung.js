@@ -367,6 +367,7 @@
     const ocrText = document.createElement('details');
     ocrText.innerHTML = '<summary>Erkannten Belegtext ansehen</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>';
     ocrText.hidden = true;
+    ocrText.style.marginBottom = '20px';
     importStatus.after(ocrText);
     let engineScript;
     function loadEngine() {
