@@ -937,7 +937,7 @@
      if(objectByName(byId('objectName').value)?.id===u.objectId&&canonical(byId('reviewUnit').value)===canonical(u.name))for(const key of ['reviewUnit','unitLocation','billingUnitArea','billingUnitObjectArea','billingUnitShare','tenantContact']){oldBilling[key]=byId(key).value;byId(key).value='';}
      savedUnits=savedUnits.filter(x=>x.id!==id);
      const status=makeImportEl('p','');if(!saveDraft(status,'')){savedUnits=previous;for(const [key,value] of Object.entries(oldBilling))byId(key).value=value;window.alert(status.textContent);return;}
-     renderUnits();renderBillingContacts();refreshPositionAllocations();
+     if(editingUnitId===id)editUnit();renderUnits();renderBillingContacts();refreshPositionAllocations();
     }
     function renderObjects(){
      const list=root.querySelector('#objekte > article.card');list.replaceChildren();
@@ -1024,6 +1024,24 @@
      byId('tenantContact').value = event.target.value;
      renderBillingContacts();
     });
+    let editingUnitId='';
+    const unitEditFields={unitName:'name',unitFloor:'floor',unitArea:'area',unitObjectArea:'objectArea',unitShare:'share',unitRooms:'rooms',unitGardenArea:'gardenArea'};
+    function editUnit(unit=null){
+     editingUnitId=unit?.id||'';
+     if(unit)byId('unitObjectSelect').value=unit.objectId;
+     for(const [id,key] of Object.entries(unitEditFields))byId(id).value=unit?.[key]??'';
+     for(const [id,key] of [['unitBalcony','balcony'],['unitCellar','cellar'],['unitParking','parking']])byId(id).checked=!!unit?.[key];
+     const lease=unit?currentLease(unit.id):null;
+     byId('unitTenant').value=lease?String(lease.tenantId):'';
+     byId('unitTenant').disabled=!!unit&&savedLeases.some(l=>l.unitId===unit.id);
+     byId('saveUnit').textContent=unit?'Änderungen speichern':'Einheit übernehmen';
+     byId('unitName').closest('article').querySelector('h3').textContent=unit?'Einheit bearbeiten':'Einheit erfassen';
+     cancelUnitEdit.hidden=!unit;
+     byId('unitSaveStatus').hidden=true;
+     root.querySelector('.unit-features').open=false;
+    }
+    const cancelUnitEdit=action('Abbrechen',()=>editUnit());
+    cancelUnitEdit.hidden=true;byId('saveUnit').before(cancelUnitEdit);
     function renderUnits(){
      const select=byId('unitObjectSelect'),previous=select.value;
      setObjectOptions(select,'Objekt wählen',previous);
@@ -1031,16 +1049,17 @@
      rows.replaceChildren();
      for(const u of units){
       const row=rows.insertRow(),lease=currentLease(u.id),contact=lease?contacts[Number(lease.tenantId)]:null;
-      for(const v of [u.name,u.floor,u.area?u.area+' m²':'',u.share,contact?[contact[1],contact[2]].filter(Boolean).join(' '):''])row.insertCell().textContent=v||'';
+      const edit=action(u.name,()=>{editUnit(u);byId('unitName').focus();});edit.className='contact-edit';edit.setAttribute('aria-label',u.name+' bearbeiten');row.insertCell().append(edit);
+      for(const v of [u.floor,u.area?u.area+' m²':'',u.share,contact?[contact[1],contact[2]].filter(Boolean).join(' '):''])row.insertCell().textContent=v||'';
       const cell=row.insertCell();cell.className='record-delete-cell';cell.append(recordRemoveButton(u.name,()=>deleteUnit(u.id)));
      }
      if(!units.length){const cell=rows.insertRow().insertCell();cell.colSpan=6;cell.textContent='Noch keine Einheiten erfasst.';}
      byId('unitCount').textContent=units.length;byId('rentedCount').textContent=units.filter(u=>currentLease(u.id)).length;
      renderObjects();refreshBillingChoices();
     }
-    byId('unitObjectSelect').addEventListener('change',renderUnits);
+    byId('unitObjectSelect').addEventListener('change',()=>{editUnit();renderUnits();});
     byId('addObject').addEventListener('click',()=>editObject(null));
-    byId('addUnit').addEventListener('click', () => byId('unitName').focus());
+    byId('addUnit').addEventListener('click', () => {editUnit();byId('unitName').focus();});
     byId('saveUnit').addEventListener('click', () => {
      const status = byId('unitSaveStatus');
      status.hidden = false;
@@ -1059,23 +1078,26 @@
      }
      const objectId=byId('unitObjectSelect').value,existing=savedUnits.find(u=>u.objectId===objectId&&canonical(u.name)===canonical(unit.name));
      const previous=savedUnits,previousLeases=savedLeases;
-     unit.id=existing?.id||modelId();unit.objectId=objectId;
-     if(existing){status.textContent='Einheit bereits vorhanden. Kein automatisches Überschreiben.';return;}
+     const edited=savedUnits.find(u=>u.id===editingUnitId);
+     if(editingUnitId&&(!edited||edited.objectId!==objectId)){status.textContent='Einheit nicht mehr vorhanden oder Objekt geändert.';return;}
+     unit.id=edited?.id||modelId();unit.objectId=objectId;
+     if(existing&&existing.id!==unit.id){status.textContent='Einheit bereits vorhanden. Kein automatisches Überschreiben.';return;}
      let nextLeases=[...savedLeases];
-     if(unit.tenant!==''){
+     const linked=edited&&savedLeases.some(l=>l.unitId===edited.id);
+     if(linked)unit.tenant=edited.tenant||'';
+     if(!linked&&unit.tenant!==''){
       const t=contacts[Number(unit.tenant)]?.[contactFields.length];
       if(!t?.start){status.textContent='Bitte zuerst Mietbeginn beim Kontakt erfassen.';return;}
       nextLeases.push({id:modelId(),unitId:unit.id,tenantId:unit.tenant,start:t.start,end:t.end||'',periods:t.periods||[]});
      }
-     savedUnits=[...savedUnits,unit];savedLeases=nextLeases;
+     savedUnits=edited?savedUnits.map(u=>u.id===edited.id?{...u,...unit}:u):[...savedUnits,unit];savedLeases=nextLeases;
      const error=modelError(savedObjects,savedUnits,savedLeases);
      if(error){savedUnits=previous;savedLeases=previousLeases;status.textContent=error;return;}
-     if(!saveDraft(status,'')){savedUnits=previous;savedLeases=previousLeases;return;}
-     status.hidden = true;
-     for (const id of ['unitName', 'unitFloor', 'unitArea', 'unitObjectArea', 'unitShare', 'unitTenant','unitRooms','unitGardenArea']) byId(id).value = '';
-     for (const id of ['unitBalcony','unitCellar','unitParking']) byId(id).checked = false;
-     root.querySelector('.unit-features').open=false;
-     renderUnits();
+     const billingMatches=edited&&objectByName(byId('objectName').value)?.id===objectId&&canonical(byId('reviewUnit').value)===canonical(edited.name);
+     const oldBilling={};
+     if(billingMatches)for(const [id,value] of Object.entries({reviewUnit:unit.name,unitLocation:unit.floor,billingUnitArea:unit.area,billingUnitObjectArea:unit.objectArea,billingUnitShare:unit.share})){oldBilling[id]=byId(id).value;byId(id).value=value;}
+     if(!saveDraft(status,'')){savedUnits=previous;savedLeases=previousLeases;for(const [id,value] of Object.entries(oldBilling))byId(id).value=value;return;}
+     editUnit();renderUnits();if(billingMatches)refreshPositionAllocations();
     });
     function saveDraft(status, message) {
      try {
