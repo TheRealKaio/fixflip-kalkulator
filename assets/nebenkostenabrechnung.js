@@ -27,6 +27,7 @@
      wizardPanels.forEach((panel,i)=>panel.classList.toggle('active',i===activeWizardStep));
      if(activeWizardStep===2)refreshPositionAllocations();
      if(activeWizardStep===3)renderTimeDistribution();
+     if(activeWizardStep===4)updateHeatingPreview();
      if (moveFocus) {
       const heading=wizardPanels[activeWizardStep].querySelector('.step-heading h3');
       heading.tabIndex=-1;
@@ -55,11 +56,7 @@
     const startManual = (moveFocus = true) => setEntryMode('manual', moveFocus);
     root.getElementById('startManual')?.addEventListener('click', () => startManual());
     // The OCR handler alone controls the selected-file lifecycle and wizard navigation.
-    root.getElementById('heaterUpload')?.addEventListener('click',()=>root.getElementById('heaterUploadInput')?.click());
-    root.getElementById('heaterUploadInput')?.addEventListener('change',event=>{
-     const files=[...event.target.files];const label=root.getElementById('heatingSelection');
-     if(label)label.textContent=files.length?'Zusätzlicher Beleg: '+files.map(file=>file.name).join(', '):'';
-    });
+    root.getElementById('heaterUpload')?.addEventListener('click',()=>openHeatingDialog());
     wizardSteps.forEach(button=>button.addEventListener('click',()=>{setWizardStep(Number(button.dataset.step))}));
     root.querySelectorAll('[data-next]').forEach(button=>button.addEventListener('click',()=>{
      if(!entryMode&&activeWizardStep===0)setEntryMode('upload');
@@ -586,11 +583,85 @@
     const archiveKey='nic-settlement-archive-v1';
     let settlementArchive=[];
     try{const records=JSON.parse(localStorage.getItem(archiveKey)||'[]');if(Array.isArray(records))settlementArchive=records;}catch{}
+    // Documents are stored separately from the transient import and draft state.
+    let heatingDatabase;
+    function heatingDB(){
+     if(!heatingDatabase)heatingDatabase=new Promise((resolve,reject)=>{
+      const req=indexedDB.open('nic-heating-documents-v1',1);
+      req.onupgradeneeded=()=>req.result.createObjectStore('documents',{keyPath:'id'});
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+     }).catch(e=>{heatingDatabase=null;throw e;});
+     return heatingDatabase;
+    }
+    async function heatingTransaction(mode,operation){
+     const db=await heatingDB();
+     return new Promise((resolve,reject)=>{const tx=db.transaction('documents',mode);const req=operation(tx.objectStore('documents'));tx.oncomplete=()=>resolve(req.result);tx.onabort=tx.onerror=()=>reject(tx.error||req.error);});
+    }
+    const heatingRecords=()=>heatingTransaction('readonly',store=>store.getAll());
+    function heatingCandidates(year){
+     if(!/^[1-9][0-9]{3}$/.test(year))return [];
+     return savedLeases.filter(l=>l.start<=year+'-12-31'&&(!l.end||l.end>=year+'-01-01')&&contacts[Number(l.tenantId)]?.[0]==='Mieter/in'&&savedUnits.some(u=>u.id===l.unitId));
+    }
+    function heatingLeaseLabel(l,year){
+     const c=contacts[Number(l.tenantId)],u=savedUnits.find(x=>x.id===l.unitId),o=savedObjects.find(x=>x.id===u?.objectId);
+     const from=l.start>year+'-01-01'?l.start:year+'-01-01',to=l.end&&l.end<year+'-12-31'?l.end:year+'-12-31';
+     return [c?.slice(1,3).join(' '),o?.fields.propertyName,u?.name,from+' – '+to].filter(Boolean).join(' · ');
+    }
+    function openHeatingDialog(){
+     const dialog=document.createElement('dialog');dialog.className='card import-assignment-dialog';
+     dialog.innerHTML='<h3>Heizkostenabrechnung ergänzen</h3><p class="muted">Wähle Abrechnungsjahr und Mieter. Auch ausgezogene Mieter werden für ihren Mietzeitraum angezeigt.</p><div class="form-grid"><label class="field full">Abrechnungsjahr<input type="number" min="1900" max="9999" required></label><label class="field full">Mieter/in<select required></select></label></div><input type="file" accept=".pdf,application/pdf" hidden><p role="status"></p><div class="foot-actions"></div>';
+     const year=dialog.querySelector('input[type=number]'),select=dialog.querySelector('select'),file=dialog.querySelector('input[type=file]'),status=dialog.querySelector('[role=status]');
+     year.value=byId('wizardYear').value||String(new Date().getFullYear()-1);
+     const upload=action('PDF auswählen',()=>{if(year.reportValidity()&&select.reportValidity()){file.value='';file.click();}});upload.classList.add('settlement-highlight');
+     let busy=false;
+     dialog.querySelector('.foot-actions').append(action('Abbrechen',()=>{if(!busy)dialog.close();}),upload);
+     const refresh=()=>{select.replaceChildren(new Option('Mieter auswählen',''));for(const l of heatingCandidates(year.value))select.add(new Option(heatingLeaseLabel(l,year.value),l.id));upload.disabled=select.options.length===1;status.textContent=upload.disabled?'Für dieses Jahr ist noch kein Mietverhältnis hinterlegt.':'';};
+     year.addEventListener('input',refresh);refresh();
+     dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
+     dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+     file.addEventListener('change',async()=>{
+      const pdf=file.files[0],y=year.value,l=heatingCandidates(y).find(x=>x.id===select.value);file.value='';
+      if(!pdf||!l||busy)return;
+      busy=true;upload.disabled=true;year.disabled=true;select.disabled=true;status.textContent='PDF wird gespeichert …';
+      try{
+       if(pdf.size>20000000||pdf.size<5||await pdf.slice(0,5).text()!=='%PDF-')throw Error('Bitte eine gültige PDF-Datei bis 20 MB auswählen.');
+       const id=JSON.stringify([y,l.id,String(l.tenantId),l.unitId]);
+       const existing=await heatingTransaction('readonly',store=>store.get(id));
+       if(existing&&!window.confirm('Vorhandene Heizkostenabrechnung für dieses Mietverhältnis und Jahr ersetzen?')){status.textContent='Vorhandenes Dokument bleibt erhalten.';return;}
+       if(!heatingCandidates(y).some(x=>x.id===l.id&&String(x.tenantId)===String(l.tenantId)&&x.unitId===l.unitId))throw Error('Mietverhältnis nicht mehr gültig.');
+       await heatingTransaction('readwrite',store=>store.put({id,year:y,leaseId:l.id,tenantId:String(l.tenantId),unitId:l.unitId,name:pdf.name,pdf:new Blob([pdf],{type:'application/pdf'})}));
+       byId('heatingSelection').textContent='Heizkostenabrechnung gespeichert · '+heatingLeaseLabel(l,y);
+       renderTenantSettlementHistory(editingContact);dialog.close();
+      }catch(e){status.textContent=e.message||'PDF konnte nicht gespeichert werden.';}
+      finally{busy=false;upload.disabled=false;year.disabled=false;select.disabled=false;}
+     });
+     root.append(dialog);dialog.showModal();
+    }
+    function downloadHeating(record){
+     const url=URL.createObjectURL(record.pdf),a=document.createElement('a');a.href=url;a.download=record.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }
+    function appendHeatingDocuments(container,records,redraw){
+     for(const record of records){
+      const row=document.createElement('div');row.className='contact-row';
+      const lease=savedLeases.find(l=>l.id===record.leaseId&&String(l.tenantId)===record.tenantId&&l.unitId===record.unitId);
+      const link=action('Heizkostenabrechnung '+record.year+' · '+(lease?heatingLeaseLabel(lease,record.year):record.name)+' · PDF',()=>downloadHeating(record));link.className='contact-edit';
+      row.append(link);
+      if(redraw)row.append(recordRemoveButton('Heizkostenabrechnung '+record.year,async()=>{if(!window.confirm('Heizkostenabrechnung wirklich löschen?'))return;try{await heatingTransaction('readwrite',store=>store.delete(record.id));redraw();}catch{window.alert('PDF konnte nicht gelöscht werden.');}}));
+      container.append(row);
+     }
+    }
+    async function showHeatingAttachments(container,match){
+     try{const records=(await heatingRecords()).filter(match);container.replaceChildren();if(!records.length){container.textContent='Keine Heizkostenabrechnung hinterlegt.';return;}appendHeatingDocuments(container,records);}
+     catch{container.textContent='Heizkostenanlagen konnten nicht geladen werden.';}
+    }
     function renderTenantSettlementHistory(index){
      const container=byId('tenantSettlementHistory');
      container.replaceChildren();
      const records=index===null?[]:settlementArchive.filter(record=>String(record.tenantId)===String(index));
      renderArchiveLinks(container,records);
+     if(index===null)return;
+     const docs=document.createElement('div');container.append(docs);
+     heatingRecords().then(items=>{if(!docs.isConnected)return;appendHeatingDocuments(docs,items.filter(x=>x.tenantId===String(index)),()=>renderTenantSettlementHistory(index));}).catch(()=>{docs.textContent='Heizkostenanlagen konnten nicht geladen werden.';});
     }
     function deleteArchivedSettlement(record,redraw){
      if(!window.confirm('Gespeicherte Mieterabrechnung '+record.year+' · '+record.unit+' wirklich löschen? Kunden-, Objekt-, Einheiten- und Mietvertragsdaten bleiben erhalten.'))return;
@@ -619,6 +690,8 @@
      for(const block of record.blocks||[]){
       const part=document.createElement('div');part.className='archive-block';part.textContent=block;archiveContent.append(part);
      }
+     const attachments=document.createElement('div');archiveContent.append(attachments);
+     if(record.leaseId)void showHeatingAttachments(attachments,x=>x.year===String(record.year)&&x.leaseId===record.leaseId&&x.tenantId===String(record.tenantId)&&x.unitId===record.unitId);
      archivePanel.scrollIntoView({block:'start'});
     }
     const archivePanel=document.createElement('article');archivePanel.className='card settlement-archive';archivePanel.hidden=true;
@@ -1761,7 +1834,17 @@
     byId('unitReviewTable').addEventListener('click', updateBalance);
     const previewModes = previewOverlay.querySelector('.preview-modes');
     let landlordMode = false;
+    const heatingPreview=document.createElement('div');heatingPreview.className='mini';byId('previewReady').after(heatingPreview);
+    function updateHeatingPreview(){
+     const year=byId('wizardYear').value,tenant=byId('tenantContact').value,unit=byId('billingUnit').value,from=byId('tenantFrom').value,to=byId('tenantTo').value;
+     const leases=heatingCandidates(year).filter(l=>String(l.tenantId)===tenant&&l.unitId===unit&&from&&to&&l.start<=from&&(!l.end||l.end>=to));
+     heatingPreview.replaceChildren();
+     if(leases.length!==1){heatingPreview.textContent='Heizkostenanlage: Mietverhältnis nicht eindeutig zugeordnet.';return;}
+     const target=document.createElement('div');heatingPreview.append(target);
+     void showHeatingAttachments(target,x=>x.year===year&&x.leaseId===leases[0].id&&x.tenantId===tenant&&x.unitId===unit);
+    }
     function fillPreview() {
+     updateHeatingPreview();
      syncReviewToPreview();
      const groups = [...tenantContent.querySelectorAll('.a4-section')];
      const validSections = standardSections.filter(section => reviewRows().some(row =>
