@@ -2167,9 +2167,10 @@
     });
     savedWorkspace = workspace;
     placeWorkspace(host, workspace);
-    const resizeWorkspace=()=>{if(workspace.isConnected)host.style.setProperty('--settlement-top',Math.max(0,host.getBoundingClientRect().top+window.scrollY)+'px');};
+    const resizeWorkspace=()=>{if(workspace.isConnected){const top=Math.max(0,host.getBoundingClientRect().top+window.scrollY);host.style.setProperty('--settlement-top',top+'px');const shell=root.querySelector('.shell');if(shell){const shellTop=Math.max(0,shell.getBoundingClientRect().top+window.scrollY);shell.style.minHeight=Math.max(0,window.innerHeight-shellTop)+'px';}}};
     resizeWorkspace();requestAnimationFrame(resizeWorkspace);window.addEventListener('resize',resizeWorkspace);
     window.NICInitialLayout?.ready?.then(resizeWorkspace);
+    const layoutObserver=new ResizeObserver(resizeWorkspace);const hero=document.querySelector('.app>.hero');if(hero)layoutObserver.observe(hero);
     if (mode === 'manuell') {
       const layoutReady = window.NICInitialLayout?.ready;
       startManual(!layoutReady);
