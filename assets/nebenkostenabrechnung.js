@@ -684,6 +684,7 @@
      }
     }
     function showArchivedSettlement(record){
+     root.querySelector('[data-page="abrechnung"]').click();
      archivePanel.hidden=false;toggleArchive(true);
      archiveContent.replaceChildren();
      const header=document.createElement('div');header.className='entry-heading';
@@ -705,7 +706,7 @@
     archiveContent.id='settlementArchiveContent';archiveToggle.setAttribute('aria-controls',archiveContent.id);
     function toggleArchive(open){archiveContent.hidden=!open;archiveToggle.textContent=open?'−':'+';archiveToggle.setAttribute('aria-expanded',String(open));archiveToggle.setAttribute('aria-label',open?'Gespeicherte Abrechnungen schließen':'Gespeicherte Abrechnungen öffnen');}
     archiveHeading.append(archiveTitle,archiveToggle);archivePanel.append(archiveHeading,archiveContent);toggleArchive(false);
-    root.querySelector('.shell').after(archivePanel);
+    byId('abrechnung').append(archivePanel);
     byId('showReceipts').addEventListener('click',()=>{
      archivePanel.hidden=false;toggleArchive(true);archiveContent.replaceChildren();
      const objectSelect=document.createElement('select'),yearInput=document.createElement('input'),statusSelect=document.createElement('select');
@@ -2117,7 +2118,9 @@
 
       .archive-link{display:block;text-align:left;margin:8px 0;overflow-wrap:anywhere}
       .archive-block{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
-      .settlement-archive{margin-top:16px}
+      .shell > .page{padding-inline:0;width:100%;max-width:none;box-sizing:border-box}
+      .settlement-archive{margin-top:16px;width:100%;max-width:none;box-sizing:border-box}
+      .shell > .page > .wizard-panel,.shell > .page > .grid,.shell > .page > .summary{width:100%;max-width:none;box-sizing:border-box}
       #settlementArchiveContent[hidden]{display:none!important}
       #settlementArchiveContent:not([hidden]){padding-top:12px}
       #tenantDetails .billing-group{margin-bottom:10px}
